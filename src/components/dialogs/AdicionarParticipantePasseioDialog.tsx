@@ -28,7 +28,11 @@ import {
 import { useAdicionarParticipanteMutation } from "@/hooks/api/useFretamentosApi";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
-import { UserPlus, UserCheck, Phone, MapPin, Search, User, Contact, FileText } from "lucide-react";
+import { formatarEnderecoParcialRota } from "@/utils/formatters";
+import { UserPlus, UserCheck, Phone, MapPin, Search, User, Contact, FileText, Wand2 } from "lucide-react";
+import { isDevEnv } from "@/utils/detectPlatform";
+import { mockGenerator } from "@/utils/mocks/generator";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface AdicionarParticipantePasseioDialogProps {
@@ -75,6 +79,21 @@ export function AdicionarParticipantePasseioDialog({
     }
   }, [isOpen, valorPadrao, form]);
 
+  const handleFillMock = () => {
+    setOrigemAba("avulso");
+    const nomeAluno = mockGenerator.name();
+    const nomeResp = mockGenerator.name();
+    const phone = mockGenerator.phone();
+    form.setValue("passageiro_id", null);
+    form.setValue("nome", nomeAluno, { shouldValidate: true });
+    form.setValue("is_proprio_responsavel", false, { shouldValidate: true });
+    form.setValue("responsavel_nome", nomeResp, { shouldValidate: true });
+    form.setValue("telefone", phone, { shouldValidate: true });
+    form.setValue("endereco", "Rua das Acácias, 240", { shouldValidate: true });
+    form.setValue("valor", moneyMask(valorPadrao || 120), { shouldValidate: true });
+    form.setValue("observacoes", "Participante confirmado via WhatsApp.", { shouldValidate: true });
+  };
+
   if (!fretamento) return null;
 
   const alunosFiltrados = passageiros.filter((p) => {
@@ -91,9 +110,7 @@ export function AdicionarParticipantePasseioDialog({
     if (!aluno) return;
 
     const resp = aluno.responsavel_principal || aluno.responsaveis?.[0];
-    const enderecoFormatado = resp?.logradouro
-      ? `${resp.logradouro}, ${resp.numero || ""}`.trim()
-      : "";
+    const enderecoFormatado = resp ? formatarEnderecoParcialRota(resp) : "";
 
     form.setValue("passageiro_id", aluno.id || null);
     form.setValue("nome", aluno.nome);
@@ -134,8 +151,20 @@ export function AdicionarParticipantePasseioDialog({
       <BaseDialog.Header
         title="Adicionar Participante"
         subtitle={`Passeio: ${fretamento.titulo}`}
-        icon={<UserPlus className="h-5 w-5 text-emerald-600" />}
+        icon={<UserPlus className="h-5 w-5 text-[#1a3a5c]" />}
         onClose={() => safeCloseDialog(onClose)}
+        leftAction={isDevEnv() && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 transition-all active:scale-95 shadow-2xs"
+            onClick={handleFillMock}
+            title="Preencher com dados fictícios"
+          >
+            <Wand2 className="h-4 w-4" />
+          </Button>
+        )}
       />
 
       <div className="flex border-b border-slate-100 bg-slate-50/50 px-5 sm:px-6 pt-3 gap-2">
@@ -145,7 +174,7 @@ export function AdicionarParticipantePasseioDialog({
             setOrigemAba("base");
             form.setValue("passageiro_id", null);
           }}
-          className={`flex items-center gap-2 pb-2.5 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
             origemAba === "base"
               ? "border-[#1a3a5c] text-[#1a3a5c]"
               : "border-transparent text-slate-500 hover:text-slate-700"
@@ -161,7 +190,7 @@ export function AdicionarParticipantePasseioDialog({
             setOrigemAba("avulso");
             form.setValue("passageiro_id", null);
           }}
-          className={`flex items-center gap-2 pb-2.5 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
             origemAba === "avulso"
               ? "border-[#1a3a5c] text-[#1a3a5c]"
               : "border-transparent text-slate-500 hover:text-slate-700"
@@ -174,16 +203,16 @@ export function AdicionarParticipantePasseioDialog({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto">
+          <BaseDialog.Body className="space-y-3.5 p-5 sm:p-6 overflow-y-auto">
             {origemAba === "base" && (
-              <div className="space-y-2.5 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <FormLabel className="text-slate-700 font-semibold ml-1 text-sm block">
+              <div className="space-y-2 p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/80">
+                <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs block">
                   Buscar Aluno na Base de Cadastrados
                 </FormLabel>
                 <div className="relative">
-                  <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
                   <Input
-                    className="pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-base"
+                    className="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm"
                     placeholder="Digite o nome do aluno ou responsável..."
                     value={buscaAluno}
                     onChange={(e) => setBuscaAluno(e.target.value)}
@@ -194,7 +223,7 @@ export function AdicionarParticipantePasseioDialog({
                   onValueChange={selecionarAluno}
                   value={form.watch("passageiro_id") || undefined}
                 >
-                  <SelectTrigger className="h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-base text-left">
+                  <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm text-left">
                     <SelectValue placeholder="Selecione na lista de alunos..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-56">
@@ -217,21 +246,21 @@ export function AdicionarParticipantePasseioDialog({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <FormField
                 control={form.control}
                 name="nome"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1 text-sm">
+                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
                       Nome do Participante <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                        <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
                         <Input
                           placeholder="Ex: Arthur Silva"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
                           aria-invalid={!!fieldState.error}
                           {...field}
                         />
@@ -250,8 +279,8 @@ export function AdicionarParticipantePasseioDialog({
                     field={field}
                     label="Valor Cobrado"
                     required
-                    labelClassName="text-slate-700 font-semibold ml-1 text-sm"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base font-bold text-slate-800 transition-all"
+                    labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
+                    inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm font-bold text-slate-800 transition-all"
                   />
                 )}
               />
@@ -261,15 +290,15 @@ export function AdicionarParticipantePasseioDialog({
               control={form.control}
               name="is_proprio_responsavel"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 cursor-pointer select-none">
+                <FormItem className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-0 cursor-pointer select-none">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
                     />
                   </FormControl>
-                  <FormLabel className="text-sm font-semibold text-slate-700 cursor-pointer m-0">
+                  <FormLabel className="text-xs font-semibold text-slate-700 cursor-pointer m-0">
                     O participante é o próprio responsável / Maior de idade
                   </FormLabel>
                 </FormItem>
@@ -282,13 +311,13 @@ export function AdicionarParticipantePasseioDialog({
                 name="responsavel_nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1 text-sm">Nome do Responsável</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Nome do Responsável</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Contact className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                        <Contact className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
                         <Input
                           placeholder="Ex: Mariana Silva"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -300,7 +329,7 @@ export function AdicionarParticipantePasseioDialog({
               />
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <FormField
                 control={form.control}
                 name="telefone"
@@ -308,8 +337,8 @@ export function AdicionarParticipantePasseioDialog({
                   <PhoneInput
                     field={field}
                     label="Telefone (WhatsApp)"
-                    labelClassName="text-slate-700 font-semibold ml-1 text-sm"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                    labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
+                    inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
                   />
                 )}
               />
@@ -319,13 +348,13 @@ export function AdicionarParticipantePasseioDialog({
                 name="endereco"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1 text-sm">Endereço / Ponto de Embarque</FormLabel>
+                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Endereço / Ponto de Embarque</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
                         <Input
                           placeholder="Rua, número ou ponto de encontro"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -342,11 +371,11 @@ export function AdicionarParticipantePasseioDialog({
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1 text-sm">Observações ou Restrições</FormLabel>
+                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Observações ou Restrições</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Restrições alimentares, autorizações ou recomendações."
-                      className="rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm p-3.5 min-h-[90px] transition-all"
+                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm p-3 min-h-[85px] transition-all"
                       value={field.value || ""}
                       onChange={field.onChange}
                     />

@@ -29,6 +29,7 @@ import { PasseioFormDialog } from "@/components/dialogs/PasseioFormDialog";
 import { NovoFretamentoOuPasseioDialog } from "@/components/dialogs/NovoFretamentoOuPasseioDialog";
 import { RegistrarPagamentoFretamentoDialog } from "@/components/dialogs/RegistrarPagamentoFretamentoDialog";
 import { AdicionarParticipantePasseioDialog } from "@/components/dialogs/AdicionarParticipantePasseioDialog";
+import { RegistrarPagamentoParticipanteDialog } from "@/components/dialogs/RegistrarPagamentoParticipanteDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import ComplementarPagamentoDialog from "@/components/dialogs/ComplementarPagamentoDialog";
@@ -95,6 +96,7 @@ import {
   OpenNovoFretamentoOuPasseioProps,
   OpenRegistrarPagamentoFretamentoProps,
   OpenAdicionarParticipantePasseioProps,
+  OpenRegistrarPagamentoParticipanteProps,
 } from "./LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { Loader2 } from "lucide-react";
@@ -269,6 +271,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [adicionarParticipantePasseioDialogState, setAdicionarParticipantePasseioDialogState] = useState<{
     open: boolean;
     props?: OpenAdicionarParticipantePasseioProps;
+  }>({
+    open: false,
+  });
+
+  const [registrarPagamentoParticipanteDialogState, setRegistrarPagamentoParticipanteDialogState] = useState<{
+    open: boolean;
+    props?: OpenRegistrarPagamentoParticipanteProps;
   }>({
     open: false,
   });
@@ -663,6 +672,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setAdicionarParticipantePasseioDialogState({ open: false }));
   };
 
+  const openRegistrarPagamentoParticipanteDialog = (props: OpenRegistrarPagamentoParticipanteProps) => {
+    setRegistrarPagamentoParticipanteDialogState({ open: true, props });
+  };
+  const closeRegistrarPagamentoParticipanteDialog = () => {
+    safeCloseDialog(() => setRegistrarPagamentoParticipanteDialogState({ open: false }));
+  };
+
   const openResponsavelFormDialog = (props: OpenResponsavelFormProps) => {
     setResponsavelFormDialogState({
       open: true,
@@ -902,6 +918,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeRegistrarPagamentoFretamentoDialog,
         openAdicionarParticipantePasseioDialog,
         closeAdicionarParticipantePasseioDialog,
+        openRegistrarPagamentoParticipanteDialog,
+        closeRegistrarPagamentoParticipanteDialog,
         openResponsavelFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
@@ -1785,6 +1803,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={closeAdicionarParticipantePasseioDialog}
           fretamento={adicionarParticipantePasseioDialogState.props.fretamento}
           onSuccess={adicionarParticipantePasseioDialogState.props.onSuccess}
+        />
+      )}
+
+      {registrarPagamentoParticipanteDialogState.open && registrarPagamentoParticipanteDialogState.props && (
+        <RegistrarPagamentoParticipanteDialog
+          isOpen={true}
+          onClose={closeRegistrarPagamentoParticipanteDialog}
+          fretamentoId={registrarPagamentoParticipanteDialogState.props.fretamentoId}
+          passeioTitulo={registrarPagamentoParticipanteDialogState.props.passeioTitulo}
+          participante={registrarPagamentoParticipanteDialogState.props.participante}
+          onSuccess={registrarPagamentoParticipanteDialogState.props.onSuccess}
         />
       )}
 

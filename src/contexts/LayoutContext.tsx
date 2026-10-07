@@ -40,6 +40,13 @@ export interface OpenAdicionarParticipantePasseioProps {
   onSuccess?: () => void;
 }
 
+export interface OpenRegistrarPagamentoParticipanteProps {
+  fretamentoId: string;
+  passeioTitulo?: string;
+  participante: FretamentoParticipante;
+  onSuccess?: () => void;
+}
+
 export interface OpenConfirmationDialogProps {
   title: string;
   description: React.ReactNode;
@@ -415,6 +422,8 @@ export interface LayoutContextType {
   closeRegistrarPagamentoFretamentoDialog: () => void;
   openAdicionarParticipantePasseioDialog: (props: OpenAdicionarParticipantePasseioProps) => void;
   closeAdicionarParticipantePasseioDialog: () => void;
+  openRegistrarPagamentoParticipanteDialog: (props: OpenRegistrarPagamentoParticipanteProps) => void;
+  closeRegistrarPagamentoParticipanteDialog: () => void;
 
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;

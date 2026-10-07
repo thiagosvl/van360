@@ -506,5 +506,78 @@ export const mockGenerator = {
     return {
       nome: `${nomeBase}`
     };
+  },
+  fretamento: () => {
+    const titulos = [
+      "Casamento em Campinas",
+      "Transfer Aeroporto de Guarulhos",
+      "Festa de Aniversário em Atibaia",
+      "Evento Corporativo Alphaville",
+      "Viagem em Família para Santos",
+      "Congresso Médico em Campos do Jordão",
+    ];
+    const origens = [
+      "Terminal Barra Funda - SP",
+      "Av. Paulista, 1000 - SP",
+      "Shopping Morumbi",
+      "Estação Tatuapé",
+    ];
+    const destinos = [
+      "Espaço das Palmeiras, Campinas - SP",
+      "Terminal 3 Aeroporto GRU",
+      "Sítio Recanto das Águas, Atibaia - SP",
+      "Centro de Convenções Alphaville",
+      "Praia Gonzaga, Santos - SP",
+    ];
+
+    const agora = new Date();
+    agora.setDate(agora.getDate() + randomNumber(3, 20));
+    const dataStr = agora.toISOString().split("T")[0];
+
+    return {
+      titulo: titulos[randomNumber(0, titulos.length - 1)],
+      origem: origens[randomNumber(0, origens.length - 1)],
+      destino: destinos[randomNumber(0, destinos.length - 1)],
+      data_viagem: dataStr,
+      valor_total: (randomNumber(8, 30) * 100).toFixed(2),
+      tem_sinal: true,
+      sinal_valor: "300.00",
+      sinal_tipo: "PIX",
+      observacoes: "Parada para lanche no trajeto.",
+    };
+  },
+  passeio: () => {
+    const titulos = [
+      "Passeio Hopi Hari",
+      "Excursão Aquário de São Paulo",
+      "Visita Museu Catavento",
+      "Passeio Zoológico de SP",
+      "Parque da Mônica",
+      "Teatro Municipal - Espetáculo Escolar",
+    ];
+    const destinos = [
+      "Rodovia dos Bandeirantes, km 72 - Vinhedo",
+      "Rua Huet Bacelar, 407 - Ipiranga, São Paulo",
+      "Praça Cívica Ulisses Guimarães - Brás, São Paulo",
+      "Av. Miguel Estefno, 4241 - Água Funda, São Paulo",
+      "Shopping SP Market - São Paulo",
+    ];
+
+    const agora = new Date();
+    agora.setDate(agora.getDate() + randomNumber(5, 25));
+    const dataStr = agora.toISOString().split("T")[0];
+
+    return {
+      titulo: titulos[randomNumber(0, titulos.length - 1)],
+      destino: destinos[randomNumber(0, destinos.length - 1)],
+      data_viagem: dataStr,
+      hora_saida: "07:30",
+      valor_por_pessoa: (randomNumber(3, 12) * 10).toFixed(2),
+      vagas_totais: randomNumber(15, 28),
+      exibir_pix: true,
+      tipo_chave_pix: "telefone",
+      chave_pix: "(11) 98765-4321",
+      observacoes: "Levar lanche de casa e garrafa de água identificada.",
+    };
   }
 };

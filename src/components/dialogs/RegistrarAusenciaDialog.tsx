@@ -3,13 +3,13 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarX, Search, Check, Loader2, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { RotaMultiSelect } from "@/components/ui/RotaMultiSelect";
+import { PeriodoAusenciaCampos } from "@/components/ui/PeriodoAusenciaCampos";
+import { CalendarX, Search, Check, Loader2 } from "lucide-react";
 import { useRoutes, useRouteDetail, usePassageiroRotas, useRegistrarAusenciaMutation } from "@/hooks/api/useRoutes";
+import { routeApi } from "@/services/api/route.api";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { toast } from "@/utils/notifications/toast";
@@ -17,7 +17,6 @@ import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { Route } from "@/types/route";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export interface RegistrarAusenciaDialogProps {
   isOpen: boolean;
@@ -40,77 +39,86 @@ export function RegistrarAusenciaDialog({
     enabled: isOpen && !!usuarioId,
   });
 
-  const [rotaId, setRotaId] = useState("");
+  const [selectedRotasIds, setSelectedRotasIds] = useState<string[]>([]);
   const [passageiroId, setPassageiroId] = useState("");
   const [passageiroNomeSelected, setPassageiroNomeSelected] = useState("");
   const [searchPassageiro, setSearchPassageiro] = useState("");
   const [isPassageiroDropdownOpen, setIsPassageiroDropdownOpen] = useState(false);
-  const [dataAusencia, setDataAusencia] = useState("");
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [keepOpen, setKeepOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [alunoRotasAvulsas, setAlunoRotasAvulsas] = useState<Array<{ id: string; nome: string }>>([]);
+  const [isLoadingAlunoRotas, setIsLoadingAlunoRotas] = useState(false);
 
-  const { data: routeDetail, isLoading: isLoadingRouteDetail } = useRouteDetail(rotaId);
-
+  const initialRotaIdForDetail = lockedRotaId || selectedRotasIds[0] || "";
+  const { data: routeDetail, isLoading: isLoadingRouteDetail } = useRouteDetail(initialRotaIdForDetail);
   const { data: passageiroRotas = [], isLoading: isLoadingPassageiroRotas } = usePassageiroRotas(lockedPassageiro?.id || "");
-
-  const hasNoRoutesForStudent = useMemo(() => {
-    return !!lockedPassageiro && !isLoadingPassageiroRotas && passageiroRotas.length === 0;
-  }, [lockedPassageiro, isLoadingPassageiroRotas, passageiroRotas]);
 
   const registrarMutation = useRegistrarAusenciaMutation();
 
   const rotasDisponiveis = useMemo(() => {
     if (lockedPassageiro?.id) {
-      return passageiroRotas as Route[];
+      return (passageiroRotas as Route[]) || [];
     }
-    return rotasList as Route[];
-  }, [lockedPassageiro?.id, passageiroRotas, rotasList]);
+    if (alunoRotasAvulsas.length > 0) {
+      return alunoRotasAvulsas as Route[];
+    }
+    return (rotasList as Route[]) || [];
+  }, [lockedPassageiro?.id, passageiroRotas, alunoRotasAvulsas, rotasList]);
+
+  const hasNoRoutesForStudent = useMemo(() => {
+    if (lockedPassageiro && !isLoadingPassageiroRotas) {
+      return passageiroRotas.length === 0;
+    }
+    if (passageiroId && !isLoadingAlunoRotas && alunoRotasAvulsas.length === 0 && !lockedRotaId) {
+      return true;
+    }
+    return false;
+  }, [lockedPassageiro, isLoadingPassageiroRotas, passageiroRotas, passageiroId, isLoadingAlunoRotas, alunoRotasAvulsas, lockedRotaId]);
 
   useEffect(() => {
     if (isOpen) {
       setIsPassageiroDropdownOpen(false);
-      setDataAusencia("");
-      setIsCalendarOpen(false);
+      setDataInicio("");
+      setDataFim("");
+      setKeepOpen(false);
       setErrors({});
+      setAlunoRotasAvulsas([]);
 
       if (lockedPassageiro) {
         setPassageiroId(lockedPassageiro.id);
         setPassageiroNomeSelected(lockedPassageiro.nome);
         setSearchPassageiro(lockedPassageiro.nome);
-        if (passageiroRotas.length === 1) {
-          setRotaId(passageiroRotas[0].id);
-        } else {
-          setRotaId("");
-        }
+        setSelectedRotasIds(passageiroRotas.length === 1 ? [passageiroRotas[0].id] : []);
       } else {
         setPassageiroId("");
         setPassageiroNomeSelected("");
         setSearchPassageiro("");
-        setRotaId(lockedRotaId || "");
+        setSelectedRotasIds(lockedRotaId ? [lockedRotaId] : []);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, lockedPassageiro, lockedRotaId, passageiroRotas]);
 
   useEffect(() => {
-    if (isOpen && lockedPassageiro?.id && passageiroRotas.length === 1 && !rotaId) {
-      setRotaId(passageiroRotas[0].id);
+    if (isOpen && rotasDisponiveis.length === 1 && selectedRotasIds.length === 0) {
+      setSelectedRotasIds([rotasDisponiveis[0].id]);
     }
-  }, [isOpen, lockedPassageiro?.id, passageiroRotas, rotaId]);
+  }, [isOpen, rotasDisponiveis, selectedRotasIds.length]);
 
   const passageirosDisponiveis = useMemo(() => {
-    if (!rotaId || !routeDetail?.paradas) return [];
+    if (!initialRotaIdForDetail || !routeDetail?.paradas) return [];
 
     const passageirosMap = new Map<string, Passageiro>();
-    routeDetail.paradas.forEach((p: any) => {
+    routeDetail.paradas.forEach((p: { passageiro_id?: string; passageiro?: Passageiro }) => {
       const pid = p.passageiro_id || p.passageiro?.id;
       if (pid && p.passageiro) {
-        passageirosMap.set(pid, p.passageiro as Passageiro);
+        passageirosMap.set(pid, p.passageiro);
       }
     });
 
     return Array.from(passageirosMap.values());
-  }, [rotaId, routeDetail]);
+  }, [initialRotaIdForDetail, routeDetail]);
 
   const filteredPassageiros = useMemo(() => {
     if (!searchPassageiro.trim()) return passageirosDisponiveis;
@@ -120,22 +128,31 @@ export function RegistrarAusenciaDialog({
     );
   }, [passageirosDisponiveis, searchPassageiro]);
 
-  const handleRotaChange = (newRotaId: string) => {
-    setRotaId(newRotaId);
-    if (!lockedPassageiro) {
-      setPassageiroId("");
-      setPassageiroNomeSelected("");
-      setSearchPassageiro("");
-    }
-    if (errors.rotaId) setErrors((prev) => ({ ...prev, rotaId: "" }));
-  };
-
-  const handleSelectPassageiro = (p: Passageiro) => {
+  const handleSelectPassageiro = async (p: Passageiro) => {
     setPassageiroId(p.id);
     setPassageiroNomeSelected(p.nome);
     setSearchPassageiro(p.nome);
     setIsPassageiroDropdownOpen(false);
     if (errors.passageiroId) setErrors((prev) => ({ ...prev, passageiroId: "" }));
+
+    if (!lockedPassageiro) {
+      setIsLoadingAlunoRotas(true);
+      try {
+        const rotasAluno = await routeApi.listRotasByPassageiro(p.id);
+        if (Array.isArray(rotasAluno) && rotasAluno.length > 0) {
+          setAlunoRotasAvulsas(rotasAluno);
+          if (rotasAluno.length === 1) {
+            setSelectedRotasIds([rotasAluno[0].id]);
+          } else if (lockedRotaId && !selectedRotasIds.includes(lockedRotaId)) {
+            setSelectedRotasIds([lockedRotaId]);
+          }
+        }
+      } catch {
+        // silencioso
+      } finally {
+        setIsLoadingAlunoRotas(false);
+      }
+    }
   };
 
   const handleClose = () => {
@@ -145,26 +162,36 @@ export function RegistrarAusenciaDialog({
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
 
-    if (!rotaId) newErrors.rotaId = "Selecione uma rota";
+    if (selectedRotasIds.length === 0) newErrors.rotas = "Selecione ao menos uma rota";
     if (!passageiroId) newErrors.passageiroId = "Selecione um aluno";
-    if (!dataAusencia) newErrors.dataAusencia = "Informe a data da ausência";
+    if (!dataInicio) newErrors.dataInicio = "Informe a data da ausência";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
+    const dataFimFinal = dataFim || dataInicio;
+
     try {
       await registrarMutation.mutateAsync({
         passageiro_id: passageiroId,
-        rota_id: rotaId,
-        data_ausencia: dataAusencia,
+        rotas_ids: selectedRotasIds,
+        data_inicio: dataInicio,
+        data_fim: dataFimFinal,
       });
 
-      toast.success("Ausência registrada com sucesso!");
-      handleClose();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Erro ao registrar ausência.");
+      if (keepOpen) {
+        toast.success("Ausência registrada! Selecione a próxima data.");
+        setDataInicio("");
+        setDataFim("");
+      } else {
+        toast.success("Ausência registrada com sucesso!");
+        handleClose();
+      }
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj?.response?.data?.message || "Erro ao registrar ausência.");
     }
   };
 
@@ -180,94 +207,38 @@ export function RegistrarAusenciaDialog({
           {hasNoRoutesForStudent && (
             <Banner
               variant="warning"
-              description="Este aluno não está vinculado a nenhuma rota."
+              description="Este aluno não está vinculado a nenhuma rota ativa."
             />
           )}
 
-          {/* Campo Rota */}
-          <div className="space-y-1">
-            <Label className="text-slate-700 font-semibold ml-1">
-              Rota <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={rotaId}
-              onValueChange={handleRotaChange}
-              disabled={!!lockedRotaId || isLoadingRotas || (!!lockedPassageiro && isLoadingPassageiroRotas) || hasNoRoutesForStudent}
-            >
-              <SelectTrigger
-                className={cn(
-                  "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                  errors.rotaId && "border-red-500",
-                  (lockedRotaId || hasNoRoutesForStudent) && "bg-slate-100 opacity-80 cursor-not-allowed font-medium text-slate-500"
-                )}
-              >
-                <SelectValue
-                  placeholder={
-                    lockedPassageiro && isLoadingPassageiroRotas
-                      ? "Buscando rotas..."
-                      : hasNoRoutesForStudent
-                        ? "Nenhuma rota disponível"
-                        : "Selecione a rota"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent className="z-[9999]">
-                {rotasDisponiveis.map((r: Route) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {lockedRotaId && (
-              <p className="text-[11px] text-slate-400 ml-1">
-                Esta ausência será vinculada à rota atual em exibição.
-              </p>
-            )}
-            {errors.rotaId && (
-              <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
-                {errors.rotaId}
-              </p>
-            )}
-          </div>
-
-          {/* Campo Passageiro (Autocomplete quando não travado) */}
+          {/* Campo Aluno */}
           {!lockedPassageiro && (
             <div className="space-y-1">
               <Label className="text-slate-700 font-semibold ml-1">
                 Aluno <span className="text-red-500">*</span>
               </Label>
 
-              <Popover open={isPassageiroDropdownOpen && !!rotaId} onOpenChange={(open) => rotaId && setIsPassageiroDropdownOpen(open)}>
+              <Popover open={isPassageiroDropdownOpen} onOpenChange={setIsPassageiroDropdownOpen}>
                 <PopoverAnchor asChild>
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder={!rotaId ? "Selecione uma rota primeiro" : "Digite o nome"}
-                      disabled={!rotaId || isLoadingRouteDetail}
+                      placeholder="Digite o nome do aluno"
+                      disabled={isLoadingRouteDetail}
                       value={isPassageiroDropdownOpen ? searchPassageiro : passageiroNomeSelected || searchPassageiro}
-                      onFocus={() => {
-                        if (!rotaId) return;
-                        setIsPassageiroDropdownOpen(true);
-                      }}
-                      onClick={() => {
-                        if (!rotaId) return;
-                        setIsPassageiroDropdownOpen(true);
-                      }}
+                      onFocus={() => setIsPassageiroDropdownOpen(true)}
+                      onClick={() => setIsPassageiroDropdownOpen(true)}
                       onChange={(e) => {
-                        if (!rotaId) return;
                         setSearchPassageiro(e.target.value);
                         setIsPassageiroDropdownOpen(true);
                       }}
                       className={cn(
                         "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base pr-9 cursor-text",
-                        errors.passageiroId && "border-red-500",
-                        (!rotaId || isLoadingRouteDetail) && "opacity-60 cursor-not-allowed"
+                        errors.passageiroId && "border-red-500"
                       )}
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center justify-center">
-                      {isLoadingRouteDetail ? (
+                      {isLoadingRouteDetail || isLoadingAlunoRotas ? (
                         <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                       ) : (
                         <Search className="w-4 h-4 text-slate-400" />
@@ -287,13 +258,13 @@ export function RegistrarAusenciaDialog({
                 >
                   {filteredPassageiros.length === 0 ? (
                     <div className="p-3 text-xs text-slate-400 text-center font-medium">
-                      Nenhum aluno encontrado nesta rota.
+                      Nenhum aluno encontrado.
                     </div>
                   ) : (
                     filteredPassageiros.map((p) => {
                       const isSelected = p.id === passageiroId;
                       const nomeEscola = p.escola?.nome || p.escola_nome;
-                      const temTurmaOuEscola = !!(p.turma || nomeEscola);
+                      const temTurmaOuEscola = Boolean(p.turma || nomeEscola);
 
                       return (
                         <button
@@ -332,59 +303,68 @@ export function RegistrarAusenciaDialog({
             </div>
           )}
 
-          {/* Campo Data da Ausência */}
+          {/* Campo Rotas */}
           <div className="space-y-1">
             <Label className="text-slate-700 font-semibold ml-1">
-              Data da Ausência <span className="text-red-500">*</span>
+              Rotas <span className="text-red-500">*</span>
             </Label>
-            {(() => {
-              const selectedDate = dataAusencia ? parseISO(dataAusencia) : undefined;
-
-              return (
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={hasNoRoutesForStudent}
-                      className={cn(
-                        "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
-                        !dataAusencia && "text-slate-400 font-normal",
-                        dataAusencia && "text-slate-700 font-medium",
-                        errors.dataAusencia && "border-red-500",
-                        hasNoRoutesForStudent && "opacity-60 cursor-not-allowed bg-slate-100"
-                      )}
-                    >
-                      <span>
-                        {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "dd/mm/aaaa"}
-                      </span>
-                      <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
-                      fromDate={new Date(new Date().setHours(0, 0, 0, 0))}
-                      onSelect={(date) => {
-                        if (date) {
-                          setDataAusencia(format(date, "yyyy-MM-dd"));
-                          if (errors.dataAusencia) setErrors((prev) => ({ ...prev, dataAusencia: "" }));
-                          setIsCalendarOpen(false);
-                        }
-                      }}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-              );
-            })()}
-            {errors.dataAusencia && (
+            <RotaMultiSelect
+              rotas={rotasDisponiveis}
+              selectedIds={selectedRotasIds}
+              onChange={(ids) => {
+                setSelectedRotasIds(ids);
+                if (errors.rotas) setErrors((prev) => ({ ...prev, rotas: "" }));
+              }}
+              disabled={isLoadingRotas || (Boolean(lockedPassageiro) && isLoadingPassageiroRotas) || hasNoRoutesForStudent}
+              hasError={Boolean(errors.rotas)}
+              placeholder={
+                lockedPassageiro && isLoadingPassageiroRotas
+                  ? "Buscando rotas..."
+                  : hasNoRoutesForStudent
+                    ? "Nenhuma rota disponível"
+                    : "Selecione a(s) rota(s)"
+              }
+            />
+            {errors.rotas && (
               <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
-                {errors.dataAusencia}
+                {errors.rotas}
               </p>
             )}
+          </div>
+
+          {/* Campos de Período (Início e Término com Alternador) */}
+          <PeriodoAusenciaCampos
+            dataInicio={dataInicio}
+            dataFim={dataFim}
+            onDataInicioChange={(data) => {
+              setDataInicio(data);
+              if (errors.dataInicio) setErrors((prev) => ({ ...prev, dataInicio: "" }));
+            }}
+            onDataFimChange={(data) => {
+              setDataFim(data);
+              if (errors.dataFim) setErrors((prev) => ({ ...prev, dataFim: "" }));
+            }}
+            disabled={hasNoRoutesForStudent}
+            errors={{
+              dataInicio: errors.dataInicio,
+              dataFim: errors.dataFim,
+            }}
+          />
+
+          {/* Checkbox Padronizado: Cadastrar outra em seguida */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <Checkbox
+              id="keepOpenAusencia"
+              checked={keepOpen}
+              onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
+              className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+            />
+            <label
+              htmlFor="keepOpenAusencia"
+              className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-xs sm:text-sm select-none"
+            >
+              Cadastrar outra em seguida
+            </label>
           </div>
         </div>
       </BaseDialog.Body>
@@ -397,7 +377,7 @@ export function RegistrarAusenciaDialog({
         />
         <BaseDialog.Action
           label={registrarMutation.isPending ? "Salvando..." : "Salvar"}
-          onClick={() => handleSubmit()}
+          onClick={handleSubmit}
           disabled={registrarMutation.isPending || hasNoRoutesForStudent}
         />
       </BaseDialog.Footer>

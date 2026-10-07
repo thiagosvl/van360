@@ -95,6 +95,16 @@ export const evpMask = (value?: string | null): string => {
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4-$5');
 };
 
+export const pixMask = (value?: string | null, tipo?: string | null): string => {
+  if (!value) return "";
+  const tipoUpper = (tipo || "").toUpperCase();
+  if (tipoUpper === "CPF") return cpfMask(value);
+  if (tipoUpper === "CNPJ") return cnpjMask(value);
+  if (tipoUpper === "TELEFONE") return phoneMask(value);
+  if (tipoUpper === "EVP" || tipoUpper === "ALEATORIA") return evpMask(value);
+  return value;
+};
+
 export const dateMask = (value?: string | null): string => {
   if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 8);

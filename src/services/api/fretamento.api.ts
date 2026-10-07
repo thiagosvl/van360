@@ -159,7 +159,12 @@ export const fretamentoApi = {
   atualizarStatusParticipante: (
     fretamentoId: string,
     participanteId: string,
-    payload: { status_pagamento: ParticipantePagamentoStatus; tipo_pagamento?: TipoPagamento | null }
+    payload: {
+      status_pagamento?: ParticipantePagamentoStatus;
+      valor_pago?: number;
+      tipo_pagamento?: TipoPagamento | null;
+      data_pagamento?: string | null;
+    }
   ) =>
     apiClient
       .patch<FretamentoDetalhes>(`${endpoint}/${fretamentoId}/participantes/${participanteId}`, payload)

@@ -100,7 +100,15 @@ export const routeApi = {
       .post(`${endpointBase}/execucoes/${id}/finalizar`)
       .then(res => res.data),
 
-  createAusencia: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }): Promise<any> =>
+  createAusencia: (data: {
+    passageiro_id: string;
+    rota_id?: string;
+    rotas_ids?: string[];
+    data_ausencia?: string;
+    data_inicio?: string;
+    data_fim?: string;
+    sentido?: string | null;
+  }): Promise<any> =>
     apiClient
       .post(`${endpointBase}/ausencias`, data)
       .then(res => res.data),

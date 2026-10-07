@@ -11,7 +11,7 @@ import { FretamentosToolbar } from "@/components/features/fretamento/Fretamentos
 import { useLayout } from "@/contexts/LayoutContext";
 import { useVeiculos, useSession, useProfile } from "@/hooks";
 import { useFretamentoViewModel } from "@/hooks/ui/useFretamentoViewModel";
-import { formatCurrency } from "@/utils/formatters/currency";
+import { formatCurrency, formatDateToBR, formatDateTime } from "@/utils/formatters";
 import {
   Compass,
   Ticket,
@@ -222,34 +222,24 @@ export default function Fretamentos() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {itens.map((item) => {
             const isPasseio = item.tipo === "passeio";
-            const dataFormatada = new Date(item.data_inicio).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+            const dataFormatada = isPasseio ? formatDateTime(item.data_inicio) : formatDateToBR(item.data_inicio);
 
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant="secondary"
-                        className={
-                          isPasseio
-                            ? "bg-emerald-100 text-emerald-800 font-bold"
-                            : "bg-[#1a3a5c]/10 text-[#1a3a5c] font-bold border border-[#1a3a5c]/20"
-                        }
+                        className="bg-slate-100 text-slate-700 font-semibold border border-slate-200/60"
                       >
                         {isPasseio ? (
-                          <Ticket className="h-3 w-3 mr-1" />
+                          <Ticket className="h-3 w-3 mr-1 text-slate-500" />
                         ) : (
-                          <Compass className="h-3 w-3 mr-1" />
+                          <Compass className="h-3 w-3 mr-1 text-slate-500" />
                         )}
                         {isPasseio ? "Passeio" : "Fretamento"}
                       </Badge>
@@ -258,10 +248,10 @@ export default function Fretamentos() {
                         variant="outline"
                         className={
                           item.isQuitado
-                            ? "border-emerald-300 text-emerald-700 bg-emerald-50"
+                            ? "border-emerald-200 text-emerald-700 bg-emerald-50/80 font-semibold text-xs"
                             : item.total_pago > 0
-                              ? "border-orange-300 text-orange-700 bg-orange-50"
-                              : "border-slate-200 text-slate-600"
+                              ? "border-amber-200 text-amber-700 bg-amber-50/80 font-semibold text-xs"
+                              : "border-slate-200 text-slate-600 bg-slate-50 font-semibold text-xs"
                         }
                       >
                         {item.isQuitado ? "Quitado" : item.total_pago > 0 ? "Sinal Pago" : "Pendente"}
@@ -277,7 +267,7 @@ export default function Fretamentos() {
                       <DropdownMenuContent align="end">
                         {!isPasseio && !item.isQuitado && (
                           <DropdownMenuItem onClick={() => handleOpenRegistrarPagamento(item)}>
-                            <CreditCard className="h-4 w-4 mr-2 text-emerald-600" />
+                            <CreditCard className="h-4 w-4 mr-2 text-slate-600" />
                             Registrar Pagamento
                           </DropdownMenuItem>
                         )}
@@ -297,9 +287,9 @@ export default function Fretamentos() {
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-slate-900 text-base leading-snug">{item.titulo}</h4>
+                    <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-1">{item.titulo}</h4>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
-                      <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{item.destino}</span>
                     </div>
                   </div>
@@ -313,7 +303,7 @@ export default function Fretamentos() {
                     {isPasseio ? (
                       <div className="flex items-center gap-1.5 text-slate-600 justify-end">
                         <Users className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span className="font-semibold">
+                        <span className="font-semibold text-slate-700">
                           {item.vagas_totais !== null ? `${item.vagas_ocupadas}/${item.vagas_totais} vagas` : `${item.vagas_ocupadas} inscritos`}
                         </span>
                       </div>
@@ -334,7 +324,11 @@ export default function Fretamentos() {
                         {formatCurrency(item.total_pago)} / {formatCurrency(Number(item.valor_total || 0))}
                       </span>
                     </div>
-                    <Progress value={item.percentualPago} className="h-2 bg-slate-100" />
+                    <Progress
+                      value={item.percentualPago}
+                      className="h-2 bg-slate-100"
+                      indicatorClassName={item.isQuitado ? "bg-emerald-600" : "bg-slate-700"}
+                    />
                   </div>
                 </div>
 
@@ -343,29 +337,29 @@ export default function Fretamentos() {
                     <Button
                       onClick={() => navigate(`/fretamentos-e-passeios/${item.id}`)}
                       variant="outline"
-                      className="w-full text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-200 justify-between h-9"
+                      className="w-full text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 border-slate-200 justify-between h-10 rounded-xl transition-colors shadow-2xs"
                     >
                       Gerenciar Vagas e Participantes
-                      <ArrowRight className="h-4 w-4 ml-1" />
+                      <ArrowRight className="h-4 w-4 ml-1 text-slate-400" />
                     </Button>
                   ) : (
                     <div className="w-full flex items-center justify-between">
                       <span className="text-xs text-slate-500">
-                        Saldo: <strong className="text-slate-700">{formatCurrency(item.saldo_restante)}</strong>
+                        Saldo: <strong className="text-slate-800 font-semibold">{formatCurrency(item.saldo_restante)}</strong>
                       </span>
                       {!item.isQuitado ? (
                         <Button
                           size="sm"
                           onClick={() => handleOpenRegistrarPagamento(item)}
-                          className="text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                          className="text-xs h-8 px-3 rounded-lg bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold shadow-2xs"
                         >
                           <DollarSign className="h-3.5 w-3.5 mr-1" />
                           Registrar Pgto
                         </Button>
                       ) : (
-                        <span className="text-xs text-emerald-600 font-bold flex items-center">
+                        <span className="text-xs text-emerald-700 font-semibold flex items-center">
                           <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                          Totalmente Pago
+                          Quitado
                         </span>
                       )}
                     </div>

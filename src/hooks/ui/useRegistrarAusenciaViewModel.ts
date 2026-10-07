@@ -12,14 +12,12 @@ export interface RegistrarAusenciaParams {
 
 export interface AusenciaValidationErrors {
   rotaId?: string;
+  rotasIds?: string;
   passageiroId?: string;
   dataAusencia?: string;
   dataFimAusencia?: string;
 }
 
-/**
- * Valida datas de ausência (data inicial <= data final quando fornecida a data final)
- */
 export function validarDatasAusencia(
   dataInicio: string,
   dataFim?: string
@@ -47,9 +45,6 @@ export function validarDatasAusencia(
   return { isValid: true };
 }
 
-/**
- * Gera o texto da notificação enviada aos monitores da rota
- */
 export function gerarAvisoMonitores(
   alunoNome: string,
   dataInicio: string,
@@ -63,55 +58,55 @@ export function gerarAvisoMonitores(
   return `Aviso aos Monitores: O aluno ${alunoNome} estará ausente ${dataFormatada}.`;
 }
 
-/**
- * Inicializa e calcula o estado inicial do formulário de ausência
- */
 export function inicializarAusenciaState(params: RegistrarAusenciaParams) {
   const { lockedPassageiro, lockedRotaId, passageiroRotas = [], rotasList = [] } = params;
 
-  const hasNoRoutesForStudent = !!lockedPassageiro && passageiroRotas.length === 0;
+  const hasNoRoutesForStudent = Boolean(lockedPassageiro && passageiroRotas.length === 0);
   const rotasDisponiveis = lockedPassageiro?.id ? passageiroRotas : rotasList;
 
   let passageiroId = "";
   let passageiroNomeSelected = "";
   let searchPassageiro = "";
-  let rotaId = "";
+  let rotasIds: string[] = [];
 
   if (lockedPassageiro) {
     passageiroId = lockedPassageiro.id;
     passageiroNomeSelected = lockedPassageiro.nome;
     searchPassageiro = lockedPassageiro.nome;
-
     if (passageiroRotas.length === 1) {
-      rotaId = passageiroRotas[0].id;
+      rotasIds = [passageiroRotas[0].id];
     }
-  } else {
-    rotaId = lockedRotaId || "";
+  } else if (lockedRotaId) {
+    rotasIds = [lockedRotaId];
+  } else if (rotasList.length === 1) {
+    rotasIds = [rotasList[0].id];
   }
 
   return {
     passageiroId,
     passageiroNomeSelected,
     searchPassageiro,
-    rotaId,
+    rotasIds,
     hasNoRoutesForStudent,
     rotasDisponiveis,
   };
 }
 
-/**
- * Valida os campos obrigatórios do formulário de ausência
- */
 export function validarFormularioAusencia(data: {
-  rotaId: string;
+  rotasIds: string[];
   passageiroId: string;
   dataAusencia: string;
   dataFimAusencia?: string;
 }): { isValid: boolean; errors: AusenciaValidationErrors } {
   const errors: AusenciaValidationErrors = {};
 
-  if (!data.rotaId) errors.rotaId = "Selecione uma rota";
-  if (!data.passageiroId) errors.passageiroId = "Selecione um aluno";
+  if (!data.rotasIds || data.rotasIds.length === 0) {
+    errors.rotasIds = "Selecione ao menos uma rota";
+    errors.rotaId = "Selecione ao menos uma rota";
+  }
+  if (!data.passageiroId) {
+    errors.passageiroId = "Selecione um aluno";
+  }
 
   const dateCheck = validarDatasAusencia(data.dataAusencia, data.dataFimAusencia);
   if (!dateCheck.isValid && dateCheck.error) {
@@ -149,7 +144,7 @@ export function useRegistrarAusenciaViewModel({
     [isOpen, lockedRotaId, lockedPassageiro, rotasList, passageiroRotas, routeDetailPassageiros]
   );
 
-  const [rotaId, setRotaId] = useState(initialState.rotaId);
+  const [rotasIds, setRotasIds] = useState<string[]>(initialState.rotasIds);
   const [passageiroId, setPassageiroId] = useState(initialState.passageiroId);
   const [passageiroNomeSelected, setPassageiroNomeSelected] = useState(initialState.passageiroNomeSelected);
   const [searchPassageiro, setSearchPassageiro] = useState(initialState.searchPassageiro);
@@ -180,18 +175,21 @@ export function useRegistrarAusenciaViewModel({
       setPassageiroId(state.passageiroId);
       setPassageiroNomeSelected(state.passageiroNomeSelected);
       setSearchPassageiro(state.searchPassageiro);
-      setRotaId(state.rotaId);
+      setRotasIds(state.rotasIds);
     }
   }, [isOpen, lockedPassageiro, lockedRotaId, passageiroRotas, rotasList, routeDetailPassageiros]);
 
-  const handleRotaChange = (newRotaId: string) => {
-    setRotaId(newRotaId);
-    if (!lockedPassageiro) {
-      setPassageiroId("");
-      setPassageiroNomeSelected("");
-      setSearchPassageiro("");
+  useEffect(() => {
+    if (isOpen && rotasDisponiveis.length === 1 && rotasIds.length === 0) {
+      setRotasIds([rotasDisponiveis[0].id]);
     }
-    if (errors.rotaId) setErrors((prev) => ({ ...prev, rotaId: undefined }));
+  }, [isOpen, rotasDisponiveis, rotasIds.length]);
+
+  const handleRotasChange = (newRotasIds: string[]) => {
+    setRotasIds(newRotasIds);
+    if (errors.rotasIds || errors.rotaId) {
+      setErrors((prev) => ({ ...prev, rotasIds: undefined, rotaId: undefined }));
+    }
   };
 
   const handleSelectPassageiro = (p: { id: string; nome: string }) => {
@@ -203,18 +201,20 @@ export function useRegistrarAusenciaViewModel({
 
   const validateForm = useCallback((): boolean => {
     const result = validarFormularioAusencia({
-      rotaId,
+      rotasIds,
       passageiroId,
       dataAusencia,
       dataFimAusencia,
     });
     setErrors(result.errors);
     return result.isValid;
-  }, [rotaId, passageiroId, dataAusencia, dataFimAusencia]);
+  }, [rotasIds, passageiroId, dataAusencia, dataFimAusencia]);
 
   return {
-    rotaId,
-    setRotaId,
+    rotasIds,
+    setRotasIds,
+    rotaId: rotasIds[0] || "",
+    setRotaId: (id: string) => setRotasIds(id ? [id] : []),
     passageiroId,
     setPassageiroId,
     passageiroNomeSelected,
@@ -230,7 +230,7 @@ export function useRegistrarAusenciaViewModel({
     setErrors,
     hasNoRoutesForStudent,
     rotasDisponiveis,
-    handleRotaChange,
+    handleRotasChange,
     handleSelectPassageiro,
     validarDatasAusencia,
     gerarAvisoMonitores,

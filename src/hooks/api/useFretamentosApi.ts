@@ -137,7 +137,7 @@ export const useAtualizarStatusParticipanteMutation = () => {
     }: {
       fretamentoId: string;
       participanteId: string;
-      payload: { status_pagamento: ParticipantePagamentoStatus; tipo_pagamento?: TipoPagamento | null };
+      payload: Parameters<typeof fretamentoApi.atualizarStatusParticipante>[2];
     }) => fretamentoApi.atualizarStatusParticipante(fretamentoId, participanteId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });

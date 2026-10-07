@@ -7,6 +7,7 @@ import {
   Route,
   User,
   Users,
+  Compass,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
@@ -34,6 +35,12 @@ export function AppNavbar({ role }: { role: "motorista" }) {
       title: "Carteirinha",
       href: location.pathname,
       icon: IdCard,
+    };
+  } else if (!currentPage && location.pathname.startsWith(ROUTES.PRIVATE.MOTORISTA.CHARTERS)) {
+    currentPage = {
+      title: location.pathname === ROUTES.PRIVATE.MOTORISTA.CHARTERS ? "Fretamentos" : "Detalhes do Passeio",
+      href: location.pathname,
+      icon: Compass,
     };
   }
   if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.ACCOUNT) {

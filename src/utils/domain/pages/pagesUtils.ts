@@ -1,5 +1,5 @@
 import { ComponentType } from "react";
-import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User } from "lucide-react";
+import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Compass } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
 
@@ -52,6 +52,11 @@ const pagesItems: PageItem[] = [
     icon: TrendingDown,
     permission: "gastos.visualizar",
   },
+  // {
+  //   title: "Fretamentos e Passeios",
+  //   href: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
+  //   icon: Compass,
+  // },
   {
     title: "Escolas",
     href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,

@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
 import { StitchField } from "@/components/forms/StitchField";
-import { formatCurrency } from "@/utils/formatters/currency";
+import { formatCurrency, formatDateTime } from "@/utils/formatters";
 import { phoneMask } from "@/utils/masks";
+import { isDevEnv } from "@/utils/detectPlatform";
+import { mockGenerator } from "@/utils/mocks/generator";
 import {
   Ticket,
   MapPin,
   Calendar,
-  Users,
   QrCode,
   Copy,
   CheckCircle2,
@@ -25,6 +26,7 @@ import {
   FileText,
   Sparkles,
   Loader2,
+  Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,9 +44,22 @@ export default function PasseioInscricaoPublica() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [inscritoComSucesso, setInscritoComSucesso] = useState(false);
 
+  const handleFillMock = () => {
+    const nomeAluno = mockGenerator.name();
+    const nomeResp = mockGenerator.name();
+    const phone = mockGenerator.phone();
+    setNome(nomeAluno);
+    setIsProprioResponsavel(false);
+    setResponsavelNome(nomeResp);
+    setTelefone(phone);
+    setEndereco("Rua das Acácias, 240");
+    setObservacoes("Participante confirmado via link público.");
+    setHasSubmitted(false);
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#e8ecf1] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 text-[#1a3a5c] animate-spin" />
           <p className="text-sm font-semibold text-slate-600">Carregando informações do passeio...</p>
@@ -55,12 +70,12 @@ export default function PasseioInscricaoPublica() {
 
   if (error || !passeio) {
     return (
-      <div className="min-h-screen bg-[#e8ecf1] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-[2rem] border border-slate-200 text-center space-y-4 shadow-sm">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-slate-200/80 text-center space-y-4 shadow-xs">
           <div className="h-14 w-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
             <Ticket className="h-7 w-7" />
           </div>
-          <h2 className="text-xl font-bold text-slate-800">Passeio Não Encontrado</h2>
+          <h2 className="text-xl font-bold text-slate-900">Passeio Não Encontrado</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
             Este link pode estar incorreto, cancelado ou expirado pelo organizador.
           </p>
@@ -74,7 +89,7 @@ export default function PasseioInscricaoPublica() {
   const copiarChavePix = () => {
     if (!passeio.chave_pix) return;
     navigator.clipboard.writeText(passeio.chave_pix);
-    toast.success("Chave PIX copiada para a área de transferência!");
+    toast.success("Chave PIX copiada!");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,206 +124,193 @@ export default function PasseioInscricaoPublica() {
 
       setInscritoComSucesso(true);
     } catch {
-      toast.error("Erro ao confirmar inscrição. Verifique se ainda há vagas disponíveis.");
+      toast.error("Erro ao confirmar inscrição. Tente novamente mais tarde.");
     }
   };
 
-  const dataFormatada = new Date(passeio.data_inicio).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const dataFormatada = formatDateTime(passeio.data_inicio);
 
   return (
-    <div className="min-h-screen bg-[#e8ecf1] flex flex-col justify-start items-center py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-[max(1rem,var(--safe-area-top))] pb-[max(6rem,var(--safe-area-bottom))]">
-      <div className="w-full max-w-2xl relative z-10 space-y-6">
-        <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-200">
-          <div className="p-6 sm:p-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#1a3a5c]/10 text-[#1a3a5c] border border-[#1a3a5c]/20 flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5" />
-                Passeio & Evento
-              </span>
-
-              {passeio.vagas_disponiveis !== null && (
-                <span className="text-xs font-bold text-slate-500">
-                  {passeio.vagas_disponiveis > 0 ? `${passeio.vagas_disponiveis} vagas restantes` : "Esgotado"}
-                </span>
-              )}
-            </div>
-
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c]">
+    <div className="min-h-screen bg-slate-100/70 flex flex-col justify-start items-center py-4 sm:py-8 px-3.5 sm:px-6 relative overflow-hidden">
+      <div className="w-full max-w-lg relative z-10 space-y-3 sm:space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-7 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
                 {passeio.titulo}
               </h1>
               {passeio.motorista_nome && (
-                <p className="text-sm text-slate-500 mt-1">
-                  Organizado por: <strong className="text-slate-800">{passeio.motorista_nome}</strong>
+                <p className="text-xs text-slate-500">
+                  Organizado por <strong className="text-slate-800 font-semibold">{passeio.motorista_nome}</strong>
                 </p>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-3 border-y border-slate-200/80 text-xs">
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <MapPin className="h-4 w-4 text-emerald-600 shrink-0" />
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Destino</span>
-                  <span className="font-semibold text-slate-800">{passeio.destino}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 text-slate-700">
-                <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Data e Horário</span>
-                  <span className="font-semibold text-slate-800">{dataFormatada}</span>
-                </div>
-              </div>
-
-              {passeio.origem && (
-                <div className="flex items-center gap-2.5 text-slate-700 sm:col-span-2">
-                  <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Ponto de Encontro</span>
-                    <span className="font-semibold text-slate-800">{passeio.origem}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-100">
-                <span className="text-[10px] uppercase font-bold text-emerald-700 block">Valor por Participante</span>
-                <span className="text-xl sm:text-2xl font-black text-emerald-800">
-                  {formatCurrency(Number(passeio.valor_por_pessoa || 0))}
+            {passeio.valor_por_pessoa ? (
+              <div className="shrink-0 text-right px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200/90 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Valor
+                </span>
+                <span className="text-lg sm:text-xl font-bold text-slate-900 leading-none">
+                  {formatCurrency(Number(passeio.valor_por_pessoa))}
                 </span>
               </div>
+            ) : null}
+          </div>
 
-              <div className="p-3.5 bg-white rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Vagas</span>
-                <span className="text-xl sm:text-2xl font-black text-slate-800">
-                  {passeio.vagas_disponiveis !== null ? `${passeio.vagas_disponiveis}` : "Abertas"}
-                </span>
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-xs space-y-2.5">
+            <div className="flex items-start gap-3 pb-2.5">
+              <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Destino</span>
+                <span className="font-semibold text-slate-800 text-sm leading-snug">{passeio.destino}</span>
               </div>
             </div>
 
-            {passeio.chave_pix && (
-              <div className="p-4 bg-white rounded-2xl border border-slate-200/80 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                    <QrCode className="h-4 w-4 text-emerald-600" />
-                    Chave PIX para Pagamento
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={copiarChavePix}
-                    className="h-7 text-[11px] font-bold gap-1 rounded-xl"
-                  >
-                    <Copy className="h-3 w-3" />
-                    Copiar PIX
-                  </Button>
-                </div>
-                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 font-mono text-xs text-slate-800 break-all select-all">
-                  {passeio.chave_pix}
-                </div>
+            <div className="flex items-start gap-3 py-2.5">
+              <Calendar className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Data e Horário</span>
+                <span className="font-semibold text-slate-800 text-sm leading-snug">{dataFormatada}</span>
               </div>
-            )}
+            </div>
 
-            {passeio.observacoes && (
-              <div className="text-xs text-slate-600 bg-white p-3.5 rounded-2xl border border-slate-200/80 leading-relaxed">
-                <strong className="text-slate-800 block mb-1">Informações Adicionais:</strong>
-                {passeio.observacoes}
+            {passeio.origem && (
+              <div className="flex items-start gap-3 pt-2.5">
+                <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Ponto de Encontro</span>
+                  <span className="font-semibold text-slate-800 text-sm leading-snug">{passeio.origem}</span>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="p-6 sm:p-8 pt-2 sm:pt-2">
+          {passeio.chave_pix && (
+            <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <QrCode className="h-4 w-4 text-slate-400" />
+                  Chave PIX para Pagamento
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={copiarChavePix}
+                  className="h-7 px-2.5 text-xs font-semibold gap-1.5 rounded-lg border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs active:scale-95"
+                >
+                  <Copy className="h-3 w-3 text-slate-400" />
+                  Copiar PIX
+                </Button>
+              </div>
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200/80 font-mono text-xs text-slate-800 select-all break-all">
+                {passeio.chave_pix}
+              </div>
+            </div>
+          )}
+
+          {passeio.observacoes && (
+            <div className="text-xs text-slate-600 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 leading-relaxed">
+              <strong className="text-slate-800 block mb-1">Informações Adicionais:</strong>
+              {passeio.observacoes}
+            </div>
+          )}
+
+          <div className="pt-1">
             {isEsgotado && !inscritoComSucesso ? (
               <Banner
                 variant="warning"
-                title="Vagas Esgotadas"
-                description="Todas as vagas para este passeio já foram preenchidas. Entre em contato diretamente com o organizador para a lista de espera."
+                title="Inscrições Encerradas"
+                description="As inscrições para este passeio foram encerradas pelo organizador. Entre em contato diretamente caso tenha dúvidas."
               />
             ) : inscritoComSucesso ? (
-              <div className="bg-white rounded-[2rem] border border-emerald-200 p-8 text-center space-y-4 shadow-xs animate-in zoom-in-95 duration-200">
-                <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-                  <CheckCircle2 className="h-10 w-10" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 text-center space-y-3 animate-in zoom-in-95 duration-200 shadow-xs">
+                <div className="h-14 w-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xs border border-emerald-100">
+                  <CheckCircle2 className="h-8 w-8" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900">Presença Confirmada!</h2>
-                  <p className="text-sm text-slate-600 mt-2">
-                    A vaga de <strong className="text-slate-800">{nome}</strong> foi registrada no passeio com sucesso.
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Inscrição Confirmada!</h2>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    A vaga de <strong className="text-slate-800">{nome}</strong> foi garantida com sucesso.
                   </p>
                 </div>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                  Caso o pagamento seja via PIX, utilize a chave informada acima e envie o comprovante ao organizador do transporte.
-                </p>
+                {passeio.chave_pix && (
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed pt-1">
+                    Caso o pagamento seja via PIX, efetue a transferência utilizando a chave informada acima e envie o comprovante ao organizador.
+                  </p>
+                )}
               </div>
             ) : (
-              <div className="space-y-5">
-                <div className="border-t border-slate-200 pt-5">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
-                    <Sparkles className="h-5 w-5 text-[#1a3a5c]" />
-                    Confirmar Participação
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Preencha os dados abaixo com o visual simplificado do Van360.
-                  </p>
+              <div className="space-y-3.5 pt-1">
+                <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4 text-[#1a3a5c]" />
+                      Confirmar Presença
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Informe os dados abaixo para garantir a participação no passeio.
+                    </p>
+                  </div>
+                  {isDevEnv() && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-full h-8 w-8 shrink-0 transition-all"
+                      onClick={handleFillMock}
+                      title="Preencher com dados fictícios"
+                    >
+                      <Wand2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3">
                   <StitchField
                     icon={User}
-                    label="Nome do Participante / Aluno"
+                    label="Nome do Participante"
                     required
+                    variant="muted"
                     error={hasSubmitted && !nome.trim()}
                   >
                     <Input
-                      placeholder="Digite o nome completo"
+                      placeholder="Nome completo do participante"
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] font-semibold text-slate-800 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                     />
                   </StitchField>
 
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setIsProprioResponsavel(!isProprioResponsavel)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setIsProprioResponsavel(!isProprioResponsavel);
-                      }
-                    }}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:bg-slate-50/80 transition-colors cursor-pointer select-none shadow-xs"
+                  <label
+                    htmlFor="is-proprio-responsavel"
+                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-200/90 bg-slate-50/80 hover:bg-slate-100/60 transition-colors cursor-pointer select-none shadow-2xs"
                   >
                     <Checkbox
+                      id="is-proprio-responsavel"
                       checked={isProprioResponsavel}
-                      onCheckedChange={(checked) => setIsProprioResponsavel(!!checked)}
-                      className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                      onCheckedChange={(checked) => setIsProprioResponsavel(Boolean(checked))}
+                      className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
                     />
                     <span className="text-xs font-semibold text-slate-700">
-                      O participante é maior de idade / O próprio responsável
+                      O participante é o próprio responsável (maior de idade)
                     </span>
-                  </div>
+                  </label>
 
                   {!isProprioResponsavel && (
                     <StitchField
                       icon={Contact}
                       label="Nome do Responsável"
                       required
+                      variant="muted"
                       error={hasSubmitted && !responsavelNome.trim()}
                     >
                       <Input
-                        placeholder="Digite o nome do responsável"
+                        placeholder="Nome do pai, mãe ou responsável"
                         value={responsavelNome}
                         onChange={(e) => setResponsavelNome(e.target.value)}
-                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] font-semibold text-slate-800 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                       />
                     </StitchField>
                   )}
@@ -317,6 +319,7 @@ export default function PasseioInscricaoPublica() {
                     icon={Phone}
                     label="Telefone (WhatsApp)"
                     required
+                    variant="muted"
                     error={hasSubmitted && (!telefone.trim() || telefone.replace(/\D/g, "").length < 10)}
                   >
                     <Input
@@ -326,25 +329,33 @@ export default function PasseioInscricaoPublica() {
                       value={telefone}
                       maxLength={15}
                       onChange={(e) => setTelefone(phoneMask(e.target.value))}
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] font-semibold text-slate-800 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                     />
                   </StitchField>
 
-                  <StitchField icon={MapPin} label="Endereço / Local de Embarque (Opcional)">
+                  <StitchField
+                    icon={MapPin}
+                    label="Endereço / Ponto de Embarque (Opcional)"
+                    variant="muted"
+                  >
                     <Input
-                      placeholder="Rua, número ou ponto de referência"
+                      placeholder="Endereço ou ponto de referência para embarque"
                       value={endereco}
                       onChange={(e) => setEndereco(e.target.value)}
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] font-semibold text-slate-800 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                     />
                   </StitchField>
 
-                  <StitchField icon={FileText} label="Observações ou Restrições (Opcional)">
+                  <StitchField
+                    icon={FileText}
+                    label="Observações ou Restrições (Opcional)"
+                    variant="muted"
+                  >
                     <Input
-                      placeholder="Alergias, restrições alimentares ou recomendações"
+                      placeholder="Ex: alergias, cuidados especiais ou recados"
                       value={observacoes}
                       onChange={(e) => setObservacoes(e.target.value)}
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] font-semibold text-slate-800 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
                     />
                   </StitchField>
 
@@ -352,15 +363,15 @@ export default function PasseioInscricaoPublica() {
                     <Button
                       type="submit"
                       disabled={inscreverMutation.isPending}
-                      className="w-full h-14 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-base shadow-lg shadow-[#1a3a5c]/20 hover:shadow-[#1a3a5c]/30 transition-all active:scale-[0.98]"
+                      className="w-full h-12 rounded-xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-bold text-sm shadow-xs transition-all active:scale-[0.99]"
                     >
                       {inscreverMutation.isPending ? (
                         <>
-                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                          Confirmando Vaga...
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Confirmando Participação...
                         </>
                       ) : (
-                        "Confirmar Minha Vaga no Passeio"
+                        "Confirmar Participação"
                       )}
                     </Button>
                   </div>

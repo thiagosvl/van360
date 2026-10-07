@@ -21,6 +21,7 @@ export interface FretamentoDetalhesCalculado extends FretamentoDetalhes {
   totalPendenteParticipantes: number;
   participantesPagosCount: number;
   participantesPendentesCount: number;
+  participantesParciaisCount: number;
 }
 
 export const calcularProgressoPagamento = (valorTotal: number, totalPago: number) => {
@@ -101,10 +102,20 @@ export const usePasseioDetalhesCalculations = (detalhes?: FretamentoDetalhes) =>
 
     const participantes = detalhes.participantes || [];
     const participantesPagos = participantes.filter((p) => p.status_pagamento === "pago");
-    const participantesPendentes = participantes.filter((p) => p.status_pagamento !== "pago");
+    const participantesParciais = participantes.filter((p) => p.status_pagamento === "parcial");
+    const participantesPendentes = participantes.filter(
+      (p) => p.status_pagamento === "pendente" || (!p.status_pagamento && Number(p.valor_pago || 0) === 0)
+    );
 
-    const totalPagoParticipantes = participantesPagos.reduce((acc, p) => acc + Number(p.valor || 0), 0);
-    const totalPendenteParticipantes = participantesPendentes.reduce((acc, p) => acc + Number(p.valor || 0), 0);
+    const totalPagoParticipantes = participantes.reduce(
+      (acc, p) => acc + Number(p.valor_pago ?? (p.status_pagamento === "pago" ? p.valor : 0)),
+      0
+    );
+    const totalPendenteParticipantes = participantes.reduce((acc, p) => {
+      const v = Number(p.valor || 0);
+      const vp = Number(p.valor_pago ?? (p.status_pagamento === "pago" ? p.valor : 0));
+      return acc + Math.max(0, v - vp);
+    }, 0);
 
     return {
       ...detalhes,
@@ -116,6 +127,7 @@ export const usePasseioDetalhesCalculations = (detalhes?: FretamentoDetalhes) =>
       totalPendenteParticipantes,
       participantesPagosCount: participantesPagos.length,
       participantesPendentesCount: participantesPendentes.length,
+      participantesParciaisCount: participantesParciais.length,
     };
   }, [detalhes]);
 };

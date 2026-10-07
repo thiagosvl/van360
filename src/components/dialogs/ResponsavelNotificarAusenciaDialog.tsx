@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { CalendarX, Calendar as CalendarIcon } from "lucide-react";
+import { CalendarX } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RotaMultiSelect } from "@/components/ui/RotaMultiSelect";
+import { PeriodoAusenciaCampos } from "@/components/ui/PeriodoAusenciaCampos";
 import { responsavelApi } from "@/services/api/responsavel.api";
 import { ResponsavelRotaItem } from "@/types/responsavel";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 interface ResponsavelNotificarAusenciaDialogProps {
@@ -34,47 +30,41 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
   onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [rotaId, setRotaId] = useState<string>("");
-  const [dataAusencia, setDataAusencia] = useState<string>("");
+  const [selectedRotasIds, setSelectedRotasIds] = useState<string[]>([]);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [keepOpen, setKeepOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open) {
-      if (rotas.length === 1) {
-        setRotaId(rotas[0].id);
-      } else {
-        setRotaId("");
-      }
-      setDataAusencia("");
+      setSelectedRotasIds(rotas.length === 1 ? [rotas[0].id] : []);
+      setDataInicio("");
+      setDataFim("");
+      setKeepOpen(false);
       setErrors({});
       setLoading(false);
-      setIsCalendarOpen(false);
     }
   }, [open, rotas]);
 
   useEffect(() => {
-    if (open && rotas.length === 1 && !rotaId) {
-      setRotaId(rotas[0].id);
+    if (open && rotas.length === 1 && selectedRotasIds.length === 0) {
+      setSelectedRotasIds([rotas[0].id]);
     }
-  }, [open, rotas, rotaId]);
+  }, [open, rotas, selectedRotasIds.length]);
 
   const handleClose = () => {
     safeCloseDialog(() => onOpenChange(false));
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
+  const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (rotas.length > 1 && !rotaId) {
-      newErrors.rotaId = "Selecione uma rota";
-    } else if (rotas.length === 0 && !rotaId) {
-      newErrors.rotaId = "Nenhuma rota disponível";
+    if (selectedRotasIds.length === 0) {
+      newErrors.rotas = rotas.length === 0 ? "Nenhuma rota disponível" : "Selecione ao menos uma rota";
     }
 
-    if (!dataAusencia) {
-      newErrors.dataAusencia = "Informe a data da ausência";
+    if (!dataInicio) {
+      newErrors.dataInicio = "Informe a data da ausência";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -82,22 +72,30 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
       return;
     }
 
-    const finalRotaId = rotaId || (rotas.length === 1 ? rotas[0].id : "");
+    const dataFimFinal = dataFim || dataInicio;
 
     setLoading(true);
     try {
       await responsavelApi.registrarAusencia(
         passageiroId,
         {
-          data_ausencia: dataAusencia,
-          rota_id: finalRotaId || undefined,
+          rotas_ids: selectedRotasIds,
+          data_inicio: dataInicio,
+          data_fim: dataFimFinal,
         },
         token
       );
 
-      toast.success("Ausência registrada com sucesso!");
       if (onSuccess) onSuccess();
-      handleClose();
+
+      if (keepOpen) {
+        toast.success("Ausência registrada! Selecione a próxima data.");
+        setDataInicio("");
+        setDataFim("");
+      } else {
+        toast.success("Ausência registrada com sucesso!");
+        handleClose();
+      }
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
       toast.error(errorObj.response?.data?.message || "Erro ao registrar ausência.");
@@ -105,8 +103,6 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
       setLoading(false);
     }
   };
-
-  const selectedDate = dataAusencia ? parseISO(dataAusencia) : undefined;
 
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={loading}>
@@ -117,91 +113,65 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
       />
 
       <BaseDialog.Body>
-        <form id="form-notificar-ausencia" onSubmit={handleSubmit} className="space-y-4 text-left py-1">
-          {/* Campo Rota */}
+        <div className="space-y-4 text-left py-1">
+          {/* Campo Rotas */}
           <div className="space-y-1">
             <Label className="text-slate-700 font-semibold ml-1">
-              Rota <span className="text-red-500">*</span>
+              Rotas <span className="text-red-500">*</span>
             </Label>
-            <Select
-              value={rotaId}
-              onValueChange={(val) => {
-                setRotaId(val);
-                if (errors.rotaId) setErrors((prev) => ({ ...prev, rotaId: "" }));
+            <RotaMultiSelect
+              rotas={rotas}
+              selectedIds={selectedRotasIds}
+              onChange={(ids) => {
+                setSelectedRotasIds(ids);
+                if (errors.rotas) setErrors((prev) => ({ ...prev, rotas: "" }));
               }}
-              disabled={rotas.length === 1 || rotas.length === 0}
-            >
-              <SelectTrigger
-                className={cn(
-                  "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base text-left font-medium",
-                  errors.rotaId && "border-red-500",
-                  rotas.length <= 1 && "opacity-80 bg-slate-100 font-medium text-slate-500 cursor-not-allowed"
-                )}
-              >
-                <SelectValue placeholder={rotas.length === 0 ? "Nenhuma rota disponível" : "Selecione a rota"} />
-              </SelectTrigger>
-              <SelectContent className="z-[9999]">
-                {rotas.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.rotaId && (
+              disabled={rotas.length === 0}
+              hasError={Boolean(errors.rotas)}
+              placeholder={rotas.length === 0 ? "Nenhuma rota disponível" : "Selecione a(s) rota(s)"}
+            />
+            {errors.rotas && (
               <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
-                {errors.rotaId}
+                {errors.rotas}
               </p>
             )}
           </div>
 
-          {/* Campo Data da Ausência */}
-          <div className="space-y-1">
-            <Label className="text-slate-700 font-semibold ml-1">
-              Data da Ausência <span className="text-red-500">*</span>
-            </Label>
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
-                    !dataAusencia && "text-slate-400 font-normal",
-                    dataAusencia && "text-slate-700 font-medium",
-                    errors.dataAusencia && "border-red-500"
-                  )}
-                >
-                  <span>
-                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "dd/mm/aaaa"}
-                  </span>
-                  <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
-                  fromDate={new Date(new Date().setHours(0, 0, 0, 0))}
-                  onSelect={(date) => {
-                    if (date) {
-                      setDataAusencia(format(date, "yyyy-MM-dd"));
-                      if (errors.dataAusencia) setErrors((prev) => ({ ...prev, dataAusencia: "" }));
-                      setIsCalendarOpen(false);
-                    }
-                  }}
-                  locale={ptBR}
-                />
-              </PopoverContent>
-            </Popover>
-            {errors.dataAusencia && (
-              <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
-                {errors.dataAusencia}
-              </p>
-            )}
+          {/* Campos de Período (Início e Término com Alternador) */}
+          <PeriodoAusenciaCampos
+            dataInicio={dataInicio}
+            dataFim={dataFim}
+            onDataInicioChange={(data) => {
+              setDataInicio(data);
+              if (errors.dataInicio) setErrors((prev) => ({ ...prev, dataInicio: "" }));
+            }}
+            onDataFimChange={(data) => {
+              setDataFim(data);
+              if (errors.dataFim) setErrors((prev) => ({ ...prev, dataFim: "" }));
+            }}
+            disabled={rotas.length === 0}
+            errors={{
+              dataInicio: errors.dataInicio,
+              dataFim: errors.dataFim,
+            }}
+          />
+
+          {/* Checkbox Padronizado: Cadastrar outra em seguida */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <Checkbox
+              id="keepOpenAusenciaResp"
+              checked={keepOpen}
+              onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
+              className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+            />
+            <label
+              htmlFor="keepOpenAusenciaResp"
+              className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-xs sm:text-sm select-none"
+            >
+              Cadastrar outra em seguida
+            </label>
           </div>
-        </form>
+        </div>
       </BaseDialog.Body>
 
       <BaseDialog.Footer>
@@ -213,9 +183,9 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
         />
         <BaseDialog.Action
           label={loading ? "Salvando..." : "Salvar"}
-          form="form-notificar-ausencia"
-          type="submit"
+          onClick={handleSubmit}
           isLoading={loading}
+          disabled={rotas.length === 0}
         />
       </BaseDialog.Footer>
     </BaseDialog>

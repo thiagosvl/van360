@@ -42,8 +42,11 @@ export interface ResponsavelAusenciaItem {
 }
 
 export interface RegistrarAusenciaPayload {
-  data_ausencia: string;
+  data_ausencia?: string;
+  data_inicio?: string;
+  data_fim?: string;
   rota_id?: string;
+  rotas_ids?: string[];
   periodo?: string;
   motivo?: string;
 }

@@ -10,32 +10,42 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Banner } from "@/components/ui/Banner";
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency } from "@/utils/formatters/currency";
+import { formatCurrency, formatDateTime, formatarTelefone } from "@/utils/formatters";
+import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { ROUTES } from "@/constants/routes";
 import {
   ArrowLeft,
   Ticket,
-  Users,
-  DollarSign,
-  Share2,
   Copy,
   Plus,
-  Phone,
-  CheckCircle2,
-  Clock,
   Trash2,
   Car,
   MapPin,
   Calendar,
-  MessageCircle,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  MoreVertical,
+  RotateCcw,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import type { FretamentoParticipante } from "@/services/api/fretamento.api";
 
 export default function PasseioDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { openAdicionarParticipantePasseioDialog, openConfirmationDialog } = useLayout();
+  const {
+    openAdicionarParticipantePasseioDialog,
+    openRegistrarPagamentoParticipanteDialog,
+    openConfirmationDialog,
+  } = useLayout();
 
   const { data: detalhes, isLoading, refetch } = useFretamentoDetalhesQuery(id || "");
   const statusMutation = useAtualizarStatusParticipanteMutation();
@@ -47,7 +57,7 @@ export default function PasseioDetalhes() {
     return (
       <div className="min-h-screen bg-surface max-w-5xl mx-auto p-6 space-y-4">
         <div className="h-8 w-48 bg-slate-200 animate-pulse rounded-lg" />
-        <div className="h-40 bg-slate-200 animate-pulse rounded-2xl" />
+        <div className="h-36 bg-slate-200 animate-pulse rounded-2xl" />
       </div>
     );
   }
@@ -64,12 +74,7 @@ export default function PasseioDetalhes() {
 
   const compartilharWhatsApp = () => {
     if (!linkPublico) return;
-    const dataFormatada = new Date(calculados.data_inicio).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const dataFormatada = formatDateTime(calculados.data_inicio);
     const valorFormatado = formatCurrency(Number(calculados.valor_por_pessoa || 0));
 
     const texto = `Olá pais e responsáveis! No dia ${dataFormatada} realizaremos nosso passeio: *${calculados.titulo}*.\n\n` +
@@ -78,29 +83,43 @@ export default function PasseioDetalhes() {
       (calculados.vagasRestantes !== null ? `Vagas limitadas: restam apenas ${calculados.vagasRestantes} vagas!\n\n` : "\n") +
       `Para confirmar a presença do seu filho, acesse o link abaixo:\n${linkPublico}`;
 
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    const url = buildWhatsAppUrl(null, texto);
     window.open(url, "_blank");
   };
 
-  const handleToggleStatusPagamento = async (p: FretamentoParticipante) => {
-    const novoStatus = p.status_pagamento === "pago" ? "pendente" : "pago";
-    try {
-      await statusMutation.mutateAsync({
-        fretamentoId: calculados.id,
-        participanteId: p.id,
-        payload: {
-          status_pagamento: novoStatus,
-          tipo_pagamento: novoStatus === "pago" ? "PIX" : null,
-        },
-      });
-      toast.success(
-        novoStatus === "pago"
-          ? `Pagamento de ${p.nome} confirmado!`
-          : `Pagamento de ${p.nome} marcado como pendente.`
-      );
-    } catch {
-      toast.error("Erro ao atualizar status do pagamento.");
-    }
+  const handleOpenRegistrarPagamento = (p: FretamentoParticipante) => {
+    openRegistrarPagamentoParticipanteDialog({
+      fretamentoId: calculados.id,
+      passeioTitulo: calculados.titulo,
+      participante: p,
+      onSuccess: () => refetch(),
+    });
+  };
+
+  const handleMarcarComoPendente = (p: FretamentoParticipante) => {
+    openConfirmationDialog({
+      title: "Desfazer Pagamento",
+      description: `Deseja retornar o status do pagamento de "${p.nome}" para pendente?`,
+      confirmText: "Sim, marcar pendente",
+      cancelText: "Cancelar",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await statusMutation.mutateAsync({
+            fretamentoId: calculados.id,
+            participanteId: p.id,
+            payload: {
+              status_pagamento: "pendente",
+              valor_pago: 0,
+              tipo_pagamento: null,
+            },
+          });
+          toast.success(`Pagamento de ${p.nome} retornado para pendente.`);
+        } catch {
+          toast.error("Erro ao atualizar status do pagamento.");
+        }
+      },
+    });
   };
 
   const handleConfirmarRemocao = (p: FretamentoParticipante) => {
@@ -124,131 +143,125 @@ export default function PasseioDetalhes() {
     });
   };
 
-  const dataFormatada = new Date(calculados.data_inicio).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const dataFormatadaCabecalho = formatDateTime(calculados.data_inicio);
 
   return (
-    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-4 pb-24">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.CHARTERS)}
-          className="text-slate-600 hover:text-slate-900 gap-1.5 -ml-2"
+          className="text-slate-500 hover:text-slate-900 gap-1.5 -ml-2 font-medium text-xs h-8"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           Voltar para Fretamentos e Passeios
         </Button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-emerald-100 text-emerald-800 font-bold hover:bg-emerald-100">
-                <Ticket className="h-3.5 w-3.5 mr-1" />
-                Passeio Coletivo
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3.5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge
+              variant="secondary"
+              className="bg-slate-100 text-slate-700 border border-slate-200/60 font-semibold text-xs py-0.5"
+            >
+              <Ticket className="h-3 w-3 mr-1" />
+              Passeio Coletivo
+            </Badge>
+            {calculados.isLotado && (
+              <Badge variant="destructive" className="font-semibold text-xs py-0.5">
+                Vagas Esgotadas
               </Badge>
-              {calculados.isLotado && (
-                <Badge variant="destructive" className="font-bold">
-                  Vagas Esgotadas
-                </Badge>
-              )}
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {calculados.titulo}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-1">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-emerald-500" />
-                {calculados.destino}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                {dataFormatada}
-              </span>
-            </div>
+            )}
+            {calculados.valor_por_pessoa ? (
+              <Badge variant="outline" className="text-xs font-medium text-slate-700 bg-white border-slate-200 py-0.5">
+                {formatCurrency(Number(calculados.valor_por_pessoa))} / pessoa
+              </Badge>
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              onClick={copiarLink}
-              variant="outline"
-              size="sm"
-              className="text-xs font-bold gap-1.5 h-9"
-            >
-              <Copy className="h-3.5 w-3.5" />
-              Copiar Link
-            </Button>
-            <Button
-              onClick={compartilharWhatsApp}
-              size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 h-9 shadow-xs"
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              WhatsApp dos Pais
-            </Button>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight pt-1">
+            {calculados.titulo}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pt-0.5">
+            <span className="flex items-center gap-1 font-medium">
+              <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              {calculados.destino}
+            </span>
+            <span className="flex items-center gap-1 font-medium">
+              <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              {dataFormatadaCabecalho}
+            </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100">
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-1">
-            <span className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
-              <Users className="h-3.5 w-3.5 text-slate-400" />
-              Ocupação de Vagas
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-black text-slate-800">{calculados.vagas_ocupadas}</span>
-              <span className="text-xs text-slate-500">
-                {calculados.vagas_totais !== null ? `de ${calculados.vagas_totais} vagas` : "confirmados"}
+        <div className="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50/70 rounded-xl border border-slate-100 p-2.5 sm:p-3 text-center">
+          <div className="px-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Vagas</span>
+            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
+              {calculados.vagas_ocupadas}
+              <span className="text-xs font-normal text-slate-400 ml-0.5">
+                /{calculados.vagas_totais ?? "∞"}
               </span>
             </div>
-            {calculados.vagasRestantes !== null && (
-              <span className="text-[11px] text-emerald-700 font-semibold block">
-                {calculados.vagasRestantes === 0 ? "Lotação completa" : `${calculados.vagasRestantes} vagas restantes`}
-              </span>
-            )}
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 truncate block mt-0.5">
+              {calculados.vagasRestantes !== null
+                ? (calculados.vagasRestantes === 0 ? "Lotado" : `${calculados.vagasRestantes} livres`)
+                : "Abertas"}
+            </span>
           </div>
 
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-1">
-            <span className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-              Total Arrecadado
-            </span>
-            <span className="text-xl font-black text-emerald-700 block">
+          <div className="px-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Arrecadado</span>
+            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 truncate">
               {formatCurrency(calculados.totalPagoParticipantes)}
-            </span>
-            <span className="text-[11px] text-slate-500 block">
-              {calculados.participantesPagosCount} pagamento(s) confirmado(s)
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 block mt-0.5 truncate">
+              {calculados.participantesPagosCount} pago(s)
             </span>
           </div>
 
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-1">
-            <span className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-orange-500" />
-              Pendente a Receber
-            </span>
-            <span className="text-xl font-black text-orange-600 block">
+          <div className="px-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">A Receber</span>
+            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 truncate">
               {formatCurrency(calculados.totalPendenteParticipantes)}
-            </span>
-            <span className="text-[11px] text-slate-500 block">
-              {calculados.participantesPendentesCount} pagamento(s) em aberto
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 block mt-0.5 truncate">
+              {calculados.participantesPendentesCount} aberto(s)
             </span>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-0.5 w-full">
+          <Button
+            onClick={copiarLink}
+            variant="outline"
+            size="sm"
+            className="flex-1 h-10 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 gap-1.5 shadow-2xs active:scale-95"
+          >
+            <Copy className="h-3.5 w-3.5 text-slate-400" />
+            Copiar Link
+          </Button>
+
+          <Button
+            onClick={compartilharWhatsApp}
+            size="sm"
+            className="flex-1 h-10 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#20b858] text-white gap-2 shadow-xs transition-all active:scale-95"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
+            Enviar no WhatsApp
+          </Button>
         </div>
 
         {calculados.veiculos.length > 0 && (
-          <div className="flex items-center gap-2 pt-2 text-xs text-slate-600">
-            <Car className="h-4 w-4 text-slate-400" />
-            <span className="font-semibold">Vans designadas:</span>
-            <div className="flex flex-wrap gap-1.5">
+          <div className="flex items-center gap-2 pt-1 text-xs text-slate-500">
+            <Car className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span className="font-medium text-[11px]">Vans:</span>
+            <div className="flex flex-wrap gap-1">
               {calculados.veiculos.map((v) => (
-                <Badge key={v.id} variant="outline" className="text-slate-700 bg-white">
+                <Badge key={v.id} variant="outline" className="text-[11px] py-0 px-2 font-normal text-slate-600 bg-white border-slate-200">
                   {v.placa} {v.modelo ? `(${v.modelo})` : ""}
                 </Badge>
               ))}
@@ -257,12 +270,12 @@ export default function PasseioDetalhes() {
         )}
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-bold text-slate-900">Lista de Participantes</h3>
             <p className="text-xs text-slate-500">
-              Gerencie presenças e clique no status para alternar entre pendente e pago.
+              Gerencie participantes, pagamentos, adiantamentos e confirmações.
             </p>
           </div>
 
@@ -273,7 +286,7 @@ export default function PasseioDetalhes() {
                 onSuccess: () => refetch(),
               })
             }
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 gap-1.5 shadow-xs"
+            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-10 px-4 rounded-xl gap-1.5 shadow-xs"
           >
             <Plus className="h-4 w-4" />
             Adicionar Participante
@@ -289,7 +302,12 @@ export default function PasseioDetalhes() {
         ) : (
           <div className="divide-y divide-slate-100 border border-slate-100 rounded-2xl overflow-hidden">
             {calculados.participantes.map((p) => {
-              const isPago = p.status_pagamento === "pago";
+              const valorTotal = Number(p.valor || 0);
+              const valorPago = Number(p.valor_pago ?? (p.status_pagamento === "pago" ? p.valor : 0));
+              const isPago = p.status_pagamento === "pago" || (valorTotal > 0 && valorPago >= valorTotal);
+              const isParcial = p.status_pagamento === "parcial" || (valorPago > 0 && valorPago < valorTotal);
+              const saldoDevedor = Math.max(0, valorTotal - valorPago);
+
               return (
                 <div
                   key={p.id}
@@ -299,11 +317,11 @@ export default function PasseioDetalhes() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 text-sm">{p.nome}</span>
                       {p.passageiro_id ? (
-                        <Badge variant="outline" className="text-[10px] bg-[#1a3a5c]/10 text-[#1a3a5c] border-[#1a3a5c]/20">
+                        <Badge variant="outline" className="text-[10px] bg-[#1a3a5c]/10 text-[#1a3a5c] border-[#1a3a5c]/20 font-bold">
                           Aluno da Van
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
+                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200 font-medium">
                           Convidado
                         </Badge>
                       )}
@@ -315,54 +333,95 @@ export default function PasseioDetalhes() {
                       )}
                       {p.telefone && (
                         <a
-                          href={`https://api.whatsapp.com/send?phone=55${p.telefone.replace(/\D/g, "")}`}
+                          href={buildWhatsAppUrl(p.telefone)}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1 text-emerald-600 hover:underline font-medium"
+                          className="flex items-center gap-1.5 text-slate-600 hover:text-emerald-600 font-medium"
                         >
-                          <MessageCircle className="h-3 w-3" />
-                          {p.telefone}
+                          <WhatsAppIcon className="w-3.5 h-3.5 fill-[#25D366] shrink-0" />
+                          {formatarTelefone(p.telefone)}
                         </a>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                    <span className="font-bold text-slate-800 text-sm">
-                      {formatCurrency(Number(p.valor || 0))}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatusPagamento(p)}
-                      disabled={statusMutation.isPending}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                        isPago
-                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                          : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                      }`}
-                    >
-                      {isPago ? (
-                        <>
-                          <CheckCircle2 className="h-3 w-3" />
-                          Pago
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="h-3 w-3" />
-                          Pendente
-                        </>
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+                    <div className="text-left sm:text-right mr-1">
+                      <span className="font-bold text-slate-900 text-sm block leading-none">
+                        {isParcial
+                          ? `${formatCurrency(valorPago)} / ${formatCurrency(valorTotal)}`
+                          : formatCurrency(valorTotal)}
+                      </span>
+                      {isParcial && (
+                        <span className="text-[10px] text-amber-700 font-medium mt-0.5 block">
+                          Resta {formatCurrency(saldoDevedor)}
+                        </span>
                       )}
-                    </button>
+                    </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleConfirmarRemocao(p)}
-                      className="h-8 w-8 text-slate-400 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isPago ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs select-none"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                        Quitado
+                      </Badge>
+                    ) : isParcial ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-50/80 text-amber-700 border border-amber-200 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs select-none"
+                      >
+                        <Clock className="h-3.5 w-3.5 text-amber-600" />
+                        Sinal Pago
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="bg-slate-50 text-slate-600 border border-slate-200 font-medium text-xs py-1 px-2.5 gap-1.5 select-none"
+                      >
+                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                        Pendente
+                      </Badge>
+                    )}
+
+                    {!isPago && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleOpenRegistrarPagamento(p)}
+                        className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-8 px-3 rounded-lg gap-1.5 shadow-2xs transition-all active:scale-95"
+                      >
+                        <DollarSign className="h-3.5 w-3.5" />
+                        Registrar Pgto
+                      </Button>
+                    )}
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 rounded-lg">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenRegistrarPagamento(p)}>
+                          <DollarSign className="h-4 w-4 mr-2 text-slate-600" />
+                          {isPago ? "Editar Pagamento" : "Informar Pagamento / Sinal"}
+                        </DropdownMenuItem>
+                        {(isPago || isParcial) && (
+                          <DropdownMenuItem onClick={() => handleMarcarComoPendente(p)}>
+                            <RotateCcw className="h-4 w-4 mr-2 text-amber-600" />
+                            Marcar como Pendente
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => handleConfirmarRemocao(p)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remover do Passeio
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               );
