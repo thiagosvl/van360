@@ -9,7 +9,7 @@ import { Veiculo } from "@/types/veiculo";
 import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
-import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
+import type { FretamentoDetalhes, FretamentoParticipante } from "@/services/api/fretamento.api";
 import {
   createContext,
   useContext,

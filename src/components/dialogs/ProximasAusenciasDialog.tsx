@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Banner } from "@/components/ui/Banner";
+import { RotaMultiSelect } from "@/components/ui/RotaMultiSelect";
+import { PeriodoAusenciaCampos } from "@/components/ui/PeriodoAusenciaCampos";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
@@ -13,7 +16,7 @@ import { routeApi } from "@/services/api/route.api";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useAppPreferences } from "@/hooks/business/useAppPreferences";
-import { parseLocalDate, getShortWeekDayBR, getNowBR, toPersistenceString } from "@/utils/dateUtils";
+import { parseLocalDate, getShortWeekDayBR } from "@/utils/dateUtils";
 import { formatShortName, getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
 import { Calendar, CalendarCheck2, Bus, User, UserPlus, ChevronDown, Loader2, Search, X, Check } from "lucide-react";
@@ -92,14 +95,17 @@ export function ProximasAusenciasDialog({
 
   const queryClient = useQueryClient();
 
-  const [formRotaId, setFormRotaId] = useState(lockedRotaId || "");
+  const [selectedRotasIds, setSelectedRotasIds] = useState<string[]>(lockedRotaId ? [lockedRotaId] : []);
+  const [alunoRotas, setAlunoRotas] = useState<Route[]>([]);
   const [formPassageiroId, setFormPassageiroId] = useState("");
   const [alunoSelecionado, setAlunoSelecionado] = useState<{ id: string; nome: string } | null>(null);
   const [searchAluno, setSearchAluno] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoadingRotasAluno, setIsLoadingRotasAluno] = useState(false);
-  const [formDataAusencia, setFormDataAusencia] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [keepOpen, setKeepOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const alunoSearchContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -129,7 +135,7 @@ export function ProximasAusenciasDialog({
     enabled: open && !lockedRotaId && !!usuarioId,
   });
 
-  const activeRotaIdForSearch = lockedRotaId || formRotaId || undefined;
+  const activeRotaIdForSearch = lockedRotaId || undefined;
   const { data: alunosEncontrados = [], isLoading: isLoadingAlunos } = useBuscarAlunos({
     search: debouncedSearch,
     rotaId: activeRotaIdForSearch,
@@ -150,19 +156,34 @@ export function ProximasAusenciasDialog({
 
   const isCarregandoAusencias = isLoading || isFetching;
 
+  const rotasDisponiveis = useMemo(() => {
+    if (lockedRotaId) return [];
+    if (alunoRotas.length > 0) return alunoRotas;
+    return (rotasList as Route[]) || [];
+  }, [lockedRotaId, alunoRotas, rotasList]);
+
   useEffect(() => {
     if (open) {
-      setFormRotaId(lockedRotaId || "");
+      setSelectedRotasIds(lockedRotaId ? [lockedRotaId] : []);
+      setAlunoRotas([]);
       setFormPassageiroId("");
       setAlunoSelecionado(null);
       setSearchAluno("");
       setDebouncedSearch("");
       setIsDropdownOpen(false);
-      setFormDataAusencia("");
+      setDataInicio("");
+      setDataFim("");
+      setKeepOpen(false);
       setFormErrors({});
       setIsRegisterOpen(false);
     }
   }, [open, lockedRotaId]);
+
+  useEffect(() => {
+    if (open && !lockedRotaId && alunoRotas.length === 1 && selectedRotasIds.length === 0) {
+      setSelectedRotasIds([alunoRotas[0].id]);
+    }
+  }, [open, lockedRotaId, alunoRotas, selectedRotasIds.length]);
 
   const handleSelectAluno = async (aluno: { id: string; nome: string }) => {
     setFormPassageiroId(aluno.id);
@@ -171,19 +192,22 @@ export function ProximasAusenciasDialog({
     setIsDropdownOpen(false);
     setFormErrors((prev) => ({ ...prev, passageiroId: "" }));
 
-    if (!lockedRotaId && !formRotaId) {
+    if (lockedRotaId) {
+      setSelectedRotasIds([lockedRotaId]);
+    } else {
       try {
         setIsLoadingRotasAluno(true);
         const rotasDoAluno = await routeApi.listRotasByPassageiro(aluno.id);
-        if (rotasDoAluno && rotasDoAluno.length > 0) {
-          const primeiraRota = rotasDoAluno[0].rota || rotasDoAluno[0];
-          if (primeiraRota?.id) {
-            setFormRotaId(primeiraRota.id);
-            setFormErrors((prev) => ({ ...prev, rotaId: "" }));
-          }
+        const listaRotas: Route[] = (rotasDoAluno || []).map((r: any) => r.rota || r);
+        setAlunoRotas(listaRotas);
+        if (listaRotas.length === 1) {
+          setSelectedRotasIds([listaRotas[0].id]);
+          setFormErrors((prev) => ({ ...prev, rotas: "" }));
+        } else {
+          setSelectedRotasIds([]);
         }
       } catch {
-        // silencioso
+        setAlunoRotas([]);
       } finally {
         setIsLoadingRotasAluno(false);
       }
@@ -196,38 +220,63 @@ export function ProximasAusenciasDialog({
     setSearchAluno("");
     setDebouncedSearch("");
     setIsDropdownOpen(false);
+    if (!lockedRotaId) {
+      setSelectedRotasIds([]);
+      setAlunoRotas([]);
+    }
   };
 
   const handleSalvarAusencia = async () => {
-    const activeRotaId = lockedRotaId || formRotaId;
     const errors: Record<string, string> = {};
-    if (!activeRotaId) errors.rotaId = "Selecione uma rota";
     if (!formPassageiroId) errors.passageiroId = "Selecione um aluno";
-    if (!formDataAusencia) errors.dataAusencia = "Informe a data";
+    if (selectedRotasIds.length === 0) errors.rotas = "Selecione ao menos uma rota";
+    if (!dataInicio) errors.dataInicio = "Informe a data da ausência";
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
+    const dataFimFinal = dataFim || dataInicio;
+
     try {
       await registrarMutation.mutateAsync({
         passageiro_id: formPassageiroId,
-        rota_id: activeRotaId,
-        data_ausencia: formDataAusencia,
+        rotas_ids: selectedRotasIds,
+        data_inicio: dataInicio,
+        data_fim: dataFimFinal,
       });
 
-      toast.success("Ausência registrada com sucesso!");
+      toast.success(
+        keepOpen
+          ? "Ausência registrada! Selecione o próximo aluno ou data."
+          : "Ausência registrada com sucesso!"
+      );
       queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
+      selectedRotasIds.forEach((rId) => {
+        queryClient.invalidateQueries({ queryKey: ["route-ausencias", rId] });
+        queryClient.invalidateQueries({ queryKey: ["route-passageiro-ausencias", rId] });
+      });
+
       setFormPassageiroId("");
       setAlunoSelecionado(null);
       setSearchAluno("");
       setDebouncedSearch("");
-      setFormDataAusencia("");
+      setDataInicio("");
+      setDataFim("");
       setFormErrors({});
-      setIsRegisterOpen(false);
-    } catch {
-      toast.error("Erro ao registrar ausência.");
+
+      if (!lockedRotaId) {
+        setSelectedRotasIds([]);
+        setAlunoRotas([]);
+      }
+
+      if (!keepOpen) {
+        setIsRegisterOpen(false);
+      }
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj?.response?.data?.message || "Erro ao registrar ausência.");
     }
   };
 
@@ -384,8 +433,6 @@ export function ProximasAusenciasDialog({
     ? `Ausências registradas para a rota "${lockedRotaNome}"`
     : "Ausências futuras registradas para suas rotas";
 
-  const hojeFormatado = toPersistenceString(getNowBR());
-
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange} maxWidth="md" description={dialogDescription}>
       <BaseDialog.Header
@@ -416,39 +463,15 @@ export function ProximasAusenciasDialog({
 
           {isRegisterOpen && (
             <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-              {!lockedRotaId && (
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-700">Rota</Label>
-                  <Select
-                    value={formRotaId}
-                    onValueChange={(val) => {
-                      setFormRotaId(val);
-                      setFormPassageiroId("");
-                      setFormErrors((prev) => ({ ...prev, rotaId: "" }));
-                    }}
-                    disabled={isLoadingRotas}
-                  >
-                    <SelectTrigger className={cn("h-10 text-xs rounded-xl bg-white text-slate-800 font-medium", formErrors.rotaId && "border-red-500")}>
-                      <SelectValue placeholder="Selecione a rota" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      {rotasList.map((r: Route) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formErrors.rotaId && <p className="text-[11px] text-red-500">{formErrors.rotaId}</p>}
-                </div>
-              )}
-
+              {/* Campo Aluno */}
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700">Aluno</Label>
+                <Label className="text-xs font-semibold text-slate-700">
+                  Aluno <span className="text-red-500">*</span>
+                </Label>
                 <div ref={alunoSearchContainerRef} className="relative">
                   <input
                     type="text"
-                    placeholder="Digite o nome..."
+                    placeholder="Digite o nome do aluno..."
                     value={searchAluno}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -456,6 +479,10 @@ export function ProximasAusenciasDialog({
                       if (alunoSelecionado && val !== alunoSelecionado.nome) {
                         setAlunoSelecionado(null);
                         setFormPassageiroId("");
+                        if (!lockedRotaId) {
+                          setSelectedRotasIds([]);
+                          setAlunoRotas([]);
+                        }
                       }
                       setIsDropdownOpen(val.trim().length > 0);
                     }}
@@ -551,27 +578,79 @@ export function ProximasAusenciasDialog({
                     </div>
                   )}
                 </div>
-                {formErrors.passageiroId && <p className="text-[11px] text-red-500">{formErrors.passageiroId}</p>}
+                {formErrors.passageiroId && <p className="text-[11px] text-red-500 font-medium">{formErrors.passageiroId}</p>}
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700">Data da Ausência</Label>
-                <input
-                  type="date"
-                  min={hojeFormatado}
-                  value={formDataAusencia}
-                  onChange={(e) => {
-                    setFormDataAusencia(e.target.value);
-                    setFormErrors((prev) => ({ ...prev, dataAusencia: "" }));
-                  }}
-                  className={cn(
-                    "w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c]",
-                    formErrors.dataAusencia && "border-red-500"
-                  )}
+              {/* Se o aluno foi selecionado e não tem rotas */}
+              {alunoSelecionado && !isLoadingRotasAluno && alunoRotas.length === 0 && !lockedRotaId && (
+                <Banner
+                  variant="warning"
+                  description="Este aluno não está vinculado a nenhuma rota ativa."
                 />
-                {formErrors.dataAusencia && <p className="text-[11px] text-red-500">{formErrors.dataAusencia}</p>}
+              )}
+
+              {/* Campo Rotas (MultiSelect com Checkbox quadrado) */}
+              {!lockedRotaId && (
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700">
+                    Rotas <span className="text-red-500">*</span>
+                  </Label>
+                  <RotaMultiSelect
+                    rotas={rotasDisponiveis}
+                    selectedIds={selectedRotasIds}
+                    onChange={(ids) => {
+                      setSelectedRotasIds(ids);
+                      if (formErrors.rotas) setFormErrors((prev) => ({ ...prev, rotas: "" }));
+                    }}
+                    disabled={isLoadingRotas || isLoadingRotasAluno || rotasDisponiveis.length === 0}
+                    hasError={Boolean(formErrors.rotas)}
+                    placeholder={
+                      !alunoSelecionado
+                        ? "Selecione o aluno primeiro"
+                        : rotasDisponiveis.length === 0
+                        ? "Nenhuma rota disponível"
+                        : "Selecione a(s) rota(s)"
+                    }
+                  />
+                  {formErrors.rotas && <p className="text-[11px] text-red-500 font-medium">{formErrors.rotas}</p>}
+                </div>
+              )}
+
+              {/* Campos de Período (Apenas 1 dia / Período com dias úteis) */}
+              <PeriodoAusenciaCampos
+                dataInicio={dataInicio}
+                dataFim={dataFim}
+                onDataInicioChange={(data) => {
+                  setDataInicio(data);
+                  if (formErrors.dataInicio) setFormErrors((prev) => ({ ...prev, dataInicio: "" }));
+                }}
+                onDataFimChange={(data) => {
+                  setDataFim(data);
+                  if (formErrors.dataFim) setFormErrors((prev) => ({ ...prev, dataFim: "" }));
+                }}
+                errors={{
+                  dataInicio: formErrors.dataInicio,
+                  dataFim: formErrors.dataFim,
+                }}
+              />
+
+              {/* Checkbox Padronizado: Cadastrar outra em seguida */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <Checkbox
+                  id="keepOpenProximasAusencias"
+                  checked={keepOpen}
+                  onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
+                  className="data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                />
+                <label
+                  htmlFor="keepOpenProximasAusencias"
+                  className="text-xs text-slate-700 font-medium cursor-pointer select-none"
+                >
+                  Cadastrar outra em seguida
+                </label>
               </div>
 
+              {/* Botão Salvar */}
               <Button
                 type="button"
                 onClick={handleSalvarAusencia}
@@ -583,7 +662,7 @@ export function ProximasAusenciasDialog({
                 ) : (
                   <UserPlus className="w-4 h-4 shrink-0" />
                 )}
-                <span>Salvar</span>
+                <span>Salvar Ausência</span>
               </Button>
             </div>
           )}
