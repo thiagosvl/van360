@@ -188,7 +188,7 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
                     )}
                   </div>
                   <span className="text-sm font-bold text-slate-800">
-                    Não Exibir na Lista
+                    Não Exibir Telefone na Lista de Alunos
                   </span>
                 </div>
               </div>
@@ -232,7 +232,7 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
                     )}
                   </div>
                   <span className="text-sm font-bold text-slate-800">
-                    Exibir na Lista de Alunos
+                    Exibir Telefone na Lista de Alunos
                   </span>
                 </div>
               </div>
