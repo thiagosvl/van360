@@ -154,7 +154,7 @@ export function ProximasAusenciasDialog({
     enabled: open,
   });
 
-  const isCarregandoAusencias = isLoading || isFetching;
+  const isCarregandoAusencias = isLoading && ausencias.length === 0;
 
   const rotasDisponiveis = useMemo(() => {
     if (lockedRotaId) return [];
@@ -249,29 +249,30 @@ export function ProximasAusenciasDialog({
 
       toast.success(
         keepOpen
-          ? "Ausência registrada! Selecione o próximo aluno ou data."
+          ? "Ausência registrada! Selecione a próxima data."
           : "Ausência registrada com sucesso!"
       );
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
+
+      await queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
       selectedRotasIds.forEach((rId) => {
         queryClient.invalidateQueries({ queryKey: ["route-ausencias", rId] });
         queryClient.invalidateQueries({ queryKey: ["route-passageiro-ausencias", rId] });
       });
+      queryClient.invalidateQueries({ queryKey: ["route-execution"] });
 
-      setFormPassageiroId("");
-      setAlunoSelecionado(null);
-      setSearchAluno("");
-      setDebouncedSearch("");
       setDataInicio("");
       setDataFim("");
       setFormErrors({});
 
-      if (!lockedRotaId) {
-        setSelectedRotasIds([]);
-        setAlunoRotas([]);
-      }
-
       if (!keepOpen) {
+        setFormPassageiroId("");
+        setAlunoSelecionado(null);
+        setSearchAluno("");
+        setDebouncedSearch("");
+        if (!lockedRotaId) {
+          setSelectedRotasIds([]);
+          setAlunoRotas([]);
+        }
         setIsRegisterOpen(false);
       }
     } catch (err: unknown) {
