@@ -2,7 +2,7 @@ import { Purchases, PurchasesStoreProduct, CustomerInfo } from "@revenuecat/purc
 import { Capacitor } from "@capacitor/core";
 import { isNativeIos } from "@/utils/detectPlatform";
 
-export const REVENUECAT_APPLE_API_KEY = "appl_gHihyPXIrBfJVmMvjkVLXRaQUiw";
+export const REVENUECAT_APPLE_API_KEY = "appl_gHiHyPXIrBfJVmMvjkVLXRaQUiW";
 
 export const IAP_ENTITLEMENT_ID = "van360_pro";
 
