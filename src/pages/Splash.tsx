@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ROUTES } from "@/constants/routes";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Bus, ChevronRight, Info, LogIn, Sparkles, Users } from "lucide-react";
-import { useLayout } from "@/contexts/LayoutContext";
+import { ArrowLeft, Bus, ChevronRight, LogIn, Sparkles, Users } from "lucide-react";
 
 
 function SplashIllustration({
@@ -33,7 +32,6 @@ export default function Splash() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openShowcaseTransporteEscolarDialog } = useLayout();
 
   const getInitialStep = (): "profile" | "motorista" => {
     if (
@@ -85,8 +83,14 @@ export default function Splash() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [step, setSearchParams]);
 
+  useEffect(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }, [step]);
+
   return (
-    <main className="h-[100dvh] w-full bg-[#f5f5f5] overflow-hidden flex flex-col justify-between relative">
+    <main className="h-[100dvh] w-full bg-[#f9f8fd] overflow-hidden flex flex-col justify-between relative">
       {step === "motorista" && (
         <button
           type="button"
@@ -121,14 +125,14 @@ export default function Splash() {
               <button
                 type="button"
                 onClick={handleSelectMotorista}
-                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#2563eb] hover:bg-[#f8faff] active:scale-[0.98] shadow-xs hover:shadow-sm outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none group"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
                     <Bus className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-[#2563eb] transition-colors block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Transporte Escolar
                     </span>
                     <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
@@ -136,22 +140,22 @@ export default function Splash() {
                     </p>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-[#eff6ff] flex items-center justify-center shrink-0 ml-1 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563eb] transition-colors" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=responsavel`, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-amber-500 hover:bg-[#fffbeb] active:scale-[0.98] shadow-xs hover:shadow-sm outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none group"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-[14px] bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                  <div className="w-11 h-11 rounded-[14px] bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 transition-colors">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-amber-800 transition-colors block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Pai / Responsável
                     </span>
                     <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
@@ -159,8 +163,8 @@ export default function Splash() {
                     </p>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-amber-100 flex items-center justify-center shrink-0 ml-1 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-amber-600 transition-colors" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
             </div>
@@ -187,34 +191,34 @@ export default function Splash() {
               <button
                 type="button"
                 onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#2563eb] hover:bg-[#f8faff] active:scale-[0.98] shadow-xs hover:shadow-sm outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none group"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
                     <LogIn className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-[#2563eb] transition-colors block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Já tenho uma conta
                     </span>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-[#eff6ff] flex items-center justify-center shrink-0 ml-1 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563eb] transition-colors" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-emerald-500 hover:bg-[#f0fdf4] active:scale-[0.98] shadow-xs hover:shadow-sm outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none group"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-[14px] bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                  <div className="w-11 h-11 rounded-[14px] bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 transition-colors">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-emerald-700 transition-colors block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Criar conta grátis
                     </span>
                     <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
@@ -222,21 +226,9 @@ export default function Splash() {
                     </p>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-emerald-100 flex items-center justify-center shrink-0 ml-1 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-emerald-700 transition-colors" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={openShowcaseTransporteEscolarDialog}
-                className="w-full text-center py-2.5 px-3 rounded-[18px] bg-white hover:bg-[#f5f5f5] border border-[#e5e5e5] active:scale-[0.98] outline-none transition-all flex items-center justify-center gap-2 cursor-pointer select-none text-[#0a0a0a] group shadow-xs"
-              >
-                <Info className="w-4 h-4 text-[#2563eb] group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-xs sm:text-[13px] text-[#0a0a0a]">
-                  Veja o que o app faz
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#737373] group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
