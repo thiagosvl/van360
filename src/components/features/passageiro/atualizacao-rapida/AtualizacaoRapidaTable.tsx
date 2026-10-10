@@ -6,7 +6,9 @@ import { Veiculo } from "@/types/veiculo";
 import { periodos } from "@/utils/formatters/periodo";
 import { formatShortName, formatFirstName } from "@/utils/formatters/name";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
-import { ExternalLink, ChevronDown } from "lucide-react";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { ExternalLink } from "lucide-react";
+import { NativeSelect } from "@/components/ui/native-select";
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,37 +58,37 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
   veiculos,
 }: AtualizacaoRapidaTableProps) {
   return (
-    <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+    <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs min-w-[850px] sm:min-w-[1100px]">
+        <table className="w-full text-left border-collapse text-xs min-w-[980px] sm:min-w-[1100px]">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-10 sm:w-12 text-center">
+            <tr className="bg-[#fafafa] border-b border-[#e5e5e5] text-[10px] sm:text-[11px] font-semibold text-[#737373] uppercase tracking-wider">
+              <th className="py-2.5 sm:py-3 px-1 sm:px-3 w-8 sm:w-12 text-center">
                 {onToggleSelectAll ? (
                   <div className="flex items-center justify-center">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={onToggleSelectAll}
                       aria-label="Selecionar todos os alunos"
-                      className="w-5 h-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                      className="w-4 h-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                   </div>
                 ) : (
                   "#"
                 )}
               </th>
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-28 sm:min-w-[200px]">Aluno</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-32 min-w-[115px]">Valor</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[80px]">Vencimento</th>
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[160px]">Veículo</th>
-              <th className="py-2 sm:py-3 px-2 sm:px-3 w-32 sm:min-w-[170px]">Escola</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-30 min-w-[96px]">Período</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-28 min-w-[80px]">Turma</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[70px]">Sala</th>
-              <th className="py-2 sm:py-3 px-1.5 sm:px-3 w-28 sm:w-36 min-w-[110px]">Professor(a)</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-32 sm:min-w-[210px]">Aluno</th>
+              <th className="py-2.5 sm:py-3 px-1 sm:px-3 w-24 sm:w-28 min-w-[95px] sm:min-w-[110px]">Valor</th>
+              <th className="py-2.5 sm:py-3 px-1 sm:px-3 w-18 sm:w-24 min-w-[68px] sm:min-w-[80px] text-center whitespace-nowrap">Venc.</th>
+              <th className="py-2.5 sm:py-3 px-2 sm:px-3 w-32 sm:w-44 min-w-[130px] sm:min-w-[160px] whitespace-nowrap">Veículo</th>
+              <th className="py-2.5 sm:py-3 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px] whitespace-nowrap">Escola</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 min-w-[125px] whitespace-nowrap">Período</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[85px]">Turma</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[75px]">Sala</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-32 sm:w-36 min-w-[120px]">Professor(a)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-[#e5e5e5]">
             {passageiros.map((p) => {
               const pId = p.id || "";
               const dirty = isDirty(pId);
@@ -109,33 +111,33 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                   className={cn(
                     "transition-colors group",
                     isSelected
-                      ? "bg-blue-50/80 hover:bg-blue-50"
+                      ? "bg-primary/5 hover:bg-primary/10"
                       : dirty
-                      ? "bg-amber-50/20 hover:bg-amber-50/40"
-                      : "hover:bg-slate-50/60"
+                        ? "bg-amber-500/10 hover:bg-amber-500/15"
+                        : "hover:bg-[#fafafa]"
                   )}
                 >
-                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 text-center">
+                  <td className="py-1.5 sm:py-2.5 px-1 sm:px-3 text-center w-8 sm:w-12">
                     <div className="flex items-center justify-center">
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => onToggleSelect(pId)}
-                        className="w-5 h-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                        className="w-4 h-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                     </div>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3">
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-32 sm:min-w-[210px] max-w-[125px] sm:max-w-none">
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                       <div className="min-w-0">
-                        <span className="font-bold text-slate-900 block leading-tight text-xs">
+                        <span className="font-semibold text-[#0a0a0a] block leading-tight text-xs truncate">
                           {formatShortName(p.nome, true)}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-medium block truncate leading-tight">
-                          {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Sem responsável"}
+                        <span className="text-[10px] text-[#737373] font-normal block truncate leading-tight mt-0.5">
+                          {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Responsável não informado"}
                         </span>
                         {dirty && (
-                          <span className="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.2 rounded mt-0.5 inline-block">
+                          <span className="text-[9px] font-semibold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-[6px] mt-0.5 inline-block">
                             Alterado
                           </span>
                         )}
@@ -145,14 +147,14 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                         to={`/alunos/${pId}`}
                         target="_blank"
                         title="Ver carteirinha do aluno"
-                        className="opacity-0 group-hover:opacity-100 hidden sm:inline-flex text-slate-400 hover:text-[#1a3a5c] p-1 rounded hover:bg-slate-200/50 transition-all shrink-0"
+                        className="opacity-0 group-hover:opacity-100 hidden sm:inline-flex text-[#737373] hover:text-[#0a0a0a] p-1 rounded-[8px] hover:bg-[#f5f5f5] transition-all shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                  <td className="py-1.5 sm:py-2.5 px-1 sm:px-2 w-24 sm:w-28 min-w-[95px] sm:min-w-[110px]">
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -172,106 +174,94 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                         const numeric = moneyToNumber(formatted);
                         onUpdateField(pId, "valor_cobranca", numeric > 0 ? numeric : null, p);
                       }}
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 font-semibold text-slate-800 min-w-[100px] w-full"
+                      className="h-8 sm:h-8.5 px-2 text-xs bg-[#f5f5f5] rounded-[14px] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] font-medium text-[#0a0a0a] tabular-nums tracking-tight w-full shadow-none hover:bg-white transition-all"
                     />
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <div className="relative">
-                      <select
-                        value={effectiveVencimento}
-                        onChange={(e) => onUpdateField(pId, "dia_vencimento", e.target.value === "none" ? null : Number(e.target.value), p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        <option value="none">Nenhum</option>
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                          <option key={d} value={String(d)}>
-                            Dia {d}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                  <td className="py-1.5 sm:py-2.5 px-1 sm:px-2 w-18 sm:w-24 min-w-[68px] sm:min-w-[80px]">
+                    <NativeSelect
+                      value={effectiveVencimento}
+                      onChange={(e) => onUpdateField(pId, "dia_vencimento", e.target.value === "none" ? null : Number(e.target.value), p)}
+                      className="h-8 sm:h-8.5 pl-2 pr-6 text-xs text-center rounded-[14px]"
+                    >
+                      <option value="none">-</option>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                        <option key={d} value={String(d)}>
+                          {d}
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3">
-                    <div className="relative">
-                      <select
-                        value={effectiveVeiculoId}
-                        onChange={(e) => onUpdateField(pId, "veiculo_id", e.target.value, p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        {!effectiveVeiculoId && <option value="" disabled>Selecione</option>}
-                        {(veiculos || []).map((v) => (
-                          <option key={v.id} value={v.id}>
-                            {v.modelo} - {v.placa}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 w-32 sm:w-44 min-w-[130px] sm:min-w-[160px]">
+                    <NativeSelect
+                      value={effectiveVeiculoId}
+                      onChange={(e) => onUpdateField(pId, "veiculo_id", e.target.value, p)}
+                      className="min-w-[125px] sm:min-w-[150px] h-8 sm:h-8.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 text-xs rounded-[14px] truncate"
+                    >
+                      {!effectiveVeiculoId && <option value="" disabled>Selecione</option>}
+                      {(veiculos || []).map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {formatarPlacaExibicao(v.placa)} {v.modelo ? `- ${v.modelo}` : ""}
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3">
-                    <div className="relative">
-                      <select
-                        value={effectiveEscolaId}
-                        onChange={(e) => onUpdateField(pId, "escola_id", e.target.value, p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-5 sm:pl-2 sm:pr-6 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        {!effectiveEscolaId && <option value="" disabled>Selecione</option>}
-                        {(escolas || []).map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.nome}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px]">
+                    <NativeSelect
+                      value={effectiveEscolaId}
+                      onChange={(e) => onUpdateField(pId, "escola_id", e.target.value, p)}
+                      className="min-w-[150px] h-8 sm:h-8.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 text-xs rounded-[14px] truncate"
+                    >
+                      {!effectiveEscolaId && <option value="" disabled>Selecione</option>}
+                      {(escolas || []).map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.nome}
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
-                    <div className="relative min-w-[92px]">
-                      <select
-                        value={effectivePeriodo}
-                        onChange={(e) => onUpdateField(pId, "periodo", e.target.value === "none" ? null : e.target.value, p)}
-                        className="w-full h-7 sm:h-8 pl-1.5 pr-4 sm:pl-2 sm:pr-4 text-[11px] sm:text-xs bg-white border border-slate-200 rounded-md sm:rounded-lg font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] focus:border-[#1a3a5c]"
-                      >
-                        <option value="none">Nenhum</option>
-                        {periodos.map((per) => (
-                          <option key={per.value} value={per.value}>
-                            {per.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 min-w-[125px]">
+                    <NativeSelect
+                      value={effectivePeriodo}
+                      onChange={(e) => onUpdateField(pId, "periodo", e.target.value === "none" ? null : e.target.value, p)}
+                      className="min-w-[115px] h-8 sm:h-8.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 text-xs rounded-[14px] truncate"
+                    >
+                      <option value="none">Nenhum</option>
+                      {periodos.map((per) => (
+                        <option key={per.value} value={per.value}>
+                          {per.label}
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[85px]">
                     <Input
                       value={effectiveTurma}
                       onChange={(e) => onUpdateField(pId, "turma", e.target.value || null, p)}
                       placeholder="Ex: 3º B"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[75px]"
+                      className="h-8 sm:h-8.5 px-2 text-xs bg-[#f5f5f5] rounded-[14px] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-[#0a0a0a] placeholder:text-[#737373] min-w-[75px] shadow-none hover:bg-white transition-all font-medium"
                     />
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[75px]">
                     <Input
                       value={effectiveSala}
                       onChange={(e) => onUpdateField(pId, "sala", e.target.value || null, p)}
                       placeholder="Ex: 12"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[65px]"
+                      className="h-8 sm:h-8.5 px-2 text-xs bg-[#f5f5f5] rounded-[14px] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-[#0a0a0a] placeholder:text-[#737373] min-w-[65px] shadow-none hover:bg-white transition-all font-medium"
                     />
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3">
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-32 sm:w-36 min-w-[120px]">
                     <Input
                       value={effectiveProfessor}
                       onChange={(e) => onUpdateField(pId, "nome_professor", e.target.value || null, p)}
                       placeholder="Ex: Cláudia"
-                      className="h-7 sm:h-8 px-1.5 sm:px-2 text-[11px] sm:text-xs bg-white rounded-md sm:rounded-lg border-slate-200 min-w-[100px]"
+                      className="h-8 sm:h-8.5 px-2 text-xs bg-[#f5f5f5] rounded-[14px] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-[#0a0a0a] placeholder:text-[#737373] min-w-[100px] shadow-none hover:bg-white transition-all font-medium"
                     />
                   </td>
                 </tr>

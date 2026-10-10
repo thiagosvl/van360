@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,13 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import {
@@ -155,15 +149,15 @@ export function FretamentoFormDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && safeCloseDialog(onClose)} maxWidth="lg">
       <BaseDialog.Header
         title={isEditing ? "Editar Fretamento" : "Novo Fretamento"}
-        subtitle="Viagem particular, frete fechado ou evento avulso"
-        icon={<Compass className="h-5 w-5 text-[#1a3a5c]" />}
+        subtitle="Viagens e fretes fechados"
+        icon={<Compass className="h-5 w-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 transition-all active:scale-95 shadow-2xs"
+            className="h-9 w-9 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-white transition-all"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -174,21 +168,21 @@ export function FretamentoFormDialog({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <BaseDialog.Body className="space-y-3.5 p-5 sm:p-6 overflow-y-auto">
+          <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto bg-white">
             <FormField
               control={form.control}
               name="titulo"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                    Título / Identificação da Viagem <span className="text-red-600">*</span>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Título da Viagem <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <FileText className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                      <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
-                        placeholder="Ex: Casamento em Campinas, Transfer Aeroporto..."
-                        className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                        placeholder="Ex: Casamento em Campinas"
+                        className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                         aria-invalid={!!fieldState.error}
                         {...field}
                       />
@@ -199,19 +193,19 @@ export function FretamentoFormDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="origem"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Local de Saída / Origem</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Origem / Ponto de Saída</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
-                          placeholder="Ex: Terminal Barra Funda, Av. Paulista..."
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          placeholder="Ex: Terminal Barra Funda"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -227,15 +221,15 @@ export function FretamentoFormDialog({
                 name="destino"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                      Destino <span className="text-red-600">*</span>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Destino <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
-                          placeholder="Ex: Atibaia, Santos, Hopi Hari..."
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          placeholder="Ex: Atibaia"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           aria-invalid={!!fieldState.error}
                           {...field}
                         />
@@ -247,21 +241,21 @@ export function FretamentoFormDialog({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="data_inicio"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                      Data da Viagem <span className="text-red-600">*</span>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Data da Viagem <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           type="date"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           aria-invalid={!!fieldState.error}
                           {...field}
                         />
@@ -277,29 +271,27 @@ export function FretamentoFormDialog({
                 name="veiculo_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Van / Veículo Alocado</FormLabel>
-                    <div className="relative">
-                      <Car className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
-                      <Select onValueChange={field.onChange} value={field.value || undefined}>
-                        <FormControl>
-                          <SelectTrigger className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm text-left">
-                            <SelectValue placeholder="Selecione a van..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {veiculos.map((v) => (
-                            <SelectItem key={v.id} value={v.id}>
-                              {v.placa} {v.modelo ? `- ${v.modelo}` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Van Alocada</FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        icon={<Car className="h-4 w-4 text-[#737373]" />}
+                      >
+                        <option value="">Selecionar</option>
+                        {veiculos.map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.placa} {v.modelo ? `- ${v.modelo}` : ""}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
 
             <FormField
               control={form.control}
@@ -307,37 +299,40 @@ export function FretamentoFormDialog({
               render={({ field }) => (
                 <MoneyInput
                   field={field}
-                  label="Valor Total do Fretamento"
+                  label="Valor Total"
                   required
-                  labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
-                  inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm font-bold text-slate-800 transition-all"
+                  labelClassName="text-[#0a0a0a] font-medium text-xs"
+                  inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
                 />
               )}
             />
 
             {!isEditing && (
-              <div className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-3">
+              <div className="p-3.5 sm:p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] space-y-3">
                 <FormField
                   control={form.control}
                   name="tem_sinal"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-3 space-y-0 cursor-pointer select-none">
+                    <FormItem className="flex flex-row items-center justify-between space-y-0 cursor-pointer select-none">
+                      <div className="space-y-0.5 pr-4">
+                        <FormLabel className="text-xs sm:text-sm font-medium text-[#0a0a0a] cursor-pointer m-0 block">
+                          Recebi sinal de entrada
+                        </FormLabel>
+                      </div>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
+                        <Switch
+                          checked={!!field.value}
                           onCheckedChange={field.onChange}
-                          className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                          className="data-[state=checked]:bg-primary"
+                          aria-label="Recebi sinal de entrada"
                         />
                       </FormControl>
-                      <FormLabel className="text-xs font-semibold text-slate-700 cursor-pointer m-0">
-                        Já recebi um sinal / adiantamento
-                      </FormLabel>
                     </FormItem>
                   )}
                 />
 
                 {temSinal && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 animate-in fade-in-50 duration-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#e5e5e5]">
                     <FormField
                       control={form.control}
                       name="valor_sinal"
@@ -346,8 +341,8 @@ export function FretamentoFormDialog({
                           field={field}
                           label="Valor do Sinal"
                           required
-                          labelClassName="text-slate-700 font-semibold ml-0.5 text-[11px]"
-                          inputClassName="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm font-bold"
+                          labelClassName="text-[#0a0a0a] font-medium text-[11px]"
+                          inputClassName="pl-10 h-10 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
                         />
                       )}
                     />
@@ -357,24 +352,21 @@ export function FretamentoFormDialog({
                       name="tipo_pagamento_sinal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-0.5 text-[11px]">Forma de Pagamento</FormLabel>
-                          <div className="relative">
-                            <CreditCard className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="pl-10 h-11 rounded-xl bg-white border-slate-200 text-sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="PIX">PIX</SelectItem>
-                                <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                                <SelectItem value="transferencia">Transferência</SelectItem>
-                                <SelectItem value="cartao-credito">Cartão Crédito</SelectItem>
-                                <SelectItem value="cartao-debito">Cartão Débito</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Pagamento</FormLabel>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              icon={<CreditCard className="h-4 w-4 text-[#737373]" />}
+                              className="bg-white"
+                            >
+                              <option value="PIX">PIX</option>
+                              <option value="dinheiro">Dinheiro</option>
+                              <option value="transferencia">Transferência</option>
+                              <option value="cartao-credito">Cartão Crédito</option>
+                              <option value="cartao-debito">Cartão Débito</option>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -385,12 +377,12 @@ export function FretamentoFormDialog({
                       name="data_pagamento_sinal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-0.5 text-[11px]">Data Recebimento</FormLabel>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Data</FormLabel>
                           <div className="relative">
-                            <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                            <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                             <Input
                               type="date"
-                              className="pl-10 h-11 rounded-xl bg-white border-slate-200 text-sm"
+                              className="pl-10 h-10 rounded-[18px] bg-white border-[#e5e5e5] text-sm"
                               {...field}
                             />
                           </div>
@@ -408,11 +400,11 @@ export function FretamentoFormDialog({
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Observações Internas</FormLabel>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">Observações</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Anotações sobre a viagem, paradas combinadas, instruções especiais, etc."
-                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm p-3 min-h-[85px] transition-all"
+                      placeholder="Instruções especiais, paradas combinadas, etc."
+                      className="rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm p-3 min-h-[70px]"
                       value={field.value || ""}
                       onChange={field.onChange}
                     />
@@ -431,7 +423,7 @@ export function FretamentoFormDialog({
               disabled={isSubmitting}
             />
             <BaseDialog.Action
-              label={isEditing ? "Salvar" : "Confirmar"}
+              label={isEditing ? "Salvar" : "Cadastrar"}
               variant="primary"
               onClick={form.handleSubmit(onSubmit)}
               isLoading={isSubmitting}

@@ -89,29 +89,26 @@ export const QuickStartCard = ({
   if (isComplete) return null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
+    <div className="bg-card rounded-3xl shadow-xs border border-border overflow-hidden relative">
       <div className="p-5 md:p-6">
-        {/* Header */}
-        <div className="flex items-start gap-4 mb-2">
-          <div className="text-[#1a3a5c] mt-0.5">
-            <Rocket className="h-8 w-8" strokeWidth={1.5} />
+        <div className="flex items-start gap-3.5 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Rocket className="h-5 w-5" strokeWidth={2} />
           </div>
-          <div className="flex-1 pt-1">
+          <div className="flex-1 pt-0.5">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-[#1a3a5c] text-[17px]">Primeiros Passos</h3>
-              <span className="text-[13px] font-bold text-[#1a3a5c]">{completedSteps} / {totalSteps}</span>
+              <h3 className="font-semibold text-foreground text-base sm:text-[17px]">Primeiros Passos</h3>
+              <span className="text-xs font-semibold text-muted-foreground">{completedSteps} / {totalSteps}</span>
             </div>
-            {/* Progress bar line - outline with rounded caps */}
-            <div className="h-[6px] w-full rounded-full border border-gray-200 bg-gray-50 overflow-hidden">
+            <div className="h-2 w-full rounded-full border border-border bg-muted overflow-hidden">
               <div
-                className="h-full bg-[#1a3a5c] rounded-full transition-all duration-700 ease-out"
+                className="h-full bg-primary rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
               />
             </div>
           </div>
         </div>
 
-        {/* Steps List */}
         <div className="flex flex-col mt-4">
           {steps.map((step) => {
             const isExpanded = expandedId === step.id;
@@ -122,58 +119,66 @@ export const QuickStartCard = ({
               <div
                 key={step.id}
                 className={cn(
-                  "flex flex-col py-4 border-b border-gray-100 last:border-b-0 transition-all duration-300",
+                  "flex flex-col py-3.5 border-b border-border last:border-b-0 transition-all duration-300",
                   !isDone ? "cursor-pointer" : "cursor-default opacity-80"
                 )}
                 onClick={() => !isDone && !isExpanded && setExpandedId(step.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="text-slate-500">
-                      <StepIcon className="h-5 w-5" strokeWidth={1.5} />
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                        isDone
+                          ? "bg-muted text-muted-foreground/60"
+                          : isExpanded
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <StepIcon className="h-4 w-4" strokeWidth={2} />
                     </div>
                     <span
                       className={cn(
-                        "text-[15px] font-medium transition-colors",
-                        isDone ? "text-slate-400" : "text-[#1a3a5c]"
+                        "text-sm font-semibold transition-colors",
+                        isDone ? "text-muted-foreground line-through" : "text-foreground"
                       )}
                     >
                       {step.label}
                     </span>
                   </div>
 
-                  {/* Status Circle */}
                   <div className="shrink-0 flex items-center justify-center">
                     {isDone ? (
-                      <CheckCircle2 className="h-[22px] w-[22px] text-emerald-500" strokeWidth={2} />
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500" strokeWidth={2} />
                     ) : (
-                      <div className="h-[22px] w-[22px] rounded-full border-2 border-slate-300 transition-colors" />
+                      <div className="h-5 w-5 rounded-full border-2 border-border transition-colors" />
                     )}
                   </div>
                 </div>
 
-                {/* Expanded Content */}
                 <div
                   className={cn(
                     "grid transition-all duration-300 ease-in-out",
-                    isExpanded ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0"
+                    isExpanded ? "grid-rows-[1fr] opacity-100 mt-2.5" : "grid-rows-[0fr] opacity-0"
                   )}
                 >
                   <div className="overflow-hidden">
-                    <div className="pl-[34px] pr-2 pt-1 flex flex-col">
-                      <p className="text-[13px] text-slate-500 mb-4 leading-relaxed">
+                    <div className="pt-1 flex flex-col">
+                      <p className="text-xs text-muted-foreground mb-3 sm:pl-11 leading-relaxed">
                         {step.description}
                       </p>
 
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           step.onAction();
                         }}
-                        className="w-full sm:w-auto sm:self-end flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-2xl bg-[#1a3a5c] text-white text-[13px] sm:text-[12px] font-medium hover:bg-[#1a3a5c]/90 transition-colors active:scale-95"
+                        className="w-full sm:w-auto sm:self-end flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover shadow-xs transition-all active:scale-95"
                       >
                         {step.buttonText}
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-4 w-4" />
                       </button>
                     </div>
                   </div>

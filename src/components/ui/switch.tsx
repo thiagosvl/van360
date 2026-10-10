@@ -28,7 +28,7 @@ const Switch = React.forwardRef<
       )}
     >
       {loading && (
-        <Loader2 className="w-3 h-3 text-slate-500 animate-spin" />
+        <Loader2 className="w-3 h-3 text-[#737373] animate-spin" />
       )}
     </SwitchPrimitives.Thumb>
   </SwitchPrimitives.Root>

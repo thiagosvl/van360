@@ -9,13 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { safeCloseDialog } from "@/hooks";
 import {
@@ -97,14 +91,14 @@ export function RegistrarPagamentoFretamentoDialog({
       <BaseDialog.Header
         title="Registrar Pagamento"
         subtitle={`Fretamento: ${fretamento.titulo}`}
-        icon={<DollarSign className="h-5 w-5 text-[#1a3a5c]" />}
+        icon={<DollarSign className="h-5 w-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 transition-all active:scale-95 shadow-2xs"
+            className="h-9 w-9 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#ffffff] transition-all"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -113,24 +107,24 @@ export function RegistrarPagamentoFretamentoDialog({
         )}
       />
 
-      <div className="mx-5 sm:mx-6 mt-3.5 p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl flex justify-between items-center text-xs">
+      <div className="mx-4 sm:mx-6 mt-4 p-3 sm:p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] grid grid-cols-3 gap-2 text-center text-xs">
         <div>
-          <span className="text-slate-500 block text-[11px] font-medium">Total do Frete</span>
-          <span className="font-bold text-slate-800 text-sm">{formatCurrency(Number(fretamento.valor_total || 0))}</span>
+          <span className="text-[#737373] block text-[10px] sm:text-[11px] font-medium">Total</span>
+          <span className="font-semibold text-[#0a0a0a] text-xs sm:text-sm truncate block mt-0.5">{formatCurrency(Number(fretamento.valor_total || 0))}</span>
         </div>
-        <div className="text-center">
-          <span className="text-slate-500 block text-[11px] font-medium">Já Recebido</span>
-          <span className="font-bold text-emerald-700 text-sm">{formatCurrency(Number(fretamento.total_pago || 0))}</span>
+        <div>
+          <span className="text-[#737373] block text-[10px] sm:text-[11px] font-medium">Recebido</span>
+          <span className="font-semibold text-[#0a0a0a] text-xs sm:text-sm truncate block mt-0.5">{formatCurrency(Number(fretamento.total_pago || 0))}</span>
         </div>
-        <div className="text-right">
-          <span className="text-slate-500 block text-[11px] font-medium">Saldo Restante</span>
-          <span className="font-bold text-slate-900 text-sm">{formatCurrency(saldoRestante)}</span>
+        <div>
+          <span className="text-[#737373] block text-[10px] sm:text-[11px] font-medium">Restante</span>
+          <span className="font-semibold text-[#0a0a0a] text-xs sm:text-sm truncate block mt-0.5">{formatCurrency(saldoRestante)}</span>
         </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <BaseDialog.Body className="space-y-3.5 p-5 sm:p-6 overflow-y-auto">
+          <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto bg-[#ffffff]">
             <FormField
               control={form.control}
               name="valor"
@@ -139,8 +133,8 @@ export function RegistrarPagamentoFretamentoDialog({
                   field={field}
                   label="Valor Recebido"
                   required
-                  labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
-                  inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm font-bold text-slate-800 transition-all"
+                  labelClassName="text-[#0a0a0a] font-medium text-xs"
+                  inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
                 />
               )}
             />
@@ -150,27 +144,23 @@ export function RegistrarPagamentoFretamentoDialog({
               name="tipo_pagamento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                    Forma de Pagamento <span className="text-red-600">*</span>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Forma de Pagamento <span className="text-[#e7000b]">*</span>
                   </FormLabel>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm text-left">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="PIX">PIX</SelectItem>
-                        <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                        <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
-                        <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
-                        <SelectItem value="transferencia">Transferência Bancária</SelectItem>
-                        <SelectItem value="boleto">Boleto</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <FormControl>
+                    <NativeSelect
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      icon={<CreditCard className="h-4 w-4 text-[#737373]" />}
+                    >
+                      <option value="PIX">PIX</option>
+                      <option value="dinheiro">Dinheiro</option>
+                      <option value="cartao-credito">Cartão de Crédito</option>
+                      <option value="cartao-debito">Cartão de Débito</option>
+                      <option value="transferencia">Transferência Bancária</option>
+                      <option value="boleto">Boleto</option>
+                    </NativeSelect>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -181,15 +171,15 @@ export function RegistrarPagamentoFretamentoDialog({
               name="data_pagamento"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                    Data do Recebimento <span className="text-red-600">*</span>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Data do Recebimento <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                      <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                       <Input
                         type="date"
-                        className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                        className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
                         aria-invalid={!!fieldState.error}
                         {...field}
                       />
@@ -205,13 +195,13 @@ export function RegistrarPagamentoFretamentoDialog({
               name="descricao"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Descrição / Observação</FormLabel>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">Descrição / Observação</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <FileText className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                      <FileText className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                       <Input
                         placeholder="Ex: Quitação final no embarque"
-                        className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                        className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
                         value={field.value || ""}
                         onChange={field.onChange}
                       />

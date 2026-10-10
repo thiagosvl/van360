@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CATEGORIA_COLOR_PALETTE } from "@/utils/domain";
 import { useState } from "react";
 
 interface GastoCategoriaFormProps {
-  onSubmit: (data: { nome: string; cor: string }) => Promise<void>;
+  onSubmit: (data: { nome: string; cor?: string }) => Promise<void>;
   onCancel?: () => void;
   isPending?: boolean;
   submitLabel?: string;
   className?: string;
-  initialValues?: { nome: string; cor: string };
+  initialValues?: { nome: string; cor?: string };
   autoFocus?: boolean;
 }
 
@@ -23,18 +22,16 @@ export function GastoCategoriaForm({
   autoFocus,
 }: GastoCategoriaFormProps) {
   const [name, setName] = useState(initialValues?.nome || "");
-  const [color, setColor] = useState(initialValues?.cor || "slate");
 
   const handleSave = async () => {
     if (!name.trim()) return;
     try {
-      await onSubmit({ nome: name.trim(), cor: color });
+      await onSubmit({ nome: name.trim(), cor: initialValues?.cor || "slate" });
       if (!initialValues) {
         setName("");
-        setColor("slate");
       }
-    } catch (err) {
-      // Erro tratado pela mutation externa
+    } catch {
+      return;
     }
   };
 
@@ -47,13 +44,15 @@ export function GastoCategoriaForm({
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-3", className)}>
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-slate-700 ml-1">Nome da Categoria <span className="text-red-500">*</span></label>
+        <label className="text-[#0a0a0a] font-medium text-xs">
+          Nome da Categoria <span className="text-[#e7000b]">*</span>
+        </label>
         <input
           type="text"
           autoFocus={autoFocus}
-          className="w-full h-11 px-4 rounded-xl bg-white-100 border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all shadow-sm"
+          className="w-full h-10 sm:h-11 px-3.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] focus:outline-none transition-all"
           placeholder="Ex: Pedágio, Internet, Limpeza..."
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -62,39 +61,13 @@ export function GastoCategoriaForm({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-slate-700 ml-1">Cor</label>
-        <div className="flex flex-wrap gap-2.5 px-1 py-1">
-          {Object.keys(CATEGORIA_COLOR_PALETTE).map((colorKey) => {
-            const active = color === colorKey;
-            const colorObj = CATEGORIA_COLOR_PALETTE[colorKey];
-            return (
-              <button
-                key={colorKey}
-                type="button"
-                className={cn(
-                  "w-7 h-7 rounded-full border transition-all duration-150 active:scale-95 cursor-pointer",
-                  colorObj.bg,
-                  active
-                    ? "border-slate-800 ring-4 ring-slate-800/10 scale-110 shadow-sm"
-                    : "border-slate-200 hover:scale-105 hover:border-slate-300"
-                )}
-                onClick={() => setColor(colorKey)}
-                title={colorKey}
-                disabled={isPending}
-              />
-            );
-          })}
-        </div>
-      </div>
-
       <div className="flex justify-end gap-2 pt-1">
         {onCancel && (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-9 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 font-semibold text-xs px-4 shadow-sm transition-all active:scale-95"
+            className="h-9 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] text-xs font-medium px-3.5 shadow-none transition-all active:scale-[0.98] cursor-pointer"
             onClick={onCancel}
             disabled={isPending}
           >
@@ -105,7 +78,7 @@ export function GastoCategoriaForm({
           type="button"
           disabled={isPending || !name.trim()}
           onClick={handleSave}
-          className="h-9 bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-semibold text-xs px-4 shadow-md transition-all active:scale-95"
+          className="h-9 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-medium px-4 border-none shadow-xs transition-all active:scale-[0.98] cursor-pointer"
         >
           {isPending ? "Salvando..." : submitLabel}
         </Button>

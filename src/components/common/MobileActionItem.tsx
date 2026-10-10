@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
 import { MoreVertical } from "lucide-react";
 import { ElementType, ReactNode, useState } from "react";
@@ -22,6 +23,10 @@ export interface MobileAction {
   isDestructive?: boolean;
   /** If true, shows a loader and disables the action */
   isLoading?: boolean;
+  /** Optional title or subtext */
+  title?: string;
+  /** Optional secondary description */
+  description?: string;
   /** If true, hides the action */
   hidden?: boolean;
 }
@@ -40,6 +45,8 @@ interface MobileActionItemProps {
   onClickItem?: () => void;
   /** If true, hides the mobile trigger indicator on desktop view (sm and above) */
   hideTriggerOnDesktop?: boolean;
+  /** If false, completely hides the 3-dots trigger button */
+  showTrigger?: boolean;
 }
 
 export function MobileActionItem({
@@ -49,6 +56,7 @@ export function MobileActionItem({
   renderHeader,
   onClickItem,
   hideTriggerOnDesktop,
+  showTrigger = true,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -76,29 +84,42 @@ export function MobileActionItem({
       </div>
 
       {/* Trigger Button - Discrete MoreVertical indicator */}
-      <div
-        className={cn(
-          "absolute top-1/2 -translate-y-1/2 right-1.5 h-6 w-6 z-20 flex items-center justify-center transition-opacity",
-          "text-zinc-400 opacity-30 dark:text-zinc-500",
-          onClickItem ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
-          hideTriggerOnDesktop && "sm:hidden"
-        )}
-        onClick={(e) => {
-          if (onClickItem) {
+      {showTrigger && (
+        <button
+          type="button"
+          aria-label="Opções"
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 right-1.5 h-7 w-7 rounded-[10px] z-20 flex items-center justify-center transition-all cursor-pointer pointer-events-auto outline-none",
+            "text-[#737373] opacity-50 hover:opacity-100 hover:bg-[#f5f5f5] active:bg-[#ebebeb]",
+            hideTriggerOnDesktop && "sm:hidden"
+          )}
+          onClick={(e) => {
             e.stopPropagation();
-            onClickItem();
-          }
-        }}
-      >
-        <MoreVertical className="h-4 w-4" />
-      </div>
+            if (onClickItem) {
+              onClickItem();
+            } else {
+              setIsSheetOpen(true);
+            }
+          }}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      )}
 
       {/* Action Sheet (Bottom Drawer) */}
       <ActionSheet
         open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            safeCloseDialog(() => setIsSheetOpen(false));
+          } else {
+            setIsSheetOpen(true);
+          }
+        }}
         actions={visibleActions.map((action) => ({
           label: action.label,
+          title: action.title,
+          description: action.description,
           icon: action.icon,
           onClick: action.onClick,
           disabled: action.disabled,

@@ -91,7 +91,7 @@ export default function Passageiros() {
     const hasSearch = hasActiveFilters || !!debouncedSearchTerm || !!searchTerm.trim();
     countLabel = hasSearch
       ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
-      : (sectionCount === 1 ? "CADASTRADO" : "CADASTRADOS");
+      : (sectionCount === 1 ? "ALUNO" : "ALUNOS");
   } else {
     const hasSearch = !!debouncedSearchTerm || !!searchTerm.trim();
     countLabel = hasSearch
@@ -102,38 +102,62 @@ export default function Passageiros() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+        <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
           {!isSubConta ? (
             <Tabs
               value={activeTab}
               onValueChange={handleTabChange}
-              className="w-full space-y-6"
+              className="w-full space-y-4 sm:space-y-6"
             >
-              <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
+              <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0">
+                <TabsList className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-full sm:w-auto grid grid-cols-2 sm:flex">
                   <TabsTrigger
                     value={PassageiroTab.ALUNOS}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    className={cn(
+                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
+                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                    )}
                   >
                     Alunos
+                    {countPassageiros !== null && countPassageiros !== undefined && (
+                      <span
+                        className={cn(
+                          "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
+                          activeTab === PassageiroTab.ALUNOS
+                            ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
+                            : "text-[#737373]"
+                        )}
+                      >
+                        {countPassageiros}
+                      </span>
+                    )}
                   </TabsTrigger>
                   <TabsTrigger
                     value={PassageiroTab.SOLICITACOES}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    className={cn(
+                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
+                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                    )}
                   >
                     Solicitações
-                    <span className={cn(
-                      "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                      activeTab === PassageiroTab.SOLICITACOES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                    )}>
+                    <span
+                      className={cn(
+                        "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
+                        activeTab === PassageiroTab.SOLICITACOES
+                          ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
+                          : "text-[#737373]"
+                      )}
+                    >
                       {countPrePassageiros || 0}
                     </span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value={activeTab} className="space-y-6 mt-0 transform-gpu will-change-transform">
-                <div className="space-y-6">
+              <TabsContent value={activeTab} className="space-y-4 sm:space-y-6 mt-0 transform-gpu will-change-transform">
+                <div className="space-y-4 sm:space-y-6">
                   {can("passageiros.gerenciar") && (
                     isMainTab ? (
                       (isTrial || !isDismissedAlunos) && (
@@ -170,24 +194,24 @@ export default function Passageiros() {
                     onRegister={handleOpenNewDialog}
                     showAdvancedFilters={isMainTab}
                     showRegister={isMainTab && can("passageiros.gerenciar")}
-                    searchPlaceholder="Buscar por nome ou responsável..."
+                    searchPlaceholder="Buscar aluno ou responsável..."
                   />
                 </div>
 
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-0.5">
                   {isMainTab && can("passageiros.gerenciar") ? (
                     <Link
                       to="/alunos/atualizacao-rapida"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-200/60 px-2.5 py-1 rounded-xl transition-all active:scale-95 -ml-1"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group py-1"
                     >
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
                       <span>Edição em lote</span>
                     </Link>
                   ) : (
                     <div />
                   )}
                   {(isMainTab ? passageiros.length > 0 : prePassageiros.length > 0) && (
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                    <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                       {sectionCount} {countLabel}
                     </span>
                   )}
@@ -234,7 +258,7 @@ export default function Passageiros() {
                     )}
                   </>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <PrePassageiros
                       onFinalizeNewPrePassageiro={async () => { }}
                       profile={profile}
@@ -248,7 +272,7 @@ export default function Passageiros() {
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <PassageirosToolbar
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
@@ -271,12 +295,12 @@ export default function Passageiros() {
                 searchPlaceholder="Buscar por nome..."
               />
 
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+              <div className="flex items-center justify-between px-0.5">
+                <h2 className="text-sm font-semibold text-[#0a0a0a]">
                   Alunos
                 </h2>
                 {passageiros.length > 0 && (
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                  <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                     {sectionCount} {countLabel}
                   </span>
                 )}
@@ -324,7 +348,7 @@ export default function Passageiros() {
         </div>
       </PullToRefreshWrapper>
 
-      {shouldShowTutorial && (
+      {/* {shouldShowTutorial && (
         <VideoCommerce
           screenName="alunos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -336,7 +360,7 @@ export default function Passageiros() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
         />
-      )}
+      )} */}
     </>
   );
 }

@@ -21,6 +21,7 @@ import { PreferenciasTab } from "@/components/features/configuracoes/Preferencia
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
 import { SegurancaBiometriaTab } from "@/components/features/configuracoes/SegurancaBiometriaTab";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { useConfiguracoes } from "@/hooks";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { isNativeIos } from "@/utils/detectPlatform";
@@ -39,6 +40,7 @@ import {
   Loader2,
   Lock,
   LogOut,
+  Navigation,
   Radio,
   Rocket,
   ShieldCheck,
@@ -54,6 +56,7 @@ export const Conta = memo(function Conta() {
   const navigate = useNavigate();
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
+  const { configuracoes } = useConfiguracoes();
   const { can, isSubConta } = usePermissions();
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
 
@@ -63,7 +66,31 @@ export const Conta = memo(function Conta() {
     openTermosUsoDialog,
     openPoliticaPrivacidadeDialog,
     setIsGlobalLoading,
+    setPageTitle,
   } = useLayout();
+
+  useEffect(() => {
+    if (!tabParam) {
+      setPageTitle("Conta");
+      return;
+    }
+
+    const tabTitles: Record<string, string> = {
+      perfil: isSubConta ? "Dados Cadastrais" : "Dados Cadastrais",
+      cobrancas: "Cobranças & Pix",
+      pagamentos: "Cobranças & Pix",
+      avisos_rota: "Avisos de Rota aos Pais",
+      notificacoes_pais: "Avisos de Rota aos Pais",
+      notificacoes: "Avisos de Rota aos Pais",
+      minhas_notificacoes: "Minhas Notificações",
+      rastreamento: "Rastreamento & GPS",
+      seguranca: "Bloqueio de Tela",
+      preferencias: "Preferências",
+      ajuda: "Ajuda / Suporte",
+    };
+
+    setPageTitle(tabTitles[tabParam] || "Conta");
+  }, [tabParam, isSubConta, setPageTitle]);
 
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<string>("1.0.6");
@@ -145,18 +172,26 @@ export const Conta = memo(function Conta() {
   };
 
   const renderCurrentView = () => {
-    if (isSubscriptionBlocked && (tabParam === "notificacoes_pais" || tabParam === "notificacoes" || tabParam === "rastreamento" || tabParam === "pagamentos")) {
+    if (
+      isSubscriptionBlocked &&
+      (tabParam === "avisos_rota" ||
+        tabParam === "notificacoes_pais" ||
+        tabParam === "notificacoes" ||
+        tabParam === "rastreamento" ||
+        tabParam === "cobrancas" ||
+        tabParam === "pagamentos")
+    ) {
       return (
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center space-y-4 shadow-xs">
-          <Lock className="w-10 h-10 text-slate-400 mx-auto" />
-          <h2 className="text-lg font-bold text-slate-800">Acesso Suspenso</h2>
-          <p className="text-sm text-slate-600 max-w-md mx-auto">
-            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar as preferências da van.
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-8 text-center space-y-4 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)]">
+          <Lock className="w-10 h-10 text-[#737373] mx-auto" />
+          <h2 className="text-lg font-semibold text-[#0a0a0a] tracking-tight">Acesso Suspenso</h2>
+          <p className="text-sm text-[#737373] max-w-md mx-auto">
+            Esta funcionalidade exige uma assinatura ativa. Regularize seu plano para acessar estas configurações.
           </p>
           <button
             type="button"
             onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
-            className="px-6 py-2.5 rounded-xl bg-[#1a3a5c] text-white text-sm font-bold shadow-xs hover:bg-[#152e4a] cursor-pointer"
+            className="px-6 py-2.5 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-all active:scale-[0.98] cursor-pointer shadow-xs"
           >
             Ver Assinatura
           </button>
@@ -164,7 +199,10 @@ export const Conta = memo(function Conta() {
       );
     }
 
-    if ((tabParam === "notificacoes_pais" || tabParam === "notificacoes") && !isSubConta) {
+    if (
+      (tabParam === "avisos_rota" || tabParam === "notificacoes_pais" || tabParam === "notificacoes") &&
+      !isSubConta
+    ) {
       return <NotificacoesPaisTab />;
     }
     if (tabParam === "minhas_notificacoes") {
@@ -176,7 +214,7 @@ export const Conta = memo(function Conta() {
     if (tabParam === "perfil") {
       return <PerfilTab />;
     }
-    if (tabParam === "pagamentos" && !isSubConta) {
+    if ((tabParam === "cobrancas" || tabParam === "pagamentos") && !isSubConta) {
       return <PagamentosTab />;
     }
     if (tabParam === "ajuda") {
@@ -190,8 +228,8 @@ export const Conta = memo(function Conta() {
     }
 
     return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex items-center gap-4">
+      <div className="space-y-5">
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] flex items-center gap-4">
           <ProfileAvatarUpload
             userId={profile?.id}
             logoUrl={profile?.logo_url}
@@ -203,13 +241,13 @@ export const Conta = memo(function Conta() {
           />
 
           <div className="min-w-0 space-y-0.5">
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-[11px] font-medium text-[#737373] uppercase tracking-wider">
               Bem-vindo(a),
             </p>
             {isLoadingProfile ? (
-              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-6 w-40 rounded-[10px] bg-[#f5f5f5]" />
             ) : (
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
+              <h1 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight truncate">
                 {displayName}
               </h1>
             )}
@@ -217,206 +255,159 @@ export const Conta = memo(function Conta() {
         </div>
 
         <WhatsAppSupportButton
+          variant="clean"
           title="Falar com Suporte"
           subtitle="Atendimento rápido para tirar dúvidas sobre o app"
           message="Olá, preciso de suporte com o Van360"
         />
 
-        {/* Grupo 1: Conta e acesso */}
         <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
             Conta e acesso
           </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-            {/* Opção 1: Meus dados */}
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
             <button
               type="button"
               onClick={() => handleSelectTab("perfil")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <UserIcon className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     {isSubConta ? "Dados Cadastrais" : "Dados Cadastrais e Logotipo"}
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     {isSubConta
                       ? "Atualize seus dados pessoais e informações de contato"
                       : "Atualize seus dados pessoais, logotipo da van e informações de contato"}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 2: Assinatura do App (Gestor) */}
             {can(PERMISSIONS.ASSINATURA_GERENCIAR) && (
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
-                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                     <Rocket className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                      Assinatura do App
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                      Assinatura
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                       Gerencie seu plano, pagamentos e benefícios Van360
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Grupo: Segurança */}
         <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
             Segurança
           </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-            {/* Opção 1: Alterar Senha */}
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
             <button
               type="button"
               onClick={openAlterarSenhaDialog}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <Lock className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     Alterar Senha
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Altere sua senha de acesso para manter sua conta protegida
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 2: Bloqueio de Tela (Nativo) */}
             {Capacitor.isNativePlatform() && (
               <button
                 type="button"
                 onClick={() => handleSelectTab("seguranca")}
-                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                     <Fingerprint className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                       Bloqueio de Tela
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                       {isNativeIos()
                         ? "Proteja o app com Face ID, Touch ID ou código"
                         : "Proteja o app com digital ou senha do aparelho"}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Grupo 2: Notificações */}
-        <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
-            Notificações
-          </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-            {/* Opção 1: Minhas Notificações (Alertas no celular do motorista) */}
-            <button
-              type="button"
-              onClick={() => handleSelectTab("minhas_notificacoes")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
-                    Minhas Notificações
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {isSubConta
-                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
-                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-            </button>
-
-            {/* Opção 2: Notificações aos Pais */}
-            {!isSubConta && (
+        {!isSubConta && (
+          <div className="space-y-2">
+            <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
+              Rotas e Itinerários
+            </h2>
+            <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
               <button
                 type="button"
-                onClick={() => handleSelectFleetTab("notificacoes_pais")}
+                onClick={() => handleSelectFleetTab("avisos_rota")}
                 className={cn(
                   "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
                   isSubscriptionBlocked
-                    ? "opacity-50 hover:bg-slate-50/50"
-                    : "hover:bg-slate-50/80"
+                    ? "opacity-50 hover:bg-[#fafafa]/50"
+                    : "hover:bg-[#fafafa]"
                 )}
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={cn(
-                      "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
-                      !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                      "h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] transition-all duration-200",
+                      !isSubscriptionBlocked && "group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
                     )}
                   >
-                    <Bell className="w-5 h-5" />
+                    <Navigation className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3
-                      className={cn(
-                        "text-sm sm:text-base font-bold text-slate-800 transition-colors",
-                        !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
-                      )}
-                    >
-                      Notificações aos Pais
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                      Avisos de Rota aos Pais
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Lembretes automáticos de parcelas e avisos de rota aos responsáveis
+                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                      Notificações de trajeto, van a caminho e paradas aos responsáveis
                     </p>
                   </div>
                 </div>
                 {isSubscriptionBlocked ? (
-                  <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                  <Lock className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                 )}
               </button>
-            )}
-          </div>
-        </div>
 
-        {/* Grupo 3: Preferências da van */}
-        {!isSubConta && (
-          <div className="space-y-2">
-            <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
-              Preferências da van
-            </h2>
-            <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-              {/* Opção 1: Rastreamento & GPS */}
               {ENABLE_LIVE_TRACKING && (
                 <button
                   type="button"
@@ -424,203 +415,224 @@ export const Conta = memo(function Conta() {
                   className={cn(
                     "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
                     isSubscriptionBlocked
-                      ? "opacity-50 hover:bg-slate-50/50"
-                      : "hover:bg-slate-50/80"
+                      ? "opacity-50 hover:bg-[#fafafa]/50"
+                      : "hover:bg-[#fafafa]"
                   )}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div
                       className={cn(
-                        "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
-                        !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                        "h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] transition-all duration-200",
+                        !isSubscriptionBlocked && "group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
                       )}
                     >
                       <Radio className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3
-                        className={cn(
-                          "text-sm sm:text-base font-bold text-slate-800 transition-colors",
-                          !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
-                        )}
-                      >
+                      <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                         Rastreamento & GPS
                       </h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
+                      <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                         Visibilidade da van no mapa ao vivo e modos de rastreamento para os pais
                       </p>
                     </div>
                   </div>
                   {isSubscriptionBlocked ? (
-                    <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                    <Lock className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                    <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                   )}
                 </button>
               )}
+            </div>
+          </div>
+        )}
 
-              {/* Opção 2: Pagamentos & PIX */}
+        {!isSubConta && (
+          <div className="space-y-2">
+            <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
+              Cobranças e pagamentos
+            </h2>
+            <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
               <button
                 type="button"
-                onClick={() => handleSelectFleetTab("pagamentos")}
+                onClick={() => handleSelectFleetTab("cobrancas")}
                 className={cn(
                   "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
                   isSubscriptionBlocked
-                    ? "opacity-50 hover:bg-slate-50/50"
-                    : "hover:bg-slate-50/80"
+                    ? "opacity-50 hover:bg-[#fafafa]/50"
+                    : "hover:bg-[#fafafa]"
                 )}
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={cn(
-                      "h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 transition-colors",
-                      !isSubscriptionBlocked && "group-hover:bg-[#1a3a5c] group-hover:text-white"
+                      "h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] transition-all duration-200",
+                      !isSubscriptionBlocked && "group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
                     )}
                   >
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3
-                      className={cn(
-                        "text-sm sm:text-base font-bold text-slate-800 transition-colors",
-                        !isSubscriptionBlocked && "group-hover:text-[#1a3a5c]"
-                      )}
-                    >
-                      Pagamentos & PIX
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                      Cobranças & Pix
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Chave PIX de recebimento e regras de multa e juros das parcelas
+                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                      Lembretes aos pais, chave Pix, baixa automática, repasse e recibos
                     </p>
                   </div>
                 </div>
                 {isSubscriptionBlocked ? (
-                  <Lock className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                  <Lock className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                 )}
               </button>
             </div>
           </div>
         )}
 
-        {/* Grupo: Preferências do app */}
         <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
+            Notificações
+          </h2>
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("minhas_notificacoes")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                    Minhas Notificações
+                  </h3>
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                    {isSubConta
+                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
+                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
             Preferências do app
           </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
             <button
               type="button"
               onClick={() => handleSelectTab("preferencias")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <SlidersHorizontal className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     Preferências do Aplicativo
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Exibição de nomes, formato de listagens e ajustes gerais do app
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
           </div>
         </div>
 
-        {/* Grupo: Informações legais */}
         <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
             Informações legais
           </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-            {/* Opção 1: Termos de Uso */}
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
             <button
               type="button"
               onClick={openTermosUsoDialog}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     Termos de Uso
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Condições gerais de contratação e utilização do serviço
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 2: Política de Privacidade */}
             <button
               type="button"
               onClick={openPoliticaPrivacidadeDialog}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     Política de Privacidade
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Como tratamos e protegemos seus dados pessoais segundo a LGPD
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
           </div>
         </div>
 
-        {/* Grupo 4: Suporte e sessão */}
         <div className="space-y-2">
-          <h2 className="text-xs sm:text-[13px] font-bold text-slate-500 tracking-tight px-1">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
             Suporte e sessão
           </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 shadow-xs overflow-hidden">
-            {/* Opção 1: Ajuda / Suporte */}
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
             <button
               type="button"
               onClick={() => handleSelectTab("ajuda")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80 group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
                   <HelpCircle className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-800 group-hover:text-[#1a3a5c] transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                     Ajuda / Suporte
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Dúvidas frequentes, guias rápidos e canal de atendimento
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
 
-            {/* Opção 2: Sair da Conta */}
             <button
               type="button"
               onClick={handleConfirmSignOut}
               disabled={isSigningOut}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-rose-50/60 transition-colors group cursor-pointer disabled:opacity-50"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="h-11 w-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#fafafa] text-[#e7000b] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-[#e7000b] group-hover:text-white transition-all duration-200">
                   {isSigningOut ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
@@ -628,25 +640,25 @@ export const Conta = memo(function Conta() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-rose-600 group-hover:text-rose-700 transition-colors">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#e7000b] tracking-tight">
                     {isSigningOut ? "Saindo da conta..." : "Sair da Conta"}
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                     Encerrar a sessão atual neste dispositivo
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-rose-200 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+              <ChevronRight className="w-4 h-4 text-[#e7000b]/50 group-hover:text-[#e7000b] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
             </button>
           </div>
         </div>
 
         <div className="text-center pt-2 pb-4 space-y-1">
-          <p className="text-xs font-medium text-slate-400">
+          <p className="text-xs font-medium text-[#737373]">
             Van360 • Todos os direitos reservados
           </p>
           {appVersion && (
-            <p className="text-[11px] font-medium text-slate-400">
+            <p className="text-[11px] font-medium text-[#737373]">
               Versão {appVersion}
             </p>
           )}
@@ -658,12 +670,14 @@ export const Conta = memo(function Conta() {
   const isSubPage = Boolean(
     tabParam &&
     [
+      "avisos_rota",
       "notificacoes_pais",
       "notificacoes",
+      "cobrancas",
+      "pagamentos",
       "minhas_notificacoes",
       "rastreamento",
       "perfil",
-      "pagamentos",
       "ajuda",
       "seguranca",
       "preferencias",
@@ -671,20 +685,18 @@ export const Conta = memo(function Conta() {
   );
 
   return (
-    <div className="min-h-screen bg-surface max-w-4xl mx-auto space-y-6 pb-24">
-      {/* Botão de Voltar nas Subpáginas */}
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-5 pb-24">
       {isSubPage && (
         <button
           type="button"
           onClick={handleGoBack}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#1a3a5c] transition-colors group w-fit cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors group w-fit cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-[#737373] group-hover:text-[#0a0a0a]" />
           Voltar para Conta
         </button>
       )}
 
-      {/* Visão Ativa */}
       {renderCurrentView()}
     </div>
   );

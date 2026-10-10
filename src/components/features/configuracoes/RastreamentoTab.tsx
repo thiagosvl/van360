@@ -1,13 +1,15 @@
 import { memo, useRef, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfiguracoesToggleTabSkeleton } from "@/components/skeletons";
 import { Banner } from "@/components/ui/Banner";
 import { useConfiguracoes } from "@/hooks";
 import { Radio } from "lucide-react";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { Capacitor } from "@capacitor/core";
-import { toast } from "sonner";
+import { toast } from "@/utils/notifications/toast";
 import { AppPermissionStatus } from "@/types/enums";
+import { cn } from "@/lib/utils";
 
 export const RastreamentoTab = memo(function RastreamentoTab() {
   const { configuracoes, isLoading, updateConfiguracoes } = useConfiguracoes();
@@ -64,12 +66,7 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-44 w-full rounded-2xl" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
-      </div>
-    );
+    return <ConfiguracoesToggleTabSkeleton cardCount={2} rowCount={2} />;
   }
 
   const rastreamentoAtivo = configuracoes?.rastreamento_ativo ?? true;
@@ -77,16 +74,16 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-5">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <Radio className="w-5 h-5" />
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5 sm:space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <Radio className="w-5 h-5 text-[#0a0a0a]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[#1a3a5c]">
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
               Rastreamento em Tempo Real (GPS)
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#737373] mt-0.5">
               Defina a visibilidade do mapa ao vivo para os pais no portal
             </p>
           </div>
@@ -94,10 +91,10 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
 
         <div className="flex items-center justify-between gap-4 py-1">
           <div className="space-y-0.5 min-w-0 pr-2">
-            <h3 className="text-sm font-semibold text-slate-800">
+            <h3 className="text-sm font-medium text-[#0a0a0a]">
               Permitir rastreamento pelos pais
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-[#737373] leading-relaxed">
               Disponibiliza a visualização do mapa com a localização da van em tempo real.
             </p>
           </div>
@@ -113,8 +110,8 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
         </div>
 
         {rastreamentoAtivo ? (
-          <div ref={modosRef} className="space-y-3 pt-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div ref={modosRef} className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
               Modo de Rastreamento
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -122,19 +119,21 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                 type="button"
                 onClick={() => handleModoRastreamentoChange("completo")}
                 disabled={updatingKey !== null}
-                className={`p-3.5 sm:p-4 rounded-xl border text-left transition-all relative flex items-start gap-3 cursor-pointer ${
+                className={cn(
+                  "p-4 rounded-[18px] border text-left transition-all relative flex items-start gap-3.5 cursor-pointer",
                   rastreamentoModo === "completo"
-                    ? "border-[#1a3a5c] ring-2 ring-[#1a3a5c]/10 bg-[#1a3a5c]/5 shadow-xs"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
-                }`}
+                    ? "border-primary ring-1 ring-primary bg-[#fafafa] shadow-xs"
+                    : "border-[#e5e5e5] bg-white hover:border-primary/40 hover:bg-[#fafafa]"
+                )}
               >
                 <div className="mt-0.5 shrink-0">
                   <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                    className={cn(
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
                       rastreamentoModo === "completo"
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300 bg-white"
-                    }`}
+                        ? "border-primary bg-primary"
+                        : "border-[#e5e5e5] bg-white"
+                    )}
                   >
                     {rastreamentoModo === "completo" && (
                       <div className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -142,10 +141,10 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                   </div>
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <span className="text-sm font-bold text-slate-900 block leading-tight">
+                  <span className="text-sm font-medium text-[#0a0a0a] block leading-tight">
                     Rastreamento Completo
                   </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed">
                     Os responsáveis acompanham a van ao vivo desde o início da rota até o desembarque do aluno.
                   </p>
                 </div>
@@ -155,19 +154,21 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                 type="button"
                 onClick={() => handleModoRastreamentoChange("apenas_proximo")}
                 disabled={updatingKey !== null}
-                className={`p-3.5 sm:p-4 rounded-xl border text-left transition-all relative flex items-start gap-3 cursor-pointer ${
+                className={cn(
+                  "p-4 rounded-[18px] border text-left transition-all relative flex items-start gap-3.5 cursor-pointer",
                   rastreamentoModo === "apenas_proximo"
-                    ? "border-[#1a3a5c] ring-2 ring-[#1a3a5c]/10 bg-[#1a3a5c]/5 shadow-xs"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
-                }`}
+                    ? "border-primary ring-1 ring-primary bg-[#fafafa] shadow-xs"
+                    : "border-[#e5e5e5] bg-white hover:border-primary/40 hover:bg-[#fafafa]"
+                )}
               >
                 <div className="mt-0.5 shrink-0">
                   <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                    className={cn(
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
                       rastreamentoModo === "apenas_proximo"
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300 bg-white"
-                    }`}
+                        ? "border-primary bg-primary"
+                        : "border-[#e5e5e5] bg-white"
+                    )}
                   >
                     {rastreamentoModo === "apenas_proximo" && (
                       <div className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -175,10 +176,10 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
                   </div>
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <span className="text-sm font-bold text-slate-900 block leading-tight">
+                  <span className="text-sm font-medium text-[#0a0a0a] block leading-tight">
                     Apenas Próximo da Fila
                   </span>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed">
                     O mapa ao vivo é liberado apenas quando a van estiver a caminho do aluno (1 parada antes) até o desembarque.
                   </p>
                 </div>
@@ -186,10 +187,12 @@ export const RastreamentoTab = memo(function RastreamentoTab() {
             </div>
           </div>
         ) : (
-          <Banner
-            variant="info"
-            description="Como a opção está desativada, os pais e responsáveis não poderão acompanhar a van no mapa em tempo real."
-          />
+          <div className="pt-2">
+            <Banner
+              variant="info"
+              description="Com a opção desativada, os responsáveis não poderão acompanhar a van no mapa em tempo real."
+            />
+          </div>
         )}
       </div>
     </div>

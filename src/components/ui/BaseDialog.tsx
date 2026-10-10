@@ -51,7 +51,7 @@ const BaseDialogRoot = ({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[calc(100dvh-var(--safe-area-top)-var(--safe-area-bottom)-3rem)] gap-0",
+          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden bg-white rounded-[24px] border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100dvh-var(--safe-area-top)-var(--safe-area-bottom)-3rem)] gap-0",
           maxWidthClass,
           className
         )}
@@ -102,25 +102,25 @@ const BaseDialogHeader = ({
 }: BaseDialogHeaderProps) => {
   return (
     <div className={cn(
-      "p-5 sm:p-6 flex items-center justify-between bg-white border-b border-slate-100/60 shrink-0 pt-[calc(1.25rem+var(--safe-area-top)/2)]",
+      "p-5 sm:p-6 flex items-center justify-between bg-white border-b border-[#e5e5e5] shrink-0 pt-[calc(1.25rem+var(--safe-area-top)/2)]",
       className
     )}>
-      <div className="flex items-center gap-4 min-w-0 flex-1">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         {leftAction ? (
           <div className="shrink-0">{leftAction}</div>
         ) : icon ? (
-          <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 bg-slate-50/50 text-[#1a3a5c] border border-slate-100 shadow-sm transition-all duration-500">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] flex items-center justify-center shrink-0 bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] transition-all duration-300">
             {icon}
           </div>
         ) : null}
         <div className="flex flex-col min-w-0 flex-1">
-          <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight leading-tight">
+          <DialogTitle className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight leading-tight">
             {title}
           </DialogTitle>
 
           {(showSteps && currentStep !== undefined && totalSteps !== undefined) ? (
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
+              <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">
                 ETAPA {currentStep} DE {totalSteps}
               </span>
               <div className="flex gap-1">
@@ -130,15 +130,15 @@ const BaseDialogHeader = ({
                     className={cn(
                       "h-1 rounded-full transition-all duration-300",
                       (currentStep - 1) === i
-                        ? "bg-[#1a3a5c] w-4"
-                        : (currentStep - 1) > i ? "bg-[#1a3a5c]/40 w-2" : "bg-slate-100 w-2"
+                        ? "bg-primary w-4"
+                        : (currentStep - 1) > i ? "bg-primary/40 w-2" : "bg-[#e5e5e5] w-2"
                     )}
                   />
                 ))}
               </div>
             </div>
           ) : subtitle ? (
-            <p className={cn("text-[11px] text-slate-500 font-normal leading-tight mt-0.5", subtitleClassName)}>
+            <p className={cn("text-xs text-[#737373] font-normal leading-tight mt-0.5", subtitleClassName)}>
               {subtitle}
             </p>
           ) : null}
@@ -148,7 +148,7 @@ const BaseDialogHeader = ({
       {!hideCloseButton && onClose && (
         <button
           onClick={onClose}
-          className="ml-4 p-2 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl transition-all active:scale-95 shrink-0"
+          className="ml-3 sm:ml-4 p-2 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[10px] transition-all active:scale-95 shrink-0"
         >
           <X className="w-5 h-5" />
           <span className="sr-only">Fechar</span>
@@ -174,7 +174,7 @@ const BaseDialogBody = ({
   containerRef
 }: BaseDialogBodyProps) => {
   const content = (
-    <div ref={containerRef} className={cn("p-6 pt-2 flex-1 overflow-y-auto min-h-[100px] [overflow-anchor:none]", className)}>
+    <div ref={containerRef} className={cn("p-5 sm:p-6 flex-1 overflow-y-auto min-h-[100px] [overflow-anchor:none]", className)}>
       {children}
     </div>
   )
@@ -207,7 +207,7 @@ interface BaseDialogFooterProps {
 const BaseDialogFooter = ({ children, className }: BaseDialogFooterProps) => {
   return (
     <div className={cn(
-      "p-5 sm:p-6 bg-slate-50/40 flex gap-4 border-t border-slate-100/60 shrink-0 pb-[max(1.25rem,var(--safe-area-bottom))]",
+      "p-4 sm:p-5 bg-[#fafafa] flex gap-3 border-t border-[#e5e5e5] shrink-0 pb-[max(1rem,var(--safe-area-bottom))]",
       className
     )}>
       {children}
@@ -219,7 +219,7 @@ const BaseDialogFooter = ({ children, className }: BaseDialogFooterProps) => {
 interface BaseDialogActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string
   onClick?: () => void
-  variant?: "primary" | "secondary" | "ghost" | "outline"
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "destructive"
   isLoading?: boolean
   disabled?: boolean
   icon?: React.ReactNode
@@ -239,10 +239,11 @@ const BaseDialogAction = ({
   ...props
 }: BaseDialogActionProps) => {
   const styles = {
-    primary: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20",
-    secondary: "bg-white border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100",
-    outline: "border border-slate-200 text-[#1a3a5c] bg-transparent hover:bg-slate-50",
-    ghost: "bg-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-100 border-0"
+    primary: "bg-primary hover:bg-primary-hover text-primary-foreground shadow-xs",
+    secondary: "bg-white border border-[#e5e5e5] text-[#0a0a0a] hover:bg-[#f5f5f5]",
+    outline: "border border-[#e5e5e5] text-[#0a0a0a] bg-transparent hover:bg-[#f5f5f5]",
+    ghost: "bg-transparent text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] border-0",
+    destructive: "bg-[#e7000b] hover:bg-[#c80009] text-white shadow-xs disabled:bg-[#f5f5f5] disabled:text-[#a3a3a3] disabled:border disabled:border-[#e5e5e5] disabled:shadow-none disabled:hover:bg-[#f5f5f5]"
   };
 
   return (
@@ -251,14 +252,14 @@ const BaseDialogAction = ({
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(
-        "flex-1 h-12 rounded-xl font-bold text-sm transition-all active:scale-95",
+        "flex-1 h-11 rounded-[18px] font-medium text-xs sm:text-sm transition-all active:scale-95",
         styles[variant],
         className
       )}
       {...props}
     >
       {isLoading ? (
-        <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
       ) : (
         <div className="flex items-center gap-2">
           {icon}

@@ -5,7 +5,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { getNowBR } from "@/utils/dateUtils";
 import { Wand2, Loader2, Calendar, Eye, EyeOff, Lock, Mail, User, Phone, Award, Sparkles, X, Gift } from "lucide-react";
 import { useState } from "react";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { TermosUsoDialog as TermosDialog } from "@/components/dialogs/TermosUsoD
 import { PoliticaPrivacidadeDialog } from "@/components/dialogs/PoliticaPrivacidadeDialog";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { Banner } from "@/components/ui/Banner";
 
 export default function Register() {
   useSEO({
@@ -44,21 +45,17 @@ export default function Register() {
   const isCnpj = cpfcnpjValue.replace(/\D/g, "").length > 11;
 
   return (
-    <div className="min-h-screen bg-[#e8ecf1] flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden pt-[max(1rem,var(--safe-area-top))] pb-[max(1rem,var(--safe-area-bottom))]">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden pt-[max(1rem,var(--safe-area-top))] pb-[max(1rem,var(--safe-area-bottom))]">
       <div className="w-full max-w-2xl relative z-10">
-
-        {/* Main Card */}
-        <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-200">
-
-          {/* Header */}
+        <div className="bg-white rounded-[24px] shadow-sm overflow-hidden border border-[#e5e5e5]">
           <div className="text-center p-6 pb-0 relative">
             {isDevEnv() && (
-              <div className="absolute right-2 top-2 z-10">
+              <div className="absolute right-3 top-3 z-10">
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-full transition-all"
                   onClick={handleFillMagic}
                   title="Preencher com dados de teste"
                 >
@@ -68,22 +65,21 @@ export default function Register() {
             )}
 
             <div>
-              {/* Logo Section */}
               <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="flex items-center gap-3 mb-4">
                   <img
                     src="/assets/logo-van360.webp"
                     alt="Van360"
-                    className="h-12 w-auto select-none drop-shadow-sm cursor-pointer"
+                    className="h-12 w-auto select-none drop-shadow-xs cursor-pointer"
                     onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: isFromSplash } })}
                   />
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a]">
                   Crie sua conta grátis
                 </h1>
-                <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4">
+                <p className="text-[#737373] text-sm sm:text-base font-medium text-center px-4">
                   Leva menos de 1 minuto para organizar a sua van.
                 </p>
               </div>
@@ -91,23 +87,6 @@ export default function Register() {
           </div>
 
           <div className="p-6 sm:p-10 lg:p-12 lg:pt-8 lg:pb-10">
-            {/* Banner de escape para pais/responsáveis */}
-            <div className="mb-6 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 flex items-center justify-between gap-3 text-xs text-amber-900">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="text-base">👨‍👩‍👧</span>
-                <span className="font-medium leading-snug">
-                  <strong>É pai ou responsável?</strong> Seu acesso é liberado pelo motorista da van.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=responsavel`, { state: { fromSplash: isFromSplash } })}
-                className="shrink-0 font-bold text-amber-800 hover:text-amber-950 underline underline-offset-2 cursor-pointer transition-colors"
-              >
-                Acessar aqui
-              </button>
-            </div>
-
             <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Form {...form}>
                 <form
@@ -123,27 +102,27 @@ export default function Register() {
                       name="cpfcnpj"
                       render={({ field, fieldState }) => (
                         <FormItem>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            CPF ou CNPJ <span className="text-[#e7000b]">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                <User className="w-5 h-5" />
-                              </div>
-                              <div className="flex flex-col flex-1 min-w-0">
-                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                  CPF ou CNPJ <span className="text-red-600">*</span>
-                                </label>
-                                <Input
-                                  autoFocus
-                                  {...field}
-                                  inputMode="numeric"
-                                  onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                                  placeholder=""
-                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                />
-                              </div>
+                            <div className="relative">
+                              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                              <Input
+                                autoFocus
+                                {...field}
+                                inputMode="numeric"
+                                placeholder="Digite seu CPF ou CNPJ"
+                                onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                  fieldState.error
+                                    ? "border-[#e7000b] focus:border-[#e7000b]"
+                                    : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                }`}
+                              />
                             </div>
                           </FormControl>
-                          <FormMessage className="text-xs ml-1" />
+                          <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                         </FormItem>
                       )}
                     />
@@ -154,27 +133,27 @@ export default function Register() {
                         name="razao_social"
                         render={({ field, fieldState, formState }) => (
                           <FormItem>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              Razão Social <span className="text-[#e7000b]">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0) ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                  <User className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    Razão Social <span className="text-red-600">*</span>
-                                  </label>
-                                  <Input
-                                    placeholder="Digite a razão social"
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                  />
-                                </div>
+                              <div className="relative">
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                <Input
+                                  placeholder="Digite a razão social"
+                                  {...field}
+                                  value={field.value || ""}
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                    fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)
+                                      ? "border-[#e7000b] focus:border-[#e7000b]"
+                                      : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                  }`}
+                                />
                               </div>
                             </FormControl>
-                            <FormMessage className="text-xs ml-1" />
+                            <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                             {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                              <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                              <p className="text-[0.8rem] font-medium text-[#e7000b] mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
                             )}
                           </FormItem>
                         )}
@@ -187,24 +166,24 @@ export default function Register() {
                         name="nome"
                         render={({ field, fieldState }) => (
                           <FormItem>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              Nome completo <span className="text-[#e7000b]">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                  <User className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    Nome completo <span className="text-red-600">*</span>
-                                  </label>
-                                  <Input
-                                    placeholder="Digite seu nome completo"
-                                    {...field}
-                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                  />
-                                </div>
+                              <div className="relative">
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                <Input
+                                  placeholder="Digite seu nome completo"
+                                  {...field}
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                    fieldState.error
+                                      ? "border-[#e7000b] focus:border-[#e7000b]"
+                                      : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                  }`}
+                                />
                               </div>
                             </FormControl>
-                            <FormMessage className="text-xs ml-1" />
+                            <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                           </FormItem>
                         )}
                       />
@@ -214,24 +193,24 @@ export default function Register() {
                         name="apelido"
                         render={({ field, fieldState }) => (
                           <FormItem>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              Nome do Transporte / Apelido
+                            </FormLabel>
                             <FormControl>
-                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                  <User className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    Nome do Transporte / Apelido
-                                  </label>
-                                  <Input
-                                    placeholder="Ex: Tio Thiago"
-                                    {...field}
-                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                  />
-                                </div>
+                              <div className="relative">
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                <Input
+                                  placeholder="Ex: Tio Thiago"
+                                  {...field}
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                    fieldState.error
+                                      ? "border-[#e7000b] focus:border-[#e7000b]"
+                                      : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                  }`}
+                                />
                               </div>
                             </FormControl>
-                            <FormMessage className="text-xs ml-1" />
+                            <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                           </FormItem>
                         )}
                       />
@@ -243,28 +222,28 @@ export default function Register() {
                         name="telefone"
                         render={({ field, fieldState }) => (
                           <FormItem>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              WhatsApp <span className="text-[#e7000b]">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                  <Phone className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    WhatsApp <span className="text-red-600">*</span>
-                                  </label>
-                                  <Input
-                                    {...field}
-                                    type="tel"
-                                    inputMode="numeric"
-                                    placeholder="(11) 99999-9999"
-                                    maxLength={15}
-                                    onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                  />
-                                </div>
+                              <div className="relative">
+                                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                <Input
+                                  {...field}
+                                  type="tel"
+                                  inputMode="numeric"
+                                  placeholder="(11) 99999-9999"
+                                  maxLength={15}
+                                  onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                    fieldState.error
+                                      ? "border-[#e7000b] focus:border-[#e7000b]"
+                                      : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                  }`}
+                                />
                               </div>
                             </FormControl>
-                            <FormMessage className="text-xs ml-1" />
+                            <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                           </FormItem>
                         )}
                       />
@@ -274,24 +253,24 @@ export default function Register() {
                         name="email"
                         render={({ field, fieldState }) => (
                           <FormItem>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              E-mail <span className="text-[#e7000b]">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                  <Mail className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                    E-mail <span className="text-red-600">*</span>
-                                  </label>
-                                  <Input
-                                    placeholder="seu@email.com"
-                                    {...field}
-                                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                  />
-                                </div>
+                              <div className="relative">
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                <Input
+                                  placeholder="seu@email.com"
+                                  {...field}
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                    fieldState.error
+                                      ? "border-[#e7000b] focus:border-[#e7000b]"
+                                      : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                  }`}
+                                />
                               </div>
                             </FormControl>
-                            <FormMessage className="text-xs ml-1" />
+                            <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                           </FormItem>
                         )}
                       />
@@ -302,27 +281,27 @@ export default function Register() {
                       name="data_nascimento"
                       render={({ field, fieldState }) => (
                         <FormItem>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            Data de nascimento <span className="text-[#e7000b]">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                <Calendar className="w-5 h-5" />
-                              </div>
-                              <div className="flex flex-col flex-1 min-w-0">
-                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                  Data de nascimento <span className="text-red-600">*</span>
-                                </label>
-                                <Input
-                                  {...field}
-                                  inputMode="numeric"
-                                  maxLength={10}
-                                  onChange={(e) => field.onChange(dateMask(e.target.value))}
-                                  placeholder="dd/mm/aaaa"
-                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                />
-                              </div>
+                            <div className="relative">
+                              <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                              <Input
+                                {...field}
+                                inputMode="numeric"
+                                maxLength={10}
+                                onChange={(e) => field.onChange(dateMask(e.target.value))}
+                                placeholder="dd/mm/aaaa"
+                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                  fieldState.error
+                                    ? "border-[#e7000b] focus:border-[#e7000b]"
+                                    : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                }`}
+                              />
                             </div>
                           </FormControl>
-                          <FormMessage className="text-xs ml-1" />
+                          <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                         </FormItem>
                       )}
                     />
@@ -332,49 +311,54 @@ export default function Register() {
                       name="senha"
                       render={({ field, fieldState }) => (
                         <FormItem>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            Senha <span className="text-[#e7000b]">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                <Lock className="w-5 h-5" />
-                              </div>
-                              <div className="flex flex-col flex-1 min-w-0">
-                                <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                  Senha <span className="text-red-600">*</span>
-                                </label>
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="Mínimo 6 caracteres"
-                                  {...field}
-                                  className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal"
-                                />
-                              </div>
+                            <div className="relative">
+                              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Mínimo 6 caracteres"
+                                {...field}
+                                className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                  fieldState.error
+                                    ? "border-[#e7000b] focus:border-[#e7000b]"
+                                    : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                }`}
+                              />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
                                 tabIndex={-1}
                               >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </button>
                             </div>
                           </FormControl>
-                          <FormMessage className="text-xs ml-1" />
+                          <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                         </FormItem>
                       )}
                     />
 
                     {hasRefParam ? (
-                      <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 flex items-center gap-2.5 text-emerald-800 text-xs font-semibold animate-in fade-in duration-300">
-                        <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span><span className="font-extrabold">Indicação ativada!</span> Você garantirá desconto na primeira assinatura.</span>
-                      </div>
+                      <Banner
+                        variant="success"
+                        className="p-3"
+                        description={
+                          <span>
+                            <strong>Indicação ativada!</strong> Você garantirá desconto na primeira assinatura.
+                          </span>
+                        }
+                      />
                     ) : (
                       <div className="pt-1">
                         {!showReferralInput ? (
                           <button
                             type="button"
                             onClick={() => setShowReferralInput(true)}
-                            className="text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] transition-colors flex items-center gap-2 px-1 py-1"
+                            className="text-xs font-semibold text-[#737373] hover:text-[#0a0a0a] transition-colors flex items-center gap-2 px-1 py-1 cursor-pointer"
                           >
                             <Gift className="w-4 h-4 text-amber-500 shrink-0" />
                             <span>Foi indicado por outro motorista?</span>
@@ -385,25 +369,25 @@ export default function Register() {
                             name="indicador_telefone"
                             render={({ field, fieldState }) => (
                               <FormItem className="animate-in fade-in zoom-in-95 duration-200">
+                                <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                  WhatsApp de quem indicou
+                                </FormLabel>
                                 <FormControl>
-                                  <div className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]'}`}>
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 text-amber-600 mr-3 shrink-0">
-                                      <Phone className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                      <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                        WhatsApp de quem indicou
-                                      </label>
-                                      <Input
-                                        {...field}
-                                        type="tel"
-                                        inputMode="numeric"
-                                        placeholder="(11) 99999-9999"
-                                        maxLength={15}
-                                        onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none"
-                                      />
-                                    </div>
+                                  <div className="relative">
+                                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-600 pointer-events-none" />
+                                    <Input
+                                      {...field}
+                                      type="tel"
+                                      inputMode="numeric"
+                                      placeholder="(11) 99999-9999"
+                                      maxLength={15}
+                                      onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                      className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                        fieldState.error
+                                          ? "border-[#e7000b] focus:border-[#e7000b]"
+                                          : "border-[#e5e5e5] focus:border-[#2563eb]"
+                                      }`}
+                                    />
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -411,14 +395,14 @@ export default function Register() {
                                         form.clearErrors("indicador_telefone");
                                         setShowReferralInput(false);
                                       }}
-                                      className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl transition-colors shrink-0"
+                                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] p-1 rounded-full transition-colors cursor-pointer"
                                       title="Remover"
                                     >
                                       <X className="w-4 h-4" />
                                     </button>
                                   </div>
                                 </FormControl>
-                                <FormMessage className="text-xs ml-1" />
+                                <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                               </FormItem>
                             )}
                           />
@@ -437,17 +421,41 @@ export default function Register() {
                                 id="termos_aceitos"
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className={`bg-white shadow-sm rounded-[4px] w-5 h-5 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] mt-0.5 flex-shrink-0 ${fieldState.error ? "border-red-500" : "border-slate-300"}`}
+                                className={`bg-white shadow-2xs rounded-[4px] w-4 h-4 data-[state=checked]:bg-[#2563eb] data-[state=checked]:border-[#2563eb] mt-0.5 shrink-0 ${fieldState.error ? "border-[#e7000b]" : "border-[#e5e5e5]"}`}
                               />
                             </FormControl>
                             <Label
                               htmlFor="termos_aceitos"
-                              className="text-[13px] sm:text-[14px] text-slate-600 cursor-pointer select-none leading-relaxed font-medium"
+                              className="text-xs text-[#737373] cursor-pointer select-none leading-normal font-normal"
                             >
-                              Declaro que li e concordo com os Termos de Uso e a Política de Privacidade.
+                              Li e concordo com os{" "}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setOpenTermos(true);
+                                }}
+                                className="text-[#2563eb] hover:underline font-medium cursor-pointer transition-colors"
+                              >
+                                Termos de Uso
+                              </button>{" "}
+                              e a{" "}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setOpenPolitica(true);
+                                }}
+                                className="text-[#2563eb] hover:underline font-medium cursor-pointer transition-colors"
+                              >
+                                Política de Privacidade
+                              </button>
+                              .
                             </Label>
                           </div>
-                          <FormMessage className="pl-8 text-xs mt-1" />
+                          <FormMessage className="pl-7 text-xs mt-1 text-[#e7000b]" />
                         </FormItem>
                       )}
                     />
@@ -463,7 +471,7 @@ export default function Register() {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all"
+                      className="w-full h-12 rounded-[18px] text-[15px] font-bold bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs transition-all active:scale-[0.99] cursor-pointer"
                     >
                       {loading ? (
                         <>
@@ -475,31 +483,13 @@ export default function Register() {
                       )}
                     </Button>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setOpenTermos(true)}
-                        className="text-xs font-medium text-slate-500 hover:text-[#1a3a5c] transition-colors focus:outline-none"
-                      >
-                        Termos de Uso
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOpenPolitica(true)}
-                        className="text-xs font-medium text-slate-500 hover:text-[#1a3a5c] transition-colors focus:outline-none"
-                      >
-                        Política de Privacidade
-                      </button>
-                    </div>
-
-                    {/* Voltar ao login */}
                     <div className="text-center mt-6">
-                      <p className="text-[13px] text-slate-500">
+                      <p className="text-[13px] text-[#737373]">
                         Já tem uma conta?{" "}
                         <button
                           type="button"
                           onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: isFromSplash } })}
-                          className="text-[#1a3a5c] font-bold hover:underline transition-all cursor-pointer"
+                          className="text-[#2563eb] font-bold hover:underline transition-all cursor-pointer"
                         >
                           Fazer login
                         </button>
@@ -515,9 +505,8 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="text-center pt-4">
-          <p className="text-sm text-slate-600 font-medium">
+          <p className="text-sm text-[#737373] font-medium">
             © {getNowBR().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>

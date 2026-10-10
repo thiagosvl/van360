@@ -44,13 +44,13 @@ export function ActivityUserGroupCard({
 
   return (
     <div
-      className={`p-4 rounded-3xl bg-slate-900/90 border transition-all space-y-3.5 text-left ${
+      className={`p-4 rounded-xl bg-card border transition-all space-y-3.5 text-left ${
         isFirst
-          ? "border-blue-500/50 shadow-xl shadow-blue-500/5 bg-[#121a2d]"
-          : "border-slate-800/80 hover:border-slate-700/80 shadow-md"
+          ? "border-primary/50 shadow-sm"
+          : "border-border hover:border-border/80 shadow-xs"
       }`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
           {userGroup.usuario_logo_url?.trim() ? (
             <div
@@ -65,7 +65,7 @@ export function ActivityUserGroupCard({
                   openImageFullscreen({ imageUrl: userGroup.usuario_logo_url!, alt: displayName });
                 }
               }}
-              className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+              className="h-10 w-10 rounded-lg bg-background border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
               title="Visualizar logo"
             >
               <img
@@ -76,7 +76,7 @@ export function ActivityUserGroupCard({
               />
             </div>
           ) : (
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-600/20 to-blue-400/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-headline font-black text-sm shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
               {displayName.slice(0, 2).toUpperCase()}
             </div>
           )}
@@ -84,7 +84,7 @@ export function ActivityUserGroupCard({
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userGroup.usuario_id}`}
-                className="text-sm font-bold text-white hover:text-blue-400 hover:underline transition-colors truncate"
+                className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors truncate"
               >
                 {displayName}
               </Link>
@@ -97,7 +97,7 @@ export function ActivityUserGroupCard({
               )}
 
               {userGroup.tipo_usuario === "novo" && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shrink-0">
                   <Sparkles className="h-2.5 w-2.5" />
                   Novo
                 </span>
@@ -120,7 +120,7 @@ export function ActivityUserGroupCard({
               )}
             </div>
             {fullName && (
-              <p className="text-[11px] text-slate-400 truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {fullName}
               </p>
             )}
@@ -129,13 +129,13 @@ export function ActivityUserGroupCard({
 
         <div className="flex items-center gap-2 shrink-0 flex-wrap justify-between sm:justify-end">
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
               isHighVolume
                 ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                : "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                : "bg-primary/10 text-primary border-primary/20"
             }`}
           >
-            {isHighVolume ? <Flame className="h-3.5 w-3.5 text-amber-400" /> : <Zap className="h-3.5 w-3.5 text-blue-400" />}
+            {isHighVolume ? <Flame className="h-3.5 w-3.5 text-amber-400" /> : <Zap className="h-3.5 w-3.5 text-primary" />}
             <span>{userGroup.total_atividades} {userGroup.total_atividades === 1 ? "atividade" : "atividades"}</span>
           </span>
 
@@ -144,7 +144,7 @@ export function ActivityUserGroupCard({
             size="sm"
             variant="outline"
             onClick={() => onOpenDetails(userGroup)}
-            className="h-8 rounded-xl border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-colors px-3"
+            className="h-8 rounded-lg border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-medium flex items-center gap-1.5 transition-colors px-3"
           >
             <FileText className="h-3.5 w-3.5" />
             <span>Ver detalhes</span>
@@ -152,42 +152,42 @@ export function ActivityUserGroupCard({
         </div>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {latestLog && (
-          <div className="p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/40 shadow-sm relative space-y-2.5">
+          <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 shadow-xs relative space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1 min-w-0 flex-1 text-left">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${getActionBadgeStyle(
+                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border ${getActionBadgeStyle(
                       latestLog.acao
                     )}`}
                   >
                     {latestLog.acao.replace(/_/g, " ")}
                   </span>
                 </div>
-                <p className="text-xs font-medium text-slate-100 leading-relaxed break-words">
+                <p className="text-xs font-normal text-foreground leading-relaxed break-words">
                   {formatActivityDescription(latestLog.descricao)}
                 </p>
               </div>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => onInspectLog(latestLog)}
-                className="h-7 px-2.5 bg-blue-600 text-white hover:bg-blue-500 rounded-lg shadow-sm flex items-center gap-1 shrink-0 text-[10px] font-black uppercase tracking-wider"
+                className="h-7 px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md shadow-xs flex items-center gap-1 shrink-0 text-xs font-medium border-transparent"
               >
                 <Eye className="h-3 w-3" />
-                <span className="hidden sm:inline">INSPECIONAR</span>
+                <span className="hidden sm:inline">Inspecionar</span>
               </Button>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-blue-500/20 text-[11px] font-mono text-blue-300">
+            <div className="flex items-center justify-between pt-2 border-t border-primary/15 text-[11px] font-mono text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <Clock className="h-3 w-3 text-blue-400" />
+                <Clock className="h-3 w-3 text-primary" />
                 {formatRelativeTime(latestLog.created_at)}
               </span>
-              <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">
+              <span className="text-[10px] text-muted-foreground font-sans font-medium">
                 Última atividade
               </span>
             </div>
@@ -197,23 +197,23 @@ export function ActivityUserGroupCard({
         {secondaryLogs.map((log) => (
           <div
             key={log.id}
-            className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between gap-3 hover:bg-slate-950/90 transition-colors text-left"
+            className="p-2.5 sm:px-3 sm:py-2.5 rounded-lg bg-secondary/40 border border-border/60 flex items-center justify-between gap-3 hover:bg-secondary/70 transition-colors text-left"
           >
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono font-bold text-slate-400 shrink-0">
-              <Clock className="h-3 w-3 text-slate-500" />
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono font-medium text-muted-foreground shrink-0">
+              <Clock className="h-3 w-3 text-muted-foreground" />
               {formatRelativeTime(log.created_at)}
             </span>
 
             <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-xs text-slate-200 truncate">
+              <p className="text-xs text-foreground truncate">
                 {formatActivityDescription(log.descricao)}
               </p>
               <div className="flex items-center gap-2 sm:hidden">
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-[10px] font-mono text-muted-foreground">
                   {formatRelativeTime(log.created_at)}
                 </span>
                 <span
-                  className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold uppercase border ${getActionBadgeStyle(
+                  className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-medium border ${getActionBadgeStyle(
                     log.acao
                   )}`}
                 >
@@ -224,7 +224,7 @@ export function ActivityUserGroupCard({
 
             <div className="flex items-center gap-2 shrink-0">
               <span
-                className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border ${getActionBadgeStyle(
+                className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border ${getActionBadgeStyle(
                   log.acao
                 )}`}
               >
@@ -234,7 +234,7 @@ export function ActivityUserGroupCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => onInspectLog(log)}
-                className="h-6 w-6 p-0 rounded-lg bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white"
+                className="h-6 w-6 p-0 rounded-md bg-secondary text-primary hover:bg-primary hover:text-primary-foreground"
                 title="Inspecionar atividade"
               >
                 <Eye className="h-3 w-3" />

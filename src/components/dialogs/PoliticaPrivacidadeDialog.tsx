@@ -13,10 +13,11 @@ export function PoliticaPrivacidadeDialog({ open, onOpenChange }: PoliticaPrivac
   const handleClose = () => safeCloseDialog(() => onOpenChange(false));
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange}>
+    <BaseDialog open={open} onOpenChange={onOpenChange} maxWidth="2xl">
       <BaseDialog.Header
         title="Política de Privacidade"
-        icon={<ShieldCheck className="text-emerald-600 w-5 h-5" />}
+        subtitle="Como tratamos seus dados em conformidade com a LGPD"
+        icon={<ShieldCheck className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
       <BaseDialog.Body>
@@ -26,7 +27,7 @@ export function PoliticaPrivacidadeDialog({ open, onOpenChange }: PoliticaPrivac
         <BaseDialog.Action
           label="Fechar"
           onClick={handleClose}
-          variant="primary"
+          variant="outline"
         />
       </BaseDialog.Footer>
     </BaseDialog>

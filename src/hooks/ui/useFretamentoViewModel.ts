@@ -82,8 +82,8 @@ export const useFretamentoViewModel = () => {
       result = result.filter((item) => {
         const matchTitulo = item.titulo.toLowerCase().includes(effectiveSearch);
         const matchDestino = item.destino.toLowerCase().includes(effectiveSearch);
-        const matchContratante = item.contratante_nome?.toLowerCase().includes(effectiveSearch);
-        return matchTitulo || matchDestino || matchContratante;
+        const matchOrigem = item.origem?.toLowerCase().includes(effectiveSearch);
+        return matchTitulo || matchDestino || matchOrigem;
       });
     }
 
@@ -119,7 +119,7 @@ export const useFretamentoViewModel = () => {
       await deletarMutation.mutateAsync(id);
       toast.success(`"${titulo}" removido com sucesso.`);
     } catch {
-      toast.error("Erro ao remover registro. Tente novamente.");
+      toast.error("Erro ao remover viagem. Tente novamente.");
     }
   };
 

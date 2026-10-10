@@ -91,7 +91,7 @@ export function getSubscriptionStatusDetails(statusKey: string | null | undefine
 
 export function SubscriptionStatusBadge({ status, dataVencimento, className }: SubscriptionStatusBadgeProps) {
   if (!status) {
-    return <span className={cn("text-xs text-slate-400", className)}>—</span>;
+    return <span className={cn("text-xs text-[#737373]", className)}>—</span>;
   }
 
   if (status === SubscriptionStatus.ACTIVE && dataVencimento === null) {
@@ -114,7 +114,7 @@ export function SubscriptionStatusBadge({ status, dataVencimento, className }: S
     return (
       <span
         className={cn(
-          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700",
+          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]",
           className
         )}
       >

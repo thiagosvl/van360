@@ -31,28 +31,27 @@ export const getStatusText = (status: string, dataVencimento?: string) => {
 
 export const getStatusColor = (status: string, dataVencimento?: string) => {
   if (status === CobrancaStatus.CANCELADA) {
-    return "bg-slate-100 text-slate-600 border-slate-200 shadow-sm";
+    return "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]";
   }
 
   if (status === CobrancaStatus.PAGO) {
-    return "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-transparent shadow-sm";
+    return "bg-emerald-50 text-emerald-700 border border-emerald-200/60";
   }
 
   if (!dataVencimento) {
-    return "bg-amber-50 text-amber-600 hover:bg-amber-100 border-transparent shadow-sm";
+    return "bg-amber-50 text-amber-700 border border-amber-200/60";
   }
 
   if (checkCobrancaEmAtraso(dataVencimento)) {
-    return "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 shadow-sm";
+    return "bg-red-50 text-[#e7000b] border border-red-200/60";
   }
 
-  // Se o vencimento é hoje (diffDays 0 quando comparado hoje com vencimento)
   const diffDays = differenceInCalendarDaysBR(getNowBR(), dataVencimento);
 
   if (diffDays === 0) {
-    return "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-800 border-orange-200 shadow-sm";
+    return "bg-orange-50 text-orange-700 border border-orange-200/60";
   }
 
-  return "bg-amber-50 text-amber-600 hover:bg-amber-100 border-transparent shadow-sm";
+  return "bg-amber-50 text-amber-700 border border-amber-200/60";
 };
 

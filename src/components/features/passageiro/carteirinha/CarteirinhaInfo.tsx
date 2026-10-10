@@ -1,17 +1,14 @@
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionItem } from "@/types/actions";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useLayout } from "@/contexts/LayoutContext";
-import { ContratoStatus, TipoResponsavel } from "@/types/enums";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
+import { ContratoStatus, TipoResponsavel, ModoCobrancaEnum } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
   formatGenero,
@@ -45,6 +42,9 @@ import {
   Calendar,
   CalendarClock,
   Users,
+  Sparkles,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import React from "react";
 
@@ -100,74 +100,89 @@ const CarteirinhaTopCard = ({
     !phoneNumbersOnly ||
     phoneNumbersOnly.length < 10;
 
-  return (
-    <div className="bg-[#1a3a5c] rounded-[2rem] relative flex flex-col items-center mb-11 shadow-md">
-      <div className="absolute top-0 left-0 w-full h-[25%] bg-black/15 rounded-t-[2rem] z-0" />
+  const { financeiro } = useMotoristaFinanceiroApi();
+  const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
+  const modoEfetivo = passageiro.modo_cobranca || modoVan;
+  const temLembretesHabilitados =
+    !passageiro.isento &&
+    modoEfetivo !== ModoCobrancaEnum.DESATIVADO;
+  const recebeAvisos =
+    !!passageiro.ativo &&
+    temLembretesHabilitados &&
+    passageiro.enviar_notificacoes !== false;
+  const mostrarIconeAvisos =
+    !isSubConta &&
+    !passageiro.isento &&
+    (modoVan !== ModoCobrancaEnum.DESATIVADO || recebeAvisos);
 
-      <div className="relative z-10 w-full flex flex-col items-center px-4 pt-8 pb-10">
-        <div className="rounded-full bg-white p-[3px] shadow-sm shrink-0">
-          <div className="rounded-full bg-[#132a42] p-[4px]">
-            <div className="h-16 w-16 rounded-full bg-slate-200 border-[3px] border-white flex items-center justify-center">
-              <User className="w-8 h-8 text-slate-400 fill-current" />
-            </div>
+  return (
+    <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-8 shadow-sm border border-white/10 overflow-visible">
+      <div className="absolute top-0 left-0 w-full h-[35%] bg-white/5 rounded-t-[24px] pointer-events-none z-0" />
+      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/5 blur-xl pointer-events-none" />
+
+      <div className="relative z-10 w-full flex flex-col items-center px-4 pt-7 pb-9">
+        <div className="rounded-full bg-white/10 p-1 shadow-sm shrink-0 backdrop-blur-xs">
+          <div className="h-16 w-16 rounded-full bg-[#183659] border-2 border-white/20 flex items-center justify-center shadow-xs">
+            <User className="w-8 h-8 text-white fill-current" />
           </div>
         </div>
 
-        <div className="text-center mt-2 w-full px-2">
-          <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug">
+        <div className="text-center mt-3 w-full px-2">
+          <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug break-words">
             {passageiro.nome}
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-5 pointer-events-none">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 pointer-events-none">
           <Badge
             className={cn(
-              "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+              "px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs",
               passageiro.ativo
-                ? "text-emerald-700 bg-[#d8f0e1]"
-                : "text-rose-700 bg-rose-100"
+                ? "text-emerald-950 bg-emerald-300"
+                : "text-rose-950 bg-rose-200"
             )}
           >
             {passageiro.ativo ? "Ativo" : "Inativo"}
           </Badge>
-          {!passageiro.isento && (
-            <>
-              {!isSubConta && temCobrancasVencidas && (
-                <Badge className="bg-[#eedbdf] text-[#9a3843] border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
-                  Possui Débitos
-                </Badge>
+          {mostrarIconeAvisos && (
+            <Badge
+              className={cn(
+                "h-6 w-6 p-0 flex items-center justify-center rounded-full border shadow-2xs pointer-events-auto",
+                recebeAvisos
+                  ? "border-emerald-400/40 text-emerald-300 bg-emerald-500/20 backdrop-blur-xs"
+                  : "border-amber-400/40 text-amber-300 bg-amber-500/20 backdrop-blur-xs"
               )}
-              {!isSubConta && (
-                <Badge
-                  className={cn(
-                    "border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-                    passageiro.enviar_notificacoes
-                      ? "text-emerald-700 bg-[#d8f0e1]"
-                      : "text-rose-700 bg-rose-100"
-                  )}
-                >
-                  {passageiro.enviar_notificacoes ? "Lembretes Ativos" : "Lembretes Inativos"}
-                </Badge>
+              title={recebeAvisos ? "Avisos de cobrança ativos" : "Avisos de cobrança desativados"}
+            >
+              {recebeAvisos ? (
+                <Bell className="h-3.5 w-3.5" />
+              ) : (
+                <BellOff className="h-3.5 w-3.5" />
               )}
-            </>
+            </Badge>
+          )}
+          {!passageiro.isento && !isSubConta && temCobrancasVencidas && (
+            <Badge className="bg-rose-500 text-white border-none px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] animate-pulse shadow-2xs">
+              Possui Débitos
+            </Badge>
           )}
         </div>
       </div>
 
-      <div className="absolute -bottom-6 left-0 w-full flex justify-center gap-3 z-20">
+      <div className="absolute -bottom-5 left-0 w-full flex justify-center gap-3 z-20">
         {canManage && (
           <Button
             size="icon"
             onClick={() => onToggleClick(!!passageiro.ativo)}
             className={cn(
-              "h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg",
+              "h-10 w-10 sm:h-11 sm:w-11 rounded-full transition-all shadow-md active:scale-95 cursor-pointer",
               passageiro.ativo
-                ? "bg-[#f04f64] text-white hover:bg-rose-600"
+                ? "bg-rose-500 text-white hover:bg-rose-600"
                 : "bg-emerald-500 text-white hover:bg-emerald-600"
             )}
             title={passageiro.ativo ? "Desativar Aluno" : "Ativar Aluno"}
           >
-            {passageiro.ativo ? <PowerOff size={28} className="h-7 w-7" /> : <Power size={28} className="h-7 w-7" />}
+            {passageiro.ativo ? <PowerOff size={22} className="h-5 w-5" /> : <Power size={22} className="h-5 w-5" />}
           </Button>
         )}
         {canManage && (
@@ -175,89 +190,62 @@ const CarteirinhaTopCard = ({
             size="icon"
             title="Editar"
             onClick={onEditClick}
-            className="h-12 w-12 rounded-full bg-[#2c7be5] text-white hover:bg-[#1a5bba] transition-all shadow-md hover:shadow-lg"
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white text-[#0a0a0a] hover:bg-[#f5f5f5] transition-all shadow-md border border-[#e5e5e5] active:scale-95 cursor-pointer"
           >
-            <Pencil size={28} className="h-7 w-7" />
+            <Pencil size={20} className="h-5 w-5" />
           </Button>
         )}
         {canManage && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <ActionsDropdown
+            align="center"
+            title={passageiro.nome}
+            description="Opções do aluno"
+            customTrigger={
               <Button
                 size="icon"
                 title="Mais opções"
-                className="h-12 w-12 rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-all shadow-md hover:shadow-lg"
+                className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white text-[#0a0a0a] hover:bg-[#f5f5f5] transition-all shadow-md border border-[#e5e5e5] active:scale-95 cursor-pointer"
               >
-                <MoreHorizontal size={28} className="h-7 w-7" />
+                <MoreHorizontal size={20} className="h-5 w-5" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="center"
-              className="w-56 rounded-xl border-gray-100 shadow-xl p-1"
-            >
-              {isPendente && onEnviarWhatsApp && (
-                <DropdownMenuItem
-                  disabled={isWhatsAppDisabled}
-                  onClick={() => {
-                    if (isWhatsAppDisabled) return;
-                    onEnviarWhatsApp(passageiro);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 p-2.5 rounded-lg font-medium",
-                    isWhatsAppDisabled
-                      ? "opacity-50 cursor-not-allowed text-gray-400"
-                      : "cursor-pointer text-gray-700"
-                  )}
-                >
-                  {isMobile ? (
-                    <>
-                      <WhatsAppIcon className="h-4 w-4 text-slate-400" />
-                      Reenviar Contrato
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4 text-slate-400" />
-                      Copiar Link para Assinatura do Contrato
-                    </>
-                  )}
-                </DropdownMenuItem>
-              )}
-
-              <DropdownMenuItem
-                onClick={onToggleNotificacoesClick}
-                className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-gray-700"
-              >
-                {passageiro.enviar_notificacoes ? (
-                  <>
-                    <BotOff className="h-4 w-4 text-slate-400" />
-                    Desativar Lembretes
-                  </>
-                ) : (
-                  <>
-                    <Bot className="h-4 w-4 text-slate-400" />
-                    Ativar Lembretes
-                  </>
-                )}
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={onDeleteClick}
-                className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="h-3.5 w-3.5 opacity-60" />
-                Excluir aluno
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            }
+            actions={[
+              ...(isPendente && onEnviarWhatsApp
+                ? [
+                    {
+                      label: "Reenviar Contrato",
+                      icon: <WhatsAppIcon className="h-4 w-4 text-[#737373]" />,
+                      disabled: isWhatsAppDisabled,
+                      onClick: () => {
+                        if (isWhatsAppDisabled) return;
+                        onEnviarWhatsApp(passageiro);
+                      },
+                    },
+                  ]
+                : []),
+              ...(temLembretesHabilitados
+                ? [
+                    {
+                      label: passageiro.enviar_notificacoes ? "Desativar Lembretes" : "Ativar Lembretes",
+                      icon: passageiro.enviar_notificacoes ? <BotOff className="h-4 w-4 text-[#737373]" /> : <Bot className="h-4 w-4 text-[#737373]" />,
+                      onClick: onToggleNotificacoesClick,
+                    },
+                  ]
+                : []),
+              {
+                label: "Excluir aluno",
+                icon: <Trash2 className="h-4 w-4" />,
+                isDestructive: true,
+                onClick: onDeleteClick,
+              },
+            ]}
+          />
         )}
       </div>
     </div>
   );
 };
 
-/**
- * Header da carteirinha: usado isoladamente na versão mobile.
- */
 export const CarteirinhaHeader = (
   props: Pick<
     CarteirinhaInfoProps,
@@ -270,16 +258,9 @@ export const CarteirinhaHeader = (
     | "onEnviarWhatsApp"
   >,
 ) => {
-  return (
-    <div className="px-2 pt-2">
-      <CarteirinhaTopCard {...props} />
-    </div>
-  );
+  return <CarteirinhaTopCard {...props} />;
 };
 
-/**
- * Componente principal que renderiza tudo junto (usado no desktop).
- */
 export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
   return (
     <div className="space-y-6">
@@ -292,7 +273,7 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
         onToggleNotificacoesClick={props.onToggleNotificacoesClick}
         onEnviarWhatsApp={props.onEnviarWhatsApp}
       />
-      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-4 md:p-6 pb-6">
+      <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 sm:p-6 pb-6">
         <CarteirinhaDadosPessoais
           passageiro={props.passageiro}
           isCopiedEndereco={props.isCopiedEndereco}
@@ -308,9 +289,6 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
   );
 };
 
-/**
- * Item de informação padronizado no estilo CarteirinhaResponsaveis
- */
 const InfoField = ({
   icon,
   label,
@@ -335,19 +313,19 @@ const InfoField = ({
       className={cn(
         "min-w-0 space-y-1 text-left",
         fullWidth && "col-span-2 sm:col-span-2",
-        hasBorder && "pt-2.5 border-t border-slate-200/50"
+        hasBorder && "pt-2.5 border-t border-[#e5e5e5]"
       )}
     >
       <div className="flex items-center gap-1.5">
-        {icon && <span className="text-slate-400 shrink-0">{icon}</span>}
-        <span className="text-xs font-medium text-slate-500 leading-none">
+        {icon && <span className="text-[#737373] shrink-0">{icon}</span>}
+        <span className="text-xs font-normal text-[#737373] leading-none">
           {label}
         </span>
       </div>
       <p
         className={cn(
-          "text-xs sm:text-sm font-bold text-[#1a3a5c] leading-tight break-words",
-          isInvalidOrEmpty && "text-slate-400 font-normal"
+          "text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-tight break-words",
+          isInvalidOrEmpty && "text-[#a3a3a3] font-normal"
         )}
       >
         {isInvalidOrEmpty ? "—" : value}
@@ -356,9 +334,6 @@ const InfoField = ({
   );
 };
 
-/**
- * Dados pessoais detalhados: 100% alinhados ao estilo visual de CarteirinhaResponsaveis.
- */
 export const CarteirinhaDadosPessoais = ({
   passageiro,
   isCopiedEndereco,
@@ -379,6 +354,14 @@ export const CarteirinhaDadosPessoais = ({
     openPassageiroEscolaDialog,
     openPassageiroTransporteDialog,
   } = useLayout();
+  const { financeiro } = useMotoristaFinanceiroApi();
+  const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
+  const labelModoVan =
+    modoVan === ModoCobrancaEnum.AUTOMATICA
+      ? "Automática Pix"
+      : modoVan === ModoCobrancaEnum.LEMBRETES
+        ? "Apenas Lembretes"
+        : "Desativado";
   const { can } = usePermissions();
   const canManage = can("passageiros.gerenciar");
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
@@ -428,19 +411,19 @@ export const CarteirinhaDadosPessoais = ({
       {canViewFinancials && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#16314f]">Parcelas</h3>
+            <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Parcelas</h3>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openPassageiroFinanceiroDialog({ passageiro })}
-              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+              className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer"
             >
-              <Pencil className="h-3 w-3" />
+              <Pencil className="h-3 w-3 text-[#737373]" />
               <span>Editar</span>
             </Button>
           </div>
-          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+          <div className="bg-[#fafafa] rounded-[18px] sm:rounded-[20px] p-4 border border-[#e5e5e5] space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <InfoField
                 icon={<Wallet className="h-3.5 w-3.5" />}
@@ -453,7 +436,7 @@ export const CarteirinhaDadosPessoais = ({
                 value={diaVencimentoTexto}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+            <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-[#e5e5e5]">
               <InfoField
                 icon={<CalendarClock className="h-3.5 w-3.5" />}
                 label="Início das cobranças"
@@ -465,34 +448,51 @@ export const CarteirinhaDadosPessoais = ({
                 value={fimCobrancaTexto}
               />
             </div>
+            {!passageiro.isento && (
+              <div className="pt-2.5 border-t border-[#e5e5e5]">
+                <InfoField
+                  icon={<Sparkles className="h-3.5 w-3.5" />}
+                  label="Modelo de cobrança"
+                  value={
+                    passageiro.modo_cobranca === ModoCobrancaEnum.AUTOMATICA
+                      ? "Automática Pix (Individual)"
+                      : passageiro.modo_cobranca === ModoCobrancaEnum.LEMBRETES
+                        ? "Apenas Lembretes (Individual)"
+                        : passageiro.modo_cobranca === ModoCobrancaEnum.DESATIVADO
+                          ? "Desativado (Individual)"
+                          : `Padrão da Van (${labelModoVan})`
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#16314f]">Escola</h3>
+          <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Escola</h3>
           {canManage && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openPassageiroEscolaDialog({ passageiro })}
-              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+              className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer"
             >
-              <Pencil className="h-3 w-3" />
+              <Pencil className="h-3 w-3 text-[#737373]" />
               <span>Editar</span>
             </Button>
           )}
         </div>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+        <div className="bg-[#fafafa] rounded-[18px] sm:rounded-[20px] p-4 border border-[#e5e5e5] space-y-3">
           <InfoField
             icon={<GraduationCap className="h-3.5 w-3.5" />}
             label="Escola"
             value={passageiro.escola?.nome}
             fullWidth
           />
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-[#e5e5e5]">
             <InfoField
               icon={<Clock className="h-3.5 w-3.5" />}
               label="Período"
@@ -504,7 +504,7 @@ export const CarteirinhaDadosPessoais = ({
               value={passageiro.turma}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-[#e5e5e5]">
             <InfoField
               icon={<DoorClosed className="h-3.5 w-3.5" />}
               label="Sala"
@@ -521,21 +521,21 @@ export const CarteirinhaDadosPessoais = ({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#16314f]">Transporte</h3>
+          <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Transporte</h3>
           {canManage && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openPassageiroTransporteDialog({ passageiro })}
-              className="h-7 px-2 text-xs font-semibold text-[#1a3a5c] hover:bg-slate-200/60 rounded-lg gap-1"
+              className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer"
             >
-              <Pencil className="h-3 w-3" />
+              <Pencil className="h-3 w-3 text-[#737373]" />
               <span>Editar</span>
             </Button>
           )}
         </div>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+        <div className="bg-[#fafafa] rounded-[18px] sm:rounded-[20px] p-4 border border-[#e5e5e5] space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <InfoField
               icon={<Bus className="h-3.5 w-3.5" />}
@@ -548,7 +548,7 @@ export const CarteirinhaDadosPessoais = ({
               value={formatModalidade(passageiro.modalidade)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-[#e5e5e5]">
             <InfoField
               icon={<Calendar className="h-3.5 w-3.5" />}
               label="Início do transporte"
@@ -560,7 +560,7 @@ export const CarteirinhaDadosPessoais = ({
               value={fimTransporteTexto}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/50">
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-[#e5e5e5]">
             <InfoField
               icon={<Clock className="h-3.5 w-3.5" />}
               label="Horário de entrada"
@@ -572,20 +572,20 @@ export const CarteirinhaDadosPessoais = ({
               value={passageiro.horario_saida}
             />
           </div>
-          <div className="pt-2.5 border-t border-slate-200/50 flex items-start justify-between gap-3">
+          <div className="pt-2.5 border-t border-[#e5e5e5] flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span className="text-xs font-medium text-slate-500">
+                <MapPin className="h-3.5 w-3.5 text-[#737373] shrink-0" />
+                <span className="text-xs font-normal text-[#737373]">
                   {primeiroNomeResp ? `Endereço Principal (${primeiroNomeResp})` : "Endereço completo"}
                 </span>
               </div>
-              <p className="text-xs text-[#1a3a5c] font-semibold leading-tight block break-words whitespace-pre-wrap">
-                {enderecoFormatado || <span className="text-slate-400 font-normal">—</span>}
+              <p className="text-xs text-[#0a0a0a] font-semibold leading-tight block break-words whitespace-pre-wrap">
+                {enderecoFormatado || <span className="text-[#a3a3a3] font-normal">—</span>}
               </p>
               {referenciaEmbarque && (
-                <p className="text-[11px] text-slate-500 font-normal leading-normal mt-1 block break-words">
-                  <span className="text-slate-400">Referência: </span>{referenciaEmbarque}
+                <p className="text-[11px] text-[#737373] font-normal leading-normal mt-1 block break-words">
+                  <span className="text-[#a3a3a3]">Referência: </span>{referenciaEmbarque}
                 </p>
               )}
             </div>
@@ -595,13 +595,13 @@ export const CarteirinhaDadosPessoais = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => onCopyToClipboard(enderecoFormatado, "Endereço")}
-                className="h-8 w-8 rounded-xl shrink-0 hover:bg-white border border-slate-200/60"
+                className="h-8 w-8 rounded-[12px] shrink-0 hover:bg-[#ffffff] border border-[#e5e5e5]"
                 title="Copiar endereço"
               >
                 {isCopiedEndereco ? (
                   <Check className="h-4 w-4 text-emerald-500" />
                 ) : (
-                  <Copy className="h-4 w-4 text-slate-400" />
+                  <Copy className="h-4 w-4 text-[#737373]" />
                 )}
               </Button>
             )}
@@ -610,8 +610,8 @@ export const CarteirinhaDadosPessoais = ({
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-[#16314f]">Outros Dados</h3>
-        <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 space-y-3">
+        <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Outros Dados</h3>
+        <div className="bg-[#fafafa] rounded-[18px] sm:rounded-[20px] p-4 border border-[#e5e5e5] space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <InfoField
               icon={<Calendar className="h-3.5 w-3.5" />}

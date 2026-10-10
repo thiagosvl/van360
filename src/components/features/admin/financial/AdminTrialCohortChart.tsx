@@ -32,45 +32,45 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
     return (
-      <div className="bg-[#0f172a] text-slate-100 p-3.5 rounded-xl border border-slate-700 shadow-2xl text-xs space-y-2 text-left min-w-[220px]">
-        <div className="border-b border-slate-700/80 pb-1.5 flex items-center justify-between">
-          <p className="font-bold text-white text-sm">{item.labelMes}</p>
-          <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+      <div className="bg-card text-foreground p-3.5 rounded-2xl border border-border shadow-xl text-xs space-y-2 text-left min-w-[220px]">
+        <div className="border-b border-border/40 pb-1.5 flex items-center justify-between">
+          <p className="font-semibold text-foreground text-sm">{item.labelMes}</p>
+          <span className="text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
             {item.taxaConversao}% conversão
           </span>
         </div>
 
         <div className="space-y-1 text-[11px]">
-          <div className="flex justify-between items-center text-slate-300">
-            <span>Total de Entradas no Trial:</span>
-            <span className="font-bold text-white">{item.novosTrials} motoristas</span>
+          <div className="flex justify-between items-center text-muted-foreground">
+            <span>Total de entradas no trial:</span>
+            <span className="font-semibold text-foreground">{item.novosTrials} motoristas</span>
           </div>
 
-          <div className="flex justify-between items-center text-emerald-400 font-semibold">
+          <div className="flex justify-between items-center text-emerald-400 font-medium">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-              Viraram Assinantes Pagantes:
+              Viraram assinantes pagantes:
             </span>
-            <span className="font-bold">{item.convertidos}</span>
+            <span className="font-semibold">{item.convertidos}</span>
           </div>
 
           {item.vitalicios > 0 && (
-            <div className="flex justify-between items-center text-purple-400 font-semibold">
+            <div className="flex justify-between items-center text-purple-400 font-medium">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
-                Acesso Vitalício:
+                Acesso vitalício:
               </span>
-              <span className="font-bold">{item.vitalicios}</span>
+              <span className="font-semibold">{item.vitalicios}</span>
             </div>
           )}
 
           {item.emAndamento > 0 && (
-            <div className="flex justify-between items-center text-amber-400 font-semibold">
+            <div className="flex justify-between items-center text-amber-400 font-medium">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
-                Período em Andamento:
+                Período em andamento:
               </span>
-              <span className="font-bold">{item.emAndamento}</span>
+              <span className="font-semibold">{item.emAndamento}</span>
             </div>
           )}
         </div>
@@ -95,20 +95,20 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
   const taxaMediaGeral = concluidos > 0 ? Number(((totalConvertidos / concluidos) * 100).toFixed(1)) : 0;
 
   return (
-    <Card className="border border-slate-800/80 bg-[#131b2e] rounded-2xl shadow-xl overflow-hidden text-left">
-      <CardHeader className="p-4 sm:p-5 border-b border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <Card className="border border-border bg-card rounded-3xl shadow-xs overflow-hidden text-left">
+      <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-purple-400" />
-            <span>Conversão de Trials por Safra Mensal</span>
+          <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-primary" />
+            <span>Conversão de trials por safra mensal</span>
           </CardTitle>
-          <p className="text-xs text-slate-400 mt-1">
-            Volume de novos motoristas em teste gratuito e quantos se tornaram assinantes pagantes ao término do trial.
+          <p className="text-xs text-muted-foreground mt-1">
+            Volume de novos motoristas em teste gratuito e quantos se tornaram assinantes pagantes ao término do trial
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border">
             {([3, 6, 12] as const).map((months) => (
               <Button
                 key={months}
@@ -116,10 +116,10 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
                 size="sm"
                 variant="ghost"
                 onClick={() => setPeriodFilter(months)}
-                className={`h-7 px-2.5 text-xs rounded-lg font-bold transition-all ${
+                className={`h-7 px-2.5 text-xs rounded-xl font-medium transition-all ${
                   periodFilter === months
-                    ? "bg-purple-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {months} meses
@@ -127,31 +127,31 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl">
-            <Sparkles className="h-4 w-4 text-purple-400" />
-            <span className="text-xs font-bold text-purple-300">
-              Conversão Média: {taxaMediaGeral}%
+          <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-2xl">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">
+              Conversão média: {taxaMediaGeral}%
             </span>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6 space-y-6">
+      <CardContent className="p-5 sm:p-6 space-y-6">
         <div className="h-[280px] sm:h-[320px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={visibleSafras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="labelMes"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
-                axisLine={{ stroke: "#334155" }}
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
                 tickLine={false}
               />
               <YAxis
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
-                axisLine={{ stroke: "#334155" }}
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
                 tickLine={false}
                 allowDecimals={false}
               />
@@ -160,7 +160,7 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
                 verticalAlign="top"
                 align="right"
                 wrapperStyle={{ paddingBottom: 16, fontSize: 12 }}
-                formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
+                formatter={(value) => <span className="text-foreground font-medium">{value}</span>}
               />
               <Bar dataKey="convertidos" name="Assinantes Pagantes" fill="#10b981" radius={[4, 4, 0, 0]} />
               <Bar dataKey="vitalicios" name="Acesso Vitalício" fill="#a855f7" radius={[4, 4, 0, 0]} />
@@ -169,29 +169,29 @@ export function AdminTrialCohortChart({ safras }: AdminTrialCohortChartProps) {
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 border-t border-slate-800/60">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total em Testes</p>
-            <p className="text-xl font-black text-white mt-1">{totalNovosTrials}</p>
-            <p className="text-[10px] text-slate-500 font-semibold">nos últimos {periodFilter} meses</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 border-t border-border/40">
+          <div className="bg-secondary/40 border border-border rounded-2xl p-3.5 space-y-1">
+            <p className="text-xs text-muted-foreground font-medium truncate">Total em testes</p>
+            <p className="text-xl sm:text-2xl font-headline font-semibold text-foreground">{totalNovosTrials}</p>
+            <p className="text-[11px] text-muted-foreground font-normal">Últimos {periodFilter} meses</p>
           </div>
 
-          <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl p-3">
-            <p className="text-[11px] text-emerald-400 font-bold uppercase tracking-wider">Viraram Clientes</p>
-            <p className="text-xl font-black text-emerald-400 mt-1">{totalConvertidos}</p>
-            <p className="text-[10px] text-emerald-300/70 font-semibold">{taxaMediaGeral}% de sucesso</p>
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-3.5 space-y-1">
+            <p className="text-xs text-emerald-400 font-medium truncate">Viraram clientes</p>
+            <p className="text-xl sm:text-2xl font-headline font-semibold text-emerald-400">{totalConvertidos}</p>
+            <p className="text-[11px] text-emerald-400/80 font-normal">{taxaMediaGeral}% de sucesso</p>
           </div>
 
-          <div className="bg-slate-900/60 border border-purple-500/20 rounded-xl p-3">
-            <p className="text-[11px] text-purple-400 font-bold uppercase tracking-wider">Vitalícios</p>
-            <p className="text-xl font-black text-purple-400 mt-1">{totalVitalicios}</p>
-            <p className="text-[10px] text-purple-300/70 font-semibold">cortesia / fundadores</p>
+          <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-3.5 space-y-1">
+            <p className="text-xs text-purple-400 font-medium truncate">Vitalícios</p>
+            <p className="text-xl sm:text-2xl font-headline font-semibold text-purple-400">{totalVitalicios}</p>
+            <p className="text-[11px] text-purple-400/80 font-normal">Cortesia / fundadores</p>
           </div>
 
-          <div className="bg-slate-900/60 border border-sky-500/20 rounded-xl p-3">
-            <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider">Em Andamento</p>
-            <p className="text-xl font-black text-sky-400 mt-1">{totalEmAndamento}</p>
-            <p className="text-[10px] text-sky-300/70 font-semibold">oportunidades ativas</p>
+          <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-3.5 space-y-1">
+            <p className="text-xs text-sky-400 font-medium truncate">Em andamento</p>
+            <p className="text-xl sm:text-2xl font-headline font-semibold text-sky-400">{totalEmAndamento}</p>
+            <p className="text-[11px] text-sky-400/80 font-normal">Oportunidades ativas</p>
           </div>
         </div>
       </CardContent>

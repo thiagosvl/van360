@@ -38,7 +38,7 @@ export const usuarioApi = {
     telefone?: string;
     assinatura_digital_url?: string;
     logo_url?: string | null;
-    config_contrato?: any;
+    config_contrato?: Usuario["config_contrato"] | Record<string, unknown>;
     data_nascimento?: string;
     cpfcnpj?: string;
     cpf_responsavel?: string | null;

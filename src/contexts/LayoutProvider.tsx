@@ -12,8 +12,9 @@ import AdminPassengerSendCobrancaDialog from "@/components/dialogs/AdminPassenge
 import AdminDriverCobrancaDemoDialog from "@/components/dialogs/AdminDriverCobrancaDemoDialog";
 import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoDetalhesDialog";
 import AdminUserActivityHistoryDialog from "@/components/dialogs/AdminUserActivityHistoryDialog";
-import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
+import ConfigurarCobrancaWizardDialog from "@/components/dialogs/ConfigurarCobrancaWizardDialog";
+import { ConfirmarMudancaModoVanDialog } from "@/components/dialogs/ConfirmarMudancaModoVanDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import CadastrarEscolasDialog from "@/components/dialogs/CadastrarEscolasDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
@@ -87,6 +88,9 @@ import {
   OpenImageFullscreenProps,
   OpenVideoStoriesDialogProps,
   OpenWhatsAppCobrancaPreviewDialogProps,
+  OpenEditarPixDialogProps,
+  OpenConfigurarCobrancaWizardProps,
+  OpenConfirmarMudancaModoVanProps,
   OpenWhatsAppContratoPreviewDialogProps,
   OpenReciboPreviewDialogProps,
   OpenWhatsAppShowcaseDialogProps,
@@ -367,13 +371,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const [contractSetupDialogState, setContractSetupDialogState] = useState<{
-    open: boolean;
-    props?: OpenContractSetupDialogProps;
-  }>({
-    open: false,
-  });
-
   const [pixPaymentDialogState, setPixPaymentDialogState] = useState<{
     open: boolean;
     props?: OpenPixPaymentDialogProps;
@@ -410,7 +407,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
-  const [editarPixDialogOpen, setEditarPixDialogOpen] = useState(false);
+  const [editarPixDialogState, setEditarPixDialogState] = useState<{
+    open: boolean;
+    props?: OpenEditarPixDialogProps;
+  }>({ open: false });
+  const [configurarCobrancaWizardDialogState, setConfigurarCobrancaWizardDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfigurarCobrancaWizardProps;
+  }>({ open: false });
+  const [confirmarMudancaModoVanDialogState, setConfirmarMudancaModoVanDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfirmarMudancaModoVanProps;
+  }>({ open: false });
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
   const [personalizarMenuDialogOpen, setPersonalizarMenuDialogOpen] = useState(false);
@@ -489,8 +497,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const usarContratos = profile?.config_contrato?.usar_contratos;
 
   const handleContractGuardOpen = useCallback(() => {
-    setContractSetupDialogState({ open: true });
-  }, []);
+    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
+  }, [navigate]);
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
@@ -749,8 +757,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => setFirstChargeDialogState({ open: true, props });
 
-  const openContractSetupDialog = (props?: OpenContractSetupDialogProps) => {
-    setContractSetupDialogState({ open: true, props });
+  const openContractSetupDialog = (_props?: OpenContractSetupDialogProps) => {
+    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
   };
 
   const openPixPaymentDialog = (props: OpenPixPaymentDialogProps) => {
@@ -955,7 +963,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
-        openEditarPixDialog: () => setEditarPixDialogOpen(true),
+        openEditarPixDialog: (props?: OpenEditarPixDialogProps) =>
+          setEditarPixDialogState({ open: true, props }),
+        openConfigurarCobrancaWizardDialog: (props: OpenConfigurarCobrancaWizardProps) =>
+          setConfigurarCobrancaWizardDialogState({ open: true, props }),
+        closeConfigurarCobrancaWizardDialog: () =>
+          safeCloseDialog(() =>
+            setConfigurarCobrancaWizardDialogState((prev) => ({ ...prev, open: false }))
+          ),
+        openConfirmarMudancaModoVanDialog: (props: OpenConfirmarMudancaModoVanProps) =>
+          setConfirmarMudancaModoVanDialogState({ open: true, props }),
+        closeConfirmarMudancaModoVanDialog: () =>
+          safeCloseDialog(() =>
+            setConfirmarMudancaModoVanDialogState((prev) => ({ ...prev, open: false }))
+          ),
         openWhatsAppCobrancaPreviewDialog,
         openWhatsAppContratoPreviewDialog,
         openReciboPreviewDialog,
@@ -1391,14 +1412,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {contractSetupDialogState.open && (
-        <ContractSetupDialog
-          isOpen={true}
-          onClose={() => safeCloseDialog(() => setContractSetupDialogState({ open: false }))}
-          onSuccess={contractSetupDialogState.props?.onSuccess}
-        />
-      )}
-
       {alterarSenhaDialogOpen && (
         <AlterarSenhaDialog
           isOpen={alterarSenhaDialogOpen}
@@ -1406,10 +1419,37 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {editarPixDialogOpen && (
+      {editarPixDialogState.open && (
         <EditarPixDialog
-          isOpen={editarPixDialogOpen}
-          onClose={() => safeCloseDialog(() => setEditarPixDialogOpen(false))}
+          isOpen={editarPixDialogState.open}
+          onClose={() => safeCloseDialog(() => setEditarPixDialogState({ open: false }))}
+          onSuccess={editarPixDialogState.props?.onSuccess}
+        />
+      )}
+
+      {configurarCobrancaWizardDialogState.open && configurarCobrancaWizardDialogState.props && (
+        <ConfigurarCobrancaWizardDialog
+          isOpen={configurarCobrancaWizardDialogState.open}
+          onClose={() => safeCloseDialog(() => setConfigurarCobrancaWizardDialogState({ open: false }))}
+          modalidade={configurarCobrancaWizardDialogState.props.modalidade}
+          aplicar_a_todos={configurarCobrancaWizardDialogState.props.aplicar_a_todos}
+          onSuccess={configurarCobrancaWizardDialogState.props.onSuccess}
+        />
+      )}
+
+      {confirmarMudancaModoVanDialogState.open && confirmarMudancaModoVanDialogState.props && (
+        <ConfirmarMudancaModoVanDialog
+          open={confirmarMudancaModoVanDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setConfirmarMudancaModoVanDialogState({ open: false }));
+            }
+          }}
+          quantidadeExcecoes={confirmarMudancaModoVanDialogState.props.quantidadeExcecoes}
+          novoModoLabel={confirmarMudancaModoVanDialogState.props.novoModoLabel}
+          detalhesExcecoes={confirmarMudancaModoVanDialogState.props.detalhesExcecoes}
+          onConfirmar={confirmarMudancaModoVanDialogState.props.onConfirmar}
+          onCancel={confirmarMudancaModoVanDialogState.props.onCancel}
         />
       )}
 
@@ -1421,6 +1461,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiroNome={whatsAppCobrancaPreviewDialogState.props?.passageiroNome}
           userChavePix={whatsAppCobrancaPreviewDialogState.props?.userChavePix}
           showPixSetupAction={whatsAppCobrancaPreviewDialogState.props?.showPixSetupAction}
+          modalidade={whatsAppCobrancaPreviewDialogState.props?.modalidade}
         />
       )}
 
@@ -1818,10 +1859,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       )}
 
       {isGlobalLoading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 select-none">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4 text-center border border-slate-100 animate-in zoom-in-95 duration-200">
-            <Loader2 className="w-10 h-10 animate-spin text-[#1a3a5c]" />
-            <p className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0b1a2e]/60 backdrop-blur-sm animate-in fade-in duration-200 select-none">
+          <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4 text-center border border-[#e5e5e5] animate-in zoom-in-95 duration-200">
+            <Loader2 className="w-10 h-10 animate-spin text-[#0b1a2e]" />
+            <p className="text-sm sm:text-base font-bold text-[#0a0a0a] tracking-tight">
               {globalLoadingText || "Salvando..."}
             </p>
           </div>

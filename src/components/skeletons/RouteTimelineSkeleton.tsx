@@ -6,39 +6,33 @@ interface RouteTimelineSkeletonProps {
 
 export function RouteTimelineSkeleton({ count = 4 }: RouteTimelineSkeletonProps) {
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto w-full">
-      {/* Header Card Skeleton */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className="h-3.5 w-24 rounded-full" />
-          <Skeleton className="h-3.5 w-16 rounded-full" />
+    <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-300 text-left max-w-2xl mx-auto w-full min-w-0 pt-1 sm:pt-2">
+      <div className="bg-white p-3.5 sm:p-5 rounded-[24px] border border-[#e5e5e5] shadow-xs space-y-3.5 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <Skeleton className="h-5 w-36 sm:w-44 rounded-[8px]" />
+          <Skeleton className="h-5 w-16 sm:w-20 rounded-[18px]" />
         </div>
-        <Skeleton className="h-6 w-40 rounded-lg" />
-        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-2 w-full rounded-full" />
+        <Skeleton className="h-11 w-full rounded-[18px]" />
       </div>
 
-      {/* Timeline Stops Skeleton */}
-      <div className="relative flex flex-col gap-3 pl-8 pb-1">
+      <div className="relative flex flex-col gap-6 pl-8 sm:pl-10 pb-1">
         {[...Array(count)].map((_, i) => (
           <div key={i} className="relative w-full">
-            {/* Linha vertical conectora de fundo */}
-            <div className="absolute left-[-20px] top-0 bottom-0 w-[2.5px] bg-slate-200/70 z-0" />
-            
-            {/* Círculo da Timeline Skeleton */}
-            <Skeleton className="absolute left-[-31px] top-1/2 -translate-y-1/2 h-6 w-6 rounded-full border-2 border-white shadow-sm z-10" />
+            <div className="absolute left-[-22px] sm:left-[-26px] top-0 bottom-0 w-[2px] bg-[#e5e5e5] z-0" />
+            <Skeleton className="absolute left-[-35px] sm:left-[-39px] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full border-2 border-white shadow-xs z-10" />
 
-            {/* Card Skeleton */}
-            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between min-h-[96px] space-y-3 min-w-0 overflow-hidden">
+            <div className="bg-white p-3.5 sm:p-4 rounded-[24px] border border-[#e5e5e5] shadow-xs flex flex-col justify-between min-h-[96px] space-y-3 min-w-0 overflow-hidden">
               <div className="flex items-start justify-between gap-2 min-w-0">
                 <div className="space-y-1.5 flex-1 min-w-0">
-                  <Skeleton className="h-4 w-28 max-w-[80%] rounded-md" />
-                  <Skeleton className="h-3 w-16 max-w-[60%] rounded-md" />
+                  <Skeleton className="h-4 w-28 sm:w-36 max-w-[80%] rounded-[8px]" />
+                  <Skeleton className="h-3 w-36 sm:w-48 max-w-[60%] rounded-[8px]" />
                 </div>
-                <Skeleton className="h-5 w-12 rounded-full shrink-0" />
+                <Skeleton className="h-8 w-8 rounded-[12px] shrink-0" />
               </div>
-              <div className="flex items-center justify-between gap-2 pt-1 min-w-0">
-                <Skeleton className="h-5 w-20 rounded-full shrink-0" />
-                <Skeleton className="h-3 w-20 max-w-[40%] rounded-md shrink-0" />
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#e5e5e5] min-w-0">
+                <Skeleton className="h-8 w-16 sm:w-20 rounded-[14px] shrink-0" />
+                <Skeleton className="h-8 w-20 sm:w-24 rounded-[18px] shrink-0" />
               </div>
             </div>
           </div>

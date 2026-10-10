@@ -97,78 +97,46 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
       />
 
       {currentLogoUrl ? (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-3 sm:p-3.5 shadow-2xs space-y-2.5 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              {isContractVariant ? "Cabeçalho do Contrato" : "Logotipo"}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={isLoading}
-                onClick={() => fileInputRef.current?.click()}
-                className="h-7 px-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 gap-1 rounded-lg transition-all"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                Alterar
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={isLoading}
-                onClick={handleRemove}
-                className="h-7 px-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 gap-1 rounded-lg transition-all"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Remover
-              </Button>
+        <div className="rounded-[20px] border border-[#e5e5e5] bg-[#fafafa] p-3.5 sm:p-4 space-y-3 transition-all">
+          <div className="relative py-4 sm:py-5 w-full rounded-[16px] bg-white border border-[#e5e5e5] flex items-center justify-center overflow-hidden shadow-2xs">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex items-center justify-center z-10">
+                <Loader2 className="w-5 h-5 animate-spin text-[#0a0a0a]" />
+              </div>
+            )}
+            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white border-2 border-[#e5e5e5] shadow-xs overflow-hidden flex items-center justify-center shrink-0">
+              <img
+                src={currentLogoUrl}
+                alt="Logotipo"
+                className="h-full w-full rounded-full object-cover"
+              />
             </div>
           </div>
 
-          {isContractVariant ? (
-            <div className="relative p-2.5 sm:p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-3 overflow-hidden">
-              {isLoading && (
-                <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex items-center justify-center z-10">
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                </div>
-              )}
-              <div className="h-10 sm:h-12 w-20 sm:w-28 flex items-center justify-center shrink-0">
-                <img
-                  src={currentLogoUrl}
-                  alt="Logotipo do transporte"
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-              <div className="border-l border-slate-200 pl-3.5 flex-1 min-w-0">
-                <div className="text-right">
-                  <p className="text-[9px] sm:text-[11px] font-black text-[#1a3a5c] leading-tight uppercase tracking-tight truncate">
-                    CONTRATO DE PRESTAÇÃO DE
-                  </p>
-                  <p className="text-[9px] sm:text-[11px] font-black text-[#1a3a5c] leading-tight uppercase tracking-tight truncate">
-                    SERVIÇO DE TRANSPORTE
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="relative p-2.5 sm:p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-center overflow-hidden">
-              {isLoading && (
-                <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex items-center justify-center z-10">
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                </div>
-              )}
-              <div className="h-24 sm:h-28 max-w-[280px] w-full flex items-center justify-center">
-                <img
-                  src={currentLogoUrl}
-                  alt="Logotipo do transporte"
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+              onClick={() => fileInputRef.current?.click()}
+              className="h-9 rounded-[14px] border-[#e5e5e5] hover:bg-white text-xs font-medium text-[#0a0a0a] gap-1.5 shadow-none cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5 text-[#737373]" />
+              <span>Alterar</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+              onClick={handleRemove}
+              className="h-9 rounded-[14px] border border-red-200 hover:border-red-300 bg-white hover:bg-red-50 text-xs font-medium text-[#e7000b] gap-1.5 shadow-none cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-[#e7000b]" />
+              <span>Remover</span>
+            </Button>
+          </div>
         </div>
       ) : (
         <div
@@ -177,42 +145,27 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "rounded-2xl border-2 border-dashed transition-all p-3 sm:p-3.5 cursor-pointer group select-none relative overflow-hidden",
+            "rounded-[20px] border border-dashed transition-all p-4 sm:p-6 cursor-pointer group select-none relative overflow-hidden flex flex-col items-center justify-center text-center gap-2",
             isDragging
-              ? "border-blue-500 bg-blue-50/60 shadow-xs"
-              : "border-slate-300 hover:border-blue-400 bg-slate-50/50 hover:bg-blue-50/20 active:scale-[0.99]"
+              ? "border-[#0a0a0a] bg-[#f5f5f5]"
+              : "border-[#e5e5e5] hover:border-[#0a0a0a] bg-[#fafafa] hover:bg-[#f5f5f5] active:scale-[0.99]"
           )}
         >
           {isLoading && (
             <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex items-center justify-center z-10">
-              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#0a0a0a]" />
             </div>
           )}
-          <div className="flex items-center justify-between gap-3">
-            <div className="w-20 sm:w-24 h-11 sm:h-12 rounded-xl border border-dashed border-slate-300 bg-white group-hover:border-blue-400 flex flex-col items-center justify-center gap-0.5 shrink-0 transition-colors shadow-2xs">
-              <ImagePlus className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-              <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-wider transition-colors">
-                Seu Logo
-              </span>
-            </div>
-
-            <div className="border-l border-slate-200 pl-3 flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
-                    {isContractVariant ? "Adicionar Logotipo" : "Adicionar logotipo"}
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    {isContractVariant
-                      ? "Apenas imagens PNG ou JPG"
-                      : "Apenas imagens PNG ou JPG • Aplicado em recibos e contratos"}
-                  </p>
-                </div>
-                <span className="hidden sm:inline-flex text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200/60 px-2.5 py-1 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all shadow-2xs shrink-0">
-                  Selecionar
-                </span>
-              </div>
-            </div>
+          <div className="w-12 h-12 rounded-full border border-[#e5e5e5] bg-white group-hover:border-[#0a0a0a] flex items-center justify-center text-[#737373] group-hover:text-[#0a0a0a] transition-colors shadow-2xs">
+            <ImagePlus className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+              Adicionar Logotipo
+            </p>
+            <p className="text-[11px] text-[#737373] mt-0.5">
+              Apenas imagens PNG ou JPG (máx. 5MB)
+            </p>
           </div>
         </div>
       )}

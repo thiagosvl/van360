@@ -16,8 +16,10 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
+import { NativeSelect } from "@/components/ui/native-select";
 import { memo, useState } from "react";
 import { PassageiroBatchUpdateItem } from "@/services/api/passageiro.api";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 
 type BulkField = "escola_id" | "veiculo_id" | "periodo" | "dia_vencimento";
 
@@ -54,14 +56,14 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
   return (
     <div className="fixed bottom-[calc(4.5rem+var(--safe-area-bottom))] md:bottom-6 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:max-w-2xl z-40 flex flex-col gap-2 pointer-events-none transition-all duration-200">
       {selectedCount > 0 && (
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-blue-200 shadow-xl rounded-2xl p-3 sm:px-4 transition-all animate-in slide-in-from-bottom-3">
+        <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-[#e5e5e5] shadow-xl rounded-[20px] p-3 sm:px-4 transition-all animate-in slide-in-from-bottom-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-lg bg-blue-100 text-[#1a3a5c] flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-6 h-6 rounded-[8px] bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                 <CheckSquare className="w-3.5 h-3.5" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">
-                <strong className="text-[#1a3a5c]">{selectedCount}</strong>{" "}
+              <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] whitespace-nowrap">
+                <strong className="text-primary">{selectedCount}</strong>{" "}
                 <span className="sm:hidden">{selectedCount === 1 ? "aluno" : "alunos"}</span>
                 <span className="hidden sm:inline">{selectedCount === 1 ? "aluno selecionado" : "alunos selecionados"}</span>
               </span>
@@ -71,7 +73,7 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
               <Button
                 size="sm"
                 onClick={() => setIsBulkOpen((prev) => !prev)}
-                className="h-8 px-2.5 sm:px-3 rounded-xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs gap-1.5 shadow-sm active:scale-95 transition-all"
+                className="h-8 px-2.5 sm:px-3 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-semibold text-xs gap-1.5 shadow-none active:scale-95 transition-all"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
                 <span>Alterar</span>
@@ -83,7 +85,7 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
                 size="icon"
                 onClick={onClearSelection}
                 title="Desmarcar todos"
-                className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl"
+                className="h-8 w-8 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#fafafa] rounded-[18px]"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -91,100 +93,90 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
           </div>
 
           {isBulkOpen && (
-            <div className="pt-2.5 mt-2.5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in-50 duration-150">
-              <div className="relative">
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onApplyBulk("veiculo_id", e.target.value);
-                      e.target.value = "";
-                    }
-                  }}
-                  className="w-full h-8 pl-7 pr-6 text-xs bg-white border border-slate-200 rounded-xl font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] shadow-2xs"
-                >
-                  <option value="" disabled>Definir veículo...</option>
-                  {(veiculos || []).map((v) => (
-                    <option key={v.id} value={v.id}>{v.modelo} - {v.placa}</option>
-                  ))}
-                </select>
-                <Car className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+            <div className="pt-3.5 mt-3 pb-1 border-t border-[#e5e5e5] grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in-50 duration-150">
+              <NativeSelect
+                icon={<Car className="w-4 h-4" />}
+                variant="white"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onApplyBulk("veiculo_id", e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+              >
+                <option value="" disabled>Definir veículo...</option>
+                {(veiculos || []).map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {formatarPlacaExibicao(v.placa)} {v.modelo ? `- ${v.modelo}` : ""}
+                  </option>
+                ))}
+              </NativeSelect>
 
-              <div className="relative">
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onApplyBulk("escola_id", e.target.value);
-                      e.target.value = "";
-                    }
-                  }}
-                  className="w-full h-8 pl-7 pr-6 text-xs bg-white border border-slate-200 rounded-xl font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] shadow-2xs"
-                >
-                  <option value="" disabled>Definir escola...</option>
-                  {(escolas || []).map((e) => (
-                    <option key={e.id} value={e.id}>{e.nome}</option>
-                  ))}
-                </select>
-                <School className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+              <NativeSelect
+                icon={<School className="w-4 h-4" />}
+                variant="white"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onApplyBulk("escola_id", e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+              >
+                <option value="" disabled>Definir escola...</option>
+                {(escolas || []).map((e) => (
+                  <option key={e.id} value={e.id}>{e.nome}</option>
+                ))}
+              </NativeSelect>
 
-              <div className="relative">
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onApplyBulk("periodo", e.target.value === "none" ? null : e.target.value);
-                      e.target.value = "";
-                    }
-                  }}
-                  className="w-full h-8 pl-7 pr-6 text-xs bg-white border border-slate-200 rounded-xl font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] shadow-2xs"
-                >
-                  <option value="" disabled>Definir período...</option>
-                  <option value="none">Nenhum</option>
-                  {periodos.map((p) => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
-                <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+              <NativeSelect
+                icon={<Clock className="w-4 h-4" />}
+                variant="white"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onApplyBulk("periodo", e.target.value === "none" ? null : e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+              >
+                <option value="" disabled>Definir período...</option>
+                <option value="none">Nenhum</option>
+                {periodos.map((p) => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </NativeSelect>
 
-              <div className="relative">
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onApplyBulk("dia_vencimento", e.target.value === "none" ? null : Number(e.target.value));
-                      e.target.value = "";
-                    }
-                  }}
-                  className="w-full h-8 pl-7 pr-6 text-xs bg-white border border-slate-200 rounded-xl font-medium text-slate-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] shadow-2xs"
-                >
-                  <option value="" disabled>Definir vencimento...</option>
-                  <option value="none">Sem vencimento</option>
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={String(d)}>Dia {d}</option>
-                  ))}
-                </select>
-                <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+              <NativeSelect
+                icon={<Calendar className="w-4 h-4" />}
+                variant="white"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onApplyBulk("dia_vencimento", e.target.value === "none" ? null : Number(e.target.value));
+                    e.target.value = "";
+                  }
+                }}
+              >
+                <option value="" disabled>Definir vencimento...</option>
+                <option value="none">Sem vencimento</option>
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  <option key={d} value={String(d)}>Dia {d}</option>
+                ))}
+              </NativeSelect>
             </div>
           )}
         </div>
       )}
 
       {dirtyCount > 0 && (
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-2xl rounded-2xl px-4 py-2.5 sm:py-3 transition-all animate-in slide-in-from-bottom-5">
+        <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-[#e5e5e5] shadow-2xl rounded-[20px] px-4 py-2.5 sm:py-3 transition-all animate-in slide-in-from-bottom-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#1a3a5c] animate-pulse shrink-0" />
-              <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                <strong className="text-[#1a3a5c]">{dirtyCount}</strong>{" "}
+              <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate">
+                <strong className="text-primary">{dirtyCount}</strong>{" "}
                 {dirtyCount === 1 ? "aluno com alterações" : "alunos com alterações"}
               </span>
             </div>
@@ -195,7 +187,7 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
                 size="sm"
                 onClick={onDiscard}
                 disabled={isSaving}
-                className="h-9 px-3 sm:px-4 rounded-xl text-xs font-bold text-slate-600 border-slate-200 hover:bg-slate-100 active:scale-95 transition-all"
+                className="h-9 px-3 sm:px-4 rounded-[18px] text-xs font-semibold text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#fafafa] active:scale-95 transition-all shadow-none"
               >
                 <RotateCcw className="w-3.5 h-3.5 mr-1.5 shrink-0" />
                 Descartar
@@ -205,7 +197,7 @@ export const AtualizacaoRapidaStickyBar = memo(function AtualizacaoRapidaStickyB
                 size="sm"
                 onClick={onSave}
                 disabled={isSaving}
-                className="h-9 px-4 sm:px-6 rounded-xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs sm:text-sm shadow-md active:scale-95 transition-all"
+                className="h-9 px-4 sm:px-6 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm shadow-none active:scale-95 transition-all"
               >
                 {isSaving ? (
                   <>

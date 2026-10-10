@@ -87,24 +87,22 @@ export function SubscriptionHeroCard({
 
   if (isCanceled) {
     return (
-      <div className="bg-white rounded-[28px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] border border-slate-200/80 relative overflow-hidden transition-all hover:shadow-md">
+      <div className="bg-white rounded-[24px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#e5e5e5] relative overflow-hidden transition-all hover:shadow-sm">
         <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-slate-100/70 via-slate-50/20 to-transparent rounded-full -mr-24 -mt-24 blur-2xl pointer-events-none"></div>
         <div className="relative z-10 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.15em] text-[10px]">
-              ASSINATURA CANCELADA
-            </span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] text-xs font-medium w-fit">
+            <span>Assinatura cancelada</span>
           </div>
-          <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-slate-700 tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">
             Acesso Suspenso
           </h3>
-          <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed max-w-2xl">
+          <p className="text-[#737373] text-sm sm:text-base font-normal leading-relaxed max-w-2xl">
             Sua assinatura está cancelada. Você não receberá novas cobranças e o uso do aplicativo está bloqueado.
           </p>
         </div>
         <div className="relative z-10 shrink-0">
           <Button
-            className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
+            className="bg-primary hover:bg-primary-hover text-white px-6 h-10 sm:h-11 rounded-[18px] font-medium text-sm shadow-xs active:scale-[0.98] transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
             {actionLabel}
@@ -116,21 +114,17 @@ export function SubscriptionHeroCard({
 
   if (isExpired) {
     return (
-      <div className="bg-white rounded-[28px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_4px_20px_rgba(225,29,72,0.05)] border border-rose-200/90 relative overflow-hidden transition-all hover:shadow-md">
+      <div className="bg-white rounded-[24px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#e7000b]/20 relative overflow-hidden transition-all hover:shadow-sm">
         <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-rose-50/80 via-rose-50/20 to-transparent rounded-full -mr-24 -mt-24 blur-2xl pointer-events-none"></div>
         <div className="relative z-10 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-rose-50 text-rose-600">
-              <Lock className="w-4 h-4 text-rose-600" />
-            </div>
-            <span className="font-headline font-bold text-rose-600 uppercase tracking-[0.15em] text-[10px]">
-              {isTrialExpired ? "PERÍODO DE TESTE EXPIRADO" : "ASSINATURA EXPIRADA"}
-            </span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#e7000b]/[0.08] border border-[#e7000b]/20 text-[#e7000b] text-xs font-medium w-fit">
+            <Lock className="w-3.5 h-3.5" />
+            <span>{isTrialExpired ? "Período de teste expirado" : "Assinatura expirada"}</span>
           </div>
-          <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-[#0a2540] tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">
             Acesso Suspenso
           </h3>
-          <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed">
+          <p className="text-[#737373] text-sm sm:text-base font-normal leading-relaxed">
             {isTrialExpired
               ? `Seu período de teste de ${TRIAL_DURATION_DAYS} dias acabou. Assine um plano para continuar usando todas as funcionalidades.`
               : "Sua assinatura expirou. Renove para continuar usando todas as funcionalidades."}
@@ -138,7 +132,7 @@ export function SubscriptionHeroCard({
         </div>
         <div className="relative z-10 shrink-0">
           <Button
-            className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
+            className="bg-primary hover:bg-primary-hover text-white px-6 h-10 sm:h-11 rounded-[18px] font-medium text-sm shadow-xs active:scale-[0.98] transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
             {actionLabel}
@@ -150,30 +144,26 @@ export function SubscriptionHeroCard({
 
   if (isPastDue) {
     return (
-      <div className="bg-white rounded-[28px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_4px_20px_rgba(225,29,72,0.05)] border border-rose-200/90 relative overflow-hidden transition-all hover:shadow-md">
+      <div className="bg-white rounded-[24px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#e7000b]/20 relative overflow-hidden transition-all hover:shadow-sm">
         <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-rose-50/80 via-rose-50/20 to-transparent rounded-full -mr-24 -mt-24 blur-2xl pointer-events-none"></div>
         <div className="relative z-10 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-rose-50 text-rose-600">
-              <AlertOctagon className="w-4 h-4 text-rose-600" />
-            </div>
-            <span className="font-headline font-bold text-rose-600 uppercase tracking-[0.15em] text-[10px]">
-              ASSINATURA EM ATRASO
-            </span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#e7000b]/[0.08] border border-[#e7000b]/20 text-[#e7000b] text-xs font-medium w-fit">
+            <AlertOctagon className="w-3.5 h-3.5" />
+            <span>Assinatura em atraso</span>
           </div>
-          <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-[#0a2540] tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">
             Regularização Pendente
           </h3>
-          <p className="text-slate-600 text-sm sm:text-base font-normal leading-relaxed max-w-2xl">
-            Sua assinatura do <span className="font-bold text-slate-800">Plano {subscription?.planos?.nome}</span> venceu em{" "}
-            <span className="font-bold text-slate-800">
+          <p className="text-[#737373] text-sm sm:text-base font-normal leading-relaxed max-w-2xl">
+            Sua assinatura do <span className="font-medium text-[#0a0a0a]">Plano {subscription?.planos?.nome}</span> venceu em{" "}
+            <span className="font-medium text-[#0a0a0a]">
               {subscription?.data_vencimento ? formatLocalDate(parseLocalDate(subscription.data_vencimento)) : "breve"}
             </span>. Regularize o pagamento para evitar a suspensão do seu acesso.
           </p>
         </div>
         <div className="relative z-10 shrink-0">
           <Button
-            className="bg-rose-600 text-white hover:bg-rose-700 px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md shadow-rose-600/20 active:scale-95 transition-all w-full md:w-auto"
+            className="bg-[#e7000b] hover:bg-[#e7000b]/90 text-white px-6 h-10 sm:h-11 rounded-[18px] font-medium text-sm shadow-xs active:scale-[0.98] transition-all w-full md:w-auto"
             onClick={() => onSubscribe()}
           >
             {actionLabel}
@@ -187,57 +177,53 @@ export function SubscriptionHeroCard({
     return (
       <div
         className={cn(
-          "bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)] border border-slate-100 relative overflow-hidden transition-all hover:shadow-md",
+          "bg-white rounded-[24px] p-6 sm:p-8 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#e5e5e5] relative overflow-hidden transition-all hover:shadow-sm",
           trialDaysLeft !== null ? "cursor-pointer" : ""
         )}
         onClick={() => trialDaysLeft !== null && onSubscribe()}
       >
         <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-slate-50/80 via-slate-50/20 to-transparent rounded-full -mr-24 -mt-24 blur-2xl pointer-events-none"></div>
 
-        {/* Main Content Row */}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.15em] text-[10px]">
-                SUA ASSINATURA
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-primary/10 border border-primary/20 text-primary text-xs font-medium w-fit">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Sua assinatura</span>
             </div>
-            <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-[#0a2540] tracking-tight">
+            <h3 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">
               {trialDaysLeft === 0
                 ? "Último dia de Testes"
                 : trialDaysLeft !== null
                   ? "Período de Testes"
                   : "Acesso Ilimitado"}
             </h3>
-            <p className="text-slate-600 text-sm sm:text-base font-normal leading-snug">
+            <p className="text-[#737373] text-sm sm:text-base font-normal leading-relaxed">
               {trialDaysLeft === 0 ? (
                 <>
-                  Aproveite: <span className="text-[#1a3a5c] font-bold">hoje é o seu último dia</span> de acesso gratuito!
+                  Aproveite: <span className="text-[#0a0a0a] font-medium">hoje é o seu último dia</span> de acesso gratuito!
                 </>
               ) : trialDaysLeft === 1 ? (
                 <>
-                  Você tem <span className="text-[#1a3a5c] font-bold">1 dia</span> de acesso gratuito restante.
+                  Você tem <span className="text-[#0a0a0a] font-medium">1 dia</span> de acesso gratuito restante.
                 </>
               ) : trialDaysLeft !== null ? (
                 <>
-                  Você tem <span className="text-[#1a3a5c] font-bold">{trialDaysLeft} dias</span> de acesso gratuito restantes.
+                  Você tem <span className="text-[#0a0a0a] font-medium">{trialDaysLeft} dias</span> de acesso gratuito restantes.
                 </>
               ) : (
                 <>
-                  Você tem <span className="text-[#1a3a5c] font-bold">acesso gratuito</span> ilimitado.
+                  Você tem <span className="text-[#0a0a0a] font-medium">acesso gratuito</span> ilimitado.
                 </>
               )}
             </p>
 
-            {/* Discount Badge for Mobile ONLY: Placed BEFORE the CTA Button */}
             {referral?.hasActiveDiscount && (
               <div className="md:hidden pt-2">
-                <div className="p-3 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex items-center gap-3 text-left">
-                  <div className="w-9 h-9 rounded-full bg-[#d1fae5] flex items-center justify-center shrink-0">
-                    <Tag className="w-5 h-5 text-[#047857]" />
+                <div className="p-3 bg-emerald-500/[0.08] border border-emerald-500/20 rounded-[18px] flex items-center gap-3 text-left">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Tag className="w-4 h-4 text-emerald-700" />
                   </div>
-                  <span className="text-xs font-bold text-[#065f46]">
+                  <span className="text-xs font-semibold text-emerald-800">
                     Você ganhou um bônus de indicação de {referral.discountPct}% na 1ª mensalidade!
                   </span>
                 </div>
@@ -248,7 +234,7 @@ export function SubscriptionHeroCard({
           {actionLabel && (
             <div className="shrink-0">
               <Button
-                className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
+                className="bg-primary hover:bg-primary-hover text-white px-6 h-10 sm:h-11 rounded-[18px] font-medium text-sm shadow-xs active:scale-[0.98] transition-all w-full md:w-auto"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSubscribe();
@@ -260,19 +246,18 @@ export function SubscriptionHeroCard({
           )}
         </div>
 
-        {/* Full-width Discount Bar for Desktop ONLY: Positioned cleanly at the bottom */}
         {referral?.hasActiveDiscount && (
           <div className="hidden md:block relative z-10 mt-5 pt-1">
-            <div className="p-3.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex items-center justify-between gap-3 text-left w-full">
+            <div className="p-3.5 bg-emerald-500/[0.08] border border-emerald-500/20 rounded-[18px] flex items-center justify-between gap-3 text-left w-full">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#d1fae5] flex items-center justify-center shrink-0">
-                  <Tag className="w-5 h-5 text-[#047857]" />
+                <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                  <Tag className="w-4 h-4 text-emerald-700" />
                 </div>
-                <span className="text-xs sm:text-sm font-bold text-[#065f46]">
+                <span className="text-xs sm:text-sm font-semibold text-emerald-800">
                   Você ganhou um bônus de indicação de {referral.discountPct}% na 1ª mensalidade!
                 </span>
               </div>
-              <span className="text-xs font-medium text-[#047857]/80 pr-2">
+              <span className="text-xs font-normal text-emerald-700/80 pr-2">
                 O desconto será aplicado automaticamente após você realizar a assinatura do app.
               </span>
             </div>
@@ -282,37 +267,35 @@ export function SubscriptionHeroCard({
     );
   }
 
-  // Active Subscription State
   return (
-    <div className="bg-white rounded-[28px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] border border-slate-100 relative overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-white rounded-[24px] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#e5e5e5] relative overflow-hidden transition-all hover:shadow-sm">
       <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-slate-50/80 via-slate-50/20 to-transparent rounded-full -mr-24 -mt-24 blur-2xl pointer-events-none"></div>
       <div className="relative z-10 space-y-2">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          <span className="font-headline font-bold text-slate-400 uppercase tracking-[0.15em] text-[10px]">
-            ASSINATURA ATIVA
-          </span>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-700 text-xs font-medium w-fit">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Assinatura ativa</span>
         </div>
-        <h3 className="font-headline font-bold text-2xl sm:text-[26px] text-[#0a2540] tracking-tight">
+        <h3 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight">
           Plano {subscription?.planos?.nome}
         </h3>
         {subscription?.data_vencimento ? (
-          <p className="text-slate-600 text-sm sm:text-base font-normal">
+          <p className="text-xs sm:text-sm text-[#737373] font-normal leading-relaxed">
             Próxima renovação programada para{" "}
-            <span className="font-semibold text-slate-800">
+            <span className="text-[#0a0a0a]">
               {formatLocalDate(parseLocalDate(subscription.data_vencimento))}
             </span>.
           </p>
         ) : (
-          <p className="text-slate-600 text-sm sm:text-base font-normal">
-            Você possui <span className="font-bold text-slate-800">acesso vitalício</span> ao Van360. Parabéns!
+          <p className="text-xs sm:text-sm text-[#737373] font-normal leading-relaxed">
+            Você possui <span className="text-[#0a0a0a]">acesso vitalício</span> ao Van360. Parabéns!
           </p>
         )}
       </div>
       {actionLabel && (
         <div className="relative z-10 shrink-0">
           <Button
-            className="bg-[#0a2540] text-white hover:bg-[#061e36] px-8 h-12 rounded-xl font-headline font-bold text-sm shadow-md active:scale-95 transition-all w-full md:w-auto"
+            variant="outline"
+            className="border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] px-5 h-10 rounded-[18px] font-medium text-sm shadow-xs transition-all active:scale-[0.98] w-full md:w-auto cursor-pointer"
             onClick={() => onSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
           >
             {actionLabel}

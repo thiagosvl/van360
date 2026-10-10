@@ -86,55 +86,55 @@ export function AdminConfigureReferralDialog({
       maxWidth="2xl"
     >
       <AdminBaseDialog.Header
-        title={currentIndicadorId ? "Alterar Indicador do Motorista" : "Atribuir Indicador ao Motorista"}
+        title={currentIndicadorId ? "Alterar indicador do motorista" : "Atribuir indicador ao motorista"}
         subtitle={`Defina qual motorista indicou ${userName} para a plataforma.`}
         onClose={handleClose}
       />
 
       <AdminBaseDialog.Body>
-        <div className="space-y-5">
+        <div className="space-y-4">
           <Banner
             variant="info"
-            title="Vínculo de Indicação"
+            title="Vínculo de indicação"
             description="Ao vincular o indicador, o motorista receberá o benefício de indicação e seu canal de aquisição será definido como 'indicação'."
           />
 
           {currentIndicadorNome && (
-            <div className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-between text-xs">
-              <span className="text-slate-400">Indicador atual:</span>
-              <span className="font-bold text-slate-200">{currentIndicadorNome}</span>
+            <div className="p-3.5 rounded-xl border border-border bg-secondary/30 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Indicador atual:</span>
+              <span className="font-semibold text-foreground">{currentIndicadorNome}</span>
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-300">
-              Buscar Motorista Indicador (Nome, Telefone ou CPF)
+            <label className="text-xs font-semibold text-foreground">
+              Buscar motorista indicador (nome, telefone ou CPF)
             </label>
             <div className="relative flex items-center">
-              <Search className="absolute left-3.5 h-4 w-4 text-slate-500 pointer-events-none" />
+              <Search className="absolute left-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Digite para buscar..."
-                className="pl-10 pr-10 h-11 rounded-xl bg-slate-900/80 border-slate-800 text-slate-100 text-sm focus-visible:ring-blue-500"
+                className="pl-10 pr-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
               />
               {isSearching && (
                 <div className="absolute right-3.5 top-0 bottom-0 flex items-center pointer-events-none">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
               )}
             </div>
           </div>
 
           {shouldSearch && candidates.length === 0 && !isSearching && (
-            <div className="py-6 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
+            <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
               Nenhum motorista encontrado com os termos digitados.
             </div>
           )}
 
           {candidates.length > 0 && (
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              <span className="text-xs font-medium text-muted-foreground block">
                 Resultados da busca:
               </span>
               <div className="grid gap-2">
@@ -154,20 +154,20 @@ export function AdminConfigureReferralDialog({
                       }
                       className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                         isSelected
-                          ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
-                          : "border-slate-800/80 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-800/50"
+                          ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                          : "border-border bg-card hover:border-border/80 hover:bg-secondary/40"
                       }`}
                     >
                       <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-white truncate">{candidate.nome}</p>
+                          <p className="text-xs font-semibold text-foreground truncate">{candidate.nome}</p>
                           {candidate.id === currentIndicadorId && (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
                               Atual
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                           {candidate.telefone && (
                             <span className="flex items-center gap-1 font-mono">
                               <Phone className="h-3 w-3 text-emerald-400" />
@@ -176,7 +176,7 @@ export function AdminConfigureReferralDialog({
                           )}
                           {candidate.email && (
                             <span className="flex items-center gap-1 truncate">
-                              <Mail className="h-3 w-3 text-slate-500" />
+                              <Mail className="h-3 w-3 text-muted-foreground" />
                               {candidate.email}
                             </span>
                           )}
@@ -185,8 +185,8 @@ export function AdminConfigureReferralDialog({
                       <div
                         className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ml-3 ${
                           isSelected
-                            ? "border-blue-400 bg-blue-500 text-white"
-                            : "border-slate-700 bg-slate-900"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-secondary"
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -199,18 +199,18 @@ export function AdminConfigureReferralDialog({
           )}
 
           {selectedIndicador && (
-            <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/20 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-blue-400">
+            <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
                 <UserCheck className="h-4 w-4" />
-                <span>Motorista Selecionado como Indicador:</span>
+                <span>Motorista selecionado como indicador:</span>
               </div>
-              <div className="text-xs text-slate-200">
-                <p className="font-bold text-white text-sm">{selectedIndicador.nome}</p>
-                <p className="text-slate-400 font-mono mt-0.5">
+              <div className="text-xs text-foreground">
+                <p className="font-semibold text-foreground text-sm">{selectedIndicador.nome}</p>
+                <p className="text-muted-foreground font-mono mt-0.5">
                   Telefone: {phoneMask(selectedIndicador.telefone)} • {selectedIndicador.email}
                 </p>
                 {selectedIndicador.cpfcnpj && (
-                  <p className="text-slate-500 font-mono text-[11px]">
+                  <p className="text-muted-foreground font-mono text-[11px] mt-0.5">
                     Documento: {cpfCnpjMask(selectedIndicador.cpfcnpj)}
                   </p>
                 )}
@@ -228,7 +228,7 @@ export function AdminConfigureReferralDialog({
           disabled={setReferralMutation.isPending}
         />
         <AdminBaseDialog.Action
-          label={setReferralMutation.isPending ? "Salvando..." : "Confirmar Atribuição"}
+          label={setReferralMutation.isPending ? "Salvando..." : "Confirmar atribuição"}
           variant="primary"
           icon={<UserPlus className="h-4 w-4" />}
           onClick={handleConfirm}

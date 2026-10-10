@@ -373,8 +373,8 @@ export const messages = {
       baixar: "Erro ao baixar contrato.",
       semUrl: "Contrato sem URL.",
       semUrlDescricao: "Não foi possível encontrar o link deste contrato.",
-      assinaturaNecessaria: "Por favor, desenhe sua assinatura.",
-      assinaturaVazia: "Por favor, desenhe sua assinatura.",
+      assinaturaNecessaria: "Por favor, faça sua assinatura.",
+      assinaturaVazia: "Por favor, faça sua assinatura.",
       assinar: "Erro ao assinar contrato.",
     },
     sucesso: {

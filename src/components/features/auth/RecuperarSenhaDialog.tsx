@@ -1,16 +1,15 @@
 import { useRecuperacaoSenhaForm } from "@/hooks/form/useRecuperacaoSenhaForm"
 import { BaseDialog } from "@/components/ui/BaseDialog"
+import { Banner } from "@/components/ui/Banner"
+import { safeCloseDialog } from "@/hooks"
 import {
   KeyRound,
   Mail,
-  CheckCircle2,
   ArrowLeft,
   RefreshCw,
-  ArrowRight,
   Fingerprint,
   Trash2,
   User,
-  Smartphone,
   Eye,
   EyeOff,
   Lock,
@@ -42,6 +41,10 @@ interface RecuperarSenhaDialogProps {
 }
 
 export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: RecuperarSenhaDialogProps) {
+  const handleClose = () => {
+    safeCloseDialog(() => onOpenChange(false))
+  }
+
   const {
     step,
     setStep,
@@ -53,10 +56,9 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
     handleValidar,
     handleResetar,
     emailMascarado,
-  } = useRecuperacaoSenhaForm(() => onOpenChange(false))
+  } = useRecuperacaoSenhaForm(handleClose)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Pré-preencher CPF caso venha da tela de login
   useEffect(() => {
     if (open && initialCpf && !formStep1.getValues("cpf")) {
       formStep1.setValue("cpf", cpfCnpjMask(initialCpf))
@@ -69,35 +71,38 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         return (
           <Form {...formStep1}>
             <form id="form-recuperar-step1" onSubmit={formStep1.handleSubmit(handleSolicitar)} className="space-y-4">
-              <div className="space-y-4 py-4">
-                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
-                  <Fingerprint className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    Informe seu CPF ou CNPJ para iniciarmos o processo de recuperação da sua conta.
-                  </p>
-                </div>
+              <div className="space-y-4 py-2">
+                <Banner
+                  variant="info"
+                  icon={<Fingerprint className="w-5 h-5 text-[#2563eb]" />}
+                  description="Informe seu CPF ou CNPJ para iniciarmos o processo de recuperação da sua conta."
+                />
 
                 <FormField
                   control={formStep1.control}
                   name="cpf"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                         Seu CPF ou CNPJ
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             inputMode="numeric"
                             placeholder="CPF ou CNPJ"
                             onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                            className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                              fieldState.error
+                                ? "border-[#e7000b] focus:border-[#e7000b]"
+                                : "border-[#e5e5e5] focus:border-[#2563eb]"
+                            }`}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                     </FormItem>
                   )}
                 />
@@ -110,18 +115,21 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         return (
           <Form {...formStep2}>
             <form id="form-recuperar-step2" onSubmit={formStep2.handleSubmit(handleValidar)} className="space-y-6">
-              <div className="space-y-6 py-4">
-                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
-                  <Mail className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      O código foi enviado para o e-mail:
-                    </p>
-                    <p className="font-headline font-black text-[#1a3a5c] text-sm break-all">
-                      {emailMascarado}
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-6 py-2">
+                <Banner
+                  variant="info"
+                  icon={<Mail className="w-5 h-5 text-[#2563eb]" />}
+                  description={
+                    <div className="space-y-1">
+                      <p className="text-xs text-[#737373] leading-relaxed font-medium">
+                        O código foi enviado para o e-mail:
+                      </p>
+                      <p className="font-bold text-[#0a0a0a] text-sm break-all">
+                        {emailMascarado}
+                      </p>
+                    </div>
+                  }
+                />
 
                 <div className="sr-only">
                   <DialogTitle>Validar código</DialogTitle>
@@ -142,7 +150,6 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                             {...field}
                             onChange={(val) => {
                               field.onChange(val);
-                              // Apenas submete se tiver 6 caracteres reais (sem espaços)
                               const realValue = val.replace(/\s/g, "");
                               if (realValue.length === 6) {
                                 formStep2.handleSubmit(handleValidar)()
@@ -155,7 +162,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                                 <InputOTPSlot
                                   key={index}
                                   index={index}
-                                  className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-headline font-black rounded-xl border-gray-200 bg-gray-50 text-[#1a3a5c] shadow-sm transition-all focus-within:ring-4 focus-within:ring-[#1a3a5c]/10"
+                                  className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-bold rounded-[18px] border-[#e5e5e5] bg-[#f5f5f5] text-[#0a0a0a] shadow-2xs transition-all focus-within:ring-2 focus-within:ring-[#2563eb]/15 focus-within:border-[#2563eb]"
                                 />
                               ))}
                             </InputOTPGroup>
@@ -166,7 +173,7 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="w-full h-10 text-[10px] font-black uppercase text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl gap-2 tracking-wider"
+                            className="w-full h-10 text-xs font-semibold text-[#737373] hover:text-[#e7000b] hover:bg-[#e7000b]/10 rounded-[18px] gap-2 tracking-wide cursor-pointer"
                             onClick={() => field.onChange("")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -186,46 +193,49 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         return (
           <Form {...formStep3}>
             <form id="form-recuperar-step3" onSubmit={formStep3.handleSubmit(handleResetar)} className="space-y-4">
-              <div className="space-y-4 py-4">
-                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex gap-3">
-                  <ShieldCheck className="w-5 h-5 text-[#1a3a5c] shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    Código validado com sucesso! Agora crie uma nova senha segura para acessar sua conta.
-                  </p>
-                </div>
+              <div className="space-y-4 py-2">
+                <Banner
+                  variant="info"
+                  icon={<ShieldCheck className="w-5 h-5 text-[#2563eb]" />}
+                  description="Código validado com sucesso! Agora crie uma nova senha segura para acessar sua conta."
+                />
 
                 <FormField
                   control={formStep3.control}
                   name="password"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                         Sua Nova Senha
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base"
+                            className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                              fieldState.error
+                                ? "border-[#e7000b] focus:border-[#e7000b]"
+                                : "border-[#e5e5e5] focus:border-[#2563eb]"
+                            }`}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] focus:outline-none transition-colors p-1 cursor-pointer"
                             tabIndex={-1}
                           >
                             {showPassword ? (
-                              <EyeOff className="h-5 w-5 opacity-60" />
+                              <EyeOff className="h-4 w-4" />
                             ) : (
-                              <Eye className="h-5 w-5 opacity-60" />
+                              <Eye className="h-4 w-4" />
                             )}
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                     </FormItem>
                   )}
                 />
@@ -245,17 +255,18 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         return {
           title: "RECUPERAR SENHA",
           subtitle: "Passo 1: Identificação",
-          icon: <Mail className="w-6 h-6" />
+          icon: <Mail className="w-6 h-6 text-[#2563eb]" />
         }
       case 2:
         return {
           title: "VALIDAR CÓDIGO",
           subtitle: "Passo 2: Verificação",
-          icon: <RefreshCw className="w-6 h-6" />,
+          icon: <RefreshCw className="w-6 h-6 text-[#2563eb]" />,
           leftAction: (
             <button
+              type="button"
               onClick={() => setStep(1)}
-              className="h-11 w-11 rounded-2xl flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] border border-slate-100 transition-all"
+              className="h-10 w-10 rounded-[18px] flex items-center justify-center bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] shadow-2xs transition-all cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -265,19 +276,19 @@ export function RecuperarSenhaDialog({ open, onOpenChange, initialCpf }: Recuper
         return {
           title: "NOVA SENHA",
           subtitle: "Passo 3: Conclusão",
-          icon: <KeyRound className="w-6 h-6" />
+          icon: <KeyRound className="w-6 h-6 text-[#2563eb]" />
         }
     }
   }
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={loading}>
+    <BaseDialog open={open} onOpenChange={handleClose} lockClose={loading}>
       <BaseDialog.Header
         {...getHeaderProps()}
         showSteps
         currentStep={step}
         totalSteps={3}
-        onClose={() => onOpenChange(false)}
+        onClose={handleClose}
       />
 
       <BaseDialog.Body animate animationKey={step}>

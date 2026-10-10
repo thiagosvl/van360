@@ -32,8 +32,8 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
+    <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a] flex flex-col">
+      <header className="border-b border-[#e5e5e5] bg-white px-4 sm:px-6 lg:px-8 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
         <div className="mx-auto flex max-w-4xl lg:max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2">
             <img
@@ -44,13 +44,14 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
           </div>
 
           <button
+            type="button"
             onClick={() => {
               logout();
               navigate(ROUTES.PUBLIC.LOGIN);
             }}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/80 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] px-3.5 py-1.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-all cursor-pointer"
           >
-            <LogOut className="h-3.5 w-3.5 text-slate-500" />
+            <LogOut className="h-3.5 w-3.5 text-[#737373]" />
             <span>Sair</span>
           </button>
         </div>
@@ -60,8 +61,8 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-4xl lg:max-w-5xl min-w-0 pb-[calc(2.5rem+var(--safe-area-bottom))]">
           <div className="space-y-6 min-w-0">
             <div>
-              <h1 className="text-xl font-bold text-[#1a3a5c]">Selecione o Aluno</h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              <h1 className="text-xl font-semibold text-[#0a0a0a] tracking-tight">Selecione o Aluno</h1>
+              <p className="text-xs sm:text-sm text-[#737373] mt-1">
                 Encontramos os alunos vinculados à sua conta. Escolha qual carteirinha deseja acessar:
               </p>
             </div>
@@ -71,10 +72,10 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 w-full"
+                    className="flex items-center justify-between rounded-[24px] border border-[#e5e5e5] bg-white p-4 w-full"
                   >
-                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
-                      <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl shrink-0" />
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <Skeleton className="h-12 w-12 rounded-[18px] shrink-0" />
                       <div className="min-w-0 flex-1 space-y-2">
                         <Skeleton className="h-4 w-32" />
                         <Skeleton className="h-3 w-24" />
@@ -89,25 +90,26 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
                 {passageiros.map((p) => (
                   <button
                     key={p.id}
+                    type="button"
                     onClick={() => handleSelect(p)}
-                    className="group flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 text-left shadow-xs transition-all hover:border-[#1a3a5c]/30 hover:shadow-md hover:bg-slate-50/50 cursor-pointer w-full min-w-0 overflow-hidden"
+                    className="group flex items-center justify-between rounded-[24px] border border-[#e5e5e5] bg-white p-4 text-left shadow-xs transition-all hover:border-primary/40 hover:shadow-sm cursor-pointer w-full min-w-0 overflow-hidden active:scale-[0.99]"
                   >
-                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
-                      <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shrink-0">
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-primary/10 text-primary transition-all shrink-0">
                         <User className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-[#1a3a5c] text-sm sm:text-base leading-snug group-hover:text-[#1a3a5c] transition-colors truncate">
+                        <h3 className="font-semibold text-[#0a0a0a] text-sm sm:text-base leading-snug group-hover:text-primary transition-colors truncate">
                           {formatShortName(p.nome, true)}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                          <Bus className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-xs text-[#737373] mt-0.5">
+                          <Bus className="h-3.5 w-3.5 text-[#737373] shrink-0" />
                           <span className="truncate font-medium">{p.motorista_nome}</span>
                         </div>
                       </div>
                     </div>
 
-                    <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-[#1a3a5c] transition-colors shrink-0 ml-2" />
+                    <ChevronRight className="h-5 w-5 text-[#737373] group-hover:text-primary transition-colors shrink-0 ml-2" />
                   </button>
                 ))}
               </div>

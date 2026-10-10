@@ -68,12 +68,7 @@ export const DataTableToolbar = ({
     <div className="relative group flex-grow">
       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
         <Search
-          className={cn(
-            "h-4 w-4 transition-colors",
-            searchTerm
-              ? "text-amber-500"
-              : "text-gray-400 group-focus-within:text-[#1a3a5c]"
-          )}
+          className="h-4 w-4 transition-colors text-[#737373] group-focus-within:text-[#0a0a0a]"
         />
       </div>
       <Input
@@ -82,7 +77,7 @@ export const DataTableToolbar = ({
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
         disabled={disabled}
-        className="w-full bg-white border border-gray-100/50 h-14 pl-11 pr-4 rounded-2xl shadow-sm font-medium text-base text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
+        className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
       />
     </div>
   );
@@ -91,7 +86,7 @@ export const DataTableToolbar = ({
     <Button
        variant="outline"
        className={cn(
-         "bg-white border-slate-100 text-[#1a3a5c] font-bold text-xs md:text-sm gap-1.5 md:gap-2 h-12 md:h-14 rounded-2xl px-2.5 md:px-5 shadow-sm hover:bg-gray-50 shrink-0",
+         "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-sm gap-1.5 md:gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 cursor-pointer",
          isMobile ? "flex-1" : ""
        )}
        disabled={disabled}
@@ -102,14 +97,14 @@ export const DataTableToolbar = ({
             <Filter
               className={cn(
                 "h-4 w-4 mr-1.5",
-                filterConfig.hasActiveFilters && "text-amber-500"
+                filterConfig.hasActiveFilters && "text-primary"
               )}
             />
           ) : (
             <ListFilter
               className={cn(
                 "h-4 w-4",
-                filterConfig.hasActiveFilters && "text-amber-500"
+                filterConfig.hasActiveFilters && "text-primary"
               )}
             />
           )}
@@ -122,7 +117,7 @@ export const DataTableToolbar = ({
   const showFilterFooter = filterConfig?.showFooter !== false;
 
   return (
-    <div className={cn("flex flex-col gap-5", className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {extraContent}
 
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -135,28 +130,26 @@ export const DataTableToolbar = ({
               {isMobile ? (
                 <Drawer open={filterConfig.isOpen} onOpenChange={filterConfig.onOpenChange}>
                   <DrawerTrigger asChild>{filterTriggerElement}</DrawerTrigger>
-                  <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl overflow-hidden">
-                    <DrawerHeader className="text-left px-8 pt-6 pb-2">
-                      <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">
+                  <DrawerContent className="h-auto max-h-[90vh] rounded-t-[28px] flex flex-col px-0 bg-white border-t border-[#e5e5e5] shadow-lg pb-[calc(2rem+var(--safe-area-bottom))]">
+                    <DrawerHeader className="text-left mb-2 px-6 pt-5">
+                      <DrawerTitle className="font-semibold text-[#0a0a0a] text-lg tracking-tight">
                         {filterConfig.title}
                       </DrawerTitle>
-                      <DrawerDescription className="text-xs font-medium text-gray-400">
+                      <DrawerDescription className="text-xs font-normal text-[#737373]">
                         {filterConfig.description}
                       </DrawerDescription>
                     </DrawerHeader>
  
-                    <div className="flex-1 overflow-y-auto px-8 pb-6">
-                      <div className="flex flex-col gap-4 mt-2">
-                        {filterChildren}
-                      </div>
+                    <div className="flex-1 overflow-y-auto px-6 space-y-4">
+                      {filterChildren}
                     </div>
  
                     {showFilterFooter && (
-                      <div className="px-8 pt-4 pb-4 md:pb-6 border-t border-gray-50 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-                        <div className="flex items-center gap-4">
+                      <div className="px-6 pt-3 border-t border-[#e5e5e5] bg-white">
+                        <div className="flex items-center gap-2.5">
                           <Button
                             variant="ghost"
-                            className="flex-1 h-12 rounded-2xl text-slate-400 font-black uppercase tracking-wider text-[10px] hover:bg-slate-50 transition-all active:scale-95"
+                            className="flex-1 h-11 rounded-[18px] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] text-sm font-medium gap-1.5 cursor-pointer"
                             onClick={() => {
                                 if (filterConfig.onClearTemp) {
                                     filterConfig.onClearTemp();
@@ -168,7 +161,7 @@ export const DataTableToolbar = ({
                             Limpar
                           </Button>
                           <Button
-                            className="flex-1 h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white font-black uppercase tracking-wider text-[10px] shadow-lg shadow-[#1a3a5c]/10 transition-all active:scale-95"
+                            className="flex-1 h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-white text-sm font-medium gap-1.5 border-none shadow-xs cursor-pointer"
                             onClick={filterConfig.onApply}
                           >
                             Aplicar
@@ -182,25 +175,25 @@ export const DataTableToolbar = ({
                 <Popover open={filterConfig.isOpen} onOpenChange={filterConfig.onOpenChange} modal={true}>
                   <PopoverTrigger asChild>{filterTriggerElement}</PopoverTrigger>
                   <PopoverContent
-                    className="w-[320px] p-6 rounded-2xl shadow-xl border-none ring-1 ring-gray-100"
+                    className="w-[300px] p-4 rounded-[20px] border border-[#e5e5e5] bg-white shadow-lg space-y-3.5"
                     align="end"
                     onOpenAutoFocus={(e) => e.preventDefault()}
                   >
-                    <div className="space-y-5">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between pb-1 border-b border-[#e5e5e5]">
+                        <h4 className="font-semibold text-[#0a0a0a] text-xs">
                           Filtragem Avançada
                         </h4>
                         {filterConfig.hasActiveFilters && (
                           <button
                             onClick={filterConfig.onClear}
-                            className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
+                            className="text-[11px] font-medium text-[#737373] hover:text-[#0a0a0a] cursor-pointer"
                           >
                             Limpar
                           </button>
                         )}
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {filterChildren}
                       </div>
                     </div>

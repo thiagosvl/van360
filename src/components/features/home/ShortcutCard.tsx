@@ -1,11 +1,12 @@
+import { ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 interface ShortcutCardProps {
   to?: string;
   onClick?: () => void;
-  icon: any;
-  activeIcon?: any;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+  activeIcon?: ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   className?: string;
   isActive?: boolean;
@@ -33,28 +34,28 @@ export const ShortcutCard = ({
     orange: "bg-[#ffedd5]",
     amber: "bg-[#fef3c7]",
     sky: "bg-[#ccfbf1]",
-    slate: "bg-[#f3f4f6]",
+    slate: "bg-[#f5f5f5]",
     white: "bg-white",
   };
 
-  const activeStyles = "ring-2 ring-slate-800 ring-offset-1";
+  const activeStyles = "ring-2 ring-[#0a0a0a] ring-offset-1";
 
   const content = (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-2.5 rounded-[18px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] h-[100px] max-[320px]:h-[90px] w-full group select-none cursor-pointer",
+        "flex flex-col items-center justify-center p-2.5 rounded-[18px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#e5e5e5] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] h-[100px] max-[320px]:h-[90px] w-full group select-none cursor-pointer",
         isActive && activeStyles,
         className,
       )}
     >
       <div className={cn(
-        "h-[40px] w-[40px] rounded-full flex items-center justify-center mb-2.5 shrink-0 transition-all duration-300 border-[1.5px] border-slate-800",
-        isActive ? "bg-slate-800 text-white" : cn(iconBgVariants[variant], "text-slate-800 group-hover:scale-105")
+        "h-[40px] w-[40px] rounded-full flex items-center justify-center mb-2.5 shrink-0 transition-all duration-300 border-[1.5px] border-[#0a0a0a]",
+        isActive ? "bg-[#0a0a0a] text-white" : cn(iconBgVariants[variant], "text-[#0a0a0a] group-hover:scale-105")
       )}>
         <DisplayIcon className="h-5 w-5" strokeWidth={1.75} />
       </div>
       <span className={cn(
-        "text-[12px] max-[320px]:text-[11px] font-semibold text-slate-800 leading-[1.1] text-center px-0.5",
+        "text-[12px] max-[320px]:text-[11px] font-semibold text-[#0a0a0a] leading-[1.1] text-center px-0.5",
       )}>
         {label}
       </span>

@@ -245,7 +245,44 @@ export interface AdminUserReferralData {
   }>;
 }
 
+export interface AdminUserEquipeItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  razao_social: string | null;
+  email: string;
+  telefone: string;
+  cpfcnpj: string;
+  tipo: string;
+  ativo: boolean;
+  conta_pai_id: string;
+  veiculo_id: string | null;
+  created_at: string;
+  veiculos?: {
+    id: string;
+    placa: string;
+    marca: string | null;
+    modelo: string;
+  } | null;
+}
+
 export interface AdminUserDetailsResponse extends AdminUserReferralData {
+  gestor?: {
+    id: string;
+    nome: string;
+    apelido: string | null;
+    telefone: string | null;
+    email: string | null;
+    logo_url: string | null;
+    tipo: string;
+  } | null;
+  veiculo_vinculado?: {
+    id: string;
+    placa: string;
+    modelo: string;
+    marca: string | null;
+  } | null;
+  equipe?: AdminUserEquipeItem[];
   user: {
     id: string;
     nome: string;
@@ -256,6 +293,8 @@ export interface AdminUserDetailsResponse extends AdminUserReferralData {
     telefone: string;
     ativo: boolean;
     tipo: string;
+    conta_pai_id?: string | null;
+    veiculo_id?: string | null;
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
@@ -290,6 +329,7 @@ export interface AdminUserDetailsResponse extends AdminUserReferralData {
     contratosPendentesCount?: number;
     valorTotalContratos?: number;
     statusConfiguracaoContrato?: DriverContractConfigStatus;
+    equipeCount?: number;
   };
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
@@ -691,6 +731,9 @@ export const adminUserApi = {
 
   getUserEscolas: (id: string) =>
     apiClient.get<AdminUserSchoolItem[]>(`${BASE}/users/${id}/escolas`).then(r => r.data),
+
+  getUserEquipe: (id: string) =>
+    apiClient.get<AdminUserEquipeItem[]>(`${BASE}/users/${id}/equipe`).then(r => r.data),
 
   getUserReferral: (id: string) =>
     apiClient.get<AdminUserReferralData>(`${BASE}/users/${id}/referral`).then(r => r.data),

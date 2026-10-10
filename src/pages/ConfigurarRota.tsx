@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Loader2, Settings, Trash2, Info, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Loader2, Settings, Trash2, Info, ChevronDown } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { RouteConfigSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -19,26 +21,28 @@ function PontosDeAtencaoCollapse({ avisos }: { avisos: string[] }) {
   if (!avisos || avisos.length === 0) return null;
 
   return (
-    <div className="border border-blue-200/90 bg-blue-50/70 rounded-xl overflow-hidden shadow-2xs transition-all text-left">
+    <div className="border border-sky-500/20 bg-sky-500/[0.08] rounded-[18px] overflow-hidden shadow-xs transition-all text-left">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer hover:bg-blue-100/50 transition-colors select-none"
+        className="w-full px-4 py-3 flex items-center justify-between gap-2 cursor-pointer hover:bg-sky-500/[0.12] transition-colors select-none"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <Info className="w-4 h-4 text-[#1a3a5c] shrink-0" />
-          <span className="text-xs font-bold text-[#1a3a5c] truncate">
+          <div className="w-6 h-6 rounded-[8px] bg-sky-500/15 flex items-center justify-center text-sky-700 shrink-0">
+            <Info className="w-3.5 h-3.5" />
+          </div>
+          <span className="text-xs font-semibold text-[#0a0a0a] truncate">
             {avisos.length === 1 ? "1 sugestão para sua rota" : `${avisos.length} sugestões para sua rota`}
           </span>
         </div>
-        <ChevronDown className={cn("w-4 h-4 text-[#1a3a5c]/70 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("w-4 h-4 text-[#737373] transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="border-t border-blue-200/70 p-3 bg-blue-50/40 space-y-2 animate-in fade-in duration-150">
+        <div className="border-t border-sky-500/15 p-3.5 bg-white/50 space-y-2 animate-in fade-in duration-150">
           {avisos.map((aviso, idx) => (
-            <div key={idx} className="flex items-start gap-2 text-xs text-slate-800 leading-relaxed font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1a3a5c] mt-1.5 shrink-0" />
+            <div key={idx} className="flex items-start gap-2 text-xs text-[#171717] leading-relaxed font-normal">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-600 mt-1.5 shrink-0" />
               <span className="flex-1 break-words">{aviso}</span>
             </div>
           ))}
@@ -50,6 +54,7 @@ function PontosDeAtencaoCollapse({ avisos }: { avisos: string[] }) {
 
 export default function ConfigurarRota() {
   const vm = useConfigurarRotaViewModel();
+  const navigate = useNavigate();
   const { openRouteFormDialog, setPageTitle } = useLayout();
 
   useEffect(() => {
@@ -84,22 +89,34 @@ export default function ConfigurarRota() {
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
-      <form onSubmit={vm.handleSubmit} className="text-left pb-12 max-w-2xl mx-auto relative">
-        <div className="space-y-5 mt-1">
-          {/* Card do Cabeçalho da Rota com Ações de Edição/Exclusão */}
-          <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between gap-4 transition-all">
+      <form onSubmit={vm.handleSubmit} className="text-left pb-12 max-w-2xl mx-auto relative pt-1 sm:pt-2">
+        <div className="space-y-4 sm:space-y-5">
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+              className="text-[#737373] hover:text-[#0a0a0a] hover:bg-white gap-1.5 -ml-2 font-medium text-xs h-8 sm:h-9 rounded-[18px] border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Voltar</span>
+            </Button>
+          </div>
+
+          <div className="bg-white border border-[#e5e5e5] p-4 sm:p-5 rounded-[24px] shadow-xs flex items-center justify-between gap-4 transition-all">
             <div className="min-w-0 flex-1 text-left space-y-1">
-              <h2 className="text-lg font-extrabold text-[#1a3a5c] font-headline tracking-tight leading-snug break-words">
+              <h2 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight leading-snug break-words">
                 {vm.formData.nome || "Configurar Rota"}
               </h2>
               {(() => {
                 const veiculo = vm.veiculosList.find((v) => v.id === vm.formData.veiculoId) || (vm.veiculosList.length === 1 ? vm.veiculosList[0] : null);
                 return veiculo ? (
-                  <p className="text-xs font-medium text-slate-400 leading-none">
+                  <p className="text-xs font-normal text-[#737373] leading-none">
                     {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
                   </p>
                 ) : (
-                  <p className="text-xs font-medium text-slate-400 leading-none">
+                  <p className="text-xs font-normal text-[#737373] leading-none">
                     Nenhum veículo associado
                   </p>
                 );
@@ -111,7 +128,7 @@ export default function ConfigurarRota() {
                 variant="outline"
                 size="sm"
                 onClick={handleOpenEditRouteDialog}
-                className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all flex items-center gap-1.5"
+                className="h-8 px-3 rounded-[18px] border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] font-medium text-xs shrink-0 cursor-pointer shadow-xs transition-all flex items-center gap-1.5"
                 title="Configurar Dados da Rota (Nome e Veículo)"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -125,11 +142,11 @@ export default function ConfigurarRota() {
                   size="sm"
                   onClick={vm.handleDeleteRoute}
                   disabled={vm.isDeleting}
-                  className="h-8 px-2.5 rounded-lg border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 font-bold text-xs shrink-0 cursor-pointer shadow-2xs transition-all"
+                  className="h-8 px-2.5 rounded-[18px] border-[#e5e5e5] bg-white hover:bg-[#e7000b]/10 text-[#737373] hover:text-[#e7000b] hover:border-[#e7000b]/20 font-medium text-xs shrink-0 cursor-pointer shadow-xs transition-all"
                   title="Excluir Rota"
                 >
                   {vm.isDeleting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#e7000b]" />
                   ) : (
                     <Trash2 className="w-3.5 h-3.5" />
                   )}
@@ -140,8 +157,7 @@ export default function ConfigurarRota() {
 
           <PontosDeAtencaoCollapse avisos={vm.avisosItinerario} />
 
-          {/* Seção do Itinerário e Ações */}
-          <div className="space-y-5 animate-in fade-in duration-300">
+          <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-300">
             <ConfigurarRotaItinerario
               itinerario={vm.itinerario}
               errosPorNo={vm.errosPorNo}
@@ -154,12 +170,10 @@ export default function ConfigurarRota() {
               onOpenModalParadaGeral={vm.openModalParadaGeral}
             />
 
-            <PontosDeAtencaoCollapse avisos={vm.avisosItinerario} />
-
             <Button
               type="submit"
               disabled={vm.isSaving || !vm.isFormValid}
-              className="w-full h-12 bg-[#1a3a5c] hover:bg-[#16314f] text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] mt-4 cursor-pointer"
+              className="w-full h-11 bg-primary hover:bg-primary-hover text-white font-medium text-sm rounded-[18px] shadow-xs flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] mt-4 cursor-pointer border-none"
             >
               {vm.isSaving ? (
                 <>

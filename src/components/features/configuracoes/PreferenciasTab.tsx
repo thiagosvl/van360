@@ -1,26 +1,34 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PreferenciasTabSkeleton } from "@/components/skeletons";
 import { useConfiguracoes } from "@/hooks";
-import { Check, SlidersHorizontal } from "lucide-react";
+import { Check, Loader2, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const PreferenciasTab = memo(function PreferenciasTab() {
   const { configuracoes, isLoading, updateConfiguracoes, isUpdating } = useConfiguracoes();
+  const [updatingKey, setUpdatingKey] = useState<string | null>(null);
 
   const formatoAtual = configuracoes?.formato_nome_responsavel || "primeiro_nome";
   const exibirTelefoneAtual = configuracoes?.exibir_telefone_lista_alunos ?? false;
+  const isBusy = isLoading || isUpdating || updatingKey !== null;
 
   const handleSelectFormato = async (formato: "primeiro_nome" | "completo") => {
-    if (formato === formatoAtual || isUpdating) return;
+    if (formato === formatoAtual || isBusy) return;
+    setUpdatingKey(formato);
     try {
       await updateConfiguracoes({ formato_nome_responsavel: formato });
       toast.success("Preferência de exibição atualizada com sucesso!");
-    } catch { }
+    } catch {
+    } finally {
+      setUpdatingKey(null);
+    }
   };
 
   const handleToggleTelefone = async (novoValor: boolean) => {
-    if (novoValor === exibirTelefoneAtual || isUpdating) return;
+    if (novoValor === exibirTelefoneAtual || isBusy) return;
+    setUpdatingKey(novoValor ? "telefone_true" : "telefone_false");
     try {
       await updateConfiguracoes({ exibir_telefone_lista_alunos: novoValor });
       toast.success(
@@ -28,233 +36,173 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
           ? "Telefone ativado na lista de alunos!"
           : "Telefone ocultado da lista de alunos!"
       );
-    } catch { }
+    } catch {
+    } finally {
+      setUpdatingKey(null);
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-64 w-full rounded-2xl" />
-      </div>
-    );
+  if (isLoading || !configuracoes) {
+    return <PreferenciasTabSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <SlidersHorizontal className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-[#1a3a5c]">
-              Preferências do Aplicativo
-            </h2>
-            <p className="text-xs text-slate-500">
-              Personalize a forma como as informações são apresentadas no seu aplicativo.
-            </p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+          <SlidersHorizontal className="w-5 h-5 text-[#0a0a0a]" />
         </div>
+        <div>
+          <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+            Preferências do Aplicativo
+          </h2>
+          <p className="text-xs text-[#737373] mt-0.5">
+            Personalize a forma como as informações são apresentadas no seu aplicativo.
+          </p>
+        </div>
+      </div>
 
         <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
               Exibição do Nome do Responsável
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Escolha como o responsável deve aparecer abaixo do nome do aluno nas telas do app.
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+              Escolha como o responsável deve aparecer abaixo do nome do aluno nas telas do aplicativo.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
             <button
               type="button"
               onClick={() => handleSelectFormato("primeiro_nome")}
-              disabled={isUpdating}
+              disabled={isBusy}
               className={cn(
-                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
-                formatoAtual === "primeiro_nome"
-                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
-                  : "border-slate-200 hover:border-slate-300 bg-white"
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAtual === "primeiro_nome" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
               )}
             >
-              <div className="flex items-start justify-between gap-2 w-full">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
-                      formatoAtual === "primeiro_nome"
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300"
-                    )}
-                  >
-                    {formatoAtual === "primeiro_nome" && (
-                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">
-                    Apenas Primeiro Nome
-                  </span>
-                </div>
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAtual === "primeiro_nome"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "primeiro_nome" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAtual === "primeiro_nome" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
               </div>
-
-              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
-                <p className="text-[11px] font-bold text-[#1a3a5c]">
-                  Joãozinho Silva
-                </p>
-                <p className="text-[10px] text-gray-500 font-medium">
-                  Maria
-                </p>
-              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Apenas Primeiro Nome
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSelectFormato("completo")}
-              disabled={isUpdating}
+              disabled={isBusy}
               className={cn(
-                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
-                formatoAtual === "completo"
-                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
-                  : "border-slate-200 hover:border-slate-300 bg-white"
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
               )}
             >
-              <div className="flex items-start justify-between gap-2 w-full">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
-                      formatoAtual === "completo"
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300"
-                    )}
-                  >
-                    {formatoAtual === "completo" && (
-                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">
-                    Exibir Nome Completo
-                  </span>
-                </div>
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAtual === "completo"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "completo" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAtual === "completo" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
               </div>
-
-              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
-                <p className="text-[11px] font-bold text-[#1a3a5c]">
-                  Joãozinho Silva
-                </p>
-                <p className="text-[10px] text-gray-500 font-medium truncate">
-                  Maria Oliveira da Silva
-                </p>
-              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Nome Completo
+              </span>
             </button>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-100 space-y-3">
+        <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
               Telefone do Responsável na Lista de Alunos
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
               Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
             <button
               type="button"
               onClick={() => handleToggleTelefone(false)}
-              disabled={isUpdating}
+              disabled={isBusy}
               className={cn(
-                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
-                !exibirTelefoneAtual
-                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
-                  : "border-slate-200 hover:border-slate-300 bg-white"
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                !exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
               )}
             >
-              <div className="flex items-start justify-between gap-2 w-full">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
-                      !exibirTelefoneAtual
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300"
-                    )}
-                  >
-                    {!exibirTelefoneAtual && (
-                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">
-                    Não Exibir Telefone na Lista de Alunos
-                  </span>
-                </div>
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  !exibirTelefoneAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "telefone_false" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : !exibirTelefoneAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
               </div>
-
-              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
-                <p className="text-[11px] font-bold text-[#1a3a5c]">
-                  Joãozinho Silva
-                </p>
-                <p className="text-[10px] text-gray-500 font-medium">
-                  {formatoAtual === "completo" ? "Maria Oliveira da Silva" : "Maria"}
-                </p>
-                <p className="text-[10px] text-gray-400 font-medium opacity-60">
-                  Colégio Teste Van360
-                </p>
-              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Não Exibir Telefone
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => handleToggleTelefone(true)}
-              disabled={isUpdating}
+              disabled={isBusy}
               className={cn(
-                "p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-3",
-                exibirTelefoneAtual
-                  ? "border-[#1a3a5c] bg-slate-50/60 ring-2 ring-[#1a3a5c]/10"
-                  : "border-slate-200 hover:border-slate-300 bg-white"
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
               )}
             >
-              <div className="flex items-start justify-between gap-2 w-full">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
-                      exibirTelefoneAtual
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]"
-                        : "border-slate-300"
-                    )}
-                  >
-                    {exibirTelefoneAtual && (
-                      <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">
-                    Exibir Telefone na Lista de Alunos
-                  </span>
-                </div>
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  exibirTelefoneAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "telefone_true" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : exibirTelefoneAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
               </div>
-
-              <div className="mt-1 p-2.5 rounded-lg bg-slate-100/70 border border-slate-200/50 space-y-0.5">
-                <p className="text-[11px] font-bold text-[#1a3a5c]">
-                  Joãozinho Silva
-                </p>
-                <p className="text-[10px] text-gray-500 font-medium">
-                  {formatoAtual === "completo" ? "Maria Oliveira da Silva" : "Maria"}
-                </p>
-                <p className="text-[10px] text-gray-500 font-medium">
-                  (11) 98765-4321
-                </p>
-                <p className="text-[10px] text-gray-400 font-medium opacity-60">
-                  Colégio Teste Van360
-                </p>
-              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Exibir Telefone
+              </span>
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 });

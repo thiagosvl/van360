@@ -3,6 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,13 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import { useConfiguracoes } from "@/hooks/api/useConfiguracoes";
@@ -140,7 +135,7 @@ export function PasseioFormDialog({
           observacoes: values.observacoes,
           veiculos_ids: values.veiculos_ids,
         });
-        toast.success("Passeio criado com sucesso! Link de compartilhamento gerado.");
+        toast.success("Passeio criado com sucesso! Link gerado.");
       }
 
       onSuccess?.();
@@ -155,16 +150,16 @@ export function PasseioFormDialog({
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && safeCloseDialog(onClose)} maxWidth="lg">
       <BaseDialog.Header
-        title={isEditing ? "Editar Passeio / Evento" : "Novo Passeio / Evento"}
-        subtitle="Cinema, teatro, excursões ou passeios por adesão de vagas"
-        icon={<Ticket className="h-5 w-5 text-[#1a3a5c]" />}
+        title={isEditing ? "Editar Passeio" : "Novo Passeio"}
+        subtitle="Excursões e passeios por vagas"
+        icon={<Ticket className="h-5 w-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 transition-all active:scale-95 shadow-2xs"
+            className="h-9 w-9 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-white transition-all"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -175,21 +170,21 @@ export function PasseioFormDialog({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <BaseDialog.Body className="space-y-3.5 p-5 sm:p-6 overflow-y-auto">
+          <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto bg-white">
             <FormField
               control={form.control}
               name="titulo"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                    Título do Passeio / Evento <span className="text-red-600">*</span>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Título do Passeio <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <FileText className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                      <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         placeholder="Ex: Excursão Zooparque"
-                        className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                        className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                         aria-invalid={!!fieldState.error}
                         {...field}
                       />
@@ -200,21 +195,21 @@ export function PasseioFormDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="destino"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                      Local de Destino <span className="text-red-600">*</span>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Destino <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Ex: Shopping Center Norte"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           aria-invalid={!!fieldState.error}
                           {...field}
                         />
@@ -230,13 +225,13 @@ export function PasseioFormDialog({
                 name="origem"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Ponto de Encontro / Saída</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Ponto de Encontro</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
-                          placeholder="Ex: Portão principal da escola"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          placeholder="Ex: Portão da escola"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -248,21 +243,21 @@ export function PasseioFormDialog({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="data_inicio"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                      Data e Hora de Saída <span className="text-red-600">*</span>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Saída <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           type="datetime-local"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           aria-invalid={!!fieldState.error}
                           {...field}
                         />
@@ -278,13 +273,13 @@ export function PasseioFormDialog({
                 name="data_fim"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Previsão de Retorno</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Previsão de Retorno</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           type="datetime-local"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -296,17 +291,17 @@ export function PasseioFormDialog({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="valor_por_pessoa"
                 render={({ field }) => (
                   <MoneyInput
                     field={field}
-                    label="Valor por Participante"
+                    label="Valor por Pessoa"
                     required
-                    labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
-                    inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm font-bold text-slate-800 transition-all"
+                    labelClassName="text-[#0a0a0a] font-medium text-xs"
+                    inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
                   />
                 )}
               />
@@ -316,14 +311,14 @@ export function PasseioFormDialog({
                 name="vagas_totais"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Vagas Disponíveis (Opcional)</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Vagas Totais (Opcional)</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Users className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           type="number"
                           placeholder="Ex: 18"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                         />
@@ -335,15 +330,20 @@ export function PasseioFormDialog({
               />
             </div>
 
-            <div className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-3">
+            <div className="p-3.5 sm:p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] space-y-3">
               <FormField
                 control={form.control}
                 name="exibir_pix"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-3 space-y-0 cursor-pointer select-none">
+                  <FormItem className="flex flex-row items-center justify-between space-y-0 cursor-pointer select-none">
+                    <div className="space-y-0.5 pr-4">
+                      <FormLabel className="text-xs sm:text-sm font-medium text-[#0a0a0a] cursor-pointer m-0 block">
+                        Disponibilizar Chave PIX para os pais
+                      </FormLabel>
+                    </div>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
+                      <Switch
+                        checked={!!field.value}
                         onCheckedChange={(checked) => {
                           field.onChange(checked);
                           if (checked && !form.getValues("chave_pix") && profile?.chave_pix) {
@@ -353,64 +353,54 @@ export function PasseioFormDialog({
                             }
                           }
                         }}
-                        className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                        className="data-[state=checked]:bg-primary"
+                        aria-label="Disponibilizar Chave PIX para os pais"
                       />
                     </FormControl>
-                    <div className="flex-1">
-                      <FormLabel className="text-xs font-semibold text-slate-700 cursor-pointer m-0">
-                        Disponibilizar Chave Pix para pagamento dos pais/responsáveis?
-                      </FormLabel>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        A chave será exibida com botão de copiar na página pública de confirmação.
-                      </p>
-                    </div>
                   </FormItem>
                 )}
               />
 
               {exibirPix && (
-                <div className="space-y-3 pt-1 animate-in fade-in-50 duration-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2.5 pt-2 border-t border-[#e5e5e5]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <FormField
                       control={form.control}
                       name="tipo_chave_pix"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-0.5 text-[11px]">Tipo de Chave</FormLabel>
-                          <Select
-                            onValueChange={(val) => {
-                              const tipo = val as TipoChavePix;
-                              field.onChange(tipo);
-                              const currentVal = form.getValues("chave_pix") || "";
-                              if (currentVal) {
-                                form.setValue("chave_pix", pixMask(currentVal, tipo));
-                              } else if (profile) {
-                                if (tipo === TipoChavePix.CPF && profile.cpfcnpj) {
-                                  form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CPF));
-                                } else if (tipo === TipoChavePix.CNPJ && profile.cpfcnpj) {
-                                  form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CNPJ));
-                                } else if (tipo === TipoChavePix.TELEFONE && profile.telefone) {
-                                  form.setValue("chave_pix", pixMask(profile.telefone, TipoChavePix.TELEFONE));
-                                } else if (tipo === TipoChavePix.EMAIL && (profile.email || user?.email)) {
-                                  form.setValue("chave_pix", profile.email || user?.email || "");
+                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Tipo de Chave</FormLabel>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const tipo = e.target.value as TipoChavePix;
+                                field.onChange(tipo);
+                                const currentVal = form.getValues("chave_pix") || "";
+                                if (currentVal) {
+                                  form.setValue("chave_pix", pixMask(currentVal, tipo));
+                                } else if (profile) {
+                                  if (tipo === TipoChavePix.CPF && profile.cpfcnpj) {
+                                    form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CPF));
+                                  } else if (tipo === TipoChavePix.CNPJ && profile.cpfcnpj) {
+                                    form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CNPJ));
+                                  } else if (tipo === TipoChavePix.TELEFONE && profile.telefone) {
+                                    form.setValue("chave_pix", pixMask(profile.telefone, TipoChavePix.TELEFONE));
+                                  } else if (tipo === TipoChavePix.EMAIL && (profile.email || user?.email)) {
+                                    form.setValue("chave_pix", profile.email || user?.email || "");
+                                  }
                                 }
-                              }
-                            }}
-                            value={field.value || undefined}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 text-sm">
-                                <SelectValue placeholder="Selecione o tipo..." />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value={TipoChavePix.CPF}>CPF</SelectItem>
-                              <SelectItem value={TipoChavePix.CNPJ}>CNPJ</SelectItem>
-                              <SelectItem value={TipoChavePix.EMAIL}>E-mail</SelectItem>
-                              <SelectItem value={TipoChavePix.TELEFONE}>Telefone</SelectItem>
-                              <SelectItem value={TipoChavePix.ALEATORIA}>Chave Aleatória</SelectItem>
-                            </SelectContent>
-                          </Select>
+                              }}
+                              className="bg-white"
+                            >
+                              <option value="">Tipo...</option>
+                              <option value={TipoChavePix.CPF}>CPF</option>
+                              <option value={TipoChavePix.CNPJ}>CNPJ</option>
+                              <option value={TipoChavePix.EMAIL}>E-mail</option>
+                              <option value={TipoChavePix.TELEFONE}>Telefone</option>
+                              <option value={TipoChavePix.ALEATORIA}>Aleatória</option>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -421,23 +411,13 @@ export function PasseioFormDialog({
                       name="chave_pix"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-0.5 text-[11px]">Chave Pix</FormLabel>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Chave PIX</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <QrCode className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                              <QrCode className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
-                                placeholder={
-                                  tipoChave === TipoChavePix.CPF
-                                    ? "000.000.000-00"
-                                    : tipoChave === TipoChavePix.CNPJ
-                                    ? "00.000.000/0000-00"
-                                    : tipoChave === TipoChavePix.TELEFONE
-                                    ? "(11) 90000-0000"
-                                    : tipoChave === TipoChavePix.EMAIL
-                                    ? "seuemail@exemplo.com"
-                                    : "Digite a chave Pix..."
-                                }
-                                className="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm font-medium"
+                                placeholder="Digite a chave..."
+                                className="pl-10 h-10 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium"
                                 value={field.value || ""}
                                 onChange={(e) => {
                                   field.onChange(pixMask(e.target.value, tipoChave));
@@ -462,10 +442,10 @@ export function PasseioFormDialog({
                           form.setValue("tipo_chave_pix", profile.tipo_chave_pix as TipoChavePix);
                         }
                       }}
-                      className="text-xs text-slate-700 hover:text-[#1a3a5c] hover:bg-slate-100 h-8 px-2.5 rounded-lg gap-1.5 font-medium"
+                      className="text-xs text-[#0a0a0a] hover:bg-white h-7 px-2.5 rounded-[18px] gap-1 font-medium border border-transparent hover:border-[#e5e5e5]"
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-slate-400" />
-                      Usar Chave Pix cadastrada no perfil ({profile.chave_pix})
+                      <Sparkles className="h-3.5 w-3.5 text-[#737373]" />
+                      <span>Usar PIX do perfil ({profile.chave_pix})</span>
                     </Button>
                   )}
                 </div>
@@ -473,19 +453,19 @@ export function PasseioFormDialog({
             </div>
 
             {veiculos.length > 0 && (
-              <div className="space-y-2 pt-1">
-                <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs flex items-center gap-1.5">
-                  <Car className="h-4 w-4 text-slate-400" />
-                  Vans / Veículos Alocados para o Evento
+              <div className="space-y-1.5 pt-1">
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs flex items-center gap-1.5">
+                  <Car className="h-4 w-4 text-[#737373]" />
+                  Vans Alocadas (Opcional)
                 </FormLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50/70 p-3 rounded-2xl border border-slate-200/80">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#fafafa] p-3 rounded-[18px] border border-[#e5e5e5]">
                   {veiculos.map((v) => {
                     const currentSelected = form.watch("veiculos_ids") || [];
                     const isChecked = currentSelected.includes(v.id);
                     return (
                       <label
                         key={v.id}
-                        className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200/80 cursor-pointer hover:border-slate-300 shadow-2xs transition-colors select-none"
+                        className="flex items-center gap-2.5 p-2 bg-white rounded-[14px] border border-[#e5e5e5] cursor-pointer hover:border-[#0a0a0a] transition-colors select-none"
                       >
                         <Checkbox
                           checked={isChecked}
@@ -499,11 +479,11 @@ export function PasseioFormDialog({
                               );
                             }
                           }}
-                          className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                          className="rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                         />
                         <div className="text-xs">
-                          <span className="font-bold text-slate-800">{v.placa}</span>
-                          {v.modelo ? <span className="text-slate-500 ml-1">({v.modelo})</span> : null}
+                          <span className="font-semibold text-[#0a0a0a]">{v.placa}</span>
+                          {v.modelo ? <span className="text-[#737373] ml-1">({v.modelo})</span> : null}
                         </div>
                       </label>
                     );
@@ -517,11 +497,11 @@ export function PasseioFormDialog({
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Instruções aos Pais ou Observações</FormLabel>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">Instruções aos Pais</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Instruções sobre lanche, autorização ou horários especiais."
-                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm p-3 min-h-[85px] transition-all"
+                      placeholder="Informações sobre lanche, autorização, etc."
+                      className="rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm p-3 min-h-[70px]"
                       value={field.value || ""}
                       onChange={field.onChange}
                     />
@@ -540,7 +520,7 @@ export function PasseioFormDialog({
               disabled={isSubmitting}
             />
             <BaseDialog.Action
-              label={isEditing ? "Salvar Alterações" : "Criar Passeio"}
+              label={isEditing ? "Salvar" : "Criar Passeio"}
               variant="primary"
               onClick={form.handleSubmit(onSubmit)}
               isLoading={isSubmitting}

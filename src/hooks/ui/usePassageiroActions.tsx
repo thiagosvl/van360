@@ -3,7 +3,6 @@ import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-  Copy,
   MoreHorizontal,
   Pencil,
   ToggleLeft,
@@ -68,7 +67,7 @@ export function usePassageiroActions({
         label: "Editar",
         icon: <Pencil className="h-4 w-4" />,
         onClick: () => onEdit(passageiro),
-        swipeColor: "bg-blue-500",
+        swipeColor: "bg-[#0a0a0a]",
         hasSeparatorAfter: true
       });
     }
@@ -77,30 +76,19 @@ export function usePassageiroActions({
       label: "Ver Carteirinha",
       icon: <User className="h-4 w-4" />,
       onClick: () => onHistorico(passageiro),
-      swipeColor: "bg-gray-500",
+      swipeColor: "bg-[#0a0a0a]",
       hasSeparatorAfter: true
     });
 
     if (canManage && isPendente && onEnviarWhatsApp) {
-      if (isMobile) {
-        actions.push({
-          label: "Reenviar Contrato",
-          icon: <WhatsAppIcon className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(passageiro),
-          disabled: isFeatureDisabled,
-          swipeColor: "bg-[#25D366]",
-          hasSeparatorAfter: true
-        });
-      } else {
-        actions.push({
-          label: "Copiar Link para Assinatura do Contrato",
-          icon: <Copy className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(passageiro),
-          disabled: isFeatureDisabled,
-          swipeColor: "bg-[#1a3a5c]",
-          hasSeparatorAfter: true
-        });
-      }
+      actions.push({
+        label: "Reenviar Contrato",
+        icon: <WhatsAppIcon className="h-4 w-4" />,
+        onClick: () => onEnviarWhatsApp(passageiro),
+        disabled: isFeatureDisabled,
+        swipeColor: "bg-[#25D366]",
+        hasSeparatorAfter: true
+      });
     }
 
     if (canManage) {
@@ -109,8 +97,8 @@ export function usePassageiroActions({
         icon: <Trash2 className="h-4 w-4" />,
         onClick: () => onDelete(passageiro),
         isDestructive: true,
-        swipeColor: "bg-red-500",
-        className: "text-red-600"
+        swipeColor: "bg-[#e7000b]",
+        className: "text-[#e7000b]"
       });
     }
 

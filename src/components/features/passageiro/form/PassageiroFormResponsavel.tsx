@@ -1,4 +1,4 @@
-import { FormEnderecoFields, PhoneInput, StitchField } from "@/components/forms";
+import { FormEnderecoFields, PhoneInput } from "@/components/forms";
 import {
   FormControl,
   FormField,
@@ -7,13 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { parentescos } from "@/utils/formatters";
 import { cpfMask } from "@/utils/masks";
@@ -43,9 +37,9 @@ export function PassageiroFormResponsavel({
   return (
     <div className="space-y-8">
       <div id="section-responsavel-financeiro" className="space-y-5">
-        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-            <Contact className="w-5 h-5" />
+        <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-5">
+          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+            <Contact className="w-4 h-4" />
           </div>
           Responsável Financeiro
         </div>
@@ -57,13 +51,13 @@ export function PassageiroFormResponsavel({
               control={form.control}
               name={fieldNames.cpf}
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                     CPF do Responsável
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                      <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         {...field}
                         value={field.value || ""}
@@ -72,7 +66,7 @@ export function PassageiroFormResponsavel({
                         onChange={(e) => {
                           field.onChange(cpfMask(e.target.value));
                         }}
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                        className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                         aria-invalid={!!fieldState.error}
                       />
                     </div>
@@ -87,41 +81,24 @@ export function PassageiroFormResponsavel({
             control={form.control}
             name={fieldNames.nome}
             render={({ field, fieldState }) => (
-              <FormItem className={isExternal ? "sm:col-span-2" : ""}>
-                {isExternal ? (
-                  <FormControl>
-                    <StitchField icon={User} label="Nome do Responsável" required error={!!fieldState.error}>
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        placeholder="Digite o nome completo"
-                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                        aria-invalid={!!fieldState.error}
-                        disabled={isSearching}
-                      />
-                    </StitchField>
-                  </FormControl>
-                ) : (
-                  <>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome do Responsável <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          placeholder="Digite o nome completo"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          aria-invalid={!!fieldState.error}
-                          disabled={isSearching}
-                        />
-                      </div>
-                    </FormControl>
-                  </>
-                )}
-                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              <FormItem className={cn(isExternal ? "sm:col-span-2" : "", "space-y-1.5")}>
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                  Nome do Responsável <span className="text-[#e7000b]">*</span>
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Digite o nome completo"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSearching}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -134,8 +111,8 @@ export function PassageiroFormResponsavel({
                 field={field}
                 label="Telefone (WhatsApp)"
                 required
-                labelClassName="text-slate-700 font-semibold ml-1"
-                inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                labelClassName="text-[#0a0a0a] font-medium text-xs"
+                inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                 disabled={isSearching}
                 isExternal={isExternal}
               />
@@ -147,9 +124,13 @@ export function PassageiroFormResponsavel({
               control={form.control}
               name={fieldNames.cpf}
               render={({ field, fieldState }) => (
-                <FormItem>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    CPF <span className="text-[#e7000b]">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <StitchField icon={Hash} label="CPF" required={isExternal} error={!!fieldState.error}>
+                    <div className="relative">
+                      <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         {...field}
                         value={field.value || ""}
@@ -158,12 +139,12 @@ export function PassageiroFormResponsavel({
                         onChange={(e) => {
                           field.onChange(cpfMask(e.target.value));
                         }}
-                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
+                        className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                         aria-invalid={!!fieldState.error}
                       />
-                    </StitchField>
+                    </div>
                   </FormControl>
-                  <FormMessage className="text-xs ml-1 mt-1 text-red-500" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -173,45 +154,26 @@ export function PassageiroFormResponsavel({
             control={form.control}
             name={fieldNames.parentesco}
             render={({ field, fieldState }) => (
-              <FormItem>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || undefined}
-                >
-                  <FormControl>
-                    {isExternal ? (
-                      <StitchField icon={User} label="Parentesco" required={isExternal} error={!!fieldState.error}>
-                        <SelectTrigger
-                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
-                        >
-                          <SelectValue placeholder="Selecione o parentesco" />
-                        </SelectTrigger>
-                      </StitchField>
-                    ) : (
-                      <>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Parentesco do Responsável
-                        </FormLabel>
-                        <SelectTrigger
-                          className={cn(
-                            "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          <SelectValue placeholder="Selecione o parentesco" />
-                        </SelectTrigger>
-                      </>
-                    )}
-                  </FormControl>
-                  <SelectContent>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                  Parentesco do Responsável {isExternal && <span className="text-[#e7000b]">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <NativeSelect
+                    {...field}
+                    icon={<User className="h-4 w-4" />}
+                    value={field.value || ""}
+                    error={!!fieldState.error}
+                  >
+                    <option value="" disabled hidden>Selecionar</option>
                     {parentescos.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <option key={option.value} value={option.value}>
                         {option.label}
-                      </SelectItem>
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+                  </NativeSelect>
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -220,55 +182,37 @@ export function PassageiroFormResponsavel({
             control={form.control}
             name={fieldNames.email}
             render={({ field, fieldState }) => (
-              <FormItem className={isExternal ? "" : "sm:col-span-2"}>
-                {isExternal ? (
-                  <FormControl>
-                    <StitchField icon={Mail} label="E-mail" required={true} error={!!fieldState.error}>
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        type="email"
-                        placeholder="exemplo@email.com"
-                        className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                        aria-invalid={!!fieldState.error}
-                        disabled={isSearching}
-                      />
-                    </StitchField>
-                  </FormControl>
-                ) : (
-                  <>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      E-mail do Responsável
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          type="email"
-                          placeholder="exemplo@email.com"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                          aria-invalid={!!fieldState.error}
-                          disabled={isSearching}
-                        />
-                      </div>
-                    </FormControl>
-                  </>
-                )}
-                <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              <FormItem className={cn(isExternal ? "" : "sm:col-span-2", "space-y-1.5")}>
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                  E-mail do Responsável {isExternal && <span className="text-[#e7000b]">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      type="email"
+                      placeholder="exemplo@email.com"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSearching}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
         </div>
       </div>
 
-      {!isExternal && <hr className="border-slate-100" />}
+      {!isExternal && <hr className="border-[#e5e5e5]" />}
 
       <div id="section-endereco-principal" className="space-y-5">
-        <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c] mb-5">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-            <MapPin className="w-5 h-5" />
+        <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-5">
+          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+            <MapPin className="w-4 h-4" />
           </div>
           Endereço Principal
         </div>

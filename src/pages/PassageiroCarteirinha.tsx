@@ -14,7 +14,7 @@ import { useTutorialsConfig } from "@/hooks";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
-import { CarteirinhaSkeleton } from "@/components/skeletons";
+import { CarteirinhaSkeleton, CarteirinhaHeaderSkeleton } from "@/components/skeletons";
 
 import {
   CarteirinhaCobrancas,
@@ -54,7 +54,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
 import { toast } from "@/utils/notifications/toast";
-import { buildReciboWhatsAppMessage, buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { buildReciboWhatsAppMessage, buildContratoWhatsAppUrl, buildContratoAssinadoWhatsAppUrl } from "@/utils/whatsappTemplates";
 
 import { Cobranca } from "@/types/cobranca";
 
@@ -333,16 +333,19 @@ export default function PassageiroCarteirinha() {
         openGerarContratoValidadorDialog({
           passageiroId: updatedPassageiro.id!,
           initialPassageiro: updatedPassageiro,
-          onSuccess: (_id, _bypassed, updatedValues) => {
-            const valorMensal = updatedValues?.valorMensal ?? (updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined);
-            const diaVencimento = updatedValues?.diaVencimento ?? (updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined);
+          onSuccess: (_id, _bypassed, updatedValues, freshPassageiro) => {
+            const finalPass = freshPassageiro || updatedPassageiro;
+            const valorMensal = updatedValues?.valorMensal ?? (finalPass.valor_cobranca ? Number(finalPass.valor_cobranca) : undefined);
+            const diaVencimento = updatedValues?.diaVencimento ?? (finalPass.dia_vencimento ? Number(finalPass.dia_vencimento) : undefined);
 
             openConfirmarGerarContratoDialog({
-              passageiro: updatedPassageiro,
+              passageiro: finalPass,
               valorMensal,
               diaVencimento,
+              dataInicio: finalPass.data_inicio_transporte || undefined,
+              dataFim: finalPass.data_fim_transporte || undefined,
               isSubstituicao: hasActiveContract,
-              contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
+              contratoIdParaSubstituir: finalPass.contrato_id || undefined,
             });
           },
         });
@@ -440,31 +443,29 @@ export default function PassageiroCarteirinha() {
   const handleEnviarWhatsApp = useCallback(() => {
     if (!passageiro) return;
 
+    const isAssinado = passageiro.status_contrato === ContratoStatus.ASSINADO;
+    const urlContrato = obterUrlDocumentoContrato(passageiro);
     const token = passageiro.token_acesso || passageiro.id;
-    const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
-
-    if (!isMobile) {
-      navigator.clipboard.writeText(finalLink);
-      toast.success("Link para assinatura copiado!");
-      return;
-    }
+    const finalLink = isAssinado && urlContrato ? urlContrato : `${BASE_DOMAIN}/assinar/${token}`;
 
     const telefone = passageiro.responsavel_principal?.telefone;
 
-    if (!telefone) {
-      toast.error("Telefone do responsável não informado.");
-      return;
-    }
-
-    openBrowserLink(
-      buildContratoWhatsAppUrl({
+    const url = isAssinado
+      ? buildContratoAssinadoWhatsAppUrl({
         telefoneResponsavel: telefone,
         nomeResponsavel: passageiro.responsavel_principal?.nome || "",
         nomePassageiro: passageiro.nome,
         link: finalLink,
       })
-    );
-  }, [passageiro, isMobile]);
+      : buildContratoWhatsAppUrl({
+        telefoneResponsavel: telefone,
+        nomeResponsavel: passageiro.responsavel_principal?.nome || "",
+        nomePassageiro: passageiro.nome,
+        link: finalLink,
+      });
+
+    openBrowserLink(url);
+  }, [passageiro]);
 
   const handleToggleLembretes = useCallback(
     async (cobranca: Cobranca) => {
@@ -628,7 +629,7 @@ export default function PassageiroCarteirinha() {
       const targetPassageiro = cobranca.passageiro || passageiro;
       if (cobranca.isProjection && isPassageiroIncompleto(targetPassageiro)) {
         openConfirmationDialog({
-          title: "Valor da parcela não configurado",
+          title: "Valor das parcelas não configurado",
           description:
             "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
           confirmText: "Configurar agora",
@@ -770,14 +771,17 @@ export default function PassageiroCarteirinha() {
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
           initialPassageiro: passageiro,
-          onSuccess: (_id, _bypassed, updatedValues) => {
-            const valorMensal = updatedValues?.valorMensal ?? (passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined);
-            const diaVencimento = updatedValues?.diaVencimento ?? (passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined);
+          onSuccess: (_id, _bypassed, updatedValues, freshPassageiro) => {
+            const finalPass = freshPassageiro || passageiro;
+            const valorMensal = updatedValues?.valorMensal ?? (finalPass.valor_cobranca ? Number(finalPass.valor_cobranca) : undefined);
+            const diaVencimento = updatedValues?.diaVencimento ?? (finalPass.dia_vencimento ? Number(finalPass.dia_vencimento) : undefined);
 
             openConfirmarGerarContratoDialog({
-              passageiro,
+              passageiro: finalPass,
               valorMensal,
               diaVencimento,
+              dataInicio: finalPass.data_inicio_transporte || undefined,
+              dataFim: finalPass.data_fim_transporte || undefined,
               isSubstituicao: false,
             });
           },
@@ -801,15 +805,15 @@ export default function PassageiroCarteirinha() {
     <>
       {canViewFinancials && (
         <TabsContent value="parcelas" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-          <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+          <Suspense fallback={<Skeleton className="h-96 w-full rounded-[24px]" />}>
             <CarteirinhaCobrancas {...cobrancasProps} />
           </Suspense>
         </TabsContent>
       )}
 
       <TabsContent value="dados-pessoais" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
-          <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6">
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[24px]" />}>
+          <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 sm:p-6">
             <CarteirinhaDadosPessoais
               passageiro={passageiro}
               isCopiedEndereco={isCopiedEndereco}
@@ -823,13 +827,13 @@ export default function PassageiroCarteirinha() {
           </div>
         </Suspense>
 
-        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[24px]" />}>
           <CarteirinhaObservacoes {...observacoesProps} />
         </Suspense>
       </TabsContent>
 
       <TabsContent value="responsaveis" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-[24px]" />}>
           <CarteirinhaResponsaveis
             passageiro={passageiro}
             onEditClick={handleEditClick}
@@ -843,7 +847,7 @@ export default function PassageiroCarteirinha() {
 
       {canManageContracts && (
         <TabsContent value="contrato" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-          <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+          <Suspense fallback={<Skeleton className="h-32 w-full rounded-[24px]" />}>
             <CarteirinhaContrato
               passageiro={passageiro}
               contratosAtivos={infoProps.contratosAtivos}
@@ -857,7 +861,7 @@ export default function PassageiroCarteirinha() {
       )}
 
       <TabsContent value="ausencias" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
-        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[24px]" />}>
           <CarteirinhaAusencias
             passageiro={passageiro}
             temRotas={temRotas}
@@ -874,7 +878,7 @@ export default function PassageiroCarteirinha() {
         <div className="space-y-6">
           {isMobile ? (
             <>
-              <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+              <Suspense fallback={<CarteirinhaHeaderSkeleton />}>
                 <CarteirinhaHeader
                   passageiro={passageiro}
                   temCobrancasVencidas={temCobrancasVencidas}
@@ -886,63 +890,82 @@ export default function PassageiroCarteirinha() {
                 />
               </Suspense>
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full pt-3 sm:pt-4">
+                <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x">
                   <TabsList
                     ref={tabListRef}
-                    className={cn(
-                      "flex min-w-full w-max md:w-full min-h-[44px] bg-transparent p-0 gap-1 text-[13px] md:grid",
-                      validTabs.length === 5 && "md:grid-cols-5",
-                      validTabs.length === 4 && "md:grid-cols-4",
-                      validTabs.length === 3 && "md:grid-cols-3",
-                      validTabs.length === 2 && "md:grid-cols-2"
-                    )}
+                    className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-max sm:w-auto"
                   >
                     {canViewFinancials && (
                       <TabsTrigger
                         value="parcelas"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        className={cn(
+                          "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
+                          "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                          "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                        )}
                       >
-                        Parcelas
+                        <Wallet className="w-3.5 h-3.5 shrink-0 text-inherit" />
+                        <span>Parcelas</span>
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="dados-pessoais"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className={cn(
+                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
+                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                      )}
                     >
-                      Dados Pessoais
+                      <User className="w-3.5 h-3.5 shrink-0 text-inherit" />
+                      <span>Dados Pessoais</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="responsaveis"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className={cn(
+                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
+                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                      )}
                     >
-                      Responsáveis
+                      <Users className="w-3.5 h-3.5 shrink-0 text-inherit" />
+                      <span>Responsáveis</span>
                     </TabsTrigger>
                     {canManageContracts && (
                       <TabsTrigger
                         value="contrato"
-                        className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                        className={cn(
+                          "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
+                          "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                          "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                        )}
                       >
-                        Contrato
+                        <FileText className="w-3.5 h-3.5 shrink-0 text-inherit" />
+                        <span>Contrato</span>
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="ausencias"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className={cn(
+                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
+                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                      )}
                     >
-                      Ausências
+                      <CalendarClock className="w-3.5 h-3.5 shrink-0 text-inherit" />
+                      <span>Ausências</span>
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
-                {renderTabContents("mt-5")}
+                {renderTabContents("mt-4")}
               </Tabs>
             </>
           ) : (
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <div className="grid grid-cols-12 gap-8 items-start">
-                <div className="col-span-4 space-y-6 sticky top-6">
-                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                <div className="col-span-4 space-y-4 sticky top-6">
+                  <Suspense fallback={<CarteirinhaHeaderSkeleton />}>
                     <CarteirinhaHeader
                       passageiro={passageiro}
                       temCobrancasVencidas={temCobrancasVencidas}
@@ -954,45 +977,45 @@ export default function PassageiroCarteirinha() {
                     />
                   </Suspense>
 
-                  <div className="bg-slate-200/50 p-2 rounded-[2rem] shadow-xs">
-                    <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto">
+                  <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs p-1.5 sm:p-2">
+                    <TabsList className="flex flex-col w-full bg-transparent p-0 gap-1 h-auto border-0">
                       {canViewFinancials && (
                         <TabsTrigger
                           value="parcelas"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                          className="w-full justify-start h-11 px-4 rounded-[18px] font-semibold text-sm transition-all duration-150 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] cursor-pointer flex items-center gap-3.5 border-0"
                         >
-                          <Wallet className="h-4 w-4 shrink-0 text-slate-400" />
+                          <Wallet className="h-4 w-4 shrink-0 text-inherit" />
                           <span>Parcelas</span>
                         </TabsTrigger>
                       )}
                       <TabsTrigger
                         value="dados-pessoais"
-                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        className="w-full justify-start h-11 px-4 rounded-[18px] font-semibold text-sm transition-all duration-150 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] cursor-pointer flex items-center gap-3.5 border-0"
                       >
-                        <User className="h-4 w-4 shrink-0 text-slate-400" />
+                        <User className="h-4 w-4 shrink-0 text-inherit" />
                         <span>Dados Pessoais</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="responsaveis"
-                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        className="w-full justify-start h-11 px-4 rounded-[18px] font-semibold text-sm transition-all duration-150 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] cursor-pointer flex items-center gap-3.5 border-0"
                       >
-                        <Users className="h-4 w-4 shrink-0 text-slate-400" />
+                        <Users className="h-4 w-4 shrink-0 text-inherit" />
                         <span>Responsáveis</span>
                       </TabsTrigger>
                       {canManageContracts && (
                         <TabsTrigger
                           value="contrato"
-                          className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                          className="w-full justify-start h-11 px-4 rounded-[18px] font-semibold text-sm transition-all duration-150 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] cursor-pointer flex items-center gap-3.5 border-0"
                         >
-                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <FileText className="h-4 w-4 shrink-0 text-inherit" />
                           <span>Contrato</span>
                         </TabsTrigger>
                       )}
                       <TabsTrigger
                         value="ausencias"
-                        className="w-full justify-start rounded-2xl h-11 px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer flex items-center gap-3"
+                        className="w-full justify-start h-11 px-4 rounded-[18px] font-semibold text-sm transition-all duration-150 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] cursor-pointer flex items-center gap-3.5 border-0"
                       >
-                        <CalendarClock className="h-4 w-4 shrink-0 text-slate-400" />
+                        <CalendarClock className="h-4 w-4 shrink-0 text-inherit" />
                         <span>Ausências</span>
                       </TabsTrigger>
                     </TabsList>
@@ -1008,7 +1031,7 @@ export default function PassageiroCarteirinha() {
         </div>
       </PullToRefreshWrapper>
 
-      {shouldShowTutorial && (
+      {/* {shouldShowTutorial && (
         <VideoCommerce
           screenName="carteirinha"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -1018,7 +1041,7 @@ export default function PassageiroCarteirinha() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_CARTEIRINHA_DISMISSED}
         />
-      )}
+      )} */}
     </>
   );
 }

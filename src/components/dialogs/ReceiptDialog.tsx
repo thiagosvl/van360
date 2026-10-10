@@ -116,19 +116,19 @@ export const ReceiptDialog = ({
         onClose={handleSafeClose}
       />
 
-      <BaseDialog.Body className="p-4 sm:p-6 bg-slate-50/30">
-        <div className="relative w-full aspect-[4/5] bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center p-2">
+      <BaseDialog.Body className="p-4 sm:p-6 bg-[#f5f5f5]">
+        <div className="relative w-full aspect-[4/5] bg-white rounded-[20px] overflow-hidden border border-[#e5e5e5] shadow-xs flex items-center justify-center p-2">
           {isImageLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 animate-pulse">
-              <Loader2 className="h-8 w-8 text-slate-300 animate-spin mb-2" />
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Carregando...</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#f5f5f5]/50 animate-pulse">
+              <Loader2 className="h-8 w-8 text-[#737373] animate-spin mb-2" />
+              <p className="text-xs text-[#737373] font-medium uppercase tracking-wider">Carregando...</p>
             </div>
           )}
           <img
             src={receiptUrl}
             alt="Recibo"
             onLoad={() => setIsImageLoading(false)}
-            className={`max-w-full max-h-full object-contain rounded-xl transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+            className={`max-w-full max-h-full object-contain rounded-[16px] transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
           />
         </div>
       </BaseDialog.Body>
@@ -140,7 +140,6 @@ export const ReceiptDialog = ({
             onClick={handleShare}
             disabled={isImageLoading}
             icon={<Share2 className="h-4 w-4" />}
-            className="bg-slate-800 hover:bg-slate-900 text-white"
           />
         ) : (
           <BaseDialog.Action
@@ -148,7 +147,6 @@ export const ReceiptDialog = ({
             onClick={handleDownload}
             disabled={isImageLoading}
             icon={<Download className="h-4 w-4" />}
-            className="bg-slate-800 hover:bg-slate-900 text-white"
           />
         )}
       </BaseDialog.Footer>

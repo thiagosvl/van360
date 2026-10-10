@@ -188,7 +188,7 @@ export function VideoStoriesDialog({
             onClick={(e) => e.stopPropagation()}
             onPointerDownOutside={handleClose}
             onEscapeKeyDown={handleClose}
-            className="relative w-full h-full md:max-w-[420px] md:h-auto md:aspect-[9/16] bg-black md:rounded-[2rem] overflow-hidden shadow-2xl flex flex-col justify-center border border-white/10 outline-none select-none"
+            className="relative w-full h-full md:max-w-[420px] md:h-auto md:aspect-[9/16] bg-black md:rounded-[24px] overflow-hidden shadow-2xl flex flex-col justify-center border border-white/10 outline-none select-none"
           >
             <DialogPrimitive.Title className="sr-only">
               {title || "Histórias em Vídeo"}
@@ -319,7 +319,7 @@ export function VideoStoriesDialog({
                         handleClose();
                         onCtaClick();
                       }}
-                      className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-4 rounded-xl shadow-[0_4px_20px_rgba(245,158,11,.4)] transition-all text-center text-[0.95rem] active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-3.5 rounded-[18px] shadow-md transition-all text-center text-sm active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {ctaText || "Continuar"}
                     </button>
@@ -330,7 +330,7 @@ export function VideoStoriesDialog({
                         e.stopPropagation();
                         handleClose();
                       }}
-                      className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold py-4 rounded-xl shadow-[0_4px_20px_rgba(245,158,11,.4)] transition-all text-center text-[0.95rem] active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2"
+                      className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-3.5 rounded-[18px] shadow-md transition-all text-center text-sm active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2"
                     >
                       {ctaText || "Continuar"}
                     </a>

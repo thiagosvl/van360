@@ -12,12 +12,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { usePassageiros, useSession, useProfile, safeCloseDialog } from "@/hooks";
@@ -29,7 +27,19 @@ import { useAdicionarParticipanteMutation } from "@/hooks/api/useFretamentosApi"
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { formatarEnderecoParcialRota } from "@/utils/formatters";
-import { UserPlus, UserCheck, Phone, MapPin, Search, User, Contact, FileText, Wand2 } from "lucide-react";
+import {
+  UserPlus,
+  UserCheck,
+  Phone,
+  MapPin,
+  Search,
+  User,
+  Contact,
+  Wand2,
+  ChevronsUpDown,
+  Check,
+  X,
+} from "lucide-react";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { Button } from "@/components/ui/button";
@@ -50,6 +60,7 @@ export function AdicionarParticipantePasseioDialog({
 }: AdicionarParticipantePasseioDialogProps) {
   const [origemAba, setOrigemAba] = useState<"base" | "avulso">("base");
   const [buscaAluno, setBuscaAluno] = useState("");
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
@@ -61,10 +72,13 @@ export function AdicionarParticipantePasseioDialog({
   const form = useParticipantePasseioForm({ valorPadrao });
 
   const isProprioResponsavel = form.watch("is_proprio_responsavel");
+  const selectedPassageiroId = form.watch("passageiro_id");
+  const alunoSelecionado = passageiros.find((p) => p.id === selectedPassageiroId) || null;
 
   useEffect(() => {
     if (isOpen) {
       setBuscaAluno("");
+      setIsComboboxOpen(false);
       setOrigemAba("base");
       form.reset({
         passageiro_id: null,
@@ -113,14 +127,29 @@ export function AdicionarParticipantePasseioDialog({
     const enderecoFormatado = resp ? formatarEnderecoParcialRota(resp) : "";
 
     form.setValue("passageiro_id", aluno.id || null);
-    form.setValue("nome", aluno.nome);
+    form.setValue("nome", aluno.nome, { shouldValidate: true });
     form.setValue("is_proprio_responsavel", false);
     form.setValue("responsavel_nome", resp?.nome || "");
     form.setValue("telefone", resp?.telefone || "");
     form.setValue("endereco", enderecoFormatado);
+    setIsComboboxOpen(false);
+    setBuscaAluno("");
+  };
+
+  const limparAlunoSelecionado = () => {
+    form.setValue("passageiro_id", null);
+    form.setValue("nome", "");
+    form.setValue("responsavel_nome", "");
+    form.setValue("telefone", "");
+    form.setValue("endereco", "");
   };
 
   const onSubmit = async (values: ParticipantePasseioFormData) => {
+    if (origemAba === "base" && !values.passageiro_id) {
+      toast.error("Por favor, selecione um aluno cadastrado.");
+      return;
+    }
+
     try {
       await adicionarMutation.mutateAsync({
         fretamentoId: fretamento.id,
@@ -151,14 +180,14 @@ export function AdicionarParticipantePasseioDialog({
       <BaseDialog.Header
         title="Adicionar Participante"
         subtitle={`Passeio: ${fretamento.titulo}`}
-        icon={<UserPlus className="h-5 w-5 text-[#1a3a5c]" />}
+        icon={<UserPlus className="h-5 w-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-100 transition-all active:scale-95 shadow-2xs"
+            className="h-9 w-9 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#ffffff] transition-all"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -167,110 +196,214 @@ export function AdicionarParticipantePasseioDialog({
         )}
       />
 
-      <div className="flex border-b border-slate-100 bg-slate-50/50 px-5 sm:px-6 pt-3 gap-2">
+      <div className="grid grid-cols-2 gap-1.5 border-b border-[#e5e5e5] bg-[#fafafa] p-2.5 sm:px-6 sm:py-3">
         <button
           type="button"
           onClick={() => {
             setOrigemAba("base");
-            form.setValue("passageiro_id", null);
+            limparAlunoSelecionado();
           }}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[18px] text-xs font-medium transition-all cursor-pointer ${
             origemAba === "base"
-              ? "border-[#1a3a5c] text-[#1a3a5c]"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "bg-transparent text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
           }`}
         >
-          <UserCheck className="h-4 w-4" />
-          Aluno da Minha Base
+          <UserCheck className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">Aluno Cadastrado</span>
         </button>
 
         <button
           type="button"
           onClick={() => {
             setOrigemAba("avulso");
-            form.setValue("passageiro_id", null);
+            limparAlunoSelecionado();
           }}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[18px] text-xs font-medium transition-all cursor-pointer ${
             origemAba === "avulso"
-              ? "border-[#1a3a5c] text-[#1a3a5c]"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "bg-transparent text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
           }`}
         >
-          <UserPlus className="h-4 w-4" />
-          Convidado / Participante Avulso
+          <UserPlus className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">Outro Participante</span>
         </button>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <BaseDialog.Body className="space-y-3.5 p-5 sm:p-6 overflow-y-auto">
+          <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto bg-[#ffffff]">
             {origemAba === "base" && (
-              <div className="space-y-2 p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/80">
-                <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs block">
-                  Buscar Aluno na Base de Cadastrados
+              <div className="space-y-1.5">
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs block">
+                  Aluno <span className="text-[#e7000b]">*</span>
                 </FormLabel>
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
-                  <Input
-                    className="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm"
-                    placeholder="Digite o nome do aluno ou responsável..."
-                    value={buscaAluno}
-                    onChange={(e) => setBuscaAluno(e.target.value)}
-                  />
-                </div>
 
-                <Select
-                  onValueChange={selecionarAluno}
-                  value={form.watch("passageiro_id") || undefined}
-                >
-                  <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] text-sm text-left">
-                    <SelectValue placeholder="Selecione na lista de alunos..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-56">
-                    {alunosFiltrados.slice(0, 50).map((aluno) => {
-                      if (!aluno.id) return null;
-                      const respNome = aluno.responsavel_principal?.nome || aluno.responsaveis?.[0]?.nome;
-                      return (
-                        <SelectItem key={aluno.id} value={aluno.id}>
-                          <span className="font-bold text-slate-800">{aluno.nome}</span>
-                          {respNome ? (
-                            <span className="text-slate-400 text-xs ml-2">
-                              (Resp: {respNome})
-                            </span>
-                          ) : null}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+                  <PopoverAnchor asChild>
+                    {alunoSelecionado ? (
+                      <div className="flex items-center justify-between p-3 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] transition-all">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-semibold shadow-xs">
+                            {alunoSelecionado.nome?.charAt(0).toUpperCase() || "A"}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
+                              {alunoSelecionado.nome}
+                            </p>
+                            {(alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome) && (
+                              <p className="text-[11px] text-[#737373] truncate mt-0.5">
+                                Resp: {alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0 ml-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsComboboxOpen(true)}
+                            className="h-8 px-2.5 rounded-[14px] text-xs font-medium text-[#0a0a0a] hover:bg-white border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
+                          >
+                            Trocar
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={limparAlunoSelecionado}
+                            className="h-8 w-8 rounded-full text-[#737373] hover:text-[#e7000b] hover:bg-white transition-all cursor-pointer"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setIsComboboxOpen(true)}
+                        className="w-full h-10 px-3.5 rounded-[18px] bg-[#f5f5f5] hover:bg-white border border-[#e5e5e5] focus:border-[#0a0a0a] text-left flex items-center justify-between transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-[#737373] truncate">
+                          <Search className="h-4 w-4 text-[#737373] shrink-0" />
+                          <span>Selecione ou busque o aluno...</span>
+                        </div>
+                        <ChevronsUpDown className="h-4 w-4 text-[#737373] shrink-0" />
+                      </button>
+                    )}
+                  </PopoverAnchor>
+
+                  <PopoverContent
+                    align="start"
+                    side="bottom"
+                    sideOffset={6}
+                    className="w-[var(--radix-popover-trigger-width)] min-w-[300px] p-0 rounded-[20px] border border-[#e5e5e5] bg-white shadow-xl z-[10000] overflow-hidden"
+                  >
+                    <div className="flex items-center px-3.5 py-2.5 border-b border-[#e5e5e5] bg-[#fafafa]">
+                      <Search className="h-4 w-4 text-[#737373] mr-2 shrink-0" />
+                      <input
+                        autoFocus
+                        placeholder="Buscar por nome do aluno ou responsável..."
+                        value={buscaAluno}
+                        onChange={(e) => setBuscaAluno(e.target.value)}
+                        className="w-full bg-transparent text-sm text-[#0a0a0a] placeholder:text-[#737373] outline-none"
+                      />
+                      {buscaAluno && (
+                        <button
+                          type="button"
+                          onClick={() => setBuscaAluno("")}
+                          className="text-[#737373] hover:text-[#0a0a0a] p-0.5"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5 overscroll-contain">
+                      {alunosFiltrados.length === 0 ? (
+                        <div className="py-6 px-3 text-center text-xs text-[#737373]">
+                          Nenhum aluno encontrado.
+                        </div>
+                      ) : (
+                        alunosFiltrados.map((aluno) => {
+                          if (!aluno.id) return null;
+                          const isSelected = aluno.id === selectedPassageiroId;
+                          const respNome = aluno.responsavel_principal?.nome || aluno.responsaveis?.[0]?.nome;
+                          const escolaNome = aluno.escola?.nome || aluno.escola_nome;
+
+                          return (
+                            <button
+                              key={aluno.id}
+                              type="button"
+                              onClick={() => selecionarAluno(aluno.id)}
+                              className={`w-full p-2.5 rounded-[12px] text-left flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                                isSelected ? "bg-[#f5f5f5]" : "hover:bg-[#fafafa]"
+                              }`}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
+                                  {aluno.nome}
+                                </div>
+                                {(respNome || escolaNome) && (
+                                  <div className="text-[11px] text-[#737373] truncate mt-0.5">
+                                    {[respNome ? `Resp: ${respNome}` : null, escolaNome].filter(Boolean).join(" • ")}
+                                  </div>
+                                )}
+                              </div>
+                              {isSelected && <Check className="h-4 w-4 text-[#0a0a0a] shrink-0" />}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <FormField
-                control={form.control}
-                name="nome"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">
-                      Nome do Participante <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
-                        <Input
-                          placeholder="Ex: Arthur Silva"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
-                          aria-invalid={!!fieldState.error}
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {origemAba === "avulso" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Nome do Participante <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                          <Input
+                            placeholder="Ex: Arthur Silva"
+                            className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
+                            aria-invalid={!!fieldState.error}
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <FormField
+                  control={form.control}
+                  name="valor"
+                  render={({ field }) => (
+                    <MoneyInput
+                      field={field}
+                      label="Valor Cobrado"
+                      required
+                      labelClassName="text-[#0a0a0a] font-medium text-xs"
+                      inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
+                    />
+                  )}
+                />
+              </div>
+            ) : (
               <FormField
                 control={form.control}
                 name="valor"
@@ -279,26 +412,26 @@ export function AdicionarParticipantePasseioDialog({
                     field={field}
                     label="Valor Cobrado"
                     required
-                    labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
-                    inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm font-bold text-slate-800 transition-all"
+                    labelClassName="text-[#0a0a0a] font-medium text-xs"
+                    inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
                   />
                 )}
               />
-            </div>
+            )}
 
             <FormField
               control={form.control}
               name="is_proprio_responsavel"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-0 cursor-pointer select-none">
+                <FormItem className="flex items-center gap-3 p-3 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] space-y-0 cursor-pointer select-none">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                      className="rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                     />
                   </FormControl>
-                  <FormLabel className="text-xs font-semibold text-slate-700 cursor-pointer m-0">
+                  <FormLabel className="text-xs font-medium text-[#0a0a0a] cursor-pointer m-0">
                     O participante é o próprio responsável / Maior de idade
                   </FormLabel>
                 </FormItem>
@@ -311,13 +444,13 @@ export function AdicionarParticipantePasseioDialog({
                 name="responsavel_nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Nome do Responsável</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Nome do Responsável</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Contact className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <Contact className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Ex: Mariana Silva"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -337,8 +470,8 @@ export function AdicionarParticipantePasseioDialog({
                   <PhoneInput
                     field={field}
                     label="Telefone (WhatsApp)"
-                    labelClassName="text-slate-700 font-semibold ml-0.5 text-xs"
-                    inputClassName="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                    labelClassName="text-[#0a0a0a] font-medium text-xs"
+                    inputClassName="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
                   />
                 )}
               />
@@ -348,13 +481,13 @@ export function AdicionarParticipantePasseioDialog({
                 name="endereco"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Endereço / Ponto de Embarque</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Endereço / Ponto de Embarque</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 z-10" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Rua, número ou ponto de encontro"
-                          className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm transition-all"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
                           value={field.value || ""}
                           onChange={field.onChange}
                         />
@@ -371,11 +504,11 @@ export function AdicionarParticipantePasseioDialog({
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-0.5 text-xs">Observações ou Restrições</FormLabel>
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">Observações ou Restrições</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Restrições alimentares, autorizações ou recomendações."
-                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/10 text-sm p-3 min-h-[85px] transition-all"
+                      className="rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm p-3 min-h-[80px]"
                       value={field.value || ""}
                       onChange={field.onChange}
                     />

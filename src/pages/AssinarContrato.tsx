@@ -16,12 +16,11 @@ import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
-// Estilos obrigatórios do react-pdf para evitar erros no console
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Configurar worker do PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function AssinarContrato() {
@@ -40,23 +39,48 @@ export default function AssinarContrato() {
     isSigning
   } = useAssinarContratoViewModel({ token });
 
+  useEffect(() => {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const originalViewport = viewportMeta?.getAttribute("content");
+
+    if (viewportMeta) {
+      viewportMeta.setAttribute(
+        "content",
+        "viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+      );
+    }
+
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalHtmlTouchAction = document.documentElement.style.touchAction;
+    document.body.style.touchAction = "manipulation";
+    document.documentElement.style.touchAction = "manipulation";
+
+    return () => {
+      if (viewportMeta && originalViewport) {
+        viewportMeta.setAttribute("content", originalViewport);
+      }
+      document.body.style.touchAction = originalBodyTouchAction;
+      document.documentElement.style.touchAction = originalHtmlTouchAction;
+    };
+  }, []);
+
   if (isLoading) {
     return <InitialLoading />;
   }
 
   if (isError || !contrato) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50/50 p-4 font-sans">
-        <Card className="w-full max-w-md rounded-[2rem] border-0 shadow-2xl overflow-hidden">
-          <div className="bg-rose-500 h-1.5 w-full" />
-          <CardHeader className="text-center pt-10">
-            <div className="mx-auto w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mb-6">
-              <AlertCircle className="h-10 w-10 text-rose-500" />
+      <div className="flex items-center justify-center min-h-screen bg-[#f5f5f5] p-4 font-sans">
+        <Card className="w-full max-w-md rounded-[24px] border border-[#e5e5e5] bg-white shadow-xs overflow-hidden">
+          <div className="bg-[#e7000b] h-1.5 w-full" />
+          <CardHeader className="text-center pt-8">
+            <div className="mx-auto w-16 h-16 bg-[#e7000b]/10 rounded-[18px] flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-[#e7000b]" />
             </div>
-            <CardTitle className="font-headline font-black text-2xl text-slate-800">Ops! Algo deu errado.</CardTitle>
+            <CardTitle className="font-bold text-xl text-[#0a0a0a]">Ops! Algo deu errado.</CardTitle>
           </CardHeader>
-          <CardContent className="text-center pb-12 px-8">
-            <p className="text-slate-500 font-medium leading-relaxed">
+          <CardContent className="text-center pb-8 px-6">
+            <p className="text-[#737373] font-medium text-sm leading-relaxed">
               Não conseguimos localizar este contrato. Ele pode ter sido cancelado, finalizado ou o link expirou.
             </p>
           </CardContent>
@@ -76,26 +100,26 @@ export default function AssinarContrato() {
 
   if (contrato.status === ContratoStatus.ASSINADO) {
     return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-lg border-0 shadow-2xl bg-white rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="text-center pb-2 pt-12 px-10">
-            <div className="mx-auto bg-emerald-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-8">
-              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+      <div className="min-h-screen bg-[#f5f5f5] flex flex-col items-center justify-center p-4 font-sans">
+        <Card className="w-full max-w-lg border border-[#e5e5e5] shadow-xs bg-white rounded-[24px] overflow-hidden">
+          <CardHeader className="text-center pb-2 pt-10 px-8">
+            <div className="mx-auto bg-emerald-50 w-16 h-16 rounded-[18px] flex items-center justify-center mb-6">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
-            <CardTitle className="text-[28px] font-headline font-black text-slate-800 tracking-tight leading-tight uppercase">
+            <CardTitle className="text-2xl font-bold text-[#0a0a0a] tracking-tight leading-tight">
               Contrato Assinado!
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-10 p-10 pt-4">
-            <p className="text-slate-500 leading-relaxed font-medium">
+          <CardContent className="text-center space-y-8 p-8 pt-2">
+            <p className="text-[#737373] leading-relaxed text-sm font-medium">
               Tudo pronto! O documento foi assinado digitalmente e já possui validade jurídica.
             </p>
 
             <Button
               onClick={() => openBrowserLink(contrato.contrato_final_url || contrato.contrato_url)}
-              className="w-full bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 h-16 rounded-2xl font-headline font-black text-sm shadow-xl shadow-[#1a3a5c]/20 transition-all active:scale-95 text-white uppercase tracking-widest flex items-center justify-center"
+              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] h-12 rounded-[18px] font-bold text-sm shadow-xs transition-all active:scale-[0.99] text-white flex items-center justify-center cursor-pointer"
             >
-              Ver Contrato <span className="hidden sm:inline">Assinado</span>
+              Ver Contrato <span className="hidden sm:inline ml-1">Assinado</span>
             </Button>
           </CardContent>
         </Card>
@@ -104,14 +128,14 @@ export default function AssinarContrato() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
-      <header className="sticky top-0 z-40 bg-[#1a3a5c] h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 shadow-lg shrink-0 relative">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col h-screen overflow-hidden font-sans">
+      <header className="sticky top-0 z-40 bg-[#0b1a2e] h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 shadow-sm shrink-0 relative">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-          <div className="bg-white/10 p-2 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/5 shadow-2xl shrink-0">
-            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/80" />
+          <div className="bg-white/10 p-2 sm:p-2.5 rounded-[12px] backdrop-blur-md border border-white/10 shrink-0">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/90" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-headline font-black text-xs sm:text-sm text-white uppercase tracking-tight leading-none mb-1 truncate">
+            <h3 className="font-headline font-bold text-xs sm:text-sm text-white tracking-tight leading-none mb-1 truncate">
               Contrato de Transporte
             </h3>
             {nomeCondutorExibicao && (
@@ -131,7 +155,7 @@ export default function AssinarContrato() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto bg-slate-100 pb-32 scroll-smooth block touch-auto">
+      <main className="flex-1 overflow-auto bg-[#f5f5f5] pb-32 scroll-smooth block touch-auto">
         <div className="min-w-full py-6 sm:py-10 flex flex-col items-center">
           <Document
             file={contrato.minuta_url}
@@ -139,15 +163,15 @@ export default function AssinarContrato() {
             className="flex flex-col items-center px-4"
             loading={
               <div className="flex flex-col items-center justify-center p-20 gap-4">
-                <Loader2 className="h-10 w-10 animate-spin text-[#1a3a5c]/30" />
-                <span className="text-[10px] font-headline font-black text-[#1a3a5c]/30 uppercase tracking-[0.25em]">Carregando</span>
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Carregando</span>
               </div>
             }
           >
             {Array.from(new Array(numPages), (_, index) => (
               <div
                 key={`page_${index + 1}`}
-                className="mb-8 last:mb-0 shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-white border border-slate-200/50"
+                className="mb-8 last:mb-0 shadow-sm bg-white border border-[#e5e5e5] rounded-[14px] overflow-hidden"
               >
                 <Page
                   pageNumber={index + 1}
@@ -167,10 +191,10 @@ export default function AssinarContrato() {
             onClick={() => setModalAberto(true)}
             disabled={contrato.status !== ContratoStatus.PENDENTE}
             className={cn(
-              "h-14 sm:h-16 px-8 sm:px-10 rounded-full shadow-2xl flex items-center gap-2.5 sm:gap-3 font-headline font-black text-sm sm:text-base uppercase tracking-wider transition-all active:scale-95 border-0",
+              "h-12 sm:h-14 px-6 sm:px-8 rounded-[18px] shadow-lg flex items-center gap-2.5 font-sans font-bold text-sm sm:text-base transition-all active:scale-[0.99] border-0",
               contrato.status === ContratoStatus.PENDENTE
-                ? "bg-[#1a3a5c] hover:bg-[#112a43] text-white shadow-[#1a3a5c]/30"
-                : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                ? "bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs cursor-pointer"
+                : "bg-[#e5e5e5] text-[#737373] cursor-not-allowed shadow-none"
             )}
           >
             <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />

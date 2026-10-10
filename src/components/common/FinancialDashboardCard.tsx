@@ -33,38 +33,38 @@ export function FinancialDashboardCard({
 
   const getDynamicFontSize = (val: number) => {
     const str = formatPrivateCurrency(val);
-    if (str.length > 13) return "text-[14px] sm:text-[18px] md:text-[22px]";
-    if (str.length > 10) return "text-[16px] sm:text-[20px] md:text-[24px]";
+    if (str.length > 13) return "text-[15px] sm:text-[18px] md:text-[20px] lg:text-[22px]";
+    if (str.length > 10) return "text-[16px] sm:text-[20px] md:text-[22px] lg:text-[24px]";
     return "text-[18px] sm:text-[22px] md:text-[24px]";
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100/50 flex flex-col gap-5 animate-pulse">
+      <div className="bg-white rounded-[24px] p-4 sm:p-5 lg:p-6 shadow-xs border border-[#e5e5e5] flex flex-col justify-between gap-5 h-full animate-pulse">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-end mb-1">
-            <div className="h-4 bg-slate-100 rounded w-24"></div>
-            <div className="h-5 bg-slate-100 rounded w-32"></div>
+            <div className="h-4 bg-[#f5f5f5] rounded-full w-24"></div>
+            <div className="h-5 bg-[#f5f5f5] rounded-full w-32"></div>
           </div>
-          <div className="h-2 w-full bg-slate-100 rounded-full"></div>
+          <div className="h-2 w-full bg-[#f5f5f5] rounded-full"></div>
         </div>
 
         <div className="flex flex-col mt-1">
           <div className="flex justify-between items-end">
             <div className="flex flex-col gap-1.5">
-              <div className="h-3.5 bg-slate-100 rounded w-16 mb-0.5"></div>
-              <div className="h-6 bg-slate-100 rounded w-28"></div>
+              <div className="h-3.5 bg-[#f5f5f5] rounded-full w-16 mb-0.5"></div>
+              <div className="h-6 bg-[#f5f5f5] rounded-full w-28"></div>
             </div>
 
             <div className="flex flex-col items-end gap-1.5">
-              <div className="h-3.5 bg-slate-100 rounded w-16 mb-0.5"></div>
-              <div className="h-6 bg-slate-100 rounded w-28"></div>
+              <div className="h-3.5 bg-[#f5f5f5] rounded-full w-16 mb-0.5"></div>
+              <div className="h-6 bg-[#f5f5f5] rounded-full w-28"></div>
             </div>
           </div>
 
-          <div className="flex w-full h-1.5 sm:h-2 mt-2 sm:mt-2.5 gap-1">
-            <div className="h-full w-1/3 bg-slate-100 rounded-full"></div>
-            <div className="h-full w-2/3 bg-slate-100 rounded-full"></div>
+          <div className="flex w-full h-2 mt-2.5 gap-1">
+            <div className="h-full w-1/3 bg-[#f5f5f5] rounded-full"></div>
+            <div className="h-full w-2/3 bg-[#f5f5f5] rounded-full"></div>
           </div>
         </div>
       </div>
@@ -72,29 +72,31 @@ export function FinancialDashboardCard({
   }
 
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100/50 flex flex-col gap-5">
+    <div className="bg-white rounded-[24px] p-4 sm:p-5 lg:p-6 shadow-xs border border-[#e5e5e5] flex flex-col justify-between gap-4 sm:gap-5 h-full">
       {/* Top Row: Total Esperado + Botão Olho */}
       <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-[13px] font-medium text-slate-600">{labelTotal}</span>
+        <div className="flex justify-between items-center mb-0.5">
+          <span className="text-xs sm:text-[13px] font-medium text-[#737373]">{labelTotal}</span>
           <div className="flex items-center gap-2">
-            <span className="text-[15px] font-bold text-slate-800">{formatPrivateCurrency(totalEsperado)}</span>
+            <span className="text-[15px] sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+              {formatPrivateCurrency(totalEsperado)}
+            </span>
             {showPrivacyToggle && (
               <button
                 type="button"
                 onClick={toggleHideValues}
-                className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg focus:outline-hidden active:scale-95 cursor-pointer -mr-1"
+                className="p-1.5 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors rounded-[10px] focus:outline-hidden active:scale-95 cursor-pointer -mr-1"
                 title={hideValues ? "Mostrar valores" : "Ocultar valores"}
                 aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
               >
-                {hideValues ? <EyeOff className="w-4 h-4 text-slate-500" /> : <Eye className="w-4 h-4 text-slate-500" />}
+                {hideValues ? <EyeOff className="w-4 h-4 text-[#737373]" /> : <Eye className="w-4 h-4 text-[#737373]" />}
               </button>
             )}
           </div>
         </div>
         {/* Progress Bar Total */}
-        <div className="h-2 w-full bg-[#dbeafe] rounded-full overflow-hidden">
-          <div className="h-full bg-[#3b82f6] rounded-full" style={{ width: `${recebidoPercent}%` }} />
+        <div className="h-2 w-full bg-primary/15 rounded-full overflow-hidden">
+          <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${recebidoPercent}%` }} />
         </div>
       </div>
 
@@ -103,28 +105,23 @@ export function FinancialDashboardCard({
         <div className="flex justify-between items-end">
           {/* Recebido */}
           <div className="flex flex-col">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">{labelRecebido}</span>
-            <span className={cn(getDynamicFontSize(recebido), "font-bold text-slate-800 tracking-tight leading-none")}>
+            <span className="text-[11px] sm:text-xs font-medium text-[#737373] mb-1">{labelRecebido}</span>
+            <span className={cn(getDynamicFontSize(recebido), "font-semibold text-[#0a0a0a] tracking-tight leading-none")}>
               {formatPrivateCurrency(recebido)}
             </span>
           </div>
 
           {/* Pendente */}
           <div className="flex flex-col items-end">
-            <span className="text-[12px] sm:text-[13px] font-medium text-slate-600 mb-0.5">{labelPendente}</span>
-            <span className={cn(getDynamicFontSize(pendente), "font-bold text-slate-800 tracking-tight leading-none")}>
+            <span className="text-[11px] sm:text-xs font-medium text-[#737373] mb-1">{labelPendente}</span>
+            <span className={cn(getDynamicFontSize(pendente), "font-semibold text-[#0a0a0a] tracking-tight leading-none")}>
               {formatPrivateCurrency(pendente)}
             </span>
-            {atrasado && atrasado > 0 ? (
-              <span className="text-[10px] sm:text-xs font-normal text-red-500 mt-1.5 leading-none">
-                {formatPrivateCurrency(atrasado)} em atraso
-              </span>
-            ) : null}
           </div>
         </div>
 
         {/* Proportional Bar */}
-        <div className="flex w-full h-1.5 sm:h-2 mt-2 sm:mt-2.5 gap-1">
+        <div className="flex w-full h-2 mt-2.5 sm:mt-3 gap-1">
           {recebidoPercent > 0 && (
             <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${recebidoPercent}%` }} />
           )}
@@ -132,9 +129,17 @@ export function FinancialDashboardCard({
             <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${pendentePercent}%` }} />
           )}
           {atrasadoPercent > 0 && (
-            <div className="h-full bg-red-500 rounded-full transition-all duration-500" style={{ width: `${atrasadoPercent}%` }} />
+            <div className="h-full bg-[#e7000b] rounded-full transition-all duration-500" style={{ width: `${atrasadoPercent}%` }} />
           )}
         </div>
+
+        {atrasado && atrasado > 0 ? (
+          <div className="flex justify-end mt-1.5">
+            <span className="text-[10px] sm:text-xs font-medium text-[#e7000b] leading-none">
+              {formatPrivateCurrency(atrasado)} em atraso
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

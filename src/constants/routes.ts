@@ -50,6 +50,7 @@ export const ROUTES = {
       CHARTERS: "/fretamentos-e-passeios",
       CHARTER_DETAILS: "/fretamentos-e-passeios/:id",
       CONTRACTS: "/contratos",
+      CONTRACT_SETUP: "/contratos/modelo",
       SUBSCRIPTION: "/assinatura",
       ROUTES: "/rotas",
       TEAM: "/equipe",
@@ -59,6 +60,7 @@ export const ROUTES = {
       ROUTE_DETAILS: "/rotas/detalhes/:id",
       BIRTHDAYS: "/aniversariantes",
       ACCOUNT: "/conta",
+      MENU: "/menu",
     }
   }
 } as const;

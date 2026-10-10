@@ -2,7 +2,6 @@ import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
-
 import {
   Table,
   TableBody,
@@ -28,12 +27,12 @@ import { ContratoSummary } from "./ContratoSummary";
 
 const getIconConfig = (isAssinado: boolean, isSemContrato: boolean) => {
   if (isAssinado) {
-    return { icon: FileCheck2, className: "bg-emerald-50 border-emerald-100 text-emerald-500" };
+    return { icon: FileCheck2, className: "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]" };
   }
   if (isSemContrato) {
-    return { icon: FileX2, className: "bg-red-50 border-red-100 text-red-500" };
+    return { icon: FileX2, className: "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]" };
   }
-  return { icon: Clock, className: "bg-amber-50 border-amber-100 text-amber-500" };
+  return { icon: Clock, className: "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]" };
 };
 
 interface ContratosListProps {
@@ -44,7 +43,6 @@ interface ContratosListProps {
   isDesativado?: boolean;
   isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
-  onCopiarLink: (token: string) => void;
   onEnviarWhatsApp: (item: ContratoListItem) => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
   onDownload?: (item: ContratoListItem) => void;
@@ -64,7 +62,6 @@ interface ContratoMobileCardProps {
   isDesativado?: boolean;
   isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
-  onCopiarLink: (token: string) => void;
   onEnviarWhatsApp: (item: ContratoListItem) => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
   onDownload?: (item: ContratoListItem) => void;
@@ -81,8 +78,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   item,
   index,
   isDesativado,
+  isDownloading,
   onVerPassageiro,
-  onCopiarLink,
   onEnviarWhatsApp,
   onCompartilharWhatsApp,
   onDownload,
@@ -100,7 +97,6 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     status: item.status as ContratoStatus,
     isDesativado,
     onVerPassageiro,
-    onCopiarLink,
     onEnviarWhatsApp: () => onEnviarWhatsApp(item),
     onCompartilharWhatsApp,
     onDownload,
@@ -119,47 +115,149 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const isImportado = item?.provider === ContratoProvider.IMPORTADO;
   const status = item.status as ContratoStatus | null;
   const isAssinado = status === ContratoStatus.ASSINADO;
+  const isPendente = status === ContratoStatus.PENDENTE;
+  const hasContract = isPendente || isAssinado || !!item?.contrato_id;
   const nomeExibicao = item.passageiro?.nome || item.nome || "";
   const responsavelExibicao = item.passageiro?.responsavel_principal?.nome || item.responsavel_principal?.nome || "";
+  const urlContrato = obterUrlDocumentoContrato(item);
+  const respObj = item?.responsavel_principal || item?.passageiro?.responsavel_principal;
+  const isMissingResponsible = isResponsavelIncompleto(respObj?.nome, respObj?.telefone);
+  const passId = (item.tipo === "passageiro" ? item.id : item.passageiro_id) || item.id;
+
+  const valor = Number(
+    item.dados_contrato?.valorMensal ||
+    item.valor_parcela ||
+    item.valor_cobranca
+  ) || 0;
 
   const iconConfig = getIconConfig(isAssinado, isSemContrato);
 
   const swipeActions = actions.map((action) => ({
     ...action,
-    swipeColor: action.swipeColor || "bg-gray-500",
+    swipeColor: action.swipeColor || "bg-[#171717]",
   }));
 
   const renderHeader = () => <ContratoSummary item={item} />;
 
   return (
-    <MobileActionItem actions={swipeActions} showHint={index === 0} className="bg-transparent" renderHeader={renderHeader}>
-      <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4">
-        <div className={cn("flex-shrink-0 w-9 h-9 border rounded-lg flex items-center justify-center", iconConfig.className)}>
-          <iconConfig.icon className="w-5 h-5" />
+    <MobileActionItem actions={swipeActions} showHint={index === 0} showTrigger={false} className="bg-transparent" renderHeader={renderHeader}>
+      <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] active:scale-[0.99] transition-all flex flex-col gap-2.5 relative">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0", iconConfig.className)}>
+              <iconConfig.icon className="w-4 h-4" />
+            </div>
+
+            <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-[#0a0a0a] text-sm truncate leading-snug">
+                {formatShortName(nomeExibicao, true)}
+              </span>
+              <span
+                className={cn(
+                  "text-xs text-[#737373] font-normal leading-snug",
+                  formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-1"
+                )}
+              >
+                {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isImportado ? (
+              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                Importado
+              </span>
+            ) : isAssinado ? (
+              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#171717] text-[#fafafa]">
+                Assinado
+              </span>
+            ) : isPendente ? (
+              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
+                Pendente
+              </span>
+            ) : null}
+          </div>
         </div>
 
-        <div className="flex-grow min-w-0 pr-10">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-              {formatShortName(nomeExibicao, true)}
-            </p>
-            {isImportado && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 shrink-0 border border-blue-100/60">
-                ASSINADO (IMPORTADO)
-              </span>
+        <div className="flex items-center justify-between pt-2 border-t border-[#e5e5e5] gap-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-semibold text-[#0a0a0a]">
+              {valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </span>
+            <span className="text-[11px] font-medium text-[#737373]">/mês</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {!hasContract && (
+              isMissingResponsible ? (
+                <Button
+                  type="button"
+                  variant="tonal"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCompletarCadastro?.(passId, item);
+                  }}
+                  disabled={isDesativado}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Completar Cadastro</span>
+                </Button>
+              ) : onGerarContrato ? (
+                <Button
+                  type="button"
+                  variant="tonal"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGerarContrato(passId, item);
+                  }}
+                  disabled={isDesativado}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Gerar Contrato</span>
+                </Button>
+              ) : null
+            )}
+
+            {urlContrato && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onVisualizarFinal(urlContrato);
+                  }}
+                  className="h-8 px-3 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] hover:border-[#737373]/50 text-xs font-medium gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#0a0a0a]" />
+                  <span>Ver</span>
+                </Button>
+
+                {isAssinado && onDownload && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDownload(item);
+                    }}
+                    disabled={isDownloading === item.id}
+                    className="h-8 px-2.5 rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-transparent text-xs font-medium gap-1.5 transition-all shadow-none shrink-0 cursor-pointer"
+                  >
+                    {isDownloading === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#737373]" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5 text-[#0a0a0a]" />
+                    )}
+                  </Button>
+                )}
+              </>
             )}
           </div>
-          <div className="flex flex-col min-w-0 mt-0.5">
-            <p className={cn(
-              "text-[10px] text-gray-500 font-medium leading-snug opacity-60",
-              formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-2"
-            )}>
-              {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-7 top-8 -translate-y-1/2">
         </div>
       </div>
     </MobileActionItem>
@@ -183,14 +281,14 @@ export const ContratosList = memo(function ContratosList({
         <UnifiedEmptyState
           icon={FileText}
           title="Nenhum resultado"
-          description="Nenhum contrato ou aluno encontrado com este filtro."
+          description="Nenhum contrato ou aluno encontrado com este termo."
         />
       );
     }
 
     const configs: Record<
       ContratoTab,
-      { icon: any; title: string; desc: string }
+      { icon: typeof FileText; title: string; desc: string }
     > = {
       [ContratoTab.PENDENTES]: {
         icon: FileSignature,
@@ -200,7 +298,7 @@ export const ContratosList = memo(function ContratosList({
       [ContratoTab.SEM_CONTRATO]: {
         icon: Users,
         title: "Todos os alunos com contrato",
-        desc: "Todos os seus alunos ativos já possuem contrato digital emitido ou assinado.",
+        desc: "Todos os alunos ativos já possuem contrato digital emitido ou assinado.",
       },
       [ContratoTab.ASSINADOS]: {
         icon: FileCheck2,
@@ -226,7 +324,7 @@ export const ContratosList = memo(function ContratosList({
       isLoading={isLoading}
       loadingSkeleton={<ListSkeleton count={5} />}
       emptyState={getEmptyState()}
-      mobileContainerClassName="space-y-3"
+      mobileContainerClassName="space-y-2.5"
       mobileItemRenderer={(item, index) => (
         <ContratoMobileCard
           key={item.id}
@@ -239,17 +337,20 @@ export const ContratosList = memo(function ContratosList({
         />
       )}
     >
-      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
+      <div className="rounded-[24px] border border-[#e5e5e5] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
         <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent border-b border-gray-100/80">
-              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                Nome
+          <TableHeader className="bg-[#fafafa]">
+            <TableRow className="hover:bg-transparent border-b border-[#e5e5e5]">
+              <TableHead className="px-6 py-4 text-left text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                Aluno / Responsável
               </TableHead>
-              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              <TableHead className="px-6 py-4 text-left text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                Status
+              </TableHead>
+              <TableHead className="px-6 py-4 text-right text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                 Valor Mensal
               </TableHead>
-              <TableHead className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-right">
+              <TableHead className="px-6 py-4 text-right text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                 Ações
               </TableHead>
             </TableRow>
@@ -278,36 +379,51 @@ export const ContratosList = memo(function ContratosList({
               return (
                 <TableRow
                   key={item.id}
-                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors"
+                  className="hover:bg-[#fafafa]/80 border-b border-[#e5e5e5] last:border-b-0 transition-colors"
                 >
-                  <TableCell className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border", iconConfig.className)}>
-                        <iconConfig.icon className="w-5 h-5" />
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={cn("h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0", iconConfig.className)}>
+                        <iconConfig.icon className="w-4 h-4" />
                       </div>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                            {formatShortName(nomePassageiro, true)}
-                          </p>
-                          {isImportado && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                              Assinado (Importado)
-                            </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-[#0a0a0a] text-sm truncate">
+                          {formatShortName(nomePassageiro, true)}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-xs text-[#737373] font-normal leading-tight",
+                            formatoNomeResponsavel === "completo" ? "truncate max-w-[220px]" : "truncate"
                           )}
-                        </div>
-                        <p className={cn(
-                          "text-[10px] text-gray-400 font-medium tracking-wider flex items-center gap-1.5",
-                          formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
-                        )}>
+                        >
                           {formatNomeResponsavelExibicao(nomeResponsavel, formatoNomeResponsavel)}
-                        </p>
+                        </span>
                       </div>
                     </div>
                   </TableCell>
 
-                  <TableCell className="px-8 py-5 text-right">
-                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                  <TableCell className="px-6 py-4">
+                    {isImportado ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                        Assinado (Importado)
+                      </span>
+                    ) : isAssinado ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#171717] text-[#fafafa]">
+                        Assinado
+                      </span>
+                    ) : isPendente ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
+                        Pendente
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]">
+                        {isMissingResponsible ? "Cadastro Incompleto" : "Sem Contrato"}
+                      </span>
+                    )}
+                  </TableCell>
+
+                  <TableCell className="px-6 py-4 text-right">
+                    <span className="font-semibold text-[#0a0a0a] text-sm">
                       {(
                         Number(
                           item.dados_contrato?.valorMensal ||
@@ -320,33 +436,32 @@ export const ContratosList = memo(function ContratosList({
                       })}
                     </span>
                   </TableCell>
-                  <TableCell className="px-8 py-5 text-right">
-                    <div className="flex items-center justify-end gap-2 pr-2">
+
+                  <TableCell className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
                       {!hasContract && (
                         isMissingResponsible ? (
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="tonal"
                             size="sm"
                             onClick={() => actions.onCompletarCadastro?.(passId, item)}
                             disabled={isDesativado}
-                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
                             title="Completar dados e gerar contrato"
                           >
-                            <User className="w-3.5 h-3.5 text-[#1a3a5c]" />
-                            <span>Completar e Gerar</span>
+                            <User className="w-3.5 h-3.5" />
+                            <span>Completar</span>
                           </Button>
                         ) : actions.onGerarContrato ? (
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="tonal"
                             size="sm"
                             onClick={() => actions.onGerarContrato?.(passId, item)}
                             disabled={isDesativado}
-                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
                             title="Gerar contrato"
                           >
-                            <FileText className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                            <FileText className="w-3.5 h-3.5" />
                             <span>Gerar Contrato</span>
                           </Button>
                         ) : null
@@ -359,27 +474,26 @@ export const ContratosList = memo(function ContratosList({
                             variant="outline"
                             size="sm"
                             onClick={() => actions.onVisualizarFinal(urlContrato)}
-                            className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                            className="h-8 px-3 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] hover:border-[#737373]/50 text-xs font-medium gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
                             title="Acessar contrato"
                           >
-                            <Eye className="w-3.5 h-3.5 text-[#1a3a5c]" />
-                            <span>Ver Contrato</span>
+                            <Eye className="w-3.5 h-3.5 text-[#0a0a0a]" />
+                            <span>Visualizar</span>
                           </Button>
 
                           {isAssinado && actions.onDownload && (
                             <Button
                               type="button"
-                              variant="outline"
                               size="sm"
                               onClick={() => actions.onDownload?.(item)}
                               disabled={isDownloading === item.id}
-                              className="h-8 px-2.5 rounded-lg border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1a3a5c] text-xs font-semibold gap-1.5 shadow-xs transition-all active:scale-95 shrink-0"
+                              className="h-8 px-3 rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-transparent text-xs font-medium gap-1.5 transition-all shadow-none shrink-0 cursor-pointer"
                               title="Download do contrato assinado"
                             >
                               {isDownloading === item.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#737373]" />
                               ) : (
-                                <Download className="w-3.5 h-3.5 text-[#1a3a5c]" />
+                                <Download className="w-3.5 h-3.5 text-[#0a0a0a]" />
                               )}
                               <span>Download</span>
                             </Button>

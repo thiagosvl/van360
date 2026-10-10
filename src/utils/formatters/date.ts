@@ -174,3 +174,53 @@ export const convertDateBrToISO = (dateBr: string): string => {
   if (!day || !month || !year) return clean;
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
+
+export const formatarDuracao = (
+  inicioDate?: string | Date | null,
+  fimDate?: string | Date | null
+): string | null => {
+  if (!inicioDate || !fimDate) return null;
+  const inicio = new Date(inicioDate).getTime();
+  const fim = new Date(fimDate).getTime();
+  const diffMinutos = Math.max(0, Math.round((fim - inicio) / 60000));
+
+  if (diffMinutos < 60) {
+    return `${diffMinutos} min`;
+  }
+
+  const horas = Math.floor(diffMinutos / 60);
+  const minutos = diffMinutos % 60;
+
+  if (minutos === 0) {
+    return `${horas}h`;
+  }
+
+  return `${horas}h ${minutos.toString().padStart(2, "0")}min`;
+};
+
+export const formatarHoraMinuto = (date?: string | Date | null): string => {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo"
+  }).formatToParts(d);
+  const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
+  return `${hour}h${minute}`;
+};
+
+export const formatarDataCurtaBR = (date?: string | Date | null): string => {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    timeZone: "America/Sao_Paulo"
+  }).format(d);
+};
+

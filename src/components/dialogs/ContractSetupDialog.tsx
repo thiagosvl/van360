@@ -589,7 +589,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           state: multaAtraso,
           setState: setMultaAtraso,
           icon: Timer,
-          iconColor: "text-[#1a3a5c]",
+          iconColor: "text-primary",
           simBaseLabel: "Exemplo",
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
@@ -597,7 +597,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             multaAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-          simColor: "text-[#1a3a5c]",
+          simColor: "text-foreground",
           inputFieldLabel: "o valor da multa",
         },
         {
@@ -606,7 +606,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           state: jurosAtraso,
           setState: setJurosAtraso,
           icon: Timer,
-          iconColor: "text-[#1a3a5c]",
+          iconColor: "text-primary",
           simBaseLabel: "Exemplo",
           simResultLabel: jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? "Juros p/ mês" : "Juros p/ dia",
           simBaseValue: 200,
@@ -614,7 +614,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-          simColor: "text-[#1a3a5c]",
+          simColor: "text-foreground",
           inputFieldLabel: "o valor dos juros",
         },
         {
@@ -623,7 +623,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           state: multaRescisao,
           setState: setMultaRescisao,
           icon: Scale,
-          iconColor: "text-[#1a3a5c]",
+          iconColor: "text-primary",
           simBaseLabel: "Exemplo Contrato Anual",
           simResultLabel: "Multa Rescisória",
           simBaseValue: 2400,
@@ -631,35 +631,35 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
               ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-          simColor: "text-[#1a3a5c]",
+          simColor: "text-foreground",
           inputFieldLabel: "o valor da multa",
         },
       ].map(({ label, desc, state, setState, icon: Icon, iconColor, simBaseLabel, simResultLabel, simBaseValue, simValue, simColor, inputFieldLabel }) => (
-        <div key={label} className="p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+        <div key={label} className="p-4 sm:p-5 bg-white rounded-[20px] border border-[#e5e5e5] shadow-xs space-y-4">
           <div className="flex gap-3">
-            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", iconColor)}>
+            <div className={cn("w-10 h-10 rounded-[14px] bg-primary/10 flex items-center justify-center shrink-0 shadow-xs", iconColor)}>
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <Label className="text-[#1a3a5c] font-black text-sm block">
+              <Label className="text-foreground font-bold text-sm block">
                 {label}
               </Label>
-              <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-0.5">{desc}</p>
+              <p className="text-[11px] text-muted-foreground font-medium leading-relaxed mt-0.5">{desc}</p>
             </div>
           </div>
 
           <div className="space-y-3">
             <div>
-              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Forma de cobrança</Label>
-              <div className="flex bg-slate-100 p-1 rounded-lg w-full border border-slate-200/20">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Forma de cobrança</Label>
+              <div className="flex bg-[#f5f5f5] p-1 rounded-[14px] w-full border border-[#e5e5e5]">
                 <button
                   type="button"
                   onClick={() => setState({ ...state, tipo: ContractMultaTipo.FIXO })}
                   className={cn(
-                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
+                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all",
                     state.tipo === ContractMultaTipo.FIXO
-                      ? "bg-white text-[#1a3a5c] shadow-sm"
-                      : "text-slate-400 hover:text-slate-600"
+                      ? "bg-white text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Valor Fixo (R$)
@@ -668,10 +668,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                   type="button"
                   onClick={() => setState({ ...state, tipo: ContractMultaTipo.PERCENTUAL })}
                   className={cn(
-                    "flex-1 py-2 rounded-lg text-[11px] font-black transition-all",
+                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all",
                     state.tipo === ContractMultaTipo.PERCENTUAL
-                      ? "bg-white text-[#1a3a5c] shadow-sm"
-                      : "text-slate-400 hover:text-slate-600"
+                      ? "bg-white text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Porcentagem (%)
@@ -680,7 +680,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
             </div>
 
             <div>
-              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Valor da multa</Label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Valor da multa</Label>
               <div className="relative">
                 <Input
                   type="text"
@@ -704,38 +704,38 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                     }
                   }}
                   className={cn(
-                    "w-full h-12 rounded-lg bg-slate-50/50 border-slate-200 focus:bg-white focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/5 font-black text-base text-[#1a3a5c] pl-4",
+                    "w-full h-11 rounded-[14px] bg-white border border-[#e5e5e5] focus:border-primary focus:ring-1 focus:ring-primary font-bold text-sm text-foreground pl-4 shadow-xs",
                     state.tipo === ContractMultaTipo.PERCENTUAL ? "pr-10 text-left" : "pr-4 text-left"
                   )}
                   placeholder={state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00"}
                 />
                 {state.tipo === ContractMultaTipo.PERCENTUAL && (
-                  <span className="absolute right-4 top-3.5 text-sm font-black text-[#1a3a5c]/40">%</span>
+                  <span className="absolute right-4 top-3 text-sm font-bold text-muted-foreground/60">%</span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/40 space-y-2">
+          <div className="p-3.5 bg-[#f5f5f5] rounded-[16px] border border-[#e5e5e5] space-y-2">
             {state.valor <= 0 ? (
               <div className="flex items-center justify-center py-1">
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs font-medium text-muted-foreground">
                   Preencha {inputFieldLabel} para ver uma simulação
                 </span>
               </div>
             ) : (
               <>
-                <div className="flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                <div className="flex justify-between items-center text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
                   <span>{simBaseLabel}</span>
                   <span>{simResultLabel}</span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-bold text-slate-500">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {simBaseValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </span>
                   <div className="text-right">
-                    <span className={cn("text-base font-black leading-none", simColor)}>{simValue}</span>
-                    <p className="text-[9px] font-bold text-slate-400 mt-1 leading-none">
+                    <span className={cn("text-base font-bold leading-none", simColor)}>{simValue}</span>
+                    <p className="text-[10px] font-medium text-muted-foreground mt-1 leading-none">
                       {state.tipo === ContractMultaTipo.PERCENTUAL
                         ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
                         : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
@@ -754,19 +754,17 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   const renderClauses = () => (
     <div className="space-y-3">
       {!hasConfiguredBefore && (
-        <div className="p-3 bg-blue-50/80 rounded-2xl border border-blue-100 flex gap-2.5 items-start">
-          <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-          <p className="text-[10px] sm:text-[11px] text-blue-800 leading-relaxed font-medium">
-            Não se preocupe! Você poderá editar seu contrato a qualquer momento no futuro.
-          </p>
-        </div>
+        <Banner
+          variant="info"
+          description="Não se preocupe! Você poderá editar seu contrato a qualquer momento no futuro."
+        />
       )}
 
       {/* Botão Visualizar Modelo 100% de largura no topo */}
       <Button
         variant="outline"
         type="button"
-        className="w-full h-10 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-lg font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-2xs"
+        className="w-full h-11 border border-[#e5e5e5] text-foreground hover:bg-[#f5f5f5] rounded-[18px] font-bold uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98] shadow-xs"
         disabled={previewMutation.isPending}
         onClick={async () => {
           try {
@@ -791,7 +789,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         ) : (
           <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform opacity-70" />
         )}
-        Visualizar Modelo
+        Ver o Contrato Atual
       </Button>
 
       {/* Lista de Seções */}
@@ -828,9 +826,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
       <button
         type="button"
         onClick={handleAddSection}
-        className="w-full py-2.5 bg-white border-2 border-dashed border-slate-300 hover:bg-blue-50/50 hover:border-blue-400 text-[#1a3a5c] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-[0.99]"
+        className="w-full py-2.5 bg-white border-2 border-dashed border-[#e5e5e5] hover:bg-primary/5 hover:border-primary text-foreground font-bold text-xs rounded-[18px] flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.99]"
       >
-        <FolderPlus className="w-4 h-4 text-blue-600" />
+        <FolderPlus className="w-4 h-4 text-primary" />
         Adicionar Nova Seção
       </button>
     </div>
@@ -839,12 +837,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   const renderSignature = () => (
     <div className="space-y-4">
       {profile && (
-        <div className="space-y-2 pb-4 border-b border-slate-100">
+        <div className="space-y-2 pb-4 border-b border-[#e5e5e5]">
           <div>
-            <h4 className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
               Logotipo da Van / Empresa
             </h4>
-            <p className="text-[11px] text-slate-500 font-medium">
+            <p className="text-[11px] text-muted-foreground font-medium">
               Sua marca será exibida no cabeçalho timbrado dos contratos e recibos que você emitir.
             </p>
           </div>
@@ -863,10 +861,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
 
       <div className="space-y-2.5">
         <div>
-          <h4 className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
             Assinatura Digital
           </h4>
-          <p className="text-[11px] text-slate-500 font-medium">
+          <p className="text-[11px] text-muted-foreground font-medium">
             Sua assinatura aparecerá no final de todos os contratos em PDF de forma automatizada.
           </p>
         </div>
@@ -884,28 +882,28 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
   const renderPreview = () => (
     <div className="space-y-3">
       <div className="text-center space-y-0.5">
-        <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
+        <p className="text-[10px] text-muted-foreground italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Atraso</p>
-          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
+        <div className="p-3.5 bg-[#f5f5f5] rounded-[20px] border border-[#e5e5e5] flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Multa Atraso</p>
+          <p className="text-sm font-black text-foreground tracking-tight">
             {multaAtraso.valor <= 0
               ? "Não informado"
               : (multaAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${multaAtraso.valor}%` : moneyMask(multaAtraso.valor))}
           </p>
         </div>
-        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Juros Atraso</p>
-          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
+        <div className="p-3.5 bg-[#f5f5f5] rounded-[20px] border border-[#e5e5e5] flex flex-col items-center text-center">
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Juros Atraso</p>
+          <p className="text-sm font-black text-foreground tracking-tight">
             {jurosAtraso.valor <= 0
               ? "Não informado"
               : (jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor))}
           </p>
         </div>
-        <div className="p-3.5 bg-slate-50 rounded-3xl border border-slate-100/60 flex flex-col items-center text-center col-span-2">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Multa Rescisão Antecipada</p>
-          <p className="text-sm font-black text-[#1a3a5c] tracking-tight">
+        <div className="p-3.5 bg-[#f5f5f5] rounded-[20px] border border-[#e5e5e5] flex flex-col items-center text-center col-span-2">
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Multa Rescisão Antecipada</p>
+          <p className="text-sm font-black text-foreground tracking-tight">
             {multaRescisao.valor <= 0
               ? "Não informado"
               : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor))}
@@ -913,10 +911,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         </div>
       </div>
 
-      <div className="p-4 bg-blue-50/50 rounded-3xl border border-blue-100/60 space-y-3">
+      <div className="p-4 bg-primary/5 rounded-[20px] border border-primary/20 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-[#1a3a5c]">Visualizar Contrato Completo</span>
-          <span className="text-[10px] text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-200 font-semibold">
+          <span className="text-xs font-bold text-foreground">Visualizar Contrato Completo</span>
+          <span className="text-[10px] text-primary bg-white px-2.5 py-0.5 rounded-full border border-primary/20 font-semibold shadow-xs">
             {cleanSecoesDTO.length} seções
           </span>
         </div>
@@ -924,7 +922,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         <Button
           type="button"
           variant="outline"
-          className="w-full h-11 border-blue-200 text-blue-700 hover:bg-blue-50/80 rounded-xl font-bold uppercase text-[11px] tracking-wider group transition-all active:scale-[0.98] shadow-2xs"
+          className="w-full h-11 border-primary/20 text-primary hover:bg-primary/10 rounded-[18px] font-bold uppercase text-[11px] tracking-wider group transition-all active:scale-[0.98] shadow-xs"
           disabled={previewMutation.isPending}
           onClick={async () => {
             setIsPreviewPdfOpen(true);
@@ -952,7 +950,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
           ) : (
             <FileText className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform opacity-70" />
           )}
-          Visualizar Modelo
+          Ver o Contrato Atual
         </Button>
         <Banner
           variant="info"
@@ -990,12 +988,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                     disabled={isDisabled}
                     onClick={() => handleStepClick(s.id)}
                     className={cn(
-                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-sm shrink-0 whitespace-nowrap",
+                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-xs shrink-0 whitespace-nowrap",
                       step === s.id
-                        ? "bg-[#1a3a5c] text-[#ffffff] border-[#1a3a5c]"
+                        ? "bg-[#0b1a2e] text-white border-[#0b1a2e]"
                         : isDisabled
-                          ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-50"
-                          : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                          ? "bg-[#f5f5f5] text-muted-foreground/40 border-[#e5e5e5] cursor-not-allowed opacity-50"
+                          : "bg-white text-muted-foreground border-[#e5e5e5] hover:border-[#0a0a0a]/30 hover:text-foreground"
                     )}
                   >
                     {s.label}
@@ -1055,8 +1053,8 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
         />
         <BaseDialog.Body className="py-4">
           <div className="space-y-2">
-            <Label className="text-slate-700 font-semibold ml-1 text-sm flex items-center gap-1">
-              Título da Seção <span className="text-red-600">*</span>
+            <Label className="text-[#0a0a0a] font-semibold ml-1 text-sm flex items-center gap-1">
+              Título da Seção <span className="text-[#e7000b]">*</span>
             </Label>
             <Input
               autoFocus
@@ -1072,7 +1070,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess }: Cont
                 }
               }}
               placeholder="Ex: DO OBJETO E DA PRESTAÇÃO..."
-              className="h-12 rounded-lg bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-semibold text-slate-800 text-sm transition-all uppercase"
+              className="h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] font-semibold text-[#0a0a0a] text-sm transition-all uppercase"
             />
           </div>
         </BaseDialog.Body>
@@ -1151,8 +1149,8 @@ function SectionItemCard({
   return (
     <div
       className={cn(
-        "p-3 bg-slate-100/70 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5 transition-all",
-        showErrors && (isSecaoEmpty || isTitleEmpty) ? "border-red-300 ring-2 ring-red-100" : "border-slate-200"
+        "p-3 bg-[#f5f5f5] rounded-[18px] border border-[#e5e5e5] shadow-xs space-y-2.5 transition-all",
+        showErrors && (isSecaoEmpty || isTitleEmpty) ? "border-red-300 ring-2 ring-red-100" : "border-[#e5e5e5]"
       )}
     >
       {/* Header da Seção */}
@@ -1167,7 +1165,7 @@ function SectionItemCard({
             >
               <h3 className={cn(
                 "font-black text-xs sm:text-sm uppercase tracking-wide break-words whitespace-normal leading-snug",
-                showErrors && isTitleEmpty ? "text-red-600" : "text-[#1a3a5c]"
+                showErrors && isTitleEmpty ? "text-red-600" : "text-foreground"
               )}>
                 {secao.titulo || "SEÇÃO SEM TÍTULO (CLIQUE PARA INFORMAR)"}
               </h3>
@@ -1177,7 +1175,7 @@ function SectionItemCard({
                   e.stopPropagation();
                   onOpenEditTitleDialog(secao.id, secao.titulo);
                 }}
-                className="p-1 text-slate-400 group-hover:text-[#1a3a5c] hover:bg-slate-200/60 rounded-md transition-colors shrink-0"
+                className="p-1 text-muted-foreground group-hover:text-primary hover:bg-[#f5f5f5] rounded-[8px] transition-colors shrink-0"
                 title="Editar título da seção"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -1188,12 +1186,12 @@ function SectionItemCard({
           {/* Ações da Seção à Direita (Setas de Reordenação + Lixeira) */}
           <div className="flex items-center gap-0.5 shrink-0">
             {!isSectionExpanded && (
-              <div className="flex items-center bg-white border border-slate-200/80 rounded-lg p-0.5 shadow-2xs">
+              <div className="flex items-center bg-white border border-[#e5e5e5] rounded-[10px] p-0.5 shadow-xs">
                 <button
                   type="button"
                   onClick={() => onMoveSectionUp(sIdx)}
                   disabled={sIdx === 0}
-                  className="p-1 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                  className="p-1 text-muted-foreground hover:text-primary rounded disabled:opacity-20 transition-colors"
                   title="Subir Seção"
                 >
                   <ArrowUp className="w-3 h-3" />
@@ -1202,7 +1200,7 @@ function SectionItemCard({
                   type="button"
                   onClick={() => onMoveSectionDown(sIdx)}
                   disabled={sIdx === totalSections - 1}
-                  className="p-1 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                  className="p-1 text-muted-foreground hover:text-primary rounded disabled:opacity-20 transition-colors"
                   title="Descer Seção"
                 >
                   <ArrowDown className="w-3 h-3" />
@@ -1212,7 +1210,7 @@ function SectionItemCard({
             <button
               type="button"
               onClick={() => onDeleteSection(secao.id)}
-              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-[10px] transition-colors"
               title="Excluir Seção"
             >
               <Trash2 className="w-4 h-4" />
@@ -1224,7 +1222,7 @@ function SectionItemCard({
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-[9px] font-bold transition-colors",
-              isSecaoEmpty ? "bg-amber-100 text-amber-700" : "text-slate-600"
+              isSecaoEmpty ? "bg-amber-100 text-amber-700" : "text-muted-foreground"
             )}
           >
             {secao.clausulas.length} {secao.clausulas.length === 1 ? "Cláusula" : "Cláusulas"}
@@ -1234,16 +1232,16 @@ function SectionItemCard({
             <button
               type="button"
               onClick={onToggleExpandSection}
-              className="px-2.5 py-1 bg-white hover:bg-slate-200/60 active:bg-slate-300/60 text-[#1a3a5c] border border-slate-200/80 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors shadow-2xs"
+              className="px-2.5 py-1 bg-white hover:bg-[#f5f5f5] active:bg-[#e5e5e5] text-foreground border border-[#e5e5e5] rounded-[12px] text-[10px] font-bold flex items-center gap-1 transition-colors shadow-xs"
             >
               {isSectionExpanded ? (
                 <>
-                  <ChevronUp className="w-3 h-3 text-slate-500" />
+                  <ChevronUp className="w-3 h-3 text-muted-foreground" />
                   <span>Recolher</span>
                 </>
               ) : (
                 <>
-                  <ChevronDown className="w-3 h-3 text-slate-500" />
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   <span>Ver todas</span>
                 </>
               )}
@@ -1253,12 +1251,12 @@ function SectionItemCard({
       </div>
 
       {isSecaoEmpty && (
-        <div className="p-3 bg-amber-50/60 rounded-xl border border-dashed border-amber-200 text-center space-y-2">
+        <div className="p-3 bg-amber-50/60 rounded-[18px] border border-dashed border-amber-200 text-center space-y-2">
           <p className="text-xs text-amber-700 font-medium">Nenhuma cláusula cadastrada nesta seção.</p>
           <button
             type="button"
             onClick={onAddClause}
-            className="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs rounded-lg inline-flex items-center gap-1.5 shadow-2xs transition-all"
+            className="px-3.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs rounded-[18px] inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 text-amber-600" />
             Adicionar Cláusula
@@ -1323,9 +1321,9 @@ function SectionItemCard({
             <button
               type="button"
               onClick={onAddClause}
-              className="w-full py-2 bg-white border border-slate-300 hover:bg-slate-50 text-[#1a3a5c] font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-[0.99]"
+              className="w-full py-2 bg-white border border-[#e5e5e5] hover:bg-[#f5f5f5] text-foreground font-bold text-xs rounded-[14px] flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-[0.99]"
             >
-              <Plus className="w-3.5 h-3.5 text-blue-600" />
+              <Plus className="w-3.5 h-3.5 text-primary" />
               Adicionar Cláusula
             </button>
 
@@ -1333,9 +1331,9 @@ function SectionItemCard({
               <button
                 type="button"
                 onClick={onToggleExpandSection}
-                className="w-full py-1 text-slate-500 hover:text-[#1a3a5c] text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                className="w-full py-1 text-muted-foreground hover:text-foreground text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
               >
-                <ChevronUp className="w-3 h-3 text-slate-400" />
+                <ChevronUp className="w-3 h-3 text-muted-foreground/70" />
                 <span>Recolher cláusulas</span>
               </button>
             )}
@@ -1391,12 +1389,12 @@ function ClauseItemCard({
         clauseRefs.current[clause.id] = el;
       }}
       className={cn(
-        "rounded-lg border transition-all overflow-hidden scroll-mt-4",
+        "rounded-[16px] border transition-all overflow-hidden scroll-mt-4",
         showErrors && isBlank
-          ? "border-red-400 bg-red-50/20 ring-2 ring-red-100 shadow-sm"
+          ? "border-red-400 bg-red-50/20 ring-2 ring-red-100 shadow-xs"
           : isExpanded
-            ? "border-[#1a3a5c] bg-white shadow-sm ring-2 ring-[#1a3a5c]/10"
-            : "border-slate-200 bg-white hover:border-slate-300 shadow-2xs"
+            ? "border-primary bg-white shadow-xs ring-2 ring-primary/10"
+            : "border-[#e5e5e5] bg-white hover:border-[#0a0a0a]/30 shadow-xs"
       )}
     >
       <div
@@ -1405,7 +1403,7 @@ function ClauseItemCard({
       >
         <div className="flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <span className="font-black text-xs uppercase tracking-wide text-[#1a3a5c] shrink-0">
+            <span className="font-bold text-xs uppercase tracking-wide text-foreground shrink-0">
               CLÁUSULA {cIdx + 1}
             </span>
           </div>
@@ -1413,12 +1411,12 @@ function ClauseItemCard({
           {!isPreviewOnly && (
             <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
               {!isExpanded && (
-                <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 shrink-0 border border-slate-200/60">
+                <div className="flex items-center bg-[#f5f5f5] rounded-[8px] p-0.5 shrink-0 border border-[#e5e5e5]">
                   <button
                     type="button"
                     onClick={() => onMoveClauseUp(sIdx, cIdx)}
                     disabled={isFirstClauseOverall}
-                    className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                    className="p-0.5 text-muted-foreground hover:text-primary rounded disabled:opacity-20 transition-colors"
                     title={cIdx === 0 ? "Mover para a seção anterior" : "Subir Cláusula"}
                   >
                     <ArrowUp className="w-3 h-3" />
@@ -1427,7 +1425,7 @@ function ClauseItemCard({
                     type="button"
                     onClick={() => onMoveClauseDown(sIdx, cIdx)}
                     disabled={isLastClauseOverall}
-                    className="p-0.5 text-slate-500 hover:text-[#1a3a5c] rounded disabled:opacity-20 transition-colors"
+                    className="p-0.5 text-muted-foreground hover:text-primary rounded disabled:opacity-20 transition-colors"
                     title={cIdx === totalClausesInSection - 1 ? "Mover para a próxima seção" : "Descer Cláusula"}
                   >
                     <ArrowDown className="w-3 h-3" />
@@ -1439,23 +1437,23 @@ function ClauseItemCard({
                 type="button"
                 onClick={onToggleExpand}
                 className={cn(
-                  "px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all border",
+                  "px-2 py-0.5 rounded-[8px] text-[10px] font-bold flex items-center gap-1 transition-all border",
                   isExpanded
-                    ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#1a3a5c]"
+                    ? "bg-primary text-white border-primary shadow-xs"
+                    : "bg-[#f5f5f5] text-muted-foreground border-[#e5e5e5] hover:bg-white hover:text-foreground"
                 )}
               >
                 {isExpanded ? (
                   <Check className="w-3.5 h-3.5" />
                 ) : (
-                  <Pencil className="w-3 h-3 text-slate-400" />
+                  <Pencil className="w-3 h-3 text-muted-foreground" />
                 )}
               </button>
               {isExpanded ? (
                 <button
                   type="button"
                   onClick={onClearClause}
-                  className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                  className="p-1 text-muted-foreground hover:text-amber-600 hover:bg-amber-50 rounded-[8px] transition-colors"
                   title="Limpar conteúdo"
                 >
                   <Eraser className="w-3.5 h-3.5" />
@@ -1464,7 +1462,7 @@ function ClauseItemCard({
                 <button
                   type="button"
                   onClick={() => onDeleteClause()}
-                  className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                  className="p-1 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-[8px] transition-colors"
                   title="Excluir Cláusula"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -1477,7 +1475,7 @@ function ClauseItemCard({
         {!isExpanded && (
           <p className={cn(
             "text-[11px] font-normal italic line-clamp-2 leading-relaxed pl-0.5 flex-1",
-            showErrors && isBlank ? "text-red-500 font-bold opacity-90" : "text-slate-600"
+            showErrors && isBlank ? "text-red-500 font-bold opacity-90" : "text-muted-foreground"
           )}>
             {clause.texto.trim() ? clause.texto : "Clique em Editar para preencher o texto..."}
           </p>
@@ -1492,7 +1490,7 @@ function ClauseItemCard({
             onChange={(e) => onClauseChange(e.target.value)}
             placeholder="Digite o texto da cláusula..."
             className={cn(
-              "w-full p-3.5 text-xs sm:text-sm text-slate-800 bg-[#fcfcfd] border border-slate-200 rounded-lg focus:bg-white focus:border-[#1a3a5c] focus:ring-2 focus:ring-[#1a3a5c]/5 leading-relaxed placeholder:text-slate-300 font-medium transition-all min-h-[260px] sm:min-h-[340px] h-[calc(100dvh-300px)] max-h-[480px] resize-y",
+              "w-full p-3.5 text-xs sm:text-sm text-foreground bg-[#f5f5f5] border border-[#e5e5e5] rounded-[16px] focus:bg-white focus:border-[#0a0a0a] leading-relaxed placeholder:text-muted-foreground font-medium transition-all min-h-[260px] sm:min-h-[340px] h-[calc(100dvh-300px)] max-h-[480px] resize-y",
               showErrors && isBlank ? "border-red-300 bg-red-50/20" : ""
             )}
           />

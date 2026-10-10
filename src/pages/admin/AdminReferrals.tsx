@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { AdminPeriodFilter } from "@/components/ui/AdminPeriodFilter";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -32,7 +33,7 @@ import { useDebounce } from "@/hooks/ui/useDebounce";
 import { IndicacaoStatus, SubscriptionStatus } from "@/types/enums";
 import { ROUTES } from "@/constants/routes";
 import { phoneMask } from "@/utils/masks";
-import { formatSafeBrazilianDate } from "@/utils/dateUtils";
+import { formatSafeBrazilianDate, toStartOfDayISO, toEndOfDayISO } from "@/utils/dateUtils";
 import { openBrowserLink } from "@/utils/browser";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
@@ -157,8 +158,8 @@ export default function AdminReferrals() {
     limit,
     search: debouncedSearch || undefined,
     status: (statusFilter as IndicacaoStatus) || undefined,
-    data_inicio: dataInicio ? `${dataInicio}T00:00:00` : undefined,
-    data_fim: dataFim ? `${dataFim}T23:59:59` : undefined,
+    data_inicio: dataInicio ? toStartOfDayISO(dataInicio) : undefined,
+    data_fim: dataFim ? toEndOfDayISO(dataFim) : undefined,
   });
 
   const removeReferralMutation = useRemoveUserReferralAdmin();
@@ -186,13 +187,13 @@ export default function AdminReferrals() {
     return [
       {
         key: "total",
-        title: "TOTAL DE INDICAÇÕES",
+        title: "Total de indicações",
         value: stats.total,
         subtext: "Cadastros realizados via convite",
         cardBorder: isTotalSelected
-          ? "border-purple-500 shadow-purple-500/20 ring-2 ring-purple-500/80"
-          : "border-purple-500/40 shadow-purple-500/10",
-        iconBg: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+          ? "border-primary shadow-xs ring-2 ring-primary/80"
+          : "border-border shadow-xs",
+        iconBg: "bg-primary/10 text-primary border-primary/20",
         icon: <Share2 className="h-5 w-5" />,
         isSelected: isTotalSelected,
         onClick: () => {
@@ -202,13 +203,13 @@ export default function AdminReferrals() {
       },
       {
         key: "pending",
-        title: "EM TESTE / NÃO ASSINANTES",
+        title: "Em teste / não assinantes",
         value: stats.pendentes,
         subtext: "Aguardando 1ª mensalidade",
         cardBorder: isPendingSelected
-          ? "border-amber-500 shadow-amber-500/20 ring-2 ring-amber-500/80"
-          : "border-amber-500/40 shadow-amber-500/10",
-        iconBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+          ? "border-amber-500 shadow-xs ring-2 ring-amber-500/80"
+          : "border-amber-500/30 shadow-xs",
+        iconBg: "bg-amber-500/10 text-amber-500 border-amber-500/20",
         icon: <Clock className="h-5 w-5" />,
         isSelected: isPendingSelected,
         onClick: () => {
@@ -218,13 +219,13 @@ export default function AdminReferrals() {
       },
       {
         key: "completed",
-        title: "CONVERTIDOS EM ASSINANTES",
+        title: "Convertidos em assinantes",
         value: stats.concluidas,
         subtext: "Pagaram a 1ª mensalidade",
         cardBorder: isCompletedSelected
-          ? "border-emerald-500 shadow-emerald-500/20 ring-2 ring-emerald-500/80"
-          : "border-emerald-500/40 shadow-emerald-500/10",
-        iconBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+          ? "border-emerald-500 shadow-xs ring-2 ring-emerald-500/80"
+          : "border-emerald-500/30 shadow-xs",
+        iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
         icon: <CheckCircle2 className="h-5 w-5" />,
         isSelected: isCompletedSelected,
         onClick: () => {
@@ -234,24 +235,24 @@ export default function AdminReferrals() {
       },
       {
         key: "taxa",
-        title: "TAXA DE CONVERSÃO",
+        title: "Taxa de conversão",
         value: `${stats.taxaConversao}%`,
         subtext: `${stats.concluidas} de ${stats.total} indicados convertidos`,
-        cardBorder: "border-blue-500/40 shadow-blue-500/10",
-        iconBg: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+        cardBorder: "border-sky-500/30 shadow-xs",
+        iconBg: "bg-sky-500/10 text-sky-500 border-sky-500/20",
         icon: <UserPlus className="h-5 w-5" />,
         isSelected: false,
       },
       {
         key: "bonus",
-        title: "BÔNUS GERADO",
-        value: `${stats.diasBonusConcedidos} Dias`,
+        title: "Bônus gerado",
+        value: `${stats.diasBonusConcedidos} dias`,
         subtext:
           stats.diasBonusConcedidos === 0
             ? "0 meses grátis acumulados"
             : `~${Math.round(stats.diasBonusConcedidos / 30)} meses grátis aos motoristas`,
-        cardBorder: "border-fuchsia-500/40 shadow-fuchsia-500/10",
-        iconBg: "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20",
+        cardBorder: "border-purple-500/30 shadow-xs",
+        iconBg: "bg-purple-500/10 text-purple-400 border-purple-500/20",
         icon: <Gift className="h-5 w-5" />,
         isSelected: false,
       },
@@ -282,11 +283,11 @@ export default function AdminReferrals() {
     <div className="space-y-6 text-left">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black font-headline text-slate-100 uppercase tracking-tight flex items-center gap-2">
-            <Share2 className="h-6 w-6 text-purple-400" />
+          <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground tracking-tight flex items-center gap-2.5">
+            <Share2 className="h-6 w-6 text-primary" />
             <span>Indicações</span>
           </h1>
-          <p className="text-xs sm:text-sm font-medium text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
             Gestão unificada de quem indicou, quem foi indicado, situação cadastral e bonificações.
           </p>
         </div>
@@ -296,9 +297,9 @@ export default function AdminReferrals() {
           size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="h-10 px-4 rounded-xl border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold gap-2 self-start sm:self-auto shadow-md"
+          className="h-9 px-3.5 rounded-lg border-border bg-card text-foreground hover:bg-secondary text-xs font-medium gap-2 self-start sm:self-auto shadow-xs"
         >
-          <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin text-purple-400")} />
+          <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin text-primary")} />
           <span>Atualizar</span>
         </Button>
       </div>
@@ -326,32 +327,47 @@ export default function AdminReferrals() {
         ))}
       </div>
 
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardContent className="p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
-              <Input
-                placeholder="Buscar por nome, telefone ou email do indicador ou indicado..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-11 pr-10 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-3 text-slate-500 hover:text-white p-0.5 rounded-lg"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+      <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome, telefone ou email do indicador ou indicado..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 pr-9 h-9 w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary transition-colors"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="w-full">
+                <AdminPeriodFilter
+                  defaultPreset="tudo"
+                  startDate={dataInicio}
+                  endDate={dataFim}
+                  onChange={(start, end) => {
+                    setDataInicio(start);
+                    setDataFim(end);
+                    setPage(1);
+                  }}
+                />
+              </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar shrink-0">
               {STATUS_FILTERS.map((f) => (
                 <Button
                   key={f.value}
@@ -361,55 +377,15 @@ export default function AdminReferrals() {
                     setStatusFilter(f.value);
                     setPage(1);
                   }}
-                  className={`rounded-xl text-xs font-bold whitespace-nowrap ${statusFilter === f.value
-                      ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-600/20"
-                      : "border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800"
-                    }`}
+                  className={`rounded-lg text-xs font-medium whitespace-nowrap h-9 px-3 transition-all ${
+                    statusFilter === f.value
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
                 >
                   {f.label}
                 </Button>
               ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 text-xs">
-            <div className="flex items-center gap-2 text-slate-400">
-              <Calendar className="h-4 w-4 text-purple-400 shrink-0" />
-              <span className="font-bold">Indicados entre:</span>
-            </div>
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
-              <Input
-                type="date"
-                value={dataInicio}
-                onChange={(e) => {
-                  setDataInicio(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
-              />
-              <Input
-                type="date"
-                value={dataFim}
-                onChange={(e) => {
-                  setDataFim(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-slate-900 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-36"
-              />
-              {(dataInicio || dataFim) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setDataInicio("");
-                    setDataFim("");
-                    setPage(1);
-                  }}
-                  className="col-span-2 sm:col-span-1 h-9 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
-                >
-                  Limpar Datas
-                </Button>
-              )}
             </div>
           </div>
 
@@ -430,30 +406,28 @@ export default function AdminReferrals() {
             />
           ) : (
             <>
-              <div className="hidden lg:block overflow-x-auto">
+              <div className="hidden lg:block overflow-x-auto [scrollbar-width:thin]">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      <th className="pb-3">Motorista Indicador (Quem Indicou)</th>
+                    <tr className="border-b border-border/60 text-xs font-semibold text-muted-foreground">
+                      <th className="pb-3 px-2">Motorista indicador (quem indicou)</th>
                       <th className="pb-3 text-center w-8">
-                        <ArrowRight className="h-4 w-4 text-slate-600 mx-auto" />
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/60 mx-auto" />
                       </th>
-                      <th className="pb-3">Motorista Indicado (Quem Foi Indicado)</th>
-                      <th className="pb-3">Data</th>
-                      <th className="pb-3">Status da Indicação</th>
-                      <th className="pb-3 text-right">Ações</th>
+                      <th className="pb-3 px-2">Motorista indicado (quem foi indicado)</th>
+                      <th className="pb-3 px-2">Data</th>
+                      <th className="pb-3 px-2">Status da indicação</th>
+                      <th className="pb-3 px-2 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {referrals.map((item) => {
-                      const isCompleted = item.status === IndicacaoStatus.COMPLETED;
-
                       return (
                         <tr
                           key={item.id}
-                          className="border-b border-slate-800/40 hover:bg-slate-800/30 transition-colors"
+                          className="border-b border-border/40 hover:bg-secondary/40 transition-colors"
                         >
-                          <td className="py-4">
+                          <td className="py-3.5 px-2">
                             {item.indicador ? (
                               <div className="flex items-center gap-3">
                                 {item.indicador.logo_url?.trim() ? (
@@ -466,7 +440,7 @@ export default function AdminReferrals() {
                                         alt: item.indicador!.nome,
                                       })
                                     }
-                                    className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                                    className="h-10 w-10 rounded-xl bg-card border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                                   >
                                     <img
                                       src={item.indicador.logo_url}
@@ -476,19 +450,19 @@ export default function AdminReferrals() {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-black text-xs flex items-center justify-center shrink-0">
+                                  <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 text-primary font-semibold text-xs flex items-center justify-center shrink-0">
                                     {item.indicador.nome.charAt(0).toUpperCase()}
                                   </div>
                                 )}
                                 <div className="min-w-0">
                                   <Link
                                     to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicador.id}`}
-                                    className="text-sm font-bold text-slate-100 hover:text-purple-400 hover:underline transition-colors block truncate max-w-[200px]"
+                                    className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors block truncate max-w-[200px]"
                                   >
                                     {item.indicador.nome}
                                   </Link>
                                   <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[11px] text-slate-400 font-mono">
+                                    <span className="text-[11px] text-muted-foreground font-mono">
                                       {phoneMask(item.indicador.telefone) || "—"}
                                     </span>
                                     {item.indicador.telefone && (
@@ -497,7 +471,7 @@ export default function AdminReferrals() {
                                         onClick={() =>
                                           handleOpenWhatsApp(item.indicador!.telefone, item.indicador!.nome)
                                         }
-                                        className="text-[#25D366] hover:opacity-80 transition-opacity p-0.5"
+                                        className="text-[#25D366] hover:opacity-80 transition-opacity p-0.5 cursor-pointer"
                                         title="Abrir WhatsApp"
                                       >
                                         <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
@@ -507,15 +481,15 @@ export default function AdminReferrals() {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-500 italic">Indicador não identificado</span>
+                              <span className="text-xs text-muted-foreground italic">Indicador não identificado</span>
                             )}
                           </td>
 
-                          <td className="py-4 text-center">
-                            <ArrowRight className="h-4 w-4 text-purple-500/60 mx-auto" />
+                          <td className="py-3.5 text-center">
+                            <ArrowRight className="h-4 w-4 text-muted-foreground/60 mx-auto" />
                           </td>
 
-                          <td className="py-4">
+                          <td className="py-3.5 px-2">
                             {item.indicado ? (
                               <div className="flex items-center gap-3">
                                 {item.indicado.logo_url?.trim() ? (
@@ -528,7 +502,7 @@ export default function AdminReferrals() {
                                         alt: item.indicado!.nome,
                                       })
                                     }
-                                    className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                                    className="h-10 w-10 rounded-xl bg-card border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                                   >
                                     <img
                                       src={item.indicado.logo_url}
@@ -538,7 +512,7 @@ export default function AdminReferrals() {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 font-black text-xs flex items-center justify-center shrink-0">
+                                  <div className="h-10 w-10 rounded-xl bg-secondary border border-border text-muted-foreground font-semibold text-xs flex items-center justify-center shrink-0">
                                     {item.indicado.nome.charAt(0).toUpperCase()}
                                   </div>
                                 )}
@@ -546,7 +520,7 @@ export default function AdminReferrals() {
                                   <div className="flex items-center gap-2">
                                     <Link
                                       to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado.id}`}
-                                      className="text-sm font-bold text-slate-100 hover:text-blue-400 hover:underline transition-colors block truncate max-w-[200px]"
+                                      className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors block truncate max-w-[200px]"
                                     >
                                       {item.indicado.nome}
                                     </Link>
@@ -558,7 +532,7 @@ export default function AdminReferrals() {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[11px] text-slate-400 font-mono">
+                                    <span className="text-[11px] text-muted-foreground font-mono">
                                       {phoneMask(item.indicado.telefone) || "—"}
                                     </span>
                                     {item.indicado.telefone && (
@@ -567,7 +541,7 @@ export default function AdminReferrals() {
                                         onClick={() =>
                                           handleOpenWhatsApp(item.indicado!.telefone, item.indicado!.nome)
                                         }
-                                        className="text-[#25D366] hover:opacity-80 transition-opacity p-0.5"
+                                        className="text-[#25D366] hover:opacity-80 transition-opacity p-0.5 cursor-pointer"
                                         title="Abrir WhatsApp"
                                       >
                                         <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
@@ -577,17 +551,17 @@ export default function AdminReferrals() {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-500 italic">Indicado não identificado</span>
+                              <span className="text-xs text-muted-foreground italic">Indicado não identificado</span>
                             )}
                           </td>
 
-                          <td className="py-4">
-                            <span className="text-xs text-slate-300 font-mono block">
+                          <td className="py-3.5 px-2">
+                            <span className="text-xs text-muted-foreground font-mono block">
                               {formatSafeBrazilianDate(item.created_at)}
                             </span>
                           </td>
 
-                          <td className="py-4">
+                          <td className="py-3.5 px-2">
                             {(() => {
                               const statusInfo = getReferralDisplayInfo(item);
                               const StatusIcon = statusInfo.icon;
@@ -595,14 +569,14 @@ export default function AdminReferrals() {
                                 <div className="space-y-0.5">
                                   <span
                                     className={cn(
-                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border",
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium border",
                                       statusInfo.badgeClass
                                     )}
                                   >
                                     <StatusIcon className="h-3.5 w-3.5" />
                                     <span>{statusInfo.badgeLabel}</span>
                                   </span>
-                                  <span className="block text-[10px] text-slate-400 font-medium">
+                                  <span className="block text-[11px] text-muted-foreground font-medium">
                                     {statusInfo.subtext}
                                   </span>
                                 </div>
@@ -610,7 +584,7 @@ export default function AdminReferrals() {
                             })()}
                           </td>
 
-                          <td className="py-4 text-right">
+                          <td className="py-3.5 px-2 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               {item.indicado && (
                                 <>
@@ -625,8 +599,8 @@ export default function AdminReferrals() {
                                         currentIndicadorNome: item.indicador?.nome,
                                       })
                                     }
-                                    className="h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-xs"
-                                    title="Alterar Indicador"
+                                    className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary text-xs"
+                                    title="Alterar indicador"
                                   >
                                     <Edit2 className="h-3.5 w-3.5" />
                                   </Button>
@@ -635,8 +609,8 @@ export default function AdminReferrals() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleUnlinkReferral(item.indicado!.id, item.indicado!.nome)}
-                                    className="h-8 px-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-xs"
-                                    title="Desvincular Indicação"
+                                    className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs"
+                                    title="Desvincular indicação"
                                     disabled={removeReferralMutation.isPending}
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
@@ -648,8 +622,8 @@ export default function AdminReferrals() {
                                     onClick={() =>
                                       navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado!.id}`)
                                     }
-                                    className="h-8 px-2 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-xs"
-                                    title="Ver Detalhes do Usuário"
+                                    className="h-8 w-8 p-0 rounded-xl text-primary hover:text-primary/80 hover:bg-primary/10 text-xs"
+                                    title="Ver detalhes do motorista"
                                   >
                                     <ExternalLink className="h-3.5 w-3.5" />
                                   </Button>
@@ -664,21 +638,19 @@ export default function AdminReferrals() {
                 </table>
               </div>
 
-              <div className="lg:hidden space-y-4">
+              <div className="lg:hidden space-y-3">
                 {referrals.map((item) => {
-                  const isCompleted = item.status === IndicacaoStatus.COMPLETED;
-
                   return (
                     <div
                       key={item.id}
-                      className="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-4 text-left shadow-lg"
+                      className="p-4 bg-secondary/30 rounded-2xl border border-border/80 space-y-3 text-left"
                     >
-                      <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-3">
+                      <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-3">
                         <div>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
-                            Data da Indicação
+                          <span className="text-[11px] font-medium text-muted-foreground block">
+                            Data da indicação
                           </span>
-                          <span className="text-xs font-mono text-slate-200">
+                          <span className="text-xs font-mono text-foreground font-medium">
                             {formatSafeBrazilianDate(item.created_at)}
                           </span>
                         </div>
@@ -691,14 +663,14 @@ export default function AdminReferrals() {
                               <div className="flex flex-col items-end">
                                 <span
                                   className={cn(
-                                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border",
+                                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-xl text-[11px] font-medium border",
                                     statusInfo.badgeClass
                                   )}
                                 >
                                   <StatusIcon className="h-3 w-3" />
                                   <span>{statusInfo.badgeLabel}</span>
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                <span className="text-[10px] text-muted-foreground font-medium mt-0.5">
                                   {statusInfo.subtext}
                                 </span>
                               </div>
@@ -708,19 +680,19 @@ export default function AdminReferrals() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">
-                            Quem Indicou (Indicador)
+                        <div className="p-3 rounded-xl bg-secondary/60 border border-border/60 space-y-1.5">
+                          <span className="text-[11px] font-medium text-primary">
+                            Quem indicou (indicador)
                           </span>
                           {item.indicador ? (
                             <div>
                               <Link
                                 to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicador.id}`}
-                                className="font-bold text-sm text-white hover:text-purple-400 block truncate"
+                                className="font-semibold text-sm text-foreground hover:text-primary block truncate"
                               >
                                 {item.indicador.nome}
                               </Link>
-                              <div className="flex items-center justify-between mt-1 text-xs text-slate-400 font-mono">
+                              <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground font-mono">
                                 <span>{phoneMask(item.indicador.telefone) || "—"}</span>
                                 {item.indicador.telefone && (
                                   <button
@@ -728,28 +700,28 @@ export default function AdminReferrals() {
                                     onClick={() =>
                                       handleOpenWhatsApp(item.indicador!.telefone, item.indicador!.nome)
                                     }
-                                    className="text-[#25D366] hover:opacity-80 p-1"
+                                    className="text-[#25D366] hover:opacity-80 p-1 cursor-pointer"
                                   >
-                                    <WhatsAppIcon className="h-4 w-4 fill-current" />
+                                    <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
                                   </button>
                                 )}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-500 italic block">Não identificado</span>
+                            <span className="text-xs text-muted-foreground italic block">Não identificado</span>
                           )}
                         </div>
 
-                        <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
-                            Quem Foi Indicado (Novo Motorista)
+                        <div className="p-3 rounded-xl bg-secondary/60 border border-border/60 space-y-1.5">
+                          <span className="text-[11px] font-medium text-primary">
+                            Quem foi indicado (novo motorista)
                           </span>
                           {item.indicado ? (
                             <div>
                               <div className="flex items-center gap-2">
                                 <Link
                                   to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado.id}`}
-                                  className="font-bold text-sm text-white hover:text-blue-400 block truncate"
+                                  className="font-semibold text-sm text-foreground hover:text-primary block truncate"
                                 >
                                   {item.indicado.nome}
                                 </Link>
@@ -760,7 +732,7 @@ export default function AdminReferrals() {
                                   />
                                 )}
                               </div>
-                              <div className="flex items-center justify-between mt-1 text-xs text-slate-400 font-mono">
+                              <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground font-mono">
                                 <span>{phoneMask(item.indicado.telefone) || "—"}</span>
                                 {item.indicado.telefone && (
                                   <button
@@ -768,21 +740,21 @@ export default function AdminReferrals() {
                                     onClick={() =>
                                       handleOpenWhatsApp(item.indicado!.telefone, item.indicado!.nome)
                                     }
-                                    className="text-[#25D366] hover:opacity-80 p-1"
+                                    className="text-[#25D366] hover:opacity-80 p-1 cursor-pointer"
                                   >
-                                    <WhatsAppIcon className="h-4 w-4 fill-current" />
+                                    <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
                                   </button>
                                 )}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-500 italic block">Não identificado</span>
+                            <span className="text-xs text-muted-foreground italic block">Não identificado</span>
                           )}
                         </div>
                       </div>
 
                       {item.indicado && (
-                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
                           <Button
                             variant="outline"
                             size="sm"
@@ -794,7 +766,7 @@ export default function AdminReferrals() {
                                 currentIndicadorNome: item.indicador?.nome,
                               })
                             }
-                            className="h-8 px-2.5 rounded-lg border-slate-700 bg-slate-800 text-xs font-bold text-slate-300 gap-1.5"
+                            className="h-8 px-2.5 rounded-xl border-border bg-card text-xs font-medium text-foreground gap-1.5"
                           >
                             <Edit2 className="h-3 w-3" />
                             <span>Alterar</span>
@@ -805,7 +777,7 @@ export default function AdminReferrals() {
                             size="sm"
                             onClick={() => handleUnlinkReferral(item.indicado!.id, item.indicado!.nome)}
                             disabled={removeReferralMutation.isPending}
-                            className="h-8 px-2.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold gap-1.5"
+                            className="h-8 px-2.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 text-xs font-medium gap-1.5"
                           >
                             <Trash2 className="h-3 w-3" />
                             <span>Desvincular</span>
@@ -815,10 +787,10 @@ export default function AdminReferrals() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado!.id}`)}
-                            className="h-8 px-2.5 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-xs font-bold gap-1.5"
+                            className="h-8 px-2.5 rounded-xl text-primary hover:bg-primary/10 text-xs font-medium gap-1.5"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            <span>Ver Perfil</span>
+                            <span>Ver perfil</span>
                           </Button>
                         </div>
                       )}
@@ -828,7 +800,7 @@ export default function AdminReferrals() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4 border-t border-slate-800 text-xs text-slate-400">
+                <div className="flex items-center justify-between pt-4 border-t border-border/40 text-xs text-muted-foreground">
                   <span>
                     Página {page} de {totalPages} ({total} indicações no total)
                   </span>
@@ -838,7 +810,7 @@ export default function AdminReferrals() {
                       size="sm"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="h-8 px-3 rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:text-white disabled:opacity-40"
+                      className="h-9 px-3 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40 text-xs"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Anterior
@@ -848,7 +820,7 @@ export default function AdminReferrals() {
                       size="sm"
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="h-8 px-3 rounded-xl border-slate-800 bg-slate-900 text-slate-300 hover:text-white disabled:opacity-40"
+                      className="h-9 px-3 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40 text-xs"
                     >
                       Próxima
                       <ChevronRight className="h-4 w-4 ml-1" />

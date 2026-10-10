@@ -517,24 +517,10 @@ export function usePassageirosViewModel() {
     [substituirContrato, closeConfirmationDialog, openConfirmationDialog]
   );
 
-  const isMobile = useIsMobile();
   const handleEnviarWhatsApp = useCallback((passageiro: Passageiro) => {
-    // Para contratos pendentes, sempre usamos o link do portal de assinatura
     const token = passageiro.token_acesso || passageiro.id;
     const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
-
-    if (!isMobile) {
-      navigator.clipboard.writeText(finalLink);
-      toast.success("Link para assinatura copiado!");
-      return;
-    }
-
     const telefone = passageiro.responsavel_principal?.telefone;
-
-    if (!telefone) {
-      toast.error("Telefone do responsável inválido ou não informado.");
-      return;
-    }
 
     const url = buildContratoWhatsAppUrl({
       telefoneResponsavel: telefone,
@@ -544,7 +530,7 @@ export function usePassageirosViewModel() {
     });
 
     openBrowserLink(url);
-  }, [isMobile, openBrowserLink]);
+  }, []);
 
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([

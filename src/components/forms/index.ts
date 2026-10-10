@@ -2,5 +2,4 @@ export { CepInput } from "./CepInput";
 export { PhoneInput } from "./PhoneInput";
 export { MoneyInput } from "./MoneyInput";
 export { FormEnderecoFields } from "./FormEnderecoFields";
-export { StitchField } from "./StitchField";
 

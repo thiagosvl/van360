@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { isDevEnv } from "@/utils/detectPlatform";
 import {
@@ -209,11 +210,11 @@ export default function VeiculoFormDialog({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95 shadow-sm"
+            className="h-9 w-9 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#eeeeee] transition-all active:scale-95 shadow-none"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
@@ -223,27 +224,27 @@ export default function VeiculoFormDialog({
           <form
             id="veiculo-form"
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-4 pb-6"
+            className="space-y-4 pb-4"
           >
             <FormField
               name="placa"
               control={form.control}
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Placa <span className="text-red-600">*</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Placa <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Hash className={cn(
-                        "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                        fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
+                        "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
+                        fieldState.error ? "text-[#e7000b]" : "text-[#737373]"
                       )} />
                       <Input
                         {...field}
                         maxLength={8}
                         placeholder="Ex: ABC-1234"
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all uppercase"
+                        className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] transition-all uppercase"
                         onChange={(e) => {
                           const masked = aplicarMascaraPlaca(e.target.value);
                           field.onChange(masked);
@@ -252,35 +253,35 @@ export default function VeiculoFormDialog({
                       />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-[#e7000b]" />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <FormField
                 name="marca"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Marca <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Marca <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Tag className={cn(
-                          "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                          fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
+                          "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
+                          fieldState.error ? "text-[#e7000b]" : "text-[#737373]"
                         )} />
                         <Input
                           placeholder="Ex: Fiat"
                           {...field}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs text-[#e7000b]" />
                   </FormItem>
                 )}
               />
@@ -288,25 +289,25 @@ export default function VeiculoFormDialog({
                 name="modelo"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Modelo <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Modelo <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Car className={cn(
-                          "absolute left-4 top-3.5 h-5 w-5 transition-colors",
-                          fieldState.error ? "text-red-400" : "text-slate-400 opacity-60"
+                          "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
+                          fieldState.error ? "text-[#e7000b]" : "text-[#737373]"
                         )} />
                         <Input
                           placeholder="Ex: Ducato"
                           {...field}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs text-[#e7000b]" />
                   </FormItem>
                 )}
               />
@@ -317,36 +318,37 @@ export default function VeiculoFormDialog({
                 name="ativo"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0 transition-all hover:bg-slate-100/50">
-                    <Checkbox
-                      id="ativo"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <FormLabel
-                      htmlFor="ativo"
-                      className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
-                    >
-                      Veículo Ativo
-                    </FormLabel>
+                  <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 sm:p-4">
+                    <div className="space-y-0.5 pr-4">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer block">
+                        Veículo Ativo
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                        className="data-[state=checked]:bg-primary"
+                        aria-label="Veículo Ativo"
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
             )}
             {allowBatchCreation && !editingVeiculo && (
-              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-3 p-3.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                  className="flex-1 cursor-pointer font-medium text-[#0a0a0a] m-0 text-xs sm:text-sm"
                 >
                   Cadastrar outro em seguida
                 </label>
@@ -360,11 +362,11 @@ export default function VeiculoFormDialog({
         <BaseDialog.Action
           label="Cancelar"
           variant="secondary"
-          onClick={onClose}
+          onClick={() => safeCloseDialog(onClose)}
           disabled={isSaving}
         />
         <BaseDialog.Action
-          label="Salvar"
+          label={editingVeiculo ? "Atualizar" : "Salvar"}
           type="submit"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSaving}

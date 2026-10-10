@@ -7,13 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -21,12 +15,12 @@ import { useSession } from "@/hooks/business/useSession";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { useMotoristaFinanceiroForm, MotoristaFinanceiroFormData } from "@/hooks/form/useMotoristaFinanceiroForm";
 import { TipoChavePix } from "@/types/pix";
+import { ModoCobrancaEnum } from "@/types/enums";
 import { pixKeySchema } from "@/schemas/pix";
 import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2, Save, Trash2, Sparkles, ArrowRightLeft, Receipt } from "lucide-react";
-import { isUserInBaaSWhitelist } from "@/utils/featureFlagUtils";
+import { Loader2, Save, Trash2, Sparkles, Receipt } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import React, { useEffect, useState, useRef } from "react";
 
@@ -35,6 +29,11 @@ export interface PixConfiguracaoFormProps {
   onCancel?: () => void;
   showCancelButton?: boolean;
   showDeleteButton?: boolean;
+  hideActions?: boolean;
+  formId?: string;
+  onLoadingChange?: (loading: boolean) => void;
+  showAutoToggle?: boolean;
+  showTaxOptions?: boolean;
 }
 
 export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
@@ -42,16 +41,16 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
   onCancel,
   showCancelButton = false,
   showDeleteButton = false,
+  hideActions = false,
+  formId,
+  onLoadingChange,
+  showAutoToggle = true,
+  showTaxOptions = true,
 }: PixConfiguracaoFormProps) {
   const { user } = useSession();
   const { profile, refreshProfile } = useProfile(user?.id);
   const { financeiro, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-
-  const isWhitelisted = isUserInBaaSWhitelist({
-    email: user?.email,
-    telefone: profile?.telefone,
-  });
 
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -62,10 +61,10 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
 
   useEffect(() => {
     if (profile || financeiro) {
-      const tipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null) as TipoChavePix | null;
+      const tipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
       let chave = financeiro?.chave_pix_repasse || profile?.chave_pix || "";
 
-      originalTipoRef.current = tipo;
+      originalTipoRef.current = tipo || null;
       originalChaveRef.current = chave;
 
       if (tipo === TipoChavePix.CPF) chave = cpfMask(chave);
@@ -74,24 +73,18 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
       else if (tipo === TipoChavePix.ALEATORIA) chave = evpMask(chave);
 
       form.reset({
-        cobranca_automatica_ativa: !!financeiro?.cobranca_automatica_ativa,
+        modo_cobranca: (financeiro?.modo_cobranca as ModoCobrancaEnum) || ModoCobrancaEnum.DESATIVADO,
         enviar_recibo_automatico: financeiro?.enviar_recibo_automatico ?? true,
         tipo_chave_pix: tipo,
         chave_pix: chave,
-        repassar_taxa_pais_padrao: !!financeiro?.repassar_taxa_pais_padrao,
       });
     }
   }, [profile, financeiro, form]);
 
   const handleSubmit = async (data: MotoristaFinanceiroFormData) => {
     try {
-      let chave_pix = data.chave_pix?.trim() || null;
-      let tipo_chave_pix = data.tipo_chave_pix || null;
-
-      if (!chave_pix || !tipo_chave_pix) {
-        chave_pix = null;
-        tipo_chave_pix = null;
-      }
+      const chave_pix = data.chave_pix.trim();
+      const tipo_chave_pix = data.tipo_chave_pix;
 
       const isChaveValida = Boolean(
         tipo_chave_pix &&
@@ -99,15 +92,21 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
         pixKeySchema.safeParse({ tipo_chave_pix, chave_pix }).success
       );
 
-      const ativacaoPermitida = Boolean(isWhitelisted && isChaveValida && data.cobranca_automatica_ativa);
+      const ativacaoPermitida = Boolean(isChaveValida && data.modo_cobranca === ModoCobrancaEnum.AUTOMATICA);
 
-      await updateFinanceiro({
-        cobranca_automatica_ativa: ativacaoPermitida,
-        enviar_recibo_automatico: ativacaoPermitida ? data.enviar_recibo_automatico : false,
+      const updatePayload: Record<string, unknown> = {
         chave_pix_repasse: chave_pix,
         tipo_chave_pix: tipo_chave_pix,
-        repassar_taxa_pais_padrao: ativacaoPermitida ? data.repassar_taxa_pais_padrao : false,
-      });
+      };
+
+      if (showAutoToggle) {
+        updatePayload.modo_cobranca = ativacaoPermitida ? ModoCobrancaEnum.AUTOMATICA : ModoCobrancaEnum.LEMBRETES;
+        updatePayload.enviar_recibo_automatico = ativacaoPermitida ? data.enviar_recibo_automatico : false;
+      } else if (showTaxOptions) {
+        updatePayload.enviar_recibo_automatico = data.enviar_recibo_automatico;
+      }
+
+      await updateFinanceiro(updatePayload);
 
       toast.success("cadastro.sucesso.perfilAtualizado");
       await refreshProfile();
@@ -123,16 +122,15 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
     try {
       setIsRemoving(true);
       await updateFinanceiro({
-        cobranca_automatica_ativa: false,
+        modo_cobranca: ModoCobrancaEnum.DESATIVADO,
         chave_pix_repasse: null,
         tipo_chave_pix: null,
       });
       form.reset({
-        cobranca_automatica_ativa: false,
+        modo_cobranca: ModoCobrancaEnum.DESATIVADO,
         enviar_recibo_automatico: true,
         tipo_chave_pix: null,
         chave_pix: "",
-        repassar_taxa_pais_padrao: false,
       });
       toast.success("cadastro.sucesso.perfilAtualizado");
       await refreshProfile();
@@ -176,87 +174,89 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
     pixKeySchema.safeParse({ tipo_chave_pix: tipoChaveWatch, chave_pix: chavePixWatch }).success
   );
 
-  const cobrancaAtivaWatch = Boolean(form.watch("cobranca_automatica_ativa") && isChavePixValida);
-  const repassarTaxaWatch = form.watch("repassar_taxa_pais_padrao");
+  const cobrancaAtivaWatch = Boolean(form.watch("modo_cobranca") === ModoCobrancaEnum.AUTOMATICA && isChavePixValida);
   const temChavePix = Boolean(financeiro?.chave_pix_repasse || profile?.chave_pix);
   const isBusy = form.formState.isSubmitting || isUpdating || isRemoving;
 
+  useEffect(() => {
+    onLoadingChange?.(isBusy);
+  }, [isBusy, onLoadingChange]);
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-5">
+      <form
+        id={formId}
+        onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="tipo_chave_pix"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                   Tipo de Chave
                 </FormLabel>
-                <Select
-                  onValueChange={(val) => {
-                    if (!val || val === "none") {
-                      field.onChange(null);
-                      form.setValue("chave_pix", "");
-                      form.setValue("cobranca_automatica_ativa", false);
-                      return;
-                    }
-
-                    const selecionado = val as TipoChavePix;
-                    field.onChange(selecionado);
-
-                    if (selecionado === originalTipoRef.current) {
-                      let chaveOriginal = originalChaveRef.current;
-                      if (selecionado === TipoChavePix.CPF) chaveOriginal = cpfMask(chaveOriginal);
-                      else if (selecionado === TipoChavePix.CNPJ) chaveOriginal = cnpjMask(chaveOriginal);
-                      else if (selecionado === TipoChavePix.TELEFONE) chaveOriginal = phoneMask(chaveOriginal);
-                      else if (selecionado === TipoChavePix.ALEATORIA) chaveOriginal = evpMask(chaveOriginal);
-
-                      form.setValue("chave_pix", chaveOriginal);
-                    } else {
-                      let dadosCadastro = "";
-                      if (profile) {
-                        const cpfCnpjLimpo = profile.cpfcnpj
-                          ? profile.cpfcnpj.replace(/\D/g, "")
-                          : "";
-
-                        if (selecionado === TipoChavePix.CPF && cpfCnpjLimpo.length === 11) {
-                          dadosCadastro = cpfMask(profile.cpfcnpj);
-                        } else if (
-                          selecionado === TipoChavePix.CNPJ &&
-                          cpfCnpjLimpo.length === 14
-                        ) {
-                          dadosCadastro = cnpjMask(profile.cpfcnpj);
-                        } else if (
-                          selecionado === TipoChavePix.TELEFONE &&
-                          profile.telefone
-                        ) {
-                          dadosCadastro = phoneMask(profile.telefone);
-                        } else if (selecionado === TipoChavePix.EMAIL && profile.email) {
-                          dadosCadastro = profile.email;
-                        } else if (selecionado === TipoChavePix.EMAIL && user?.email) {
-                          dadosCadastro = user.email;
-                        }
+                <FormControl>
+                  <NativeSelect
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val) {
+                        field.onChange(undefined);
+                        form.setValue("chave_pix", "");
+                        return;
                       }
-                      form.setValue("chave_pix", dadosCadastro);
-                    }
-                  }}
-                  value={field.value || "none"}
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">Não utilizar</SelectItem>
-                    <SelectItem value={TipoChavePix.CPF}>CPF</SelectItem>
-                    <SelectItem value={TipoChavePix.CNPJ}>CNPJ</SelectItem>
-                    <SelectItem value={TipoChavePix.EMAIL}>E-mail</SelectItem>
-                    <SelectItem value={TipoChavePix.TELEFONE}>Telefone</SelectItem>
-                    <SelectItem value={TipoChavePix.ALEATORIA}>Chave Aleatória</SelectItem>
-                  </SelectContent>
-                </Select>
+
+                      const selecionado = val as TipoChavePix;
+                      field.onChange(selecionado);
+
+                      if (selecionado === originalTipoRef.current) {
+                        let chaveOriginal = originalChaveRef.current;
+                        if (selecionado === TipoChavePix.CPF) chaveOriginal = cpfMask(chaveOriginal);
+                        else if (selecionado === TipoChavePix.CNPJ) chaveOriginal = cnpjMask(chaveOriginal);
+                        else if (selecionado === TipoChavePix.TELEFONE) chaveOriginal = phoneMask(chaveOriginal);
+                        else if (selecionado === TipoChavePix.ALEATORIA) chaveOriginal = evpMask(chaveOriginal);
+
+                        form.setValue("chave_pix", chaveOriginal);
+                      } else {
+                        let dadosCadastro = "";
+                        if (profile) {
+                          const cpfCnpjLimpo = profile.cpfcnpj
+                            ? profile.cpfcnpj.replace(/\D/g, "")
+                            : "";
+
+                          if (selecionado === TipoChavePix.CPF && cpfCnpjLimpo.length === 11) {
+                            dadosCadastro = cpfMask(profile.cpfcnpj);
+                          } else if (
+                            selecionado === TipoChavePix.CNPJ &&
+                            cpfCnpjLimpo.length === 14
+                          ) {
+                            dadosCadastro = cnpjMask(profile.cpfcnpj);
+                          } else if (
+                            selecionado === TipoChavePix.TELEFONE &&
+                            profile.telefone
+                          ) {
+                            dadosCadastro = phoneMask(profile.telefone);
+                          } else if (selecionado === TipoChavePix.EMAIL && profile.email) {
+                            dadosCadastro = profile.email;
+                          } else if (selecionado === TipoChavePix.EMAIL && user?.email) {
+                            dadosCadastro = user.email;
+                          }
+                        }
+                        form.setValue("chave_pix", dadosCadastro);
+                      }
+                    }}
+                  >
+                    <option value="" disabled>Selecionar...</option>
+                    <option value={TipoChavePix.CPF}>CPF</option>
+                    <option value={TipoChavePix.CNPJ}>CNPJ</option>
+                    <option value={TipoChavePix.EMAIL}>E-mail</option>
+                    <option value={TipoChavePix.TELEFONE}>Telefone</option>
+                    <option value={TipoChavePix.ALEATORIA}>Chave Aleatória</option>
+                  </NativeSelect>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -268,8 +268,8 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
             render={({ field }) => {
               const tipoChave = form.watch("tipo_chave_pix");
               return (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                     Chave Pix
                   </FormLabel>
                   <FormControl>
@@ -300,7 +300,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                         }
                         field.onChange(maskedVal);
                       }}
-                      className="h-12 rounded-xl bg-gray-50 border-gray-200"
+                      className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                     />
                   </FormControl>
                   <FormMessage />
@@ -310,29 +310,29 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
           />
         </div>
 
-        {isWhitelisted && (
-          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50/60 space-y-4">
+        {showAutoToggle && (
+          <div className="rounded-[18px] border border-[#e5e5e5] p-4 sm:p-5 bg-[#fafafa] space-y-4">
             <FormField
               control={form.control}
-              name="cobranca_automatica_ativa"
+              name="modo_cobranca"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <FormLabel className="text-slate-900 font-medium flex items-center gap-1.5 cursor-pointer">
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                      <FormLabel className="text-sm font-medium text-[#0a0a0a] flex items-center gap-2 cursor-pointer">
+                        <Sparkles className="w-4 h-4 text-[#0a0a0a]" />
                         Recebimento e Baixa Automática Pix
                       </FormLabel>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#737373] leading-relaxed">
                         Identificação instantânea de pagamentos e repasse para sua chave Pix.
                       </p>
                     </div>
                     <FormControl>
                       <Switch
-                        checked={Boolean(field.value && isChavePixValida)}
+                        checked={Boolean(field.value === ModoCobrancaEnum.AUTOMATICA && isChavePixValida)}
                         onCheckedChange={(checked) => {
                           if (isChavePixValida) {
-                            field.onChange(checked);
+                            field.onChange(checked ? ModoCobrancaEnum.AUTOMATICA : ModoCobrancaEnum.LEMBRETES);
                           }
                         }}
                         disabled={!isChavePixValida || isBusy}
@@ -343,7 +343,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
                   {!isChavePixValida && (
                     <Banner
                       variant="warning"
-                      description="Cadastre uma chave Pix válida acima para habilitar o recebimento e a baixa automática das parcelas."
+                      description="Para habilitar o recebimento e a baixa automática das parcelas, cadastre uma chave Pix válida acima."
                     />
                   )}
                 </FormItem>
@@ -351,115 +351,129 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
             />
 
             {cobrancaAtivaWatch && (
-              <div className="space-y-3 pt-2 border-t border-slate-200">
+              <div className="space-y-4 pt-4 border-t border-[#e5e5e5]">
                 <Banner
                   variant="info"
                   title="Transparência de Custos"
                   description={`Taxa de ${taxaFormatada} por cobrança recebida via Pix. Cobrança exclusiva na liquidação, sem tarifas de emissão, cancelamento ou taxas fixas.`}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="repassar_taxa_pais_padrao"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between gap-3 space-y-0 pt-2">
-                      <div className="space-y-1">
-                        <FormLabel className="text-slate-800 text-sm font-medium flex items-center gap-1.5 cursor-pointer">
-                          <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-                          Repassar taxa aos responsáveis?
-                        </FormLabel>
-                        <p className="text-xs text-slate-500">
-                          {repassarTaxaWatch
-                            ? `O responsável pagará o valor da parcela com acréscimo de ${taxaFormatada}.`
-                            : `A taxa de ${taxaFormatada} será descontada do valor da parcela.`}
-                        </p>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="enviar_recibo_automatico"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between gap-3 space-y-0 pt-2 border-t border-slate-200/60">
-                      <div className="space-y-1">
-                        <FormLabel className="text-slate-800 text-sm font-medium flex items-center gap-1.5 cursor-pointer">
-                          <Receipt className="w-4 h-4 text-emerald-600" />
-                          Enviar recibo automático no WhatsApp?
-                        </FormLabel>
-                        <p className="text-xs text-slate-500">
-                          Envia a confirmação oficial e o comprovante para o responsável assim que o Pix for confirmado.
-                        </p>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="enviar_recibo_automatico"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between gap-4 pt-1">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-xs sm:text-sm font-medium text-[#0a0a0a] flex items-center gap-2 cursor-pointer">
+                            <Receipt className="w-4 h-4 text-[#737373]" />
+                            Enviar recibo automático no WhatsApp?
+                          </FormLabel>
+                          <p className="text-xs text-[#737373] leading-relaxed">
+                            Envia a confirmação oficial e o comprovante para o responsável assim que o Pix for confirmado.
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {showDeleteButton && temChavePix && (
-              <button
-                type="button"
-                onClick={handleConfirmarRemoverPix}
-                disabled={isBusy}
-                className="h-11 px-4 text-rose-600 hover:bg-rose-50 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-              >
-                {isRemoving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
+        {!showAutoToggle && showTaxOptions && (
+          <div className="rounded-[18px] border border-[#e5e5e5] p-4 sm:p-5 bg-[#fafafa] space-y-4">
+            <Banner
+              variant="info"
+              title="Transparência de Custos"
+              description={`Taxa de ${taxaFormatada} por cobrança recebida via Pix. Cobrança exclusiva na liquidação, sem tarifas de emissão, cancelamento ou taxas fixas.`}
+            />
+
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="enviar_recibo_automatico"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between gap-4 pt-1">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-xs sm:text-sm font-medium text-[#0a0a0a] flex items-center gap-2 cursor-pointer">
+                        <Receipt className="w-4 h-4 text-[#737373]" />
+                        Enviar recibo automático no WhatsApp?
+                      </FormLabel>
+                      <p className="text-xs text-[#737373] leading-relaxed">
+                        Envia a confirmação oficial e o comprovante para o responsável assim que o Pix for confirmado.
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
                 )}
-                Remover Chave Pix
-              </button>
-            )}
-
-            {showCancelButton && onCancel && (
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={isBusy}
-                className="h-11 px-5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center w-full sm:w-auto"
-              >
-                Cancelar
-              </button>
-            )}
+              />
+            </div>
           </div>
+        )}
 
-          <button
-            type="submit"
-            disabled={isBusy}
-            className="h-11 px-6 bg-[#1a3a5c] text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {isBusy ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Salvando...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Salvar
-              </>
-            )}
-          </button>
-        </div>
+        {!hideActions && (
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[#e5e5e5]">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {showDeleteButton && temChavePix && (
+                <button
+                  type="button"
+                  onClick={handleConfirmarRemoverPix}
+                  disabled={isBusy}
+                  className="h-11 px-4 text-[#e7000b] hover:bg-[#fafafa] text-xs sm:text-sm font-medium rounded-[18px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                >
+                  {isRemoving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  Remover Chave Pix
+                </button>
+              )}
+
+              {showCancelButton && onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  disabled={isBusy}
+                  className="h-11 px-5 border border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#f5f5f5] text-xs sm:text-sm font-medium rounded-[18px] transition-all flex items-center justify-center w-full sm:w-auto"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isBusy}
+              className="h-11 px-6 bg-primary text-primary-foreground text-xs sm:text-sm font-medium rounded-[18px] hover:bg-primary-hover transition-all shadow-xs active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto cursor-pointer"
+            >
+              {isBusy ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Salvar
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </form>
     </Form>
   );

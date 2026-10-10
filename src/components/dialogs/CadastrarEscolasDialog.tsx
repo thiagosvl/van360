@@ -170,7 +170,7 @@ export default function CadastrarEscolasDialog({
       <BaseDialog.Header
         title="Cadastrar Escolas"
         subtitle="Adicione as escolas que você atende"
-        icon={<Building2 className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<Building2 className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={createBatchMutation.isPending}
       />
@@ -180,8 +180,7 @@ export default function CadastrarEscolasDialog({
           variant="info"
           description={
             <span>
-              Digite o nome como você costuma chamar no dia a dia (ex:{" "}
-              <strong>Santa Maria</strong>, <strong>Edilamar</strong>, etc).
+              Você pode abreviar, não precisa informar o nome completo.
             </span>
           }
         />
@@ -189,12 +188,12 @@ export default function CadastrarEscolasDialog({
         <div className="space-y-2.5">
           {nomes.map((nome, index) => (
             <div key={index} className="flex items-center gap-2">
-              <span className="w-6 text-center text-xs font-bold text-slate-400 select-none">
+              <span className="w-5 text-center text-xs font-medium text-[#737373] select-none">
                 {index + 1}.
               </span>
 
               <div className="relative flex-1">
-                <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373] pointer-events-none" />
                 <input
                   ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
@@ -205,7 +204,7 @@ export default function CadastrarEscolasDialog({
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   onPaste={(e) => handlePaste(e, index)}
                   disabled={createBatchMutation.isPending}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#1a3a5c] focus:bg-white focus:ring-2 focus:ring-[#1a3a5c]/10 rounded-xl text-xs text-slate-800 font-semibold transition-all outline-none disabled:opacity-50"
+                  className="w-full pl-10 pr-4 h-10 sm:h-11 bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] text-sm text-[#0a0a0a] font-normal transition-all outline-none disabled:opacity-50"
                 />
               </div>
 
@@ -214,7 +213,7 @@ export default function CadastrarEscolasDialog({
                   type="button"
                   onClick={() => handleRemoveRow(index)}
                   disabled={createBatchMutation.isPending}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                  className="w-9 h-9 rounded-[14px] flex items-center justify-center text-[#737373] hover:text-[#e7000b] hover:bg-[#e7000b]/10 transition-colors disabled:opacity-50 cursor-pointer"
                   aria-label="Remover linha"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -228,15 +227,12 @@ export default function CadastrarEscolasDialog({
           type="button"
           onClick={handleAddRow}
           disabled={createBatchMutation.isPending}
-          className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#1a3a5c]/40 hover:bg-blue-50/40 text-slate-600 hover:text-[#1a3a5c] font-semibold text-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer group disabled:opacity-50 disabled:pointer-events-none"
+          className="w-full py-2.5 px-4 rounded-[18px] border border-dashed border-[#e5e5e5] hover:border-[#0a0a0a]/40 hover:bg-[#f5f5f5] text-[#0a0a0a] font-medium text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer group disabled:opacity-50 disabled:pointer-events-none"
         >
-          <div className="w-5 h-5 rounded-full bg-slate-100 group-hover:bg-[#1a3a5c] group-hover:text-white flex items-center justify-center transition-colors">
+          <div className="w-5 h-5 rounded-full bg-[#f5f5f5] group-hover:bg-[#0a0a0a] group-hover:text-white flex items-center justify-center transition-colors">
             <Plus className="w-3.5 h-3.5" />
           </div>
           <span>Adicionar outra escola</span>
-          <span className="text-[11px] text-slate-400 font-normal ml-1 hidden sm:inline">
-            (ou tecle Enter)
-          </span>
         </button>
       </BaseDialog.Body>
 

@@ -27,6 +27,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -65,8 +66,8 @@ function LoginPlatformSuggestion() {
   if (!hasEligibleApp) return null;
 
   return (
-    <div className="mt-6 pt-5 border-t border-slate-200/80 flex flex-col items-center">
-      <p className="max-[320px]:text-[11px] text-xs font-medium text-slate-500 mb-2 text-center">
+    <div className="mt-6 pt-5 border-t border-[#e5e5e5] flex flex-col items-center">
+      <p className="max-[320px]:text-[11px] text-xs font-medium text-[#737373] mb-2 text-center">
         Para uma melhor experiência, baixe o app:
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3">
@@ -276,18 +277,16 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#e8ecf1]" />
-
+      <div className="min-h-screen flex flex-col justify-center items-center py-6 px-4 relative overflow-hidden bg-[#f5f5f5]">
         <div className="w-full max-w-[430px] relative z-10">
-          <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 sm:p-9 border border-slate-200">
+          <div className="bg-white rounded-[24px] shadow-sm p-6 sm:p-9 border border-[#e5e5e5] relative">
             {isDevEnv() && (
-              <div className="absolute right-6 top-6 z-10">
+              <div className="absolute right-5 top-5 z-10">
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-full transition-all"
+                  className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-full transition-all"
                   onClick={handleFillMagic}
                   title="Preencher com dados de teste"
                 >
@@ -296,64 +295,61 @@ export default function Login() {
               </div>
             )}
 
-            {/* SELEÇÃO INICIAL DE PERFIL */}
             {selectedProfile === null ? (
               <div className="flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
                 <img
                   src="/assets/logo-van360.webp"
                   alt="Van360"
-                  className="h-16 w-auto mb-4 drop-shadow-sm select-none"
+                  className="h-16 w-auto mb-4 drop-shadow-xs select-none"
                 />
 
                 <div className="text-center mb-6">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1a3a5c] tracking-tight mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mb-1">
                     Quem está acessando?
                   </h1>
-                  <p className="text-xs sm:text-[13px] font-medium text-slate-500">
+                  <p className="text-xs sm:text-[13px] font-medium text-[#737373]">
                     Selecione uma opção para continuar
                   </p>
                 </div>
 
                 <div className="w-full space-y-3">
-                  {/* Opção 1: Motorista / Equipe */}
                   <button
                     type="button"
                     onClick={() => handleSelectProfile("motorista")}
-                    className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-[#1a3a5c] active:scale-[0.98] shadow-sm hover:shadow-md transition-all group flex items-center justify-between cursor-pointer"
+                    className="w-full text-left p-3.5 sm:p-4 rounded-[18px] bg-white border border-[#e5e5e5] hover:border-[#2563eb] hover:bg-[#f8faff] active:scale-[0.98] shadow-xs hover:shadow-sm transition-all group flex items-center justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#1a3a5c]/10 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                      <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                         <Bus className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="font-bold text-[14px] sm:text-base text-slate-800 group-hover:text-[#1a3a5c] transition-colors block leading-tight">
+                        <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-[#2563eb] transition-colors block leading-tight">
                           Motorista ou Equipe
                         </span>
                       </div>
                     </div>
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 group-hover:bg-[#1a3a5c]/10 flex items-center justify-center shrink-0 transition-colors ml-1">
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#1a3a5c] transition-colors" />
+                    <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-[#eff6ff] flex items-center justify-center shrink-0 transition-colors ml-1">
+                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563eb] transition-colors" />
                     </div>
                   </button>
 
-                  {/* Opção 2: Pai / Responsável */}
                   <button
                     type="button"
                     onClick={() => handleSelectProfile("responsavel")}
-                    className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-amber-500 active:scale-[0.98] shadow-sm hover:shadow-md transition-all group flex items-center justify-between cursor-pointer"
+                    className="w-full text-left p-3.5 sm:p-4 rounded-[18px] bg-white border border-[#e5e5e5] hover:border-amber-500 hover:bg-[#fffbeb] active:scale-[0.98] shadow-xs hover:shadow-sm transition-all group flex items-center justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#1a3a5c]/10 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                      <div className="w-11 h-11 rounded-[14px] bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                         <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="font-bold text-[14px] sm:text-base text-slate-800 group-hover:text-amber-800 transition-colors block leading-tight">
+                        <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] group-hover:text-amber-800 transition-colors block leading-tight">
                           Responsável
                         </span>
                       </div>
                     </div>
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 group-hover:bg-amber-100 flex items-center justify-center shrink-0 transition-colors ml-1">
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
+                    <div className="w-7 h-7 rounded-full bg-[#f5f5f5] group-hover:bg-amber-100 flex items-center justify-center shrink-0 transition-colors ml-1">
+                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-amber-600 transition-colors" />
                     </div>
                   </button>
                 </div>
@@ -361,28 +357,25 @@ export default function Login() {
                 {!isNativeApp() && <LoginPlatformSuggestion />}
               </div>
             ) : (
-              /* FORMULÁRIO DO PERFIL ESCOLHIDO */
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {/* Header de Navegação / Voltar */}
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#e5e5e5]">
                   <button
                     type="button"
                     onClick={handleBackToProfileSelection}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#1a3a5c] transition-colors p-1 -ml-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#737373] hover:text-[#0a0a0a] transition-colors p-1.5 -ml-1 rounded-[12px] hover:bg-[#f5f5f5] cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Trocar perfil</span>
                   </button>
                 </div>
 
-                {/* Header do Formulário */}
                 <div className="flex flex-col items-center mb-5 text-center">
                   <img
                     src="/assets/logo-van360.webp"
                     alt="Van360"
-                    className="h-12 w-auto mb-3 drop-shadow-sm select-none"
+                    className="h-12 w-auto mb-3 drop-shadow-xs select-none"
                   />
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1a3a5c] tracking-tight mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mb-1">
                     {selectedProfile === "motorista"
                       ? "Motorista ou Equipe"
                       : "Responsável"}
@@ -395,98 +388,86 @@ export default function Login() {
                   <Form {...formMotorista}>
                     <form onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}>
                       <div className="space-y-4">
-                        {/* CPF Field */}
                         <FormField
                           control={formMotorista.control}
                           name="cpfcnpj"
                           render={({ field, fieldState }) => (
                             <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                CPF ou CNPJ
+                              </FormLabel>
                               <FormControl>
-                                <div
-                                  className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                                    ? "border-red-500 ring-2 ring-red-500/20"
-                                    : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                                <div className="relative">
+                                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                  <Input
+                                    autoFocus
+                                    {...field}
+                                    inputMode="numeric"
+                                    placeholder="Digite seu CPF ou CNPJ"
+                                    onChange={(e) =>
+                                      field.onChange(cpfCnpjMask(e.target.value))
+                                    }
+                                    className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                      fieldState.error
+                                        ? "border-[#e7000b] focus:border-[#e7000b]"
+                                        : "border-[#e5e5e5] focus:border-[#2563eb]"
                                     }`}
-                                >
-                                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                    <User className="w-5 h-5" />
-                                  </div>
-                                  <div className="flex flex-col flex-1 min-w-0">
-                                    <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                      CPF ou CNPJ
-                                    </label>
-                                    <Input
-                                      autoFocus
-                                      {...field}
-                                      inputMode="numeric"
-                                      onChange={(e) =>
-                                        field.onChange(cpfCnpjMask(e.target.value))
-                                      }
-                                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-300"
-                                    />
-                                  </div>
+                                  />
                                 </div>
                               </FormControl>
-                              <FormMessage className="text-xs ml-1" />
+                              <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                             </FormItem>
                           )}
                         />
 
-                        {/* Password Field */}
                         <FormField
                           control={formMotorista.control}
                           name="senha"
                           render={({ field, fieldState }) => (
                             <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                Senha
+                              </FormLabel>
                               <FormControl>
-                                <div
-                                  className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                                    ? "border-red-500 ring-2 ring-red-500/20"
-                                    : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
+                                <div className="relative">
+                                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                  <Input
+                                    {...field}
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Digite sua senha"
+                                    className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                      fieldState.error
+                                        ? "border-[#e7000b] focus:border-[#e7000b]"
+                                        : "border-[#e5e5e5] focus:border-[#2563eb]"
                                     }`}
-                                >
-                                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                                    <Lock className="w-5 h-5" />
-                                  </div>
-                                  <div className="flex flex-col flex-1 min-w-0">
-                                    <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                                      Senha
-                                    </label>
-                                    <Input
-                                      {...field}
-                                      type={showPassword ? "text" : "password"}
-                                      placeholder="••••••••"
-                                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-wider placeholder:tracking-normal placeholder:text-slate-300"
-                                    />
-                                  </div>
+                                  />
                                   <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
                                     tabIndex={-1}
                                   >
                                     {showPassword ? (
-                                      <EyeOff className="w-5 h-5" />
+                                      <EyeOff className="h-4 w-4" />
                                     ) : (
-                                      <Eye className="w-5 h-5" />
+                                      <Eye className="h-4 w-4" />
                                     )}
                                   </button>
                                 </div>
                               </FormControl>
-                              <FormMessage className="text-xs ml-1" />
+                              <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                             </FormItem>
                           )}
                         />
                       </div>
 
                       {formMotorista.formState.errors.root && (
-                        <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600">
+                        <div className="mt-4 p-3 rounded-[14px] bg-red-50 border border-red-200 flex items-start gap-2 text-sm text-[#e7000b]">
                           <span className="mt-0.5">⚠️</span>
                           {formMotorista.formState.errors.root.message}
                         </div>
                       )}
 
-                      {/* Remember Me */}
                       <div className="flex items-center gap-2 mt-5 ml-1">
                         <Checkbox
                           id="rememberMe"
@@ -494,21 +475,20 @@ export default function Login() {
                           onCheckedChange={(checked) =>
                             setRememberMe(Boolean(checked))
                           }
-                          className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px] cursor-pointer"
+                          className="bg-white border-[#e5e5e5] shadow-2xs rounded-[6px] data-[state=checked]:bg-[#2563eb] data-[state=checked]:border-[#2563eb] w-[18px] h-[18px] cursor-pointer"
                         />
                         <Label
                           htmlFor="rememberMe"
-                          className="text-[13px] font-medium text-slate-600 cursor-pointer select-none"
+                          className="text-[13px] font-medium text-[#737373] cursor-pointer select-none"
                         >
                           Lembrar meu CPF / CNPJ
                         </Label>
                       </div>
 
-                      {/* Submit Button */}
                       <div className="pt-2 mt-4">
                         <Button
                           type="submit"
-                          className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all cursor-pointer"
+                          className="w-full h-12 rounded-[18px] text-[15px] font-bold bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs transition-all active:scale-[0.99] cursor-pointer"
                           disabled={loading}
                         >
                           {loading
@@ -517,22 +497,21 @@ export default function Login() {
                         </Button>
                       </div>
 
-                      {/* Links */}
                       <div className="flex flex-col items-center gap-2.5 mt-6">
                         <button
                           type="button"
                           onClick={handleForgotPassword}
-                          className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium cursor-pointer"
+                          className="text-sm text-[#2563eb] hover:text-[#1d4ed8] hover:underline transition-colors font-medium cursor-pointer"
                         >
                           Esqueci minha senha
                         </button>
 
-                        <p className="text-[13px] text-slate-500 mt-1 text-center">
+                        <p className="text-[13px] text-[#737373] mt-1 text-center">
                           Não tem uma conta?{" "}
                           <button
                             type="button"
                             onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
-                            className="text-[#2d5a88] font-bold underline underline-offset-2 hover:text-[#1a3a5c] transition-colors cursor-pointer"
+                            className="text-[#2563eb] font-bold underline underline-offset-2 hover:text-[#1d4ed8] transition-colors cursor-pointer"
                           >
                             Cadastre sua van
                           </button>
@@ -542,7 +521,6 @@ export default function Login() {
                   </Form>
                 )}
 
-                {/* Sugestão de App */}
                 {!isNativeApp() && <LoginPlatformSuggestion />}
               </div>
             )}

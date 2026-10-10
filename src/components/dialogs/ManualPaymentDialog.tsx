@@ -11,14 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
@@ -70,18 +64,22 @@ export default function ManualPaymentDialog({
 
   const { formatoNomeResponsavel } = useAppPreferences();
 
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
+
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Registrar Pagamento" icon={<Wallet className="w-5 h-5" />} onClose={onClose} />
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <BaseDialog.Header title="Registrar Pagamento" icon={<Wallet className="w-5 h-5" />} onClose={handleClose} />
       <BaseDialog.Body>
-        <div className="bg-slate-50/80 rounded-2xl border border-slate-200/60 p-3.5 space-y-2.5 mb-4">
+        <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 space-y-2 mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-medium uppercase tracking-[0.05em] text-[#737373]">
               Parcela de {format(parseLocalDate(dataVencimento), "MMMM", { locale: ptBR })}
             </span>
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-2xs",
+                "px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider",
                 getStatusColor(status, dataVencimento)
               )}
             >
@@ -91,15 +89,15 @@ export default function ManualPaymentDialog({
 
           <div className="flex items-center justify-between gap-3 pt-0.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
-                <User className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-full bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
+                <User className="w-4 h-4 text-[#737373]" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-[#1a3a5c] leading-tight truncate">
+                <p className="text-sm font-semibold text-[#0a0a0a] leading-tight truncate">
                   {formatShortName(passageiroNome, true)}
                 </p>
                 {responsavelNome && (
-                  <p className="text-[11px] text-slate-500 font-medium leading-tight truncate mt-0.5">
+                  <p className="text-xs text-[#737373] font-normal leading-tight truncate mt-0.5">
                     {formatNomeResponsavelExibicao(responsavelNome, formatoNomeResponsavel)}
                   </p>
                 )}
@@ -108,7 +106,7 @@ export default function ManualPaymentDialog({
 
             {valorOriginal > 0 && (
               <div className="text-right shrink-0">
-                <span className="text-sm font-bold text-[#1a3a5c] tabular-nums leading-none">
+                <span className="text-sm font-semibold text-[#0a0a0a] tabular-nums leading-none">
                   {valorOriginal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </span>
               </div>
@@ -126,8 +124,8 @@ export default function ManualPaymentDialog({
                   field={field}
                   label="Valor Pago"
                   required
-                  labelClassName="text-slate-700 font-semibold ml-1"
-                  inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
+                  labelClassName="text-[#0a0a0a] font-medium text-xs"
+                  inputClassName="pl-12 h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] focus:bg-white focus:border-[#0a0a0a] transition-all"
                 />
               )}
             />
@@ -136,33 +134,33 @@ export default function ManualPaymentDialog({
               control={form.control}
               name="data_pagamento"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Data do Pagamento <span className="text-red-600">*</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Data do Pagamento <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <div className="relative">
-                          <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                          <CalendarIcon className="absolute left-4 top-3 h-5 w-5 text-[#737373] z-10" />
                           <Button
                             type="button"
                             variant="outline"
                             className={cn(
-                              "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left font-normal hover:bg-gray-100 text-md justify-start",
-                              !field.value && "text-muted-foreground"
+                              "w-full pl-12 h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white text-sm text-[#0a0a0a] justify-start",
+                              !field.value && "text-[#737373]"
                             )}
                           >
                             {field.value ? (
                               format(field.value, "dd/MM/yyyy")
                             ) : (
-                              <span className="text-gray-500">Selecione a data</span>
+                              <span className="text-[#737373]">Selecionar</span>
                             )}
                           </Button>
                         </div>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto p-0">
+                    <PopoverContent align="start" className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -186,36 +184,25 @@ export default function ManualPaymentDialog({
               control={form.control}
               name="tipo_pagamento"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Forma de Pagamento <span className="text-red-600">*</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Forma de Pagamento <span className="text-[#e7000b]">*</span>
                   </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <div className="relative">
-                        <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                        <SelectTrigger
-                          className={cn(
-                            "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left",
-                            form.formState.errors.tipo_pagamento && "border-red-500"
-                          )}
-                          aria-invalid={!!form.formState.errors.tipo_pagamento}
-                        >
-                          <SelectValue placeholder="Selecione a forma" />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent className="max-h-60 overflow-y-auto">
+                  <FormControl>
+                    <NativeSelect
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      icon={<CreditCard className="h-5 w-5 text-[#737373]" />}
+                      error={!!form.formState.errors.tipo_pagamento}
+                    >
+                      <option value="">Selecionar</option>
                       {PAYMENT_METHODS.map((method) => (
-                        <SelectItem key={method.value} value={method.value}>
-                          <div className="flex items-center gap-2">
-                            {method.icon}
-                            <span>{method.label}</span>
-                          </div>
-                        </SelectItem>
+                        <option key={method.value} value={method.value}>
+                          {method.label}
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </NativeSelect>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -225,22 +212,29 @@ export default function ManualPaymentDialog({
               control={form.control}
               name="enviar_recibo_whatsapp_manual"
               render={({ field }) => (
-                <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                  <div className="flex items-center gap-3">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </FormControl>
-                    <div className="flex-1 space-y-1 leading-none">
-                      <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                        Enviar Recibo no WhatsApp
-                      </FormLabel>
-                    </div>
+                <FormItem
+                  className="flex flex-row items-center justify-between rounded-[20px] bg-white border border-[#e5e5e5] p-4 transition-all hover:bg-[#fafafa] cursor-pointer shadow-xs select-none gap-4"
+                  onClick={() => field.onChange(!field.value)}
+                >
+                  <div className="space-y-0.5 pr-2 flex-1 min-w-0">
+                    <FormLabel className="text-sm font-semibold text-[#0a0a0a] block cursor-pointer">
+                      Enviar Recibo no WhatsApp
+                    </FormLabel>
+                    <p className="text-xs text-[#737373] leading-relaxed">
+                      {field.value
+                        ? "O comprovante de pagamento será enviado automaticamente para o WhatsApp do responsável."
+                        : "O pagamento será registrado sem enviar comprovante por WhatsApp."}
+                    </p>
                   </div>
-                  <FormMessage className="pt-2" />
+                  <FormControl>
+                    <Switch
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                      className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-[#e5e5e5] shrink-0"
+                      aria-label="Enviar Recibo no WhatsApp"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
@@ -249,14 +243,14 @@ export default function ManualPaymentDialog({
               control={form.control}
               name="observacao"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Observação <span className="text-xs text-[#737373] font-normal">(apenas para você)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder=""
-                      className="min-h-[60px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                      className="min-h-[72px] rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] resize-none focus:bg-white focus:border-[#0a0a0a] transition-all"
                       {...field}
                       value={field.value || ""}
                     />
@@ -269,7 +263,7 @@ export default function ManualPaymentDialog({
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={() => safeCloseDialog(onClose)} disabled={isPending} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={handleClose} disabled={isPending} />
         <BaseDialog.Action label="Registrar" onClick={form.handleSubmit(handleSubmit, onFormError)} isLoading={isPending} />
       </BaseDialog.Footer>
     </BaseDialog>

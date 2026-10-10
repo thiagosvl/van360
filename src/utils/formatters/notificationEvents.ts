@@ -116,7 +116,7 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
   [NotificationEventEnum.MOTORISTA_NOVO_PRE_CADASTRO]: { title: "Novo Pré-cadastro Recebido", category: NotificationCategoryEnum.MOTORISTA, icon: UserPlus, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
   [NotificationEventEnum.MOTORISTA_EQUIPE_CADASTRO]: { title: "Novo Membro de Equipe", category: NotificationCategoryEnum.MOTORISTA, icon: UserPlus, iconBg: "bg-indigo-500/10 border-indigo-500/20", iconColor: "text-indigo-400" },
   [NotificationEventEnum.MOTORISTA_EQUIPE_RESET_SENHA]: { title: "Senha de Equipe Redefinida", category: NotificationCategoryEnum.MOTORISTA, icon: Key, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
-  [NotificationEventEnum.MOTORISTA_EQUIPE_STATUS_ALTERADO]: { title: "Status de Equipe Alterado", category: NotificationCategoryEnum.MOTORISTA, icon: RotateCcw, iconBg: "bg-slate-800 border-slate-700", iconColor: "text-slate-300" },
+  [NotificationEventEnum.MOTORISTA_EQUIPE_STATUS_ALTERADO]: { title: "Status de Equipe Alterado", category: NotificationCategoryEnum.MOTORISTA, icon: RotateCcw, iconBg: "bg-[#737373]/10 border-[#737373]/20", iconColor: "text-[#737373]" },
   [NotificationEventEnum.MOTORISTA_AUSENCIA_REGISTRADA]: { title: "Ausência de Aluno Registrada", category: NotificationCategoryEnum.ROTA, icon: Calendar, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
   [NotificationEventEnum.MOTORISTA_AUSENCIA_REMOVIDA]: { title: "Ausência de Aluno Cancelada", category: NotificationCategoryEnum.ROTA, icon: CheckCircle2, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
 
@@ -153,8 +153,8 @@ export function getEventMeta(evento: string): EventMeta {
     title: evento.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
     category,
     icon: Bell,
-    iconBg: "bg-slate-800 border-slate-700",
-    iconColor: "text-slate-300",
+    iconBg: "bg-[#737373]/10 border-[#737373]/20",
+    iconColor: "text-[#737373]",
   };
 }
 

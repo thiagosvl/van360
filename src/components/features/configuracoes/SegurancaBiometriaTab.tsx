@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/Banner";
 import { useBiometricLock, GRACE_PERIOD_OPTIONS } from "@/hooks/business/useBiometricLock";
 import { isNativeIos } from "@/utils/detectPlatform";
-import { toast } from "sonner";
+import { toast } from "@/utils/notifications/toast";
 import { Fingerprint, Clock, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +60,7 @@ export const SegurancaBiometriaTab = memo(function SegurancaBiometriaTab() {
 
   if (!isSupported) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-xs">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)]">
         <Banner
           variant="info"
           title="Recurso exclusivo do aplicativo"
@@ -72,16 +72,16 @@ export const SegurancaBiometriaTab = memo(function SegurancaBiometriaTab() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-5">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <Fingerprint className="w-4 h-4 sm:w-5 sm:h-5" />
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5 sm:space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <Fingerprint className="w-5 h-5 text-[#0a0a0a]" />
           </div>
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-[#1a3a5c]">
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
               Bloqueio de Tela
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500">
+            <p className="text-xs text-[#737373] mt-0.5">
               {isIos
                 ? "Proteja seus dados com Face ID, Touch ID ou código do celular"
                 : "Proteja seus dados com biometria ou senha do celular"}
@@ -97,12 +97,12 @@ export const SegurancaBiometriaTab = memo(function SegurancaBiometriaTab() {
           />
         )}
 
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div className="space-y-0.5 min-w-0 pr-1">
-            <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
+        <div className="flex items-center justify-between gap-4 py-1">
+          <div className="space-y-0.5 min-w-0 pr-2">
+            <h3 className="text-sm font-medium text-[#0a0a0a]">
               Exigir autenticação ao entrar
             </h3>
-            <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-[#737373] leading-relaxed">
               {isIos
                 ? "Solicita Face ID, Touch ID ou código do celular ao abrir o app."
                 : "Solicita impressão digital ou senha do celular ao abrir o app."}
@@ -121,10 +121,10 @@ export const SegurancaBiometriaTab = memo(function SegurancaBiometriaTab() {
         </div>
 
         {isLockEnabled && (
-          <div className="pt-4 border-t border-slate-100 space-y-3">
-            <div className="flex items-center gap-2 text-slate-700">
-              <Clock className="w-4 h-4 text-slate-400" />
-              <h4 className="text-xs sm:text-sm font-semibold">
+          <div className="pt-5 border-t border-[#e5e5e5] space-y-3">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#737373]" />
+              <h4 className="text-xs sm:text-sm font-medium text-[#0a0a0a]">
                 Bloquear após inatividade
               </h4>
             </div>
@@ -138,14 +138,14 @@ export const SegurancaBiometriaTab = memo(function SegurancaBiometriaTab() {
                     type="button"
                     onClick={() => handleSelectGracePeriod(opt.value)}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded-xl border text-left text-xs transition-all cursor-pointer",
+                      "flex items-center justify-between p-3.5 sm:p-4 rounded-[18px] border text-left text-xs sm:text-sm transition-all cursor-pointer",
                       isSelected
-                        ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold"
-                        : "border-slate-200/80 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50"
+                        ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] text-[#0a0a0a] font-medium shadow-xs"
+                        : "border-[#e5e5e5] bg-white text-[#737373] hover:border-[#0a0a0a]/30 hover:bg-[#fafafa]"
                     )}
                   >
-                    <span>{opt.label}</span>
-                    {isSelected && <Check className="w-4 h-4 text-[#1a3a5c]" />}
+                    <span className={isSelected ? "text-[#0a0a0a]" : "text-[#737373]"}>{opt.label}</span>
+                    {isSelected && <Check className="w-4 h-4 text-[#0a0a0a] shrink-0 ml-2" />}
                   </button>
                 );
               })}

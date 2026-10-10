@@ -199,11 +199,11 @@ export default function PassengerFormDialog({
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[18px] h-10 w-10 border border-[#e5e5e5] cursor-pointer"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
@@ -218,7 +218,7 @@ export default function PassengerFormDialog({
             {mode === PassageiroFormModes.EDIT && (
               <div
                 ref={tabsListRef}
-                className="sticky top-0 z-30 bg-white -mt-2 pt-3 pb-3 mb-4 -mx-6 px-6 border-b border-slate-100 flex gap-2 justify-start overflow-x-auto h-auto no-scrollbar scrollbar-none shrink-0 shadow-2xs"
+                className="sticky top-0 z-30 bg-white -mt-2 pt-2.5 pb-2.5 mb-4 -mx-6 px-6 border-b border-[#e5e5e5] flex gap-1.5 justify-start overflow-x-auto h-auto no-scrollbar scrollbar-none shrink-0"
               >
                 {EDIT_TABS.map((tab) => (
                   <button
@@ -227,10 +227,10 @@ export default function PassengerFormDialog({
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
                     className={cn(
-                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-2xs shrink-0 whitespace-nowrap active:scale-95",
+                      "rounded-[18px] px-3.5 py-1.5 text-xs font-medium transition-all shrink-0 whitespace-nowrap cursor-pointer active:scale-95 border",
                       activeTab === tab.id
-                        ? "bg-[#1a3a5c] text-[#ffffff] border-[#1a3a5c]"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                        ? "bg-primary/10 text-primary border-primary/20 font-semibold"
+                        : "bg-[#f5f5f5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#eeeeee] border-transparent"
                     )}
                   >
                     {tab.label}
@@ -241,13 +241,8 @@ export default function PassengerFormDialog({
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-8 pb-6"
+                className="space-y-6 pb-6"
               >
-                <Banner
-                  variant="info"
-                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
-                  className="mb-4"
-                />
                 <section>
                   <PassageiroFormDadosCadastrais
                     profile={profile}
@@ -257,13 +252,13 @@ export default function PassengerFormDialog({
                   />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormFinanceiro
@@ -271,7 +266,7 @@ export default function PassengerFormDialog({
                   />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormEndereco />

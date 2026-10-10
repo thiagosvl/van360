@@ -40,22 +40,22 @@ function CustomRegionTooltip({ active, payload }: CustomTooltipProps) {
   const item = payload[0].payload;
 
   return (
-    <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md min-w-[160px]">
+    <div className="bg-card border border-border rounded-2xl p-3 shadow-xl text-left min-w-[160px]">
       <div className="flex items-center gap-2 mb-1.5">
         <span
           className="h-2.5 w-2.5 rounded-full shrink-0"
           style={{ backgroundColor: item.color }}
         />
-        <span className="font-bold text-slate-200 text-xs">{item.name}</span>
+        <span className="font-semibold text-foreground text-xs">{item.name}</span>
       </div>
-      <div className="pt-2 border-t border-slate-800 space-y-1 font-mono text-xs">
-        <div className="flex justify-between items-center text-slate-400">
+      <div className="pt-2 border-t border-border/40 space-y-1 font-mono text-xs">
+        <div className="flex justify-between items-center text-muted-foreground">
           <span>Motoristas:</span>
-          <span className="font-black text-white">{item.value}</span>
+          <span className="font-semibold text-foreground">{item.value}</span>
         </div>
-        <div className="flex justify-between items-center text-slate-400">
+        <div className="flex justify-between items-center text-muted-foreground">
           <span>Participação:</span>
-          <span className="font-black text-cyan-400">{item.porcentagem}%</span>
+          <span className="font-semibold text-primary">{item.porcentagem}%</span>
         </div>
       </div>
     </div>
@@ -77,23 +77,23 @@ export function AdminRegionDemographicsChart({
     }));
 
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left flex flex-col w-full min-w-0">
-      <CardHeader className="p-6 pb-2">
-        <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between gap-2">
+    <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-left flex flex-col w-full min-w-0">
+      <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+        <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Layers className="h-4 w-4 text-purple-400 shrink-0" />
-            <span className="truncate">DISTRIBUIÇÃO POR REGIÃO</span>
+            <span className="truncate">Distribuição por região</span>
           </div>
-          <span className="text-[10px] font-bold font-mono text-slate-400 shrink-0 ml-2">
-            5 REGIÕES
+          <span className="text-xs font-mono font-normal text-muted-foreground shrink-0 ml-2">
+            5 regiões
           </span>
         </CardTitle>
-        <p className="text-[11px] font-medium text-slate-400 mt-1">
+        <p className="text-xs font-normal text-muted-foreground mt-0.5">
           Concentração consolidada por macrorregiões do território nacional
         </p>
       </CardHeader>
 
-      <CardContent className="p-5 pt-3 w-full min-w-0">
+      <CardContent className="p-5 sm:p-6 pt-4 w-full min-w-0">
         {totalMotoristas === 0 ? (
           <div className="py-6">
             <AdminEmptyState
@@ -119,16 +119,16 @@ export function AdminRegionDemographicsChart({
                       dataKey="value"
                     >
                       {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="hsl(var(--card))" strokeWidth={2} />
                       ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                  <span className="text-base font-black font-headline text-white leading-none">
+                  <span className="text-xl font-semibold font-headline text-foreground leading-none">
                     {totalMotoristas}
                   </span>
-                  <span className="text-[9px] uppercase font-mono text-slate-400 tracking-wider">
+                  <span className="text-xs font-normal text-muted-foreground mt-0.5">
                     Total
                   </span>
                 </div>
@@ -141,26 +141,26 @@ export function AdminRegionDemographicsChart({
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border uppercase tracking-wider ${item.badgeClass} shrink-0`}
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-xl border ${item.badgeClass} shrink-0`}
                       >
                         {item.regiao}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold truncate">
+                      <span className="text-xs text-muted-foreground truncate">
                         {item.estadosComMotoristas} {item.estadosComMotoristas === 1 ? "UF ativa" : "UFs ativas"}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2 font-mono shrink-0 ml-2">
-                      <span className="font-black text-slate-200 text-xs">
+                      <span className="font-semibold text-foreground text-xs">
                         {item.porcentagem}%
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold">
+                      <span className="text-xs text-muted-foreground">
                         ({item.quantidade})
                       </span>
                     </div>
                   </div>
 
-                  <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden border border-border/40">
                     <div
                       className={`h-full ${item.corBarra} transition-all duration-700 rounded-full`}
                       style={{ width: `${Math.max(item.porcentagem, item.quantidade > 0 ? 3 : 0)}%` }}

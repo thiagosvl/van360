@@ -88,31 +88,31 @@ export function ActiveRouteUpcomingCard({
   return (
     <div className="relative w-full">
       {showTopLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2px] bg-[#e5e5e5] z-0" />
       )}
       {showBottomLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2px] bg-[#e5e5e5] z-0" />
       )}
 
-      <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 font-bold text-[11px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-sm z-10 bg-[#1a3a5c] border-white">
-        {isEscolaItem ? <School className="w-4 h-4" /> : parada.ordem}
+      <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 font-semibold text-[11px] flex items-center justify-center shrink-0 text-white border-2 rounded-full shadow-xs z-10 bg-[#0a0a0a] border-white">
+        {isEscolaItem ? <School className="w-3.5 h-3.5" /> : parada.ordem}
       </span>
 
-      <div className="bg-white p-3.5 rounded-2xl flex flex-col justify-center text-left shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] min-h-[52px] transition-all border border-slate-200">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[20px] sm:rounded-[24px] flex flex-col justify-center text-left shadow-xs min-h-[52px] transition-all border border-[#e5e5e5] hover:border-[#d4d4d4]">
         <div className="flex flex-col gap-1 min-w-0 items-start">
           <div className="flex items-start justify-between gap-2 w-full">
             <div className="flex-1 min-w-0 pr-1 text-left">
               <div className="flex items-center gap-2 min-w-0">
-                {isEscolaItem && <School className="w-5 h-5 text-[#1a3a5c] shrink-0" />}
-                <h4 className="text-sm font-bold text-[#1a3a5c] break-words leading-snug">
+                {isEscolaItem && <School className="w-4.5 h-4.5 text-[#0a0a0a] shrink-0" />}
+                <h4 className="text-sm font-semibold text-[#0a0a0a] break-words leading-snug">
                   {isEscolaItem
                     ? parada.escola?.nome
                     : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
                 </h4>
               </div>
               {!isEscolaItem && (
-                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mt-0.5 text-left">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal mt-0.5 text-left">
+                  <MapPin className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                   <span className="break-words">
                     {currentAddressStr}
                   </span>
@@ -139,20 +139,20 @@ export function ActiveRouteUpcomingCard({
                     escolaNome: pass?.escola?.nome || pass?.escola_nome
                   });
                 }}
-                className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all -mt-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="h-8 w-8 rounded-[12px] border border-[#e5e5e5] bg-[#f5f5f5] hover:bg-[#ebebeb] text-[#0a0a0a] flex items-center justify-center shrink-0 cursor-pointer shadow-none active:scale-95 transition-all -mt-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
                 title={temEnderecoValido ? "Ver endereço e detalhes da parada" : "Endereço não cadastrado"}
               >
-                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                <MapPin className="w-4 h-4 text-[#0a0a0a]" />
               </Button>
             )}
           </div>
 
           {isEscolaItem && (() => {
-            const paradaIndexInTodas = todasParadas.findIndex(p => p.id === parada.id);
+            const paradaIndexInTodas = todasParadas.findIndex((p) => p.id === parada.id);
             const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
-            const descesAtivos = desces.filter(d => d.status !== RouteStopStatus.AUSENTE);
-            const subesAtivos = subes.filter(s => {
+            const descesAtivos = desces.filter((d) => d.status !== RouteStopStatus.AUSENTE);
+            const subesAtivos = subes.filter((s) => {
               if (s.status === RouteStopStatus.AUSENTE || s.is_ausente || s.ausencia_id) return false;
               if (isPreview && chamadaRapidaSavedMap) {
                 const pid = s.passageiro_id || s.passageiro?.id;
@@ -166,19 +166,19 @@ export function ActiveRouteUpcomingCard({
             return (
               <div className="mt-1 space-y-1 w-full text-left">
                 <div className="space-y-1 text-left">
-                  <div className="text-[11px] leading-snug">
-                    <span className="font-semibold text-slate-700">⬇️ Desembarque ({descesAtivos.length}):{" "}</span>
+                  <div className="text-xs leading-snug">
+                    <span className="font-semibold text-[#0a0a0a]">⬇️ Desembarque ({descesAtivos.length}):{" "}</span>
                     {descesAtivos.length > 0 && (
-                      <span className="text-slate-500 font-normal">
-                        {descesAtivos.map(d => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
+                      <span className="text-[#737373] font-normal">
+                        {descesAtivos.map((d) => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] leading-snug">
-                    <span className="font-semibold text-slate-700">⬆️ Embarque ({subesAtivos.length}):{" "}</span>
+                  <div className="text-xs leading-snug">
+                    <span className="font-semibold text-[#0a0a0a]">⬆️ Embarque ({subesAtivos.length}):{" "}</span>
                     {subesAtivos.length > 0 && (
-                      <span className="text-slate-500 font-normal">
-                        {subesAtivos.map(s => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
+                      <span className="text-[#737373] font-normal">
+                        {subesAtivos.map((s) => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
                       </span>
                     )}
                   </div>
@@ -188,16 +188,16 @@ export function ActiveRouteUpcomingCard({
           })()}
 
           {!isEscolaItem && (
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-1 text-left">
+            <div className="flex items-center gap-1.5 text-xs font-normal text-[#737373] mt-1 text-left">
               {parada.sentido === RouteSentido.VOLTANDO ? (
                 <>
-                  <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="break-words"><span className="font-bold">Voltando</span> para casa</span>
+                  <Home className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                  <span className="break-words"><span className="font-semibold text-[#0a0a0a]">Voltando</span> para casa</span>
                 </>
               ) : (
                 <>
-                  <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="break-words"><span className="font-bold">Indo</span> para a escola</span>
+                  <School className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                  <span className="break-words"><span className="font-semibold text-[#0a0a0a]">Indo</span> para a escola</span>
                 </>
               )}
             </div>
@@ -205,7 +205,7 @@ export function ActiveRouteUpcomingCard({
         </div>
 
         {!isPreview && (
-          <div className="flex items-center justify-between border-t border-slate-100 mt-2.5 pt-2">
+          <div className="flex items-center justify-between border-t border-[#e5e5e5] mt-2.5 pt-2">
             <div className="flex items-center gap-2">
               {(() => {
                 const totalPendentesReal = activeParadaToRender ? [activeParadaToRender, ...proximasParadas] : [...proximasParadas];
@@ -226,36 +226,36 @@ export function ActiveRouteUpcomingCard({
                   !validarMovimentoPermitido(execucaoTipo, realIndex, "down", totalPendentesReal, paradasConcluidas);
 
                 return (
-                  <div className="flex items-center gap-1 border border-slate-200/80 rounded-lg max-[338px]:px-0 px-2  py-1 bg-slate-50/80 shrink-0 shadow-2xs h-9">
+                  <div className="flex items-center gap-1 border border-[#e5e5e5] rounded-[14px] px-1.5 py-0.5 bg-[#f5f5f5] shrink-0 h-8">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       disabled={isUpDisabled || isAnyActionBusy}
                       onClick={() => onMoveParada(realIndex, "up")}
-                      className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
+                      className="h-7 w-7 rounded-[10px] text-[#0a0a0a] hover:bg-white active:bg-white disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors cursor-pointer"
                       title="Subir 1 posição"
                     >
                       {isUpReordering ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                       ) : (
-                        <ArrowUp className="w-4 h-4 stroke-[2.25]" />
+                        <ArrowUp className="w-3.5 h-3.5 stroke-[2.25]" />
                       )}
                     </Button>
-                    <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                    <div className="w-px h-4 bg-[#e5e5e5] my-auto shrink-0" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       disabled={isDownDisabled || isAnyActionBusy}
                       onClick={() => onMoveParada(realIndex, "down")}
-                      className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
+                      className="h-7 w-7 rounded-[10px] text-[#0a0a0a] hover:bg-white active:bg-white disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors cursor-pointer"
                       title="Descer 1 posição"
                     >
                       {isDownReordering ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                       ) : (
-                        <ArrowDown className="w-4 h-4 stroke-[2.25]" />
+                        <ArrowDown className="w-3.5 h-3.5 stroke-[2.25]" />
                       )}
                     </Button>
                     {onOpenReordenarSheet && (() => {
@@ -263,7 +263,7 @@ export function ActiveRouteUpcomingCard({
                       const isSheetReorderingThisCard = reorderingSheetStopId === parada.id;
                       return (
                         <>
-                          <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                          <div className="w-px h-4 bg-[#e5e5e5] my-auto shrink-0" />
                           <Button
                             type="button"
                             variant="ghost"
@@ -271,17 +271,17 @@ export function ActiveRouteUpcomingCard({
                             disabled={!canReorder || isAnyActionBusy}
                             onClick={() => canReorder && !isAnyActionBusy && onOpenReordenarSheet(parada)}
                             className={cn(
-                              "h-8 w-8 sm:w-8.5 rounded-lg shrink-0 flex items-center justify-center p-0 transition-colors",
+                              "h-7 w-7 rounded-[10px] shrink-0 flex items-center justify-center p-0 transition-colors",
                               canReorder && !isAnyActionBusy
-                                ? "text-[#1a3a5c] hover:bg-slate-200/80 active:bg-slate-300 cursor-pointer"
-                                : "text-slate-400 opacity-20 cursor-not-allowed"
+                                ? "text-[#0a0a0a] hover:bg-white active:bg-white cursor-pointer"
+                                : "text-[#737373] opacity-20 cursor-not-allowed"
                             )}
                             title={canReorder ? "Reordenar posição da parada" : "Nenhuma posição alternativa disponível"}
                           >
                             {isSheetReorderingThisCard ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                             ) : (
-                              <ListOrdered className="w-4 h-4 stroke-[2.25]" />
+                              <ListOrdered className="w-3.5 h-3.5 stroke-[2.25]" />
                             )}
                           </Button>
                         </>
@@ -294,12 +294,12 @@ export function ActiveRouteUpcomingCard({
 
             <div className="flex items-center gap-1.5 shrink-0">
               {isEscolaItem ? null : parada.status === RouteStopStatus.EMBARCADO ? (
-                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-md text-[10px] font-bold px-2 py-0.5 leading-none block whitespace-nowrap">
-                  EMBARCADO
+                <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 rounded-[18px] text-[11px] font-semibold px-2.5 py-1 leading-none block whitespace-nowrap">
+                  Embarcado
                 </span>
               ) : parada.status === RouteStopStatus.AUSENTE ? (
-                <span className="bg-rose-50 text-rose-600 border border-rose-100 rounded-md text-[10px] font-bold px-2 py-0.5 leading-none block whitespace-nowrap">
-                  AUSENTE
+                <span className="bg-[#e7000b]/10 text-[#e7000b] border border-[#e7000b]/20 rounded-[18px] text-[11px] font-semibold px-2.5 py-1 leading-none block whitespace-nowrap">
+                  Ausente
                 </span>
               ) : (
                 <Button
@@ -307,15 +307,15 @@ export function ActiveRouteUpcomingCard({
                   variant="outline"
                   disabled={isLoading || isAnyActionBusy}
                   onClick={() => onConfirmFalta(parada.id, parada.passageiro?.nome || "")}
-                  className="h-7.5 sm:h-8 px-2 sm:px-3 rounded-lg border-rose-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 shadow-xs flex items-center gap-1 bg-white text-[10px] sm:text-[11px] font-bold transition-colors shrink-0"
+                  className="h-8 px-3 rounded-[18px] border border-[#e7000b]/20 text-[#e7000b] hover:bg-[#e7000b]/10 shadow-none flex items-center gap-1.5 bg-white text-xs font-medium transition-colors shrink-0 cursor-pointer"
                   title="Marcar como ausente hoje"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#e7000b]" />
                   ) : (
                     <UserMinus className="w-3.5 h-3.5" />
                   )}
-                  <span>AUSENTE</span>
+                  <span>Ausente</span>
                 </Button>
               )}
             </div>

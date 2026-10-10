@@ -69,6 +69,14 @@ export const getStartOfDayBR = (date?: Date | string | null): Date => {
   return d;
 };
 
+export const toStartOfDayISO = (date?: Date | string | null): string => {
+  return getStartOfDayBR(date).toISOString();
+};
+
+export const toEndOfDayISO = (date?: Date | string | null): string => {
+  return getEndOfDayBR(date).toISOString();
+};
+
 /**
  * Converte um objeto Date para uma string YYYY-MM-DD no fuso horário de Brasília.
  * ESSENCIAL para evitar o erro de ISOString() que muda de dia às 21h.

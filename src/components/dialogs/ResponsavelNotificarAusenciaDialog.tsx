@@ -115,9 +115,9 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
       <BaseDialog.Body>
         <div className="space-y-4 text-left py-1">
           {/* Campo Rotas */}
-          <div className="space-y-1">
-            <Label className="text-slate-700 font-semibold ml-1">
-              Rotas <span className="text-red-500">*</span>
+          <div className="space-y-1.5">
+            <Label className="text-[#0a0a0a] font-medium text-xs">
+              Rotas <span className="text-[#e7000b]">*</span>
             </Label>
             <RotaMultiSelect
               rotas={rotas}
@@ -131,13 +131,12 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
               placeholder={rotas.length === 0 ? "Nenhuma rota disponível" : "Selecione a(s) rota(s)"}
             />
             {errors.rotas && (
-              <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+              <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                 {errors.rotas}
               </p>
             )}
           </div>
 
-          {/* Campos de Período (Início e Término com Alternador) */}
           <PeriodoAusenciaCampos
             dataInicio={dataInicio}
             dataFim={dataFim}
@@ -156,17 +155,16 @@ export const ResponsavelNotificarAusenciaDialog: React.FC<ResponsavelNotificarAu
             }}
           />
 
-          {/* Checkbox Padronizado: Cadastrar outra em seguida */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <div className="flex items-center gap-3 p-3 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5]">
             <Checkbox
               id="keepOpenAusenciaResp"
               checked={keepOpen}
               onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
-              className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+              className="h-4 w-4 rounded-[6px] border-[#e5e5e5] text-primary focus:ring-primary"
             />
             <label
               htmlFor="keepOpenAusenciaResp"
-              className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-xs sm:text-sm select-none"
+              className="flex-1 cursor-pointer font-medium text-[#0a0a0a] m-0 text-xs sm:text-sm select-none"
             >
               Cadastrar outra em seguida
             </label>

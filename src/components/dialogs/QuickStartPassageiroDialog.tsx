@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePassageiroQuickStartForm } from "@/hooks/form/usePassageiroQuickStartForm";
@@ -212,7 +212,7 @@ export function QuickStartPassageiroDialog({
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#fafafa] rounded-[18px] h-10 w-10 sm:h-11 sm:w-11 shadow-none border border-[#e5e5e5]"
             onClick={isCompleto ? fullFormViewModel.handleFillMock : () => handleFillMock(escolasList, veiculosList)}
             title="Preencher com dados fictícios"
           >
@@ -225,10 +225,10 @@ export function QuickStartPassageiroDialog({
         {showTabs && (
           <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as "rapido" | "completo")} className="w-full mb-5">
             <div className="space-y-1.5">
-              <TabsList className="grid grid-cols-2 w-full p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 h-auto">
+              <TabsList className="grid grid-cols-2 w-full p-1 bg-[#f5f5f5] rounded-[22px] border border-[#e5e5e5] min-h-[38px] sm:min-h-[42px]">
                 <TabsTrigger
                   value="rapido"
-                  className="rounded-xl py-2 px-3 text-xs font-bold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center justify-center gap-1.5"
+                  className="rounded-[18px] py-2 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Zap className="w-3.5 h-3.5 shrink-0" />
                   <span className="sm:hidden">Rápido</span>
@@ -236,7 +236,7 @@ export function QuickStartPassageiroDialog({
                 </TabsTrigger>
                 <TabsTrigger
                   value="completo"
-                  className="rounded-xl py-2 px-3 text-xs font-bold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center justify-center gap-1.5"
+                  className="rounded-[18px] py-2 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5 shrink-0" />
                   <span className="sm:hidden">Completo</span>
@@ -258,11 +258,6 @@ export function QuickStartPassageiroDialog({
                 onSubmit={fullFormViewModel.form.handleSubmit(fullFormViewModel.handleSubmit, fullFormViewModel.onFormError)}
                 className="space-y-8 pb-6"
               >
-                <Banner
-                  variant="info"
-                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
-                  className="mb-4"
-                />
                 <section>
                   <PassageiroFormDadosCadastrais
                     profile={profile}
@@ -272,13 +267,13 @@ export function QuickStartPassageiroDialog({
                   />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormResponsavel isSearching={fullFormViewModel.isSearchingResponsavel} />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormFinanceiro
@@ -286,7 +281,7 @@ export function QuickStartPassageiroDialog({
                   />
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormEndereco />
@@ -304,17 +299,17 @@ export function QuickStartPassageiroDialog({
                 control={form.control}
                 name="nome"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome do Aluno <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Nome do Aluno <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Digite o nome completo"
                           {...field}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -328,54 +323,41 @@ export function QuickStartPassageiroDialog({
                 control={form.control}
                 name="escola_id"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Escola <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Escola <span className="text-[#e7000b]">*</span>
                     </FormLabel>
-                    <Select
-                      onValueChange={(val) => {
-                        if (val === "add-new-school") {
-                          openEscolaFormDialog({
-                            allowBatchCreation: false,
-                            onSuccess: (escola) => {
-                              if (escola?.id) {
-                                setNewEscola(escola);
-                                form.setValue("escola_id", escola.id, { shouldValidate: true });
-                              }
-                            },
-                          });
-                        } else {
-                          field.onChange(val);
-                        }
-                      }}
-                      value={field.value || ""}
-                    >
-                      <FormControl>
-                        <div className="relative">
-                          <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                              fieldState.error && "border-red-500"
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione a escola" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "add-new-school") {
+                            openEscolaFormDialog({
+                              allowBatchCreation: false,
+                              onSuccess: (escola) => {
+                                if (escola?.id) {
+                                  setNewEscola(escola);
+                                  form.setValue("escola_id", escola.id, { shouldValidate: true });
+                                }
+                              },
+                            });
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                        icon={<School className="h-4 w-4 text-[#737373]" />}
+                        error={!!fieldState.error}
+                      >
+                        <option value="">Selecionar</option>
                         {escolasDisplay.map((e) => (
-                          <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                          <option key={e.id} value={e.id}>{e.nome}</option>
                         ))}
-                        <SelectItem
-                          value="add-new-school"
-                          className="font-semibold text-[#1a3a5c] cursor-pointer"
-                        >
+                        <option value="add-new-school">
                           + Cadastrar Escola
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                        </option>
+                      </NativeSelect>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -387,54 +369,41 @@ export function QuickStartPassageiroDialog({
                     control={form.control}
                     name="veiculo_id"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Veículo <span className="text-red-600">*</span>
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Veículo <span className="text-[#e7000b]">*</span>
                         </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            if (val === "add-new-vehicle") {
-                              openVeiculoFormDialog({
-                                allowBatchCreation: false,
-                                onSuccess: (veiculo) => {
-                                  if (veiculo?.id) {
-                                    setNewVeiculo(veiculo);
-                                    form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "add-new-vehicle") {
+                                openVeiculoFormDialog({
+                                  allowBatchCreation: false,
+                                  onSuccess: (veiculo) => {
+                                    if (veiculo?.id) {
+                                      setNewVeiculo(veiculo);
+                                      form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
+                                    }
                                   }
-                                }
-                              });
-                            } else {
-                              field.onChange(val);
-                            }
-                          }}
-                          value={field.value || ""}
-                        >
-                          <FormControl>
-                            <div className="relative">
-                              <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent>
+                                });
+                              } else {
+                                field.onChange(val);
+                              }
+                            }}
+                            icon={<Car className="h-4 w-4 text-[#737373]" />}
+                            error={!!fieldState.error}
+                          >
+                            <option value="">Selecionar</option>
                             {veiculosDisplay.map((v) => (
-                              <SelectItem key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</SelectItem>
+                              <option key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</option>
                             ))}
-                            <SelectItem
-                              value="add-new-vehicle"
-                              className="font-semibold text-[#1a3a5c] cursor-pointer"
-                            >
+                            <option value="add-new-vehicle">
                               + Cadastrar Veículo
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                            </option>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -446,33 +415,25 @@ export function QuickStartPassageiroDialog({
                     control={form.control}
                     name="ano_letivo"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Ano Letivo <span className="text-red-600">*</span>
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Ano Letivo <span className="text-[#e7000b]">*</span>
                         </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || undefined}>
-                          <FormControl>
-                            <div className="relative">
-                              <CalendarDays className="absolute left-3.5 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500",
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Ano" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent>
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                            error={!!fieldState.error}
+                          >
+                            <option value="">Ano</option>
                             {anoLetivoOptions.map((y) => (
-                              <SelectItem key={y} value={y}>
+                              <option key={y} value={y}>
                                 {y}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -480,16 +441,16 @@ export function QuickStartPassageiroDialog({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-3 p-3.5 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5]">
                 <Checkbox
                   id="keepOpenPassageiro"
                   checked={keepOpen}
                   onCheckedChange={(checked) => setKeepOpen(checked as boolean)}
-                  className="h-5 w-5 rounded-md border-slate-300 data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
+                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <label
                   htmlFor="keepOpenPassageiro"
-                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                  className="flex-1 cursor-pointer font-medium text-[#0a0a0a] m-0 text-xs sm:text-sm"
                 >
                   Cadastrar outro em seguida
                 </label>
@@ -497,7 +458,7 @@ export function QuickStartPassageiroDialog({
 
               <Banner
                 variant="info"
-                description="Valor da parcela, vencimento e responsáveis podem ser preenchidos depois na carteirinha do aluno."
+                description="Valor da parcela, vencimento e responsáveis poderão ser preenchidos posteriormente."
               />
             </form>
           </Form>

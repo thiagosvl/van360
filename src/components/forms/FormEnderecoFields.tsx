@@ -1,19 +1,12 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { ESTADOS_BRASILEIROS } from "@/constants/defaults";
 import { CepInput } from "./CepInput";
-import { StitchField } from "./StitchField";
 import { Hash, Home, Info, Loader2, MapPin, Search } from "lucide-react";
 import { cepService, EnderecoSugestao } from "@/services/cepService";
 
@@ -78,14 +71,14 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-6">
-      <div className="md:col-span-6">
+    <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4">
+      <div className="col-span-2 sm:col-span-6">
         <Banner
           variant="info"
           title="Não sabe o seu CEP?"
           description={
             <>
-              Se você não souber o seu CEP, basta digitar o nome da rua no campo <strong>Logradouro</strong> para buscar as sugestões e preenchê-lo automaticamente.
+              Basta digitar o nome da rua no campo <strong>Logradouro</strong> para buscar as sugestões automaticamente.
             </>
           }
         />
@@ -99,9 +92,9 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
             field={field}
             required={required}
             label="CEP"
-            className="md:col-span-2"
-            labelClassName="text-slate-700 font-semibold ml-1"
-            inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+            className="col-span-2 sm:col-span-2"
+            labelClassName="text-[#0a0a0a] font-medium text-xs"
+            inputClassName=""
             onLoadingChange={setIsCepLoading}
             isExternal={isExternal}
             namePrefix={namePrefix}
@@ -114,98 +107,63 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}logradouro`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-4 relative">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={MapPin} label="Logradouro" required={required} error={!!fieldState.error}>
-                  <div className="relative w-full">
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      placeholder="Ex: Rua Comendador"
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                      onChange={(e) => {
-                        userTypedRef.current = true;
-                        field.onChange(e);
-                      }}
-                      onFocus={() => {
-                        isFocusedRef.current = true;
-                        if (userTypedRef.current && sugestoes.length > 0) {
-                          setShowDropdown(true);
-                        }
-                      }}
-                      onBlur={() => {
-                        isFocusedRef.current = false;
-                        setTimeout(() => setShowDropdown(false), 200);
-                      }}
-                    />
-                    {isSearchingAddress && (
-                      <Loader2 className="absolute right-0 top-1 h-4 w-4 animate-spin text-[#1a3a5c]" />
-                    )}
+          <FormItem className="col-span-2 sm:col-span-4 relative space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Logradouro {required && <span className="text-[#e7000b]">*</span>}
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                <Input
+                  {...field}
+                  autoComplete="off"
+                  placeholder="Ex: Rua Comendador"
+                  className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                  disabled={isCepLoading}
+                  onChange={(e) => {
+                    userTypedRef.current = true;
+                    field.onChange(e);
+                  }}
+                  onFocus={() => {
+                    isFocusedRef.current = true;
+                    if (userTypedRef.current && sugestoes.length > 0) {
+                      setShowDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    isFocusedRef.current = false;
+                    setTimeout(() => setShowDropdown(false), 200);
+                  }}
+                />
+                {isSearchingAddress && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   </div>
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Logradouro {required && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                    <Input
-                      {...field}
-                      placeholder="Ex: Rua Comendador"
-                      className="pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                      onChange={(e) => {
-                        userTypedRef.current = true;
-                        field.onChange(e);
-                      }}
-                      onFocus={() => {
-                        isFocusedRef.current = true;
-                        if (userTypedRef.current && sugestoes.length > 0) {
-                          setShowDropdown(true);
-                        }
-                      }}
-                      onBlur={() => {
-                        isFocusedRef.current = false;
-                        setTimeout(() => setShowDropdown(false), 200);
-                      }}
-                    />
-                    {isSearchingAddress && (
-                      <div className="absolute right-3 top-3.5 flex items-center pointer-events-none">
-                        <Loader2 className="h-5 w-5 animate-spin text-[#1a3a5c]" />
-                      </div>
-                    )}
-                  </div>
-                </FormControl>
-              </>
-            )}
+                )}
+              </div>
+            </FormControl>
 
             {showDropdown && sugestoes.length > 0 && (
-              <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-[#e5e5e5] rounded-[18px] shadow-xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-[#e5e5e5] animate-in fade-in slide-in-from-top-1 duration-150">
                 {sugestoes.map((sugestao, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3 text-xs text-slate-700 font-medium group"
+                    className="w-full px-4 py-3 text-left hover:bg-[#fafafa] transition-colors flex items-start gap-3 text-xs text-[#0a0a0a] font-medium group"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       handleSelectSugestao(sugestao);
                     }}
                   >
-                    <div className="w-7 h-7 rounded-xl bg-slate-100 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-slate-200/60 mt-0.5">
+                    <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary group-hover:text-white transition-colors flex items-center justify-center shrink-0 border border-[#e5e5e5] mt-0.5">
                       <Search className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="font-bold text-[#1a3a5c] block text-xs break-words leading-snug">
+                      <span className="font-semibold text-[#0a0a0a] block text-xs break-words leading-snug">
                         {sugestao.logradouro}
                       </span>
-                      <span className="text-slate-500 font-normal block text-[11px] break-words leading-relaxed mt-0.5">
+                      <span className="text-[#737373] font-normal block text-[11px] break-words leading-relaxed mt-0.5">
                         {[sugestao.bairro, sugestao.cidade, sugestao.estado]
                           .filter(Boolean)
                           .join(", ")}
@@ -217,7 +175,7 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
               </div>
             )}
 
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -226,36 +184,21 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}numero`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-2">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={Hash} label="Número" required={required} error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    placeholder="Nº"
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                  />
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Número {required && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      placeholder="Nº"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                    />
-                  </div>
-                </FormControl>
-              </>
-            )}
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+          <FormItem className="col-span-1 sm:col-span-2 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Número {required && <span className="text-[#e7000b]">*</span>}
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  placeholder="Nº"
+                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -264,40 +207,23 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}complemento`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-2">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={Home} label="Complemento" error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    placeholder="Ex: Apto 101"
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isCepLoading}
-                  />
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Complemento
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      placeholder="Ex: Apto 101"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                    />
-                  </div>
-                </FormControl>
-              </>
-            )}
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+          <FormItem className="col-span-1 sm:col-span-2 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Complemento
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  value={field.value || ""}
+                  placeholder="Ex: Apto 101"
+                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                  disabled={isCepLoading}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -306,38 +232,22 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}bairro`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-2">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={MapPin} label="Bairro" required={required} error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    placeholder="Ex: Centro"
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isCepLoading}
-                  />
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Bairro {required && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      placeholder="Ex: Centro"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                    />
-                  </div>
-                </FormControl>
-              </>
-            )}
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+          <FormItem className="col-span-2 sm:col-span-2 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Bairro {required && <span className="text-[#e7000b]">*</span>}
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  placeholder="Ex: Centro"
+                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                  disabled={isCepLoading}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -346,38 +256,22 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}cidade`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-4">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={MapPin} label="Cidade" required={required} error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    placeholder="Ex: São Paulo"
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isCepLoading}
-                  />
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Cidade {required && <span className="text-red-600">*</span>}
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      placeholder="Ex: São Paulo"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                    />
-                  </div>
-                </FormControl>
-              </>
-            )}
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+          <FormItem className="col-span-2 sm:col-span-4 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Cidade {required && <span className="text-[#e7000b]">*</span>}
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  placeholder="Ex: São Paulo"
+                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                  disabled={isCepLoading}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -386,49 +280,27 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}estado`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-2">
-            <Select
-              onValueChange={field.onChange}
-              value={field.value || undefined}
-            >
-              <FormControl>
-                {isExternal ? (
-                  <StitchField icon={MapPin} label="Estado" required={required} error={!!fieldState.error}>
-                    <SelectTrigger
-                      className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none flex justify-between items-center text-left w-full data-[placeholder]:font-normal data-[placeholder]:text-slate-400"
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                    >
-                      <SelectValue placeholder="UF" />
-                    </SelectTrigger>
-                  </StitchField>
-                ) : (
-                  <>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Estado {required && <span className="text-red-600">*</span>}
-                    </FormLabel>
-                    <SelectTrigger
-                      className={cn(
-                        "h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                        fieldState.error && "border-red-500",
-                      )}
-                      aria-invalid={!!fieldState.error}
-                      disabled={isCepLoading}
-                    >
-                      <SelectValue placeholder="UF" />
-                    </SelectTrigger>
-                  </>
-                )}
-              </FormControl>
-              <SelectContent className="rounded-2xl shadow-xl border-slate-200">
+          <FormItem className="col-span-2 sm:col-span-2 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Estado {required && <span className="text-[#e7000b]">*</span>}
+            </FormLabel>
+            <FormControl>
+              <NativeSelect
+                {...field}
+                value={field.value || ""}
+                disabled={isCepLoading}
+                error={!!fieldState.error}
+                icon={<MapPin className="h-4 w-4" />}
+              >
+                <option value="" disabled hidden>UF</option>
                 {ESTADOS_BRASILEIROS.map((estado) => (
-                  <SelectItem key={estado.value} value={estado.value}>
+                  <option key={estado.value} value={estado.value}>
                     {estado.label}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+              </NativeSelect>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -437,38 +309,22 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}referencia`}
         render={({ field, fieldState }) => (
-          <FormItem className="md:col-span-6">
-            {isExternal ? (
-              <FormControl>
-                <StitchField icon={MapPin} label="Ponto de Referência" error={!!fieldState.error}>
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    placeholder="Ex: Próximo ao mercado..."
-                    className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full"
-                    aria-invalid={!!fieldState.error}
-                  />
-                </StitchField>
-              </FormControl>
-            ) : (
-              <>
-                <FormLabel className="text-slate-700 font-semibold ml-1">
-                  Ponto de Referência
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      placeholder="Ex: Próximo ao mercado..."
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
-                      aria-invalid={!!fieldState.error}
-                    />
-                  </div>
-                </FormControl>
-              </>
-            )}
-            <FormMessage className={isExternal ? "text-xs ml-1 mt-1 text-red-500" : ""} />
+          <FormItem className="col-span-2 sm:col-span-6 space-y-1.5">
+            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+              Ponto de Referência
+            </FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  {...field}
+                  value={field.value || ""}
+                  placeholder="Ex: Próximo ao mercado..."
+                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  aria-invalid={!!fieldState.error}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />

@@ -1,8 +1,9 @@
 import type { Enums } from "@/integrations/supabase/types";
+import { ModoCobrancaEnum } from "./enums";
 
 export type StatusRepasse = Enums<"status_repasse_enum">;
 export type ProvedorPagamento = Enums<"provedor_pagamento_enum">;
-export type ModalidadeCobranca = Enums<"modalidade_cobranca_enum">;
+export type ModoCobranca = ModoCobrancaEnum;
 
 export interface AdminRepasseMotorista {
   id: string;
@@ -81,13 +82,9 @@ export interface MotoristaConfiguracaoFinanceira {
   usuario_id: string;
   chave_pix_repasse: string | null;
   tipo_chave_pix: string | null;
-  cobranca_automatica_ativa: boolean;
-  modalidade_cobranca: ModalidadeCobranca;
+  modo_cobranca: ModoCobranca;
   taxa_personalizada: number | null;
-  repassar_taxa_pais_padrao: boolean;
   enviar_recibo_automatico: boolean;
-  subconta_provedor_id: string | null;
-  baas_status: string;
   created_at: string;
   updated_at: string;
 }

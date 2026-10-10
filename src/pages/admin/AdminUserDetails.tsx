@@ -19,6 +19,7 @@ import {
   useAdminUserPrePassageiros,
   useAdminUserVeiculos,
   useAdminUserEscolas,
+  useAdminUserEquipe,
   useAdminUserReferral,
 } from "@/hooks/api/adminHooks";
 import {
@@ -67,6 +68,8 @@ import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/A
 import { AdminUserSchoolsTab } from "@/components/features/admin/user-details/AdminUserSchoolsTab";
 import { AdminUserPendingRequestsTab } from "@/components/features/admin/user-details/AdminUserPendingRequestsTab";
 import { AdminUserReferralTab } from "@/components/features/admin/user-details/AdminUserReferralTab";
+import { AdminUserEquipeTab } from "@/components/features/admin/user-details/AdminUserEquipeTab";
+import { Banner } from "@/components/ui/Banner";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { NotificationLogsList, NotificationFiltersState, NOTIFICATION_FILTER_ALL } from "@/components/features/admin/NotificationLogsList";
 import { AdminUserFinancialConfigCard } from "@/components/features/admin/user-details/AdminUserFinancialConfigCard";
@@ -116,13 +119,12 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
-import { toPersistenceString, getNowBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
+import { toPersistenceString, getNowBR, getEndOfDayBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
 import { CanalAquisicaoLabels, resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
 import { AcquisitionBadge } from "@/components/ui/AcquisitionBadge";
 import { DispositivoCadastroLabels } from "@/utils/dispositivo-cadastro.utils";
-import { Banner } from "@/components/ui/Banner";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
@@ -219,6 +221,7 @@ export default function AdminUserDetails() {
   const isEscolasTab = isCadastros && activeSubTab === AdminUserSubTab.ESCOLAS;
   const isContratosTab = isCadastros && activeSubTab === AdminUserSubTab.CONTRATOS;
   const isIndicacoesTab = isCadastros && activeSubTab === AdminUserSubTab.INDICACOES;
+  const isEquipeTab = isCadastros && activeSubTab === AdminUserSubTab.EQUIPE;
 
   const { data: passageirosLazy } = useAdminUserPassageiros(id!, {
     enabled: isPassageirosTab || isContratosTab,
@@ -244,11 +247,16 @@ export default function AdminUserDetails() {
     enabled: isIndicacoesTab,
   });
 
+  const { data: equipeLazy } = useAdminUserEquipe(id!, {
+    enabled: isEquipeTab,
+  });
+
   const passageirosList = passageirosLazy || data?.passageiros || [];
   const prePassageirosList = prePassageirosLazy || data?.prePassageiros || [];
   const veiculosList = veiculosLazy || data?.veiculos || [];
   const escolasList = escolasLazy || data?.escolas || [];
   const contratosList = contratosLazy || data?.contratos || [];
+  const equipeList = equipeLazy || data?.equipe || [];
   const referralSummaryData = referralLazy?.referralSummary || data?.referralSummary;
   const referredUsersList = referralLazy?.referredUsers || data?.referredUsers || [];
   const indicadorData = data?.indicador || referralLazy?.indicador;
@@ -669,17 +677,17 @@ export default function AdminUserDetails() {
         plano_id: subForm.plano_id || undefined,
         status: (subForm.status as SubscriptionStatus) || undefined,
         data_vencimento: subForm.data_vencimento
-          ? toISODateTimeBR(subForm.data_vencimento + "T23:59:59")
+          ? toISODateTimeBR(getEndOfDayBR(subForm.data_vencimento))
           : null,
         trial_ends_at: subForm.trial_ends_at
-          ? toISODateTimeBR(subForm.trial_ends_at + "T23:59:59")
+          ? toISODateTimeBR(getEndOfDayBR(subForm.trial_ends_at))
           : null,
         valor_base_mensal: valorBaseMensalNum,
         valor_base_anual: valorBaseAnualNum,
         valor_promocional_mensal: valorPromoMensalNum,
         valor_promocional_anual: valorPromoAnualNum,
         data_fim_promocao: subForm.data_fim_promocao
-          ? toISODateTimeBR(subForm.data_fim_promocao + "T23:59:59")
+          ? toISODateTimeBR(getEndOfDayBR(subForm.data_fim_promocao))
           : null,
       },
     });
@@ -745,23 +753,51 @@ export default function AdminUserDetails() {
           variant="outline"
           size="sm"
           onClick={() => navigate(ROUTES.PRIVATE.ADMIN.USERS)}
-          className="rounded-xl border-slate-800 bg-[#131b2e] hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold h-10 px-3.5 gap-2 self-start shadow-sm"
+          className="rounded-xl border-border bg-card hover:bg-secondary text-foreground text-xs font-medium h-9 px-3.5 gap-2 self-start shadow-xs"
         >
-          <ArrowLeft className="h-4 w-4 text-slate-400" />
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           <span>Voltar para motoristas</span>
         </Button>
       </div>
 
-      {/* HEADER DE TOPO STITCH DESIGN */}
-      <div className="p-5 md:p-6 bg-gradient-to-r from-slate-900 via-[#131b2e] to-slate-900 border border-slate-800/80 rounded-[2rem] shadow-2xl space-y-4 relative">
+      {data.gestor && (
+        <Banner
+          variant="info"
+          className="rounded-2xl border border-sky-500/20 bg-sky-500/10 text-sky-300 shadow-xs"
+          title={
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-sky-200">
+              <span>Este usuário é um</span>
+              <strong className="text-foreground font-semibold">
+                {data.user.tipo === "monitor" ? "Monitor(a)" : "Motorista Auxiliar"}
+              </strong>
+              <span>vinculado à equipe de</span>
+              <Link
+                to={`/admin/usuarios/${data.gestor.id}`}
+                className="font-medium underline text-primary hover:underline inline-flex items-center gap-1 transition-colors"
+              >
+                <span>{data.gestor.nome}{data.gestor.apelido ? ` (${data.gestor.apelido})` : ""}</span>
+                <ExternalLink className="h-3 w-3 inline" />
+              </Link>
+              {data.veiculo_vinculado && (
+                <span className="text-muted-foreground">
+                  • Veículo atribuído: <strong className="text-foreground font-medium">{data.veiculo_vinculado.modelo} ({data.veiculo_vinculado.placa})</strong>
+                </span>
+              )}
+            </div>
+          }
+        />
+      )}
+
+      {/* HEADER DE TOPO EXECUTIVO */}
+      <div className="p-5 md:p-6 bg-card border border-border rounded-3xl shadow-xs space-y-4 relative">
         {/* BOTÃO COPIAR ID NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
         <button
           type="button"
           onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
-          className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center"
+          className="md:hidden absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-xl bg-secondary/60 hover:bg-secondary border border-border flex items-center justify-center cursor-pointer"
           title="Copiar ID do usuário"
         >
-          <Copy className="h-4 w-4 text-blue-400" />
+          <Copy className="h-4 w-4 text-primary" />
         </button>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -775,10 +811,10 @@ export default function AdminUserDetails() {
                   : undefined
               }
               className={cn(
-                "h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-inner overflow-hidden",
+                "h-14 w-14 rounded-2xl flex items-center justify-center font-semibold text-xl shrink-0 shadow-xs overflow-hidden",
                 data.user.logo_url
-                  ? "bg-white border border-white/20 p-0.5 cursor-pointer"
-                  : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                  ? "bg-card border border-border p-0.5 cursor-pointer"
+                  : "bg-primary/10 text-primary border border-primary/20"
               )}
             >
               {data.user.logo_url ? (
@@ -794,12 +830,12 @@ export default function AdminUserDetails() {
 
             <div className="space-y-1.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-headline font-black text-white leading-tight break-words">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-headline font-semibold text-foreground leading-tight break-words">
                   {data.user.apelido || data.user.nome}
                 </h1>
 
                 {data.user.apelido && (
-                  <span className="text-sm font-semibold text-slate-400 break-words">
+                  <span className="text-sm font-normal text-muted-foreground break-words">
                     ({data.user.nome})
                   </span>
                 )}
@@ -807,14 +843,32 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
-                  className="hidden md:inline-flex text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-800/80 shrink-0"
+                  className="hidden md:inline-flex text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-secondary shrink-0 cursor-pointer"
                   title="Copiar ID do usuário"
                 >
-                  <Copy className="h-4 w-4 text-blue-400" />
+                  <Copy className="h-4 w-4 text-primary" />
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
+              <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+                {(data.user.tipo === "motorista_auxiliar" || data.user.tipo === "monitor" || data.gestor) && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20"
+                  >
+                    <UserCheck className="h-3.5 w-3.5 text-sky-400" />
+                    <span>{data.user.tipo === "monitor" ? "Monitor(a)" : "Motorista Auxiliar"}</span>
+                  </span>
+                )}
+                {data.gestor && (
+                  <Link
+                    to={`/admin/usuarios/${data.gestor.id}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all"
+                    title="Ver motorista gestor"
+                  >
+                    <span>Gestor: {data.gestor.apelido || data.gestor.nome}</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                )}
                 {data.assinatura && (
                   <SubscriptionStatusBadge
                     status={data.assinatura.status}
@@ -824,7 +878,7 @@ export default function AdminUserDetails() {
                 {data.dispositivos && (
                   data.dispositivos.total > 0 ? (
                     <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                       title={`${data.dispositivos.total} ${data.dispositivos.total === 1 ? "aparelho conectado ao app" : "aparelhos conectados ao app"}`}
                     >
                       <Smartphone className="h-3.5 w-3.5" />
@@ -832,20 +886,20 @@ export default function AdminUserDetails() {
                     </span>
                   ) : (
                     <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-muted-foreground border border-border"
                       title="Nenhum dispositivo móvel com push ativo"
                     >
-                      <Smartphone className="h-3.5 w-3.5 text-slate-500" />
+                      <Smartphone className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Sem app</span>
                     </span>
                   )
                 )}
                 {data.ultimo_acesso && (
                   <span
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-foreground border border-border"
                     title={`Último acesso registrado em ${formatDateTime(data.ultimo_acesso.data_hora)} via ${DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo}`}
                   >
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="h-3.5 w-3.5 text-primary" />
                     <span>
                       Último acesso: {formatDateTime(data.ultimo_acesso.data_hora)} ({DispositivoCadastroLabels[data.ultimo_acesso.dispositivo] || data.ultimo_acesso.dispositivo})
                     </span>
@@ -855,44 +909,44 @@ export default function AdminUserDetails() {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-800/80 md:border-t-0 md:pt-0 grid grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:gap-2.5 md:w-auto">
+          <div className="pt-3 border-t border-border/40 md:border-t-0 md:pt-0 grid grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:gap-2 md:w-auto">
             <Button
               type="button"
               size="sm"
               disabled={impersonateUser.isPending}
               onClick={handleCopyImpersonateLink}
-              className="col-span-2 md:col-auto rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25 hover:border-sky-500/70 hover:text-sky-200 text-xs font-bold h-10 px-4 gap-2 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-2 md:col-auto rounded-xl border border-border bg-card text-foreground hover:bg-secondary text-xs font-medium h-9 px-3 gap-1.5 shadow-xs flex items-center justify-center"
             >
               {impersonateUser.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
               ) : (
-                <ExternalLink className="h-4 w-4 text-sky-400" />
+                <ExternalLink className="h-3.5 w-3.5 text-primary" />
               )}
-              <span>Link de Acesso</span>
+              <span>Link de acesso</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleDispatchNotification}
-              className="col-span-1 md:col-auto rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-500/70 hover:text-indigo-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-border bg-card text-foreground hover:bg-secondary text-xs font-medium h-9 px-3 gap-1.5 shadow-xs flex items-center justify-center"
             >
               <Bell className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
-              <span className="truncate">Testar Notificação</span>
+              <span className="truncate">Notificação teste</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleDispatchDriverCobrancaDemo}
-              className="col-span-1 md:col-auto rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25 hover:border-emerald-500/70 hover:text-emerald-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-border bg-card text-foreground hover:bg-secondary text-xs font-medium h-9 px-3 gap-1.5 shadow-xs flex items-center justify-center"
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              <span className="truncate">Cobrança Teste</span>
+              <span className="truncate">Cobrança teste</span>
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={handleResetPassword}
-              className="col-span-1 md:col-auto rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/70 hover:text-amber-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-border bg-card text-foreground hover:bg-secondary text-xs font-medium h-9 px-3 gap-1.5 shadow-xs flex items-center justify-center"
             >
               <Key className="h-3.5 w-3.5 text-amber-400 shrink-0" />
               <span className="truncate">Resetar Senha</span>
@@ -901,7 +955,7 @@ export default function AdminUserDetails() {
               type="button"
               size="sm"
               onClick={handleDeleteUser}
-              className="col-span-1 md:col-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-[11px] sm:text-xs font-bold h-10 px-2.5 sm:px-3 gap-1.5 transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="col-span-1 md:col-auto rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/25 hover:border-rose-500/70 hover:text-rose-200 text-xs font-semibold h-9 px-3 gap-1.5 transition-all shadow-xs active:scale-95 flex items-center justify-center cursor-pointer"
             >
               <Trash2 className="h-3.5 w-3.5 text-rose-400 shrink-0" />
               <span className="truncate">Excluir</span>
@@ -916,52 +970,52 @@ export default function AdminUserDetails() {
         className="w-full"
       >
         {/* SELETOR MOBILE (DROPDOWN PRINCIPAL < 768px) */}
-        <div className="md:hidden w-full bg-slate-900/90 border border-slate-800/80 p-3 rounded-[1.25rem] shadow-xl mb-6 space-y-1.5">
-          <label className="text-[10px] font-headline font-black text-slate-400 uppercase tracking-widest block px-1 text-left">
-            Navegação de Seções
+        <div className="md:hidden w-full bg-card border border-border p-2 rounded-2xl shadow-xs mb-6 space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground block px-1 text-left">
+            Navegação de seções
           </label>
           <Select value={activeTab} onValueChange={handleTabChange}>
-            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white font-bold h-12 rounded-[0.85rem] focus:ring-blue-500 text-xs">
+            <SelectTrigger className="w-full bg-secondary/60 border-input text-foreground font-medium h-10 rounded-xl focus:ring-primary text-xs">
               <SelectValue placeholder="Selecione uma visão" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800 text-white rounded-2xl">
-              <SelectItem value="geral" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+            <SelectContent className="bg-card border-border text-foreground rounded-2xl">
+              <SelectItem value="geral" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
-                  <LayoutDashboard className="h-4 w-4 text-blue-400" />
+                  <LayoutDashboard className="h-4 w-4 text-primary" />
                   <span>Visão Geral</span>
                 </span>
               </SelectItem>
-              <SelectItem value="dados" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="dados" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-blue-400" />
+                  <Settings className="h-4 w-4 text-primary" />
                   <span>Dados e Configurações</span>
                 </span>
               </SelectItem>
-              <SelectItem value="cobrancas" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="cobrancas" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-amber-400" />
                   <span>Cobranças</span>
                 </span>
               </SelectItem>
-              <SelectItem value="repasses" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="repasses" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
                   <ArrowUpRight className="h-4 w-4 text-emerald-400" />
                   <span>Repasses Pix</span>
                 </span>
               </SelectItem>
-              <SelectItem value="logs" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="logs" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-slate-400" />
+                  <Terminal className="h-4 w-4 text-muted-foreground" />
                   <span>Histórico de Atividades</span>
                 </span>
               </SelectItem>
-              <SelectItem value="cadastros" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="cadastros" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
                   <FolderKanban className="h-4 w-4 text-purple-400" />
                   <span>Cadastros do Motorista</span>
                 </span>
               </SelectItem>
-              <SelectItem value="notificacoes" className="text-xs font-bold py-2.5 rounded-xl focus:bg-blue-600 focus:text-white cursor-pointer">
+              <SelectItem value="notificacoes" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
                 <span className="flex items-center gap-2">
                   <Bell className="h-4 w-4 text-indigo-400" />
                   <span>Notificações</span>
@@ -972,61 +1026,61 @@ export default function AdminUserDetails() {
         </div>
 
         {/* SELETOR DESKTOP (BARRA DE 6 ABAS PRINCIPAIS ≥ 768px) */}
-        <div className="hidden md:block bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-[1.25rem] shadow-xl mb-6">
-          <TabsList className="flex w-full min-h-[48px] bg-transparent p-0 gap-1.5 mt-0">
+        <div className="hidden md:block bg-card/80 border border-border p-1 rounded-2xl shadow-xs mb-6 overflow-x-auto [scrollbar-width:none]">
+          <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
             <TabsTrigger
               value="geral"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <LayoutDashboard className="h-4 w-4 text-blue-300 shrink-0" />
+              <LayoutDashboard className="h-3.5 w-3.5" />
               <span>Visão Geral</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="dados"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Settings className="h-4 w-4 text-blue-300 shrink-0" />
+              <Settings className="h-3.5 w-3.5" />
               <span>Dados e Configurações</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="cobrancas"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <CreditCard className="h-4 w-4 text-amber-300 shrink-0" />
+              <CreditCard className="h-3.5 w-3.5" />
               <span>Cobranças</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="repasses"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <ArrowUpRight className="h-4 w-4 text-emerald-300 shrink-0" />
+              <ArrowUpRight className="h-3.5 w-3.5" />
               <span>Repasses</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="logs"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Terminal className="h-4 w-4 text-slate-300 shrink-0" />
+              <Terminal className="h-3.5 w-3.5" />
               <span>Histórico</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="cadastros"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <FolderKanban className="h-4 w-4 text-purple-300 shrink-0" />
+              <FolderKanban className="h-3.5 w-3.5" />
               <span>Cadastros do Motorista</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="notificacoes"
-              className="rounded-[1rem] h-full font-headline font-bold text-[12px] lg:text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2"
+              className="rounded-xl h-9 font-headline font-medium text-xs transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Bell className="h-4 w-4 text-indigo-300 shrink-0" />
+              <Bell className="h-3.5 w-3.5" />
               <span>Notificações</span>
             </TabsTrigger>
           </TabsList>
@@ -1034,45 +1088,56 @@ export default function AdminUserDetails() {
 
         {/* ABA 1: VISÃO GERAL (KPIS DO MOTORISTA + RESUMO CADASTRAL CATEGORIZADO) */}
         <TabsContent value="geral" className="space-y-6 m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <AdminKpiCard
-              title="ALUNOS"
+              title="Alunos"
               value={data.kpis?.passageirosCount ?? 0}
               subtext={`${data.kpis?.solicitacoesPendentesCount ?? 0} ${(data.kpis?.solicitacoesPendentesCount ?? 0) === 1 ? "solicitação pendente" : "solicitações pendentes"}`}
-              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+              cardBorder="border-border/80"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<Users className="h-5 w-5" />}
               onClick={() => handleSubTabChange(AdminUserSubTab.PASSAGEIROS)}
             />
 
             <AdminKpiCard
-              title="VEÍCULOS"
+              title="Veículos"
               value={data.kpis?.veiculosCount ?? 0}
               subtext="Veículos na frota"
-              cardBorder="border-blue-500/40 shadow-blue-500/10"
-              iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+              cardBorder="border-border/80"
+              iconBg="bg-primary/10 text-primary border-primary/20"
               icon={<Bus className="h-5 w-5" />}
               onClick={() => handleSubTabChange(AdminUserSubTab.VEICULOS)}
             />
 
             <AdminKpiCard
-              title="ESCOLAS"
+              title="Escolas"
               value={data.kpis?.escolasCount ?? 0}
               subtext="Escolas atendidas"
-              cardBorder="border-purple-500/40 shadow-purple-500/10"
+              cardBorder="border-border/80"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<GraduationCap className="h-5 w-5" />}
               onClick={() => handleSubTabChange(AdminUserSubTab.ESCOLAS)}
             />
 
             <AdminKpiCard
-              title="CONTRATOS"
+              title="Contratos"
               value={data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
               subtext={`${passageirosSemContrato} ${passageirosSemContrato === 1 ? "aluno sem contrato" : "alunos sem contrato"}`}
-              cardBorder="border-sky-500/40 shadow-sky-500/10"
+              cardBorder="border-border/80"
               iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
               icon={<FileText className="h-5 w-5" />}
               onClick={() => handleSubTabChange(AdminUserSubTab.CONTRATOS)}
+            />
+
+            <AdminKpiCard
+              title="Equipe"
+              value={data.kpis?.equipeCount ?? data.equipe?.length ?? 0}
+              subtext={`${data.kpis?.equipeCount ?? data.equipe?.length ?? 0} ${(data.kpis?.equipeCount ?? data.equipe?.length ?? 0) === 1 ? "membro cadastrado" : "membros cadastrados"}`}
+              cardBorder="border-border/80"
+              iconBg="bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+              icon={<UserCheck className="h-5 w-5" />}
+              onClick={() => handleSubTabChange(AdminUserSubTab.EQUIPE)}
+              className="col-span-2 sm:col-span-1"
             />
           </div>
 
@@ -1080,57 +1145,57 @@ export default function AdminUserDetails() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 
             {/* CATEGORIA 1: DADOS PESSOAIS & IDENTIFICAÇÃO */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
-              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
-                <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <User className="h-4 w-4 text-blue-400" />
-                  Identificação
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" />
+                  <span>Identificação</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3 text-xs">
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       Apelido
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block">
                       {data.user.apelido || "—"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       {data.user.cpfcnpj && data.user.cpfcnpj.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF"}
                     </span>
-                    <span className="font-mono font-medium text-slate-300 block">
+                    <span className="font-mono font-normal text-foreground block">
                       {data.user.cpfcnpj ? cpfCnpjMask(data.user.cpfcnpj) : "—"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Razão Social
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Razão social
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block">
                       {data.user.razao_social || "—"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Data de Nascimento
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Data de nascimento
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block">
                       {formatDate(data.user.data_nascimento)}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Tipo de Conta
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Tipo de conta
                     </span>
-                    <span className="font-semibold text-emerald-400 uppercase block">
-                      {data.user.tipo || "MOTORISTA"}
+                    <span className="font-medium text-emerald-400 block capitalize">
+                      {data.user.tipo || "motorista"}
                     </span>
                   </div>
                 </div>
@@ -1138,52 +1203,52 @@ export default function AdminUserDetails() {
             </Card>
 
             {/* CATEGORIA 2: CONTATO & LOCALIZAÇÃO */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
-              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
-                <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-purple-400" />
-                  Contato & Endereço
+                  <span>Contato & Endereço</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3 text-xs">
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       Telefone
                     </span>
                     {data.user.telefone ? (
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="font-mono font-medium text-slate-200">
+                        <span className="font-mono font-normal text-foreground">
                           {phoneMask(data.user.telefone)}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopy(data.user.telefone, "Telefone copiado!")}
-                          className="text-slate-400 hover:text-white transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                           title="Copiar telefone"
                         >
                           <Copy className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ) : (
-                      <span className="text-slate-500 italic">—</span>
+                      <span className="text-muted-foreground italic">—</span>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       E-mail
                     </span>
-                    <span className="font-medium text-slate-200 block truncate mt-0.5">
+                    <span className="font-normal text-foreground block truncate mt-0.5">
                       {data.user.email || "—"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Endereço Completo
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Endereço completo
                     </span>
-                    <span className="font-medium text-slate-300 block leading-relaxed mt-0.5">
+                    <span className="font-normal text-foreground block leading-relaxed mt-0.5">
                       {formattedFullAddress || "—"}
                     </span>
                   </div>
@@ -1192,28 +1257,28 @@ export default function AdminUserDetails() {
             </Card>
 
             {/* CATEGORIA 3: FINANCEIRO & SISTEMA */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
-              <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
-                <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+              <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-amber-400" />
-                  Financeiro & Sistema
+                  <span>Financeiro & Sistema</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3 text-xs">
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       Chave Pix
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="font-mono font-medium text-slate-200">
+                      <span className="font-mono font-normal text-foreground">
                         {data.user.chave_pix ? formatarChavePix(data.user.chave_pix, data.user.chave_pix_tipo) : "—"}
                       </span>
                       {data.user.chave_pix && (
                         <button
                           type="button"
                           onClick={() => handleCopy(data.user.chave_pix!, "Chave Pix copiada!")}
-                          className="text-slate-400 hover:text-white transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                           title="Copiar Chave Pix"
                         >
                           <Copy className="h-3.5 w-3.5" />
@@ -1223,10 +1288,10 @@ export default function AdminUserDetails() {
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Canal de Aquisição
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Canal de aquisição
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block">
                       {data.user.canal_aquisicao
                         ? CanalAquisicaoLabels[data.user.canal_aquisicao as keyof typeof CanalAquisicaoLabels] || data.user.canal_aquisicao
                         : indicadorData
@@ -1236,7 +1301,7 @@ export default function AdminUserDetails() {
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-medium text-muted-foreground block">
                       Indicado por
                     </span>
                     {indicadorData ? (
@@ -1252,40 +1317,40 @@ export default function AdminUserDetails() {
                         onClick={() => {
                           handleTabChange("dados");
                         }}
-                        className="font-medium text-slate-400 hover:text-slate-200 text-left block"
+                        className="font-normal text-muted-foreground hover:text-foreground text-left block cursor-pointer"
                       >
-                        Cadastro Direto / Orgânico
+                        Cadastro direto / orgânico
                       </button>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Dispositivo de Cadastro
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Dispositivo de cadastro
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block">
                       {data.user.dispositivo_cadastro ? DispositivoCadastroLabels[data.user.dispositivo_cadastro as keyof typeof DispositivoCadastroLabels] || data.user.dispositivo_cadastro : "—"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Dispositivos Conectados (App / Push)
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Dispositivos conectados (App / Push)
                     </span>
                     {data.dispositivos && data.dispositivos.total > 0 ? (
                       <div className="space-y-1 mt-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <Smartphone className="h-3 w-3" />
                             {data.dispositivos.total} {data.dispositivos.total === 1 ? "aparelho conectado" : "aparelhos conectados"}
                           </span>
                         </div>
                         <div className="space-y-0.5">
                           {data.dispositivos.itens.map((disp) => (
-                            <span key={disp.id} className="text-[11px] text-slate-400 block font-mono">
-                              <span className="capitalize font-semibold text-slate-300">{disp.plataforma}</span>
+                            <span key={disp.id} className="text-[11px] text-muted-foreground block font-mono">
+                              <span className="capitalize font-medium text-foreground">{disp.plataforma}</span>
                               {disp.atualizado_em && (
-                                <span className="text-slate-500"> • Visto em {formatDateTime(disp.atualizado_em)}</span>
+                                <span className="text-muted-foreground"> • Visto em {formatDateTime(disp.atualizado_em)}</span>
                               )}
                             </span>
                           ))}
@@ -1293,8 +1358,8 @@ export default function AdminUserDetails() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60">
-                          <Smartphone className="h-3 w-3 text-slate-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-muted-foreground border border-border">
+                          <Smartphone className="h-3 w-3 text-muted-foreground" />
                           Nenhum aparelho conectado
                         </span>
                       </div>
@@ -1302,29 +1367,7 @@ export default function AdminUserDetails() {
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Últimos Acessos por Dispositivo
-                    </span>
-                    {data.ultimo_acesso && data.ultimo_acesso.por_dispositivo && data.ultimo_acesso.por_dispositivo.length > 0 ? (
-                      <div className="space-y-1 mt-1">
-                        {data.ultimo_acesso.por_dispositivo.map((item) => (
-                          <span key={item.dispositivo} className="text-[11px] text-slate-400 block font-mono">
-                            <span className="font-semibold text-slate-300">
-                              {DispositivoCadastroLabels[item.dispositivo] || item.dispositivo}
-                            </span>
-                            <span className="text-slate-500"> • Visto em {formatDateTime(item.data_hora)}</span>
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-500 block mt-1">
-                        Nenhum acesso registrado
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                    <span className="text-[11px] font-medium text-muted-foreground block mb-1">
                       Origem / Atribuição (UTMs)
                     </span>
                     <AcquisitionBadge
@@ -1338,10 +1381,10 @@ export default function AdminUserDetails() {
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                      Data de Cadastro
+                    <span className="text-[11px] font-medium text-muted-foreground block">
+                      Data de cadastro
                     </span>
-                    <span className="font-medium text-slate-300 block">
+                    <span className="font-normal text-foreground block font-mono">
                       {formatDateTime(data.user.created_at)}
                     </span>
                   </div>
@@ -1363,11 +1406,11 @@ export default function AdminUserDetails() {
               const isConfigurado = statusConfig !== DriverContractConfigStatus.NAO_CONFIGURADO;
 
               return (
-                <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
-                  <CardHeader className="p-4 border-b border-slate-800/80 bg-slate-900/40">
-                    <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-400 shrink-0" />
-                      Contratos
+                <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+                  <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                    <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary shrink-0" />
+                      <span>Contratos</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-5 flex-1 flex flex-col justify-between">
@@ -1375,55 +1418,55 @@ export default function AdminUserDetails() {
                       {isConfigurado ? (
                         <div className="space-y-3 text-xs">
                           <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Multa de Atraso
+                            <span className="text-[11px] font-medium text-muted-foreground block">
+                              Multa de atraso
                             </span>
-                            <span className="font-mono font-medium text-slate-300 block">
+                            <span className="font-mono font-medium text-foreground block">
                               {formatarRegraContrato(config?.multa_atraso || { valor: 10, tipo: "fixo" })}
                             </span>
                           </div>
 
                           <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Juros de Atraso
+                            <span className="text-[11px] font-medium text-muted-foreground block">
+                              Juros de atraso
                             </span>
-                            <span className="font-mono font-medium text-slate-300 block">
+                            <span className="font-mono font-medium text-foreground block">
                               {formatarRegraContrato(config?.juros_atraso || { valor: 1, tipo: "percentual" })}
                             </span>
                           </div>
 
                           <div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">
-                              Multa de Rescisão
+                            <span className="text-[11px] font-medium text-muted-foreground block">
+                              Multa de rescisão
                             </span>
-                            <span className="font-mono font-medium text-slate-300 block">
+                            <span className="font-mono font-medium text-foreground block">
                               {formatarRegraContrato(config?.multa_rescisao || { valor: 15, tipo: "fixo" })}
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-xs text-slate-400 font-medium py-3 leading-relaxed">
+                        <p className="text-xs text-muted-foreground font-normal py-3 leading-relaxed">
                           O módulo de contratos digitais não foi configurado por este motorista.
                         </p>
                       )}
                     </div>
 
                     {/* BOTÕES DE PREVIEW DA MINUTA E ASSINATURA */}
-                    <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-4">
+                    <div className="pt-3 border-t border-border/40 space-y-2 mt-4">
                       {isConfigurado && (
                         <Button
                           type="button"
                           size="sm"
                           disabled={previewContrato.isPending}
                           onClick={handleOpenMinutaPreview}
-                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                          className="w-full rounded-xl border border-border bg-card text-foreground hover:bg-secondary h-9 text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
                         >
                           {previewContrato.isPending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                           ) : (
-                            <FileText className="h-3.5 w-3.5" />
+                            <FileText className="h-3.5 w-3.5 text-primary" />
                           )}
-                          <span>Ver Minuta do Contrato</span>
+                          <span>Ver minuta do contrato</span>
                         </Button>
                       )}
 
@@ -1432,10 +1475,10 @@ export default function AdminUserDetails() {
                           type="button"
                           size="sm"
                           onClick={() => setIsSignatureModalOpen(true)}
-                          className="w-full rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-9 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                          className="w-full rounded-xl border border-border bg-card text-foreground hover:bg-secondary h-9 text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
                         >
-                          <PenTool className="h-3.5 w-3.5 text-blue-400" />
-                          <span>Ver Assinatura Digital</span>
+                          <PenTool className="h-3.5 w-3.5 text-primary" />
+                          <span>Ver assinatura digital</span>
                         </Button>
                       )}
                     </div>
@@ -1450,18 +1493,18 @@ export default function AdminUserDetails() {
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {/* CARD 1: DADOS CADASTRAIS DO MOTORISTA */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
               <div>
-                <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                <CardHeader className="p-5 sm:p-6 border-b border-border/40 bg-secondary/30">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
-                      <User className="h-4 w-4 text-blue-400" />
-                      Dados Cadastrais
+                    <CardTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
+                      <User className="h-4 w-4 text-primary" />
+                      <span>Dados cadastrais</span>
                     </CardTitle>
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-5 sm:p-6 space-y-6">
                   <Form {...userForm}>
                     <form id="user-form" onSubmit={userForm.handleSubmit(handleSaveUser, onUserFormError)} className="space-y-6">
                       {(() => {
@@ -1472,16 +1515,16 @@ export default function AdminUserDetails() {
                           <>
                             {/* SEÇÃO 1: IDENTIFICAÇÃO */}
                             <div className="space-y-4">
-                              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                Identificação & Documentação
+                              <h4 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1.5">
+                                Identificação & documentação
                               </h4>
 
                               <FormField
                                 control={userForm.control}
                                 name="cpfcnpj"
                                 render={({ field }) => (
-                                  <FormItem className="space-y-2">
-                                    <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
+                                  <FormItem className="space-y-1.5">
+                                    <FormLabel className="text-xs font-medium text-foreground">
                                       CPF ou CNPJ {isCnpj && <span className="text-rose-400">*</span>}
                                     </FormLabel>
                                     <FormControl>
@@ -1491,7 +1534,7 @@ export default function AdminUserDetails() {
                                         onChange={(e) => field.onChange(cpfMask(e.target.value))}
                                         inputMode="numeric"
                                         placeholder="Digite o CPF ou CNPJ"
-                                        className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -1503,16 +1546,16 @@ export default function AdminUserDetails() {
                                 control={userForm.control}
                                 name="razao_social"
                                 render={({ field, fieldState, formState }) => (
-                                  <FormItem className="space-y-2">
-                                    <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                      Razão Social {isCnpj && <span className="text-rose-400">*</span>}
+                                  <FormItem className="space-y-1.5">
+                                    <FormLabel className="text-xs font-medium text-foreground">
+                                      Razão social {isCnpj && <span className="text-rose-400">*</span>}
                                     </FormLabel>
                                     <FormControl>
                                       <Input
                                         {...field}
                                         value={field.value || ""}
                                         placeholder="Razão social do motorista (obrigatória para CNPJ)"
-                                        className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                        className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
                                         aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
                                       />
                                     </FormControl>
@@ -1529,15 +1572,15 @@ export default function AdminUserDetails() {
                                   control={userForm.control}
                                   name="nome"
                                   render={({ field }) => (
-                                    <FormItem className="space-y-2">
-                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Nome Completo <span className="text-rose-400">*</span>
+                                    <FormItem className="space-y-1.5">
+                                      <FormLabel className="text-xs font-medium text-foreground">
+                                        Nome completo <span className="text-rose-400">*</span>
                                       </FormLabel>
                                       <FormControl>
                                         <Input
                                           {...field}
                                           placeholder="Nome completo do motorista"
-                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                          className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
                                         />
                                       </FormControl>
                                       <FormMessage />
@@ -1549,15 +1592,15 @@ export default function AdminUserDetails() {
                                   control={userForm.control}
                                   name="apelido"
                                   render={({ field }) => (
-                                    <FormItem className="space-y-2">
-                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Nome do Transporte / Apelido
+                                    <FormItem className="space-y-1.5">
+                                      <FormLabel className="text-xs font-medium text-foreground">
+                                        Nome do transporte / apelido
                                       </FormLabel>
                                       <FormControl>
                                         <Input
                                           {...field}
                                           placeholder="Ex.: Tio Thiago"
-                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                          className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
                                         />
                                       </FormControl>
                                       <FormMessage />
@@ -1568,9 +1611,9 @@ export default function AdminUserDetails() {
                             </div>
 
                             {/* SEÇÃO 2: CONTATO E INFORMAÇÕES PESSOAIS */}
-                            <div className="pt-5 border-t border-slate-800/80 space-y-4">
-                              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                Contato & Informações Pessoais
+                            <div className="pt-5 border-t border-border/40 space-y-4">
+                              <h4 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1.5">
+                                Contato & informações pessoais
                               </h4>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1582,8 +1625,8 @@ export default function AdminUserDetails() {
                                       field={field}
                                       label="Telefone (WhatsApp)"
                                       placeholder="(00) 00000-0000"
-                                      labelClassName="text-xs sm:text-sm font-semibold text-slate-200"
-                                      inputClassName="pl-11 h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500"
+                                      labelClassName="text-xs font-medium text-foreground"
+                                      inputClassName="pl-11 h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary"
                                     />
                                   )}
                                 />
@@ -1592,16 +1635,16 @@ export default function AdminUserDetails() {
                                   control={userForm.control}
                                   name="email"
                                   render={({ field }) => (
-                                    <FormItem className="space-y-2">
-                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        E-mail de Acesso <span className="text-rose-400">*</span>
+                                    <FormItem className="space-y-1.5">
+                                      <FormLabel className="text-xs font-medium text-foreground">
+                                        E-mail de acesso <span className="text-rose-400">*</span>
                                       </FormLabel>
                                       <FormControl>
                                         <Input
                                           {...field}
                                           type="email"
                                           placeholder="motorista@email.com"
-                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500"
+                                          className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
                                         />
                                       </FormControl>
                                       <FormMessage />
@@ -1615,9 +1658,9 @@ export default function AdminUserDetails() {
                                   control={userForm.control}
                                   name="data_nascimento"
                                   render={({ field }) => (
-                                    <FormItem className="space-y-2">
-                                      <FormLabel className="text-xs sm:text-sm font-semibold text-slate-200">
-                                        Data de Nascimento
+                                    <FormItem className="space-y-1.5">
+                                      <FormLabel className="text-xs font-medium text-foreground">
+                                        Data de nascimento
                                       </FormLabel>
                                       <FormControl>
                                         <Input
@@ -1626,7 +1669,7 @@ export default function AdminUserDetails() {
                                           maxLength={10}
                                           onChange={(e) => field.onChange(maskDate(e.target.value))}
                                           placeholder="dd/mm/aaaa"
-                                          className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 placeholder:text-slate-500 font-mono"
+                                          className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground font-mono"
                                         />
                                       </FormControl>
                                       <FormMessage />
@@ -1637,7 +1680,7 @@ export default function AdminUserDetails() {
                             </div>
 
                             {/* SEÇÃO 3: STATUS DA CONTA */}
-                            <div className="pt-5 border-t border-slate-800/80 flex items-center justify-between">
+                            <div className="pt-5 border-t border-border/40 flex items-center justify-between">
                               <FormField
                                 control={userForm.control}
                                 name="ativo"
@@ -1645,8 +1688,8 @@ export default function AdminUserDetails() {
                                   <FormItem className="w-full">
                                     <FormControl>
                                       <div className="flex items-center justify-between">
-                                        <Label className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-                                          Status da Conta
+                                        <Label className="text-xs font-medium text-foreground cursor-pointer">
+                                          Status da conta
                                         </Label>
                                         <div className="flex items-center gap-3">
                                           <Switch
@@ -1663,7 +1706,7 @@ export default function AdminUserDetails() {
                             </div>
 
                             {/* SEÇÃO 4: RECURSOS ESPECIAIS & PERMISSÕES */}
-                            <div className="pt-5 border-t border-slate-800/80">
+                            <div className="pt-5 border-t border-border/40">
                               <FormField
                                 control={userForm.control}
                                 name="cobranca_aviso_previo_whatsapp_ativo"
@@ -1672,10 +1715,10 @@ export default function AdminUserDetails() {
                                     <FormControl>
                                       <div className="flex items-start justify-between gap-4">
                                         <div className="space-y-0.5">
-                                          <Label className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-                                            WhatsApp no Lembrete Prévio
+                                          <Label className="text-xs font-medium text-foreground cursor-pointer">
+                                            WhatsApp no lembrete prévio
                                           </Label>
-                                          <p className="text-[11px] text-slate-400">
+                                          <p className="text-[11px] text-muted-foreground">
                                             Permite enviar lembretes com antecedência via WhatsApp para os responsáveis deste motorista.
                                           </p>
                                         </div>
@@ -1699,19 +1742,19 @@ export default function AdminUserDetails() {
                 </CardContent>
               </div>
 
-              <CardContent className="p-6 pt-0">
+              <CardContent className="p-5 sm:p-6 pt-0">
                 <Button
                   type="submit"
                   form="user-form"
                   disabled={updateUser.isPending}
-                  className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
+                  className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
                 >
                   {updateUser.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Dados Cadastrais
+                      <Save className="h-4 w-4 mr-1.5" />
+                      Salvar dados cadastrais
                     </>
                   )}
                 </Button>
@@ -1719,13 +1762,13 @@ export default function AdminUserDetails() {
             </Card>
 
             {/* CARD 2: ASSINATURA & ACESSO */}
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 flex flex-col justify-between">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
               <div>
-                <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+                <CardHeader className="p-5 sm:p-6 border-b border-border/40 bg-secondary/30">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-blue-400" />
-                      Assinatura & Acesso
+                    <CardTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-primary" />
+                      <span>Assinatura & acesso</span>
                     </CardTitle>
                     {data.assinatura?.status && (
                       <SubscriptionStatusBadge status={subForm.status || data.assinatura.status} />
@@ -1733,32 +1776,32 @@ export default function AdminUserDetails() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-5 sm:p-6 space-y-6">
                   {!sub ? (
-                    <p className="text-sm text-slate-400 py-8 text-center">
+                    <p className="text-xs text-muted-foreground py-8 text-center">
                       Nenhuma assinatura encontrada para este usuário.
                     </p>
                   ) : (
                     <>
                       {/* SEÇÃO 1: PLANO E VIGÊNCIA */}
                       <div className="space-y-4">
-                        <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                          Plano & Vigência da Conta
+                        <h4 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1.5">
+                          Plano & vigência da conta
                         </h4>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Plano Contratado</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Plano contratado</Label>
                             <Select
                               value={subForm.plano_id}
                               onValueChange={(val) => setSubForm(p => ({ ...p, plano_id: val }))}
                             >
-                              <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
+                              <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus:ring-primary">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 {data.planos.map((p) => (
-                                  <SelectItem key={p.id} value={p.id}>
+                                  <SelectItem key={p.id} value={p.id} className="text-xs">
                                     {p.nome} — R$ {Number(p.valor).toFixed(2)}
                                   </SelectItem>
                                 ))}
@@ -1766,8 +1809,8 @@ export default function AdminUserDetails() {
                             </Select>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Status do Plano</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Status do plano</Label>
                             <Select
                               value={subForm.status}
                               onValueChange={(val) => setSubForm(p => ({
@@ -1777,12 +1820,12 @@ export default function AdminUserDetails() {
                                 trial_ends_at: toDateInputValue(data?.assinatura?.trial_ends_at),
                               }))}
                             >
-                              <SelectTrigger className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus:ring-0">
+                              <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus:ring-primary">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 {STATUS_OPTIONS.map((o) => (
-                                  <SelectItem key={o.value} value={o.value}>
+                                  <SelectItem key={o.value} value={o.value} className="text-xs">
                                     {o.label}
                                   </SelectItem>
                                 ))}
@@ -1792,10 +1835,10 @@ export default function AdminUserDetails() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                              Data de Vencimento
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>Data de vencimento</span>
                             </Label>
                             <div className="relative">
                               <Input
@@ -1803,11 +1846,11 @@ export default function AdminUserDetails() {
                                 value={subForm.data_vencimento}
                                 onChange={(e) => setSubForm(p => ({ ...p, data_vencimento: e.target.value }))}
                                 disabled={subForm.status === SubscriptionStatus.TRIAL}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed pr-12 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary disabled:opacity-40 disabled:cursor-not-allowed pr-10 font-mono"
                               />
                               {subForm.data_vencimento && subForm.status !== SubscriptionStatus.TRIAL && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -1815,16 +1858,16 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar data de vencimento"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                              Fim do Período Trial
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>Fim do período trial</span>
                             </Label>
                             <div className="relative">
                               <Input
@@ -1832,11 +1875,11 @@ export default function AdminUserDetails() {
                                 value={subForm.trial_ends_at}
                                 onChange={(e) => setSubForm(p => ({ ...p, trial_ends_at: e.target.value }))}
                                 disabled={subForm.status !== SubscriptionStatus.TRIAL}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed pr-12 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary disabled:opacity-40 disabled:cursor-not-allowed pr-10 font-mono"
                               />
                               {subForm.trial_ends_at && subForm.status === SubscriptionStatus.TRIAL && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -1844,7 +1887,7 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar fim do trial"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
@@ -1853,13 +1896,13 @@ export default function AdminUserDetails() {
                       </div>
 
                       {/* SEÇÃO 2: CONCEDER ACESSO */}
-                      <div className="pt-5 border-t border-slate-800/80 space-y-3">
+                      <div className="pt-5 border-t border-border/40 space-y-3">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5 text-slate-400" />
-                            Conceder Acesso (Cortesia)
+                          <h4 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 text-primary" />
+                            <span>Conceder acesso (cortesia)</span>
                           </h4>
-                          <span className="text-xs text-slate-400">Prorroga a vigência em 1 clique</span>
+                          <span className="text-[11px] text-muted-foreground">Prorroga a vigência em 1 clique</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {[
@@ -1875,7 +1918,7 @@ export default function AdminUserDetails() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleAddDays(shortcut.days)}
-                              className="h-8 px-3 text-xs font-bold rounded-lg bg-slate-800/80 border-slate-700/80 text-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all shadow-sm"
+                              className="h-8 px-3 text-xs font-medium rounded-xl bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-all shadow-xs"
                             >
                               {shortcut.label}
                             </Button>
@@ -1884,10 +1927,10 @@ export default function AdminUserDetails() {
                       </div>
 
                       {/* SEÇÃO 3: PREÇOS & DESCONTOS */}
-                      <div className="pt-5 border-t border-slate-800/80 space-y-4">
+                      <div className="pt-5 border-t border-border/40 space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            Desconto / Promoção Especial
+                          <h4 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-2">
+                            <span>Desconto / promoção especial</span>
                           </h4>
                           {(() => {
                             const cleanValMensal = (subForm.valor_promocional_mensal || "").replace(/\D/g, "");
@@ -1895,30 +1938,30 @@ export default function AdminUserDetails() {
                             const hasPromo = (cleanValMensal && Number(cleanValMensal) > 0) || (cleanValAnual && Number(cleanValAnual) > 0);
                             if (!hasPromo) return null;
                             if (!subForm.data_fim_promocao) {
-                              return <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Definitivo</span>;
+                              return <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-medium">Definitivo</span>;
                             }
-                            const fim = new Date(subForm.data_fim_promocao + "T23:59:59").getTime();
-                            if (fim >= new Date().getTime()) {
-                              return <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Ativo</span>;
+                            const fim = getEndOfDayBR(subForm.data_fim_promocao).getTime();
+                            if (fim >= getNowBR().getTime()) {
+                              return <span className="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium">Ativo</span>;
                             } else {
-                              return <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Expirado</span>;
+                              return <span className="text-[11px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-medium">Expirado</span>;
                             }
                           })()}
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Valor Base (Mensal)</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Valor base (mensal)</Label>
                             <div className="relative">
                               <Input
                                 placeholder="Valor base do plano"
                                 value={subForm.valor_base_mensal}
                                 onChange={(e) => setSubForm(p => ({ ...p, valor_base_mensal: moneyMask(e.target.value) }))}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary pr-10 font-mono"
                               />
                               {subForm.valor_base_mensal && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -1926,24 +1969,24 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar valor base mensal"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Valor Base (Anual)</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Valor base (anual)</Label>
                             <div className="relative">
                               <Input
                                 placeholder="Valor base do plano"
                                 value={subForm.valor_base_anual}
                                 onChange={(e) => setSubForm(p => ({ ...p, valor_base_anual: moneyMask(e.target.value) }))}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary pr-10 font-mono"
                               />
                               {subForm.valor_base_anual && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -1951,7 +1994,7 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar valor base anual"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
@@ -1959,18 +2002,18 @@ export default function AdminUserDetails() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Promo Mensal</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Promoção mensal</Label>
                             <div className="relative">
                               <Input
                                 placeholder="R$ Promocional"
                                 value={subForm.valor_promocional_mensal}
                                 onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_mensal: moneyMask(e.target.value) }))}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary pr-10 font-mono"
                               />
                               {subForm.valor_promocional_mensal && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -1978,24 +2021,24 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar valor promocional mensal"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Promo Anual</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Promoção anual</Label>
                             <div className="relative">
                               <Input
                                 placeholder="R$ Promocional"
                                 value={subForm.valor_promocional_anual}
                                 onChange={(e) => setSubForm(p => ({ ...p, valor_promocional_anual: moneyMask(e.target.value) }))}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-10 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary pr-10 font-mono"
                               />
                               {subForm.valor_promocional_anual && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -2003,24 +2046,24 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Limpar valor promocional anual"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-xs sm:text-sm font-semibold text-slate-200">Validade da Promoção</Label>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-foreground">Validade da promoção</Label>
                             <div className="relative">
                               <Input
                                 type="date"
                                 value={subForm.data_fim_promocao}
                                 onChange={(e) => setSubForm(p => ({ ...p, data_fim_promocao: e.target.value }))}
-                                className="h-11 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 pr-12 font-mono"
+                                className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary pr-10 font-mono"
                               />
                               {subForm.data_fim_promocao && (
                                 <div
-                                  className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer z-10 flex bg-slate-800/90 rounded p-0.5"
+                                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer z-10 flex bg-card rounded p-0.5"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -2028,7 +2071,7 @@ export default function AdminUserDetails() {
                                   }}
                                   title="Remover data de validade"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3.5 w-3.5" />
                                 </div>
                               )}
                             </div>
@@ -2041,19 +2084,19 @@ export default function AdminUserDetails() {
               </div>
 
               {sub && (
-                <CardContent className="p-6 pt-0">
+                <CardContent className="p-5 sm:p-6 pt-0">
                   <Button
                     type="button"
                     onClick={handleSaveSub}
                     disabled={updateSub.isPending}
-                    className="w-full h-11 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all"
+                    className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
                   >
                     {updateSub.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar Configurações da Assinatura
+                        <Save className="h-4 w-4 mr-1.5" />
+                        Salvar configurações da assinatura
                       </>
                     )}
                   </Button>
@@ -2061,15 +2104,15 @@ export default function AdminUserDetails() {
               )}
             </Card>
 
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 xl:col-span-2">
-              <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground">
+              <CardHeader className="p-5 sm:p-6 border-b border-border/40 bg-secondary/30">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <CardTitle className="text-sm font-headline font-black text-white uppercase tracking-tight flex items-center gap-2">
+                    <CardTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
                       <UserCheck className="h-4 w-4 text-emerald-400" />
-                      Origem da Indicação
+                      <span>Origem da indicação</span>
                     </CardTitle>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Informações sobre a indicação que trouxe {data.user.nome} para a plataforma.
                     </p>
                   </div>
@@ -2087,10 +2130,10 @@ export default function AdminUserDetails() {
                             currentIndicadorNome: indicadorData?.nome,
                           })
                         }
-                        className="h-9 px-3 rounded-xl border-slate-700 bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold gap-1.5"
+                        className="h-8 px-3 rounded-xl border-border bg-card text-foreground hover:bg-secondary text-xs font-medium gap-1.5 shadow-xs"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
-                        Alterar Indicador
+                        Alterar indicador
                       </Button>
                       <Button
                         size="sm"
@@ -2108,7 +2151,7 @@ export default function AdminUserDetails() {
                           })
                         }
                         disabled={removeReferralMutation.isPending}
-                        className="h-9 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold gap-1.5"
+                        className="h-8 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-medium gap-1.5"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Desvincular
@@ -2123,26 +2166,26 @@ export default function AdminUserDetails() {
                           userName: data.user.nome,
                         })
                       }
-                      className="h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95"
+                      className="h-8 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs flex items-center gap-1.5 shadow-xs"
                     >
-                      <UserPlus className="h-4 w-4" />
-                      Atribuir Indicador
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Atribuir indicador
                     </Button>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="p-6">
+              <CardContent className="p-5 sm:p-6">
                 {indicadorData ? (
-                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/10 p-5 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 pb-4">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                          Motorista Indicador
+                  <div className="rounded-2xl border border-border bg-secondary/40 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
+                      <div className="space-y-0.5">
+                        <span className="text-[11px] font-medium text-muted-foreground block">
+                          Motorista indicador
                         </span>
                         <Link
                           to={`${ROUTES.PRIVATE.ADMIN.USERS}/${indicadorData.id}`}
-                          className="text-base font-bold text-white hover:text-blue-400 hover:underline transition-colors block"
+                          className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors block"
                         >
                           {indicadorData.nome}
                         </Link>
@@ -2150,15 +2193,15 @@ export default function AdminUserDetails() {
 
                       <div className="flex items-center gap-2">
                         {indicadorData.status === IndicacaoStatus.PENDING && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             <Clock className="h-3.5 w-3.5" />
-                            Em Teste (Aguardando 1ª Mensalidade)
+                            Em teste (aguardando 1ª mensalidade)
                           </span>
                         )}
                         {indicadorData.status === IndicacaoStatus.COMPLETED && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            Convertido (Bônus Concedido)
+                            Convertido (bônus concedido)
                           </span>
                         )}
                       </div>
@@ -2166,11 +2209,11 @@ export default function AdminUserDetails() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                        <span className="text-[11px] font-medium text-muted-foreground block">
                           WhatsApp / Telefone
                         </span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="font-mono font-medium text-slate-200">
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono font-medium text-foreground">
                             {phoneMask(indicadorData.telefone) || "—"}
                           </span>
                           {indicadorData.telefone && (
@@ -2182,29 +2225,29 @@ export default function AdminUserDetails() {
                                   openBrowserLink(buildWhatsAppUrl(cleanPhone, `Olá ${indicadorData!.nome}!`));
                                 }
                               }}
-                              className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                              className="text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
                               title="Abrir no WhatsApp"
                             >
-                              <WhatsAppIcon className="h-4 w-4 fill-current" />
+                              <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
                             </button>
                           )}
                         </div>
                       </div>
 
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                        <span className="text-[11px] font-medium text-muted-foreground block">
                           E-mail
                         </span>
-                        <span className="font-medium text-slate-200 truncate block mt-1">
+                        <span className="font-medium text-foreground truncate block mt-0.5">
                           {indicadorData.email || "—"}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-                          Data do Vínculo
+                        <span className="text-[11px] font-medium text-muted-foreground block">
+                          Data do vínculo
                         </span>
-                        <span className="font-medium text-slate-300 block mt-1">
+                        <span className="font-medium text-foreground block mt-0.5">
                           {indicadorData.created_at ? formatSafeBrazilianDate(indicadorData.created_at) : "—"}
                         </span>
                       </div>
@@ -2217,8 +2260,8 @@ export default function AdminUserDetails() {
                       title="Nenhum indicador vinculado"
                       description="Este motorista realizou o cadastro diretamente na plataforma, sem link ou telefone de indicação."
                     />
-                    <p className="text-xs text-slate-400">
-                      Caso ele informe que foi indicado por outro motorista, clique no botão &quot;Atribuir Indicador&quot; para pesquisar e vincular.
+                    <p className="text-xs text-muted-foreground">
+                      Caso ele informe que foi indicado por outro motorista, clique no botão &quot;Atribuir indicador&quot; para pesquisar e vincular.
                     </p>
                   </div>
                 )}
@@ -2228,69 +2271,67 @@ export default function AdminUserDetails() {
             <AdminUserFinancialConfigCard
               userId={id!}
               initialConfig={(data as any).configuracao_financeira}
-              userEmail={data?.user?.email}
-              userPhone={data?.user?.telefone}
             />
           </div>
         </TabsContent>
 
         <TabsContent value="cobrancas" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                <CreditCard className="h-4 w-4 text-blue-400" />
-                Histórico de Cobranças
+          <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground">
+            <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <span>Histórico de cobranças</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="p-5 sm:p-6 pt-4">
               {data.faturas.length === 0 ? (
                 <div className="text-center py-16 space-y-3">
-                  <CreditCard className="h-12 w-12 mx-auto text-slate-300" />
-                  <p className="text-xs font-bold text-slate-400">Nenhuma fatura encontrada.</p>
+                  <CreditCard className="h-10 w-10 mx-auto text-muted-foreground" />
+                  <p className="text-xs font-medium text-muted-foreground">Nenhuma fatura encontrada.</p>
                 </div>
               ) : (
                 <>
-                  <div className="hidden md:block overflow-x-auto">
+                  <div className="hidden md:block overflow-x-auto [scrollbar-width:thin]">
                     <table className="w-full text-left">
                       <thead>
-                        <tr className="border-b border-slate-800">
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Criação</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Plano</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Método</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Vencimento</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Pagamento</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
-                          <th className="pb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
+                        <tr className="border-b border-border text-[11px] font-medium text-muted-foreground">
+                          <th className="pb-3">Criação</th>
+                          <th className="pb-3">Plano</th>
+                          <th className="pb-3">Valor</th>
+                          <th className="pb-3">Método</th>
+                          <th className="pb-3">Vencimento</th>
+                          <th className="pb-3">Pagamento</th>
+                          <th className="pb-3 text-center">Status</th>
+                          <th className="pb-3 text-right">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
                         {[...data.faturas]
                           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                           .map((f) => (
-                            <tr key={f.id} className="border-b border-slate-800/60 hover:bg-slate-800/50 transition-colors">
-                              <td className="py-4 text-xs font-semibold text-slate-200">
+                            <tr key={f.id} className="border-b border-border/40 hover:bg-secondary/40 transition-colors">
+                              <td className="py-3 text-xs font-medium text-foreground">
                                 {formatDateTime(f.created_at)}
                               </td>
-                              <td className="py-4 text-xs text-slate-400 font-medium">
+                              <td className="py-3 text-xs text-muted-foreground font-medium">
                                 {f.planos?.nome || "—"}
                               </td>
-                              <td className="py-4 text-xs font-bold text-white">
+                              <td className="py-3 text-xs font-semibold text-foreground font-headline">
                                 {moneyMask(f.valor)}
                               </td>
-                              <td className="py-4 text-xs text-slate-400">
+                              <td className="py-3 text-xs text-muted-foreground">
                                 {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
                               </td>
-                              <td className="py-4 text-xs text-slate-400">
+                              <td className="py-3 text-xs text-muted-foreground">
                                 {formatDate(f.data_vencimento)}
                               </td>
-                              <td className="py-4 text-xs text-slate-400">
+                              <td className="py-3 text-xs text-muted-foreground">
                                 {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </td>
-                              <td className="py-4 text-center">
+                              <td className="py-3 text-center">
                                 <InvoiceStatusBadge status={f.status} />
                               </td>
-                              <td className="py-4 text-right">
+                              <td className="py-3 text-right">
                                 <div className="flex items-center justify-end gap-1">
                                   {f.status !== SubscriptionInvoiceStatus.PAID && (
                                     <Button
@@ -2300,7 +2341,7 @@ export default function AdminUserDetails() {
                                       title="Registrar pagamento (Dar baixa)"
                                       disabled={confirmPaymentMutation.isPending || deleteInvoiceMutation.isPending}
                                       onClick={() => handleConfirmPayment(f)}
-                                      className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                      className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl transition-colors inline-flex items-center justify-center cursor-pointer"
                                     >
                                       <CheckCircle2 className="h-4 w-4" />
                                     </Button>
@@ -2312,7 +2353,7 @@ export default function AdminUserDetails() {
                                     title="Excluir fatura"
                                     disabled={deleteInvoiceMutation.isPending || confirmPaymentMutation.isPending}
                                     onClick={() => handleDeleteInvoice(f)}
-                                    className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                    className="h-8 w-8 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors inline-flex items-center justify-center cursor-pointer"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -2324,13 +2365,13 @@ export default function AdminUserDetails() {
                     </table>
                   </div>
 
-                  <div className="md:hidden space-y-4">
+                  <div className="md:hidden space-y-3">
                     {[...data.faturas]
                       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                       .map((f) => (
-                        <div key={f.id} className="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/60 space-y-3">
+                        <div key={f.id} className="p-4 bg-secondary/40 rounded-2xl border border-border space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            <span className="text-[11px] font-medium text-muted-foreground">
                               Criada em {formatDateTime(f.created_at)}
                             </span>
                             <div className="flex items-center gap-1.5">
@@ -2343,7 +2384,7 @@ export default function AdminUserDetails() {
                                   title="Registrar pagamento (Dar baixa)"
                                   disabled={confirmPaymentMutation.isPending || deleteInvoiceMutation.isPending}
                                   onClick={() => handleConfirmPayment(f)}
-                                  className="h-7 w-7 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                  className="h-7 w-7 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl transition-colors inline-flex items-center justify-center cursor-pointer"
                                 >
                                   <CheckCircle2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -2355,7 +2396,7 @@ export default function AdminUserDetails() {
                                 title="Excluir fatura"
                                 disabled={deleteInvoiceMutation.isPending || confirmPaymentMutation.isPending}
                                 onClick={() => handleDeleteInvoice(f)}
-                                className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                                className="h-7 w-7 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors inline-flex items-center justify-center cursor-pointer"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
@@ -2364,24 +2405,24 @@ export default function AdminUserDetails() {
 
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-bold text-slate-200">{f.planos?.nome || "—"}</p>
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-xs font-semibold text-foreground">{f.planos?.nome || "—"}</p>
+                              <p className="text-[11px] text-muted-foreground">
                                 {f.metodo_pagamento ? (PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] || f.metodo_pagamento?.toUpperCase()) : "—"}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-black text-white">{moneyMask(f.valor)}</p>
+                              <p className="text-sm font-semibold font-headline text-foreground">{moneyMask(f.valor)}</p>
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[10px]">
+                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-[11px]">
                             <div>
-                              <span className="font-semibold text-slate-400 block uppercase tracking-wider">Vencimento</span>
-                              <span className="font-bold text-slate-200">{formatDate(f.data_vencimento)}</span>
+                              <span className="font-medium text-muted-foreground block">Vencimento</span>
+                              <span className="font-semibold text-foreground">{formatDate(f.data_vencimento)}</span>
                             </div>
                             <div className="text-right">
-                              <span className="font-semibold text-slate-400 block uppercase tracking-wider">Pagamento</span>
-                              <span className="font-bold text-slate-200">
+                              <span className="font-medium text-muted-foreground block">Pagamento</span>
+                              <span className="font-semibold text-foreground">
                                 {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </span>
                             </div>
@@ -2396,14 +2437,14 @@ export default function AdminUserDetails() {
         </TabsContent>
 
         <TabsContent value="repasses" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+          <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground">
+            <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight">
                 <ArrowUpRight className="h-4 w-4 text-emerald-400" />
-                Repasses Pix do Motorista
+                <span>Repasses Pix do motorista</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="p-5 sm:p-6 pt-4">
               <RepasseLogsList
                 repasses={repasseData?.data || []}
                 isLoading={isFetchingRepasses}
@@ -2418,21 +2459,21 @@ export default function AdminUserDetails() {
         </TabsContent>
 
         <TabsContent value="logs" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
-            <CardHeader className="pb-2">
+          <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground">
+            <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                  <Terminal className="h-4 w-4 text-blue-400" />
-                  Histórico de Atividades
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight">
+                  <Terminal className="h-4 w-4 text-primary" />
+                  <span>Histórico de atividades</span>
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     size="sm"
                     onClick={() => setIsMobileFiltersOpen(p => !p)}
-                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
-                      ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                      : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                    className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-xs font-medium cursor-pointer ${isMobileFiltersOpen
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border text-foreground hover:bg-secondary"
                       }`}
                   >
                     <Filter className="h-3.5 w-3.5" />
@@ -2440,60 +2481,61 @@ export default function AdminUserDetails() {
                   <Button
                     type="button"
                     size="sm"
+                    variant="outline"
                     onClick={() => { setLogsPage(1); refetchLogs(); }}
                     disabled={isFetchingLogs}
-                    className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+                    className="h-8 rounded-xl text-foreground bg-card border border-border hover:bg-secondary px-3 flex items-center gap-1.5 transition-all text-xs font-medium shadow-xs disabled:opacity-50 cursor-pointer"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingLogs ? "animate-spin text-primary" : ""}`} />
                     <span className="hidden sm:inline">Atualizar</span>
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="p-5 sm:p-6 pt-4">
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 ${!isMobileFiltersOpen ? 'hidden md:grid' : ''}`}>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Início</Label>
+                  <Label className="text-[11px] font-medium text-muted-foreground">Data início</Label>
                   <Input
                     type="date"
                     value={logsFilter.dataInicio}
                     onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataInicio: e.target.value })) }}
-                    className="h-10 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0"
+                    className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Fim</Label>
+                  <Label className="text-[11px] font-medium text-muted-foreground">Data fim</Label>
                   <Input
                     type="date"
                     value={logsFilter.dataFim}
                     onChange={(e) => { setLogsPage(1); setLogsFilter(p => ({ ...p, dataFim: e.target.value })) }}
-                    className="h-10 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-sm focus-visible:ring-0"
+                    className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ação</Label>
+                  <Label className="text-[11px] font-medium text-muted-foreground">Ação</Label>
                   <Select value={logsFilter.acao} onValueChange={(val) => { setLogsPage(1); setLogsFilter(p => ({ ...p, acao: val })) }}>
-                    <SelectTrigger className="h-10 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-[13px] focus-visible:ring-0">
+                    <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary">
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas as ações</SelectItem>
+                      <SelectItem value="all" className="text-xs">Todas as ações</SelectItem>
                       {Object.values(AtividadeAcao).map(acao => (
-                        <SelectItem key={acao} value={acao} className="text-[13px]">{acao.replace(/_/g, " ")}</SelectItem>
+                        <SelectItem key={acao} value={acao} className="text-xs capitalize">{acao.replace(/_/g, " ").toLowerCase()}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Entidade</Label>
+                  <Label className="text-[11px] font-medium text-muted-foreground">Entidade</Label>
                   <Select value={logsFilter.entidade} onValueChange={(val) => { setLogsPage(1); setLogsFilter(p => ({ ...p, entidade: val })) }}>
-                    <SelectTrigger className="h-10 rounded-xl bg-slate-800/60 border-slate-700/80 text-slate-100 text-[13px] focus-visible:ring-0">
+                    <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary">
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas as entidades</SelectItem>
+                      <SelectItem value="all" className="text-xs">Todas as entidades</SelectItem>
                       {Object.values(AtividadeEntidadeTipo).map(ent => (
-                        <SelectItem key={ent} value={ent} className="text-[13px]">{ent.replace(/_/g, " ")}</SelectItem>
+                        <SelectItem key={ent} value={ent} className="text-xs capitalize">{ent.replace(/_/g, " ").toLowerCase()}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -2503,33 +2545,33 @@ export default function AdminUserDetails() {
               <ActivityLogsList logs={logsData?.data || []} isLoading={isFetchingLogs} hideUserColumn />
 
               {logsData && logsData.total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
-                  <p className="text-xs font-semibold text-slate-400">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-border/40 gap-4">
+                  <p className="text-xs font-medium text-muted-foreground">
                     Página {logsData.page} de {Math.max(1, Math.ceil(logsData.total / logsData.limit))} ({logsData.total} logs)
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Exibir:</Label>
                       <Select value={limitStr} onValueChange={(val) => { setLimitStr(val); setLogsPage(1); }}>
-                        <SelectTrigger className="h-8 rounded-xl bg-slate-800/60 border-slate-700/80 text-xs text-slate-100 focus-visible:ring-0 w-[70px]">
+                        <SelectTrigger className="h-8 rounded-xl bg-secondary/60 border-border text-xs text-foreground focus-visible:ring-primary w-[70px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="25">25</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                          <SelectItem value="250">250</SelectItem>
-                          <SelectItem value="500">500</SelectItem>
+                          <SelectItem value="25" className="text-xs">25</SelectItem>
+                          <SelectItem value="50" className="text-xs">50</SelectItem>
+                          <SelectItem value="100" className="text-xs">100</SelectItem>
+                          <SelectItem value="250" className="text-xs">250</SelectItem>
+                          <SelectItem value="500" className="text-xs">500</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                       <Button
                         variant="ghost"
                         size="icon"
                         disabled={logsPage <= 1}
                         onClick={() => setLogsPage((p) => p - 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-xl border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40 cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
@@ -2538,7 +2580,7 @@ export default function AdminUserDetails() {
                         size="icon"
                         disabled={logsPage >= Math.ceil(logsData.total / logsData.limit)}
                         onClick={() => setLogsPage((p) => p + 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-xl border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40 cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -2553,28 +2595,125 @@ export default function AdminUserDetails() {
         {/* ABA 5: CADASTROS DO MOTORISTA (COM SUB-NAVEGAÇÃO LATERAL/SUPERIOR) */}
         <TabsContent value="cadastros" className="space-y-6 m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0">
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* MENU SUB-NAVEGAÇÃO LATERAL NO DESKTOP / BARRA DE ABAS NO MOBILE */}
-            <div className="w-full md:w-64 bg-[#131b2e] border border-slate-800/80 rounded-[1.5rem] p-3 shadow-xl shrink-0">
-              <div className="px-3 py-2 mb-2 hidden md:block border-b border-slate-800/80">
-                <p className="text-[10px] font-black uppercase text-purple-400 tracking-wider">
-                  Módulos do Motorista
+            {/* MENU SUB-NAVEGAÇÃO LATERAL NO DESKTOP / SELETOR NO MOBILE */}
+            <div className="w-full md:w-64 bg-card border border-border rounded-3xl p-3 shadow-xs shrink-0">
+              <div className="px-3 py-2 mb-2 hidden md:block border-b border-border/40">
+                <p className="text-xs font-semibold text-foreground tracking-tight">
+                  Módulos do motorista
                 </p>
               </div>
 
-              <div className="flex md:flex-col overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden gap-1.5 p-0.5">
+              {/* SELETOR MOBILE (< 768px) */}
+              <div className="md:hidden">
+                <Select value={activeSubTab} onValueChange={(val) => handleSubTabChange(val as AdminUserSubTab)}>
+                  <SelectTrigger className="w-full bg-secondary/60 border-input text-foreground font-medium h-10 rounded-xl focus:ring-primary text-xs">
+                    <SelectValue placeholder="Selecione um módulo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border text-foreground rounded-2xl">
+                    <SelectItem value="passageiros" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-emerald-400" />
+                          <span>Alunos</span>
+                        </span>
+                        {data.kpis?.passageirosCount !== undefined && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            {data.kpis.passageirosCount}
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="solicitacoes" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-rose-400" />
+                          <span>Solicitações</span>
+                        </span>
+                        {data.kpis?.solicitacoesPendentesCount !== undefined && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            {data.kpis.solicitacoesPendentesCount}
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="veiculos" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <Bus className="h-4 w-4 text-amber-400" />
+                          <span>Veículos</span>
+                        </span>
+                        {data.kpis?.veiculosCount !== undefined && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            {data.kpis.veiculosCount}
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="escolas" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <GraduationCap className="h-4 w-4 text-purple-400" />
+                          <span>Escolas</span>
+                        </span>
+                        {data.kpis?.escolasCount !== undefined && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            {data.kpis.escolasCount}
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="contratos" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-emerald-400" />
+                          <span>Contratos</span>
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                          {data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
+                        </span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="indicacoes" className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <Share2 className="h-4 w-4 text-purple-400" />
+                          <span>Indicações</span>
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                          {data.referralSummary?.total ?? 0}
+                        </span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value={AdminUserSubTab.EQUIPE} className="text-xs font-medium py-2 rounded-xl focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                      <span className="flex items-center justify-between w-full gap-2">
+                        <span className="flex items-center gap-2">
+                          <UserCheck className="h-4 w-4 text-cyan-400" />
+                          <span>Equipe</span>
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                          {data.kpis?.equipeCount ?? data.equipe?.length ?? 0}
+                        </span>
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* LISTA LATERAL DESKTOP (≥ 768px) */}
+              <div className="hidden md:flex flex-col gap-1.5 p-0.5">
                 {/* 1. PASSAGEIROS */}
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("passageiros")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "passageiros"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "passageiros"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <Users className={`h-4 w-4 shrink-0 ${activeSubTab === "passageiros" ? "text-white" : "text-emerald-400"}`} />
+                  <Users className={`h-4 w-4 shrink-0 ${activeSubTab === "passageiros" ? "text-primary-foreground" : "text-emerald-400"}`} />
                   <span className="flex-1">Alunos</span>
                   {data.kpis?.passageirosCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "passageiros" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "passageiros" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                       }`}>
                       {data.kpis.passageirosCount}
                     </span>
@@ -2585,15 +2724,15 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("solicitacoes")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "solicitacoes"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "solicitacoes"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <Clock className={`h-4 w-4 shrink-0 ${activeSubTab === "solicitacoes" ? "text-white" : "text-rose-400"}`} />
+                  <Clock className={`h-4 w-4 shrink-0 ${activeSubTab === "solicitacoes" ? "text-primary-foreground" : "text-rose-400"}`} />
                   <span className="flex-1">Solicitações</span>
                   {data.kpis?.solicitacoesPendentesCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "solicitacoes" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "solicitacoes" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                       }`}>
                       {data.kpis.solicitacoesPendentesCount}
                     </span>
@@ -2604,15 +2743,15 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("veiculos")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "veiculos"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "veiculos"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <Bus className={`h-4 w-4 shrink-0 ${activeSubTab === "veiculos" ? "text-white" : "text-amber-400"}`} />
+                  <Bus className={`h-4 w-4 shrink-0 ${activeSubTab === "veiculos" ? "text-primary-foreground" : "text-amber-400"}`} />
                   <span className="flex-1">Veículos</span>
                   {data.kpis?.veiculosCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "veiculos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "veiculos" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                       }`}>
                       {data.kpis.veiculosCount}
                     </span>
@@ -2623,15 +2762,15 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("escolas")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "escolas"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "escolas"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <GraduationCap className={`h-4 w-4 shrink-0 ${activeSubTab === "escolas" ? "text-white" : "text-purple-400"}`} />
+                  <GraduationCap className={`h-4 w-4 shrink-0 ${activeSubTab === "escolas" ? "text-primary-foreground" : "text-purple-400"}`} />
                   <span className="flex-1">Escolas</span>
                   {data.kpis?.escolasCount !== undefined && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "escolas" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "escolas" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                       }`}>
                       {data.kpis.escolasCount}
                     </span>
@@ -2642,14 +2781,14 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("contratos")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "contratos"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "contratos"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <FileText className={`h-4 w-4 shrink-0 ${activeSubTab === "contratos" ? "text-white" : "text-emerald-400"}`} />
+                  <FileText className={`h-4 w-4 shrink-0 ${activeSubTab === "contratos" ? "text-primary-foreground" : "text-emerald-400"}`} />
                   <span className="flex-1">Contratos</span>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "contratos" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "contratos" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                     }`}>
                     {data.kpis?.contratosCount ?? data.contratos?.length ?? 0}
                   </span>
@@ -2659,16 +2798,33 @@ export default function AdminUserDetails() {
                 <button
                   type="button"
                   onClick={() => handleSubTabChange("indicacoes")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all w-full text-left whitespace-nowrap ${activeSubTab === "indicacoes"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === "indicacoes"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                     }`}
                 >
-                  <Share2 className={`h-4 w-4 shrink-0 ${activeSubTab === "indicacoes" ? "text-white" : "text-purple-400"}`} />
+                  <Share2 className={`h-4 w-4 shrink-0 ${activeSubTab === "indicacoes" ? "text-primary-foreground" : "text-purple-400"}`} />
                   <span className="flex-1">Indicações</span>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeSubTab === "indicacoes" ? "bg-blue-700 text-white" : "bg-slate-800 text-slate-300"
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === "indicacoes" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
                     }`}>
                     {data.referralSummary?.total ?? 0}
+                  </span>
+                </button>
+
+                {/* 7. EQUIPE */}
+                <button
+                  type="button"
+                  onClick={() => handleSubTabChange(AdminUserSubTab.EQUIPE)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all w-full text-left whitespace-nowrap cursor-pointer ${activeSubTab === AdminUserSubTab.EQUIPE
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    }`}
+                >
+                  <UserCheck className={`h-4 w-4 shrink-0 ${activeSubTab === AdminUserSubTab.EQUIPE ? "text-primary-foreground" : "text-cyan-400"}`} />
+                  <span className="flex-1">Equipe</span>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${activeSubTab === AdminUserSubTab.EQUIPE ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    }`}>
+                    {data.kpis?.equipeCount ?? data.equipe?.length ?? 0}
                   </span>
                 </button>
               </div>
@@ -2710,34 +2866,38 @@ export default function AdminUserDetails() {
                   referredUsers={referredUsersList}
                 />
               )}
+              {activeSubTab === AdminUserSubTab.EQUIPE && (
+                <AdminUserEquipeTab equipe={equipeList} />
+              )}
             </div>
           </div>
         </TabsContent>
 
         {/* ABA 6: NOTIFICAÇÕES DO MOTORISTA */}
         <TabsContent value="notificacoes" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100 animate-in fade-in duration-300">
-            <CardHeader className="pb-2">
+          <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground">
+            <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                  <Bell className="h-4 w-4 text-indigo-400" />
-                  Histórico de Notificações
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight">
+                  <Bell className="h-4 w-4 text-primary" />
+                  <span>Histórico de notificações</span>
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     size="sm"
+                    variant="outline"
                     onClick={() => { setNotifPage(1); refetchNotif(); }}
                     disabled={isFetchingNotif}
-                    className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+                    className="h-8 rounded-xl text-foreground bg-card border border-border hover:bg-secondary px-3 flex items-center gap-1.5 transition-all text-xs font-medium shadow-xs disabled:opacity-50 cursor-pointer"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingNotif ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingNotif ? "animate-spin text-primary" : ""}`} />
                     <span className="hidden sm:inline">Atualizar</span>
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="p-5 sm:p-6 pt-4">
               <NotificationLogsList
                 notifications={notifData?.data || []}
                 isLoading={isFetchingNotif}
@@ -2746,33 +2906,33 @@ export default function AdminUserDetails() {
               />
 
               {notifData && notifData.total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
-                  <p className="text-xs font-semibold text-slate-400">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-border/40 gap-4">
+                  <p className="text-xs font-medium text-muted-foreground">
                     Página {notifData.page} de {Math.max(1, Math.ceil(notifData.total / notifData.limit))} ({notifData.total} notificações)
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Exibir:</Label>
                       <Select value={notifLimitStr} onValueChange={(val) => { setNotifLimitStr(val); setNotifPage(1); }}>
-                        <SelectTrigger className="h-8 rounded-xl bg-slate-800/60 border-slate-700/80 text-xs text-slate-100 focus-visible:ring-0 w-[70px]">
+                        <SelectTrigger className="h-9 rounded-lg bg-background border border-border text-xs text-foreground focus-visible:ring-0 w-[70px]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="25">25</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                          <SelectItem value="250">250</SelectItem>
-                          <SelectItem value="500">500</SelectItem>
+                        <SelectContent className="bg-popover border-border text-popover-foreground">
+                          <SelectItem value="25" className="text-xs">25</SelectItem>
+                          <SelectItem value="50" className="text-xs">50</SelectItem>
+                          <SelectItem value="100" className="text-xs">100</SelectItem>
+                          <SelectItem value="250" className="text-xs">250</SelectItem>
+                          <SelectItem value="500" className="text-xs">500</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                       <Button
                         variant="ghost"
                         size="icon"
                         disabled={notifPage <= 1}
                         onClick={() => setNotifPage((p) => p - 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-9 w-9 rounded-lg border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40 cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
@@ -2781,7 +2941,7 @@ export default function AdminUserDetails() {
                         size="icon"
                         disabled={notifPage >= Math.ceil(notifData.total / notifData.limit)}
                         onClick={() => setNotifPage((p) => p + 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-9 w-9 rounded-lg border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40 cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -2797,7 +2957,7 @@ export default function AdminUserDetails() {
       {resetPasswordData?.open && (
         <AdminBaseDialog open={resetPasswordData.open} onOpenChange={() => setResetPasswordData(null)} maxWidth="md">
           <AdminBaseDialog.Header
-            title="Senha Redefinida"
+            title="Senha redefinida"
             icon={<Check className="w-5 h-5 text-emerald-400" />}
             onClose={() => setResetPasswordData(null)}
           />
@@ -2807,25 +2967,25 @@ export default function AdminUserDetails() {
                 <Check className="w-8 h-8 text-emerald-400" />
               </div>
 
-              <div className="space-y-2">
-                <h3 className="text-lg font-bold text-white">Senha redefinida com sucesso!</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              <div className="space-y-1.5">
+                <h3 className="text-base font-semibold text-foreground">Senha redefinida com sucesso!</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
                   A nova senha temporária foi gerada com sucesso e pode ser compartilhada com o motorista.
                 </p>
               </div>
 
-              <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 text-left space-y-3.5 max-w-sm mx-auto">
+              <div className="p-4 bg-secondary/30 rounded-2xl border border-border text-left space-y-3 max-w-sm mx-auto">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</p>
-                  <p className="text-sm font-bold text-slate-100 mt-0.5">{data.user.nome}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">Motorista</p>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">{data.user.nome}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF / CNPJ de Login</p>
-                  <p className="text-sm font-bold text-slate-100 mt-0.5">{cpfMask(data.user.cpfcnpj)}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">CPF / CNPJ de login</p>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">{cpfMask(data.user.cpfcnpj)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nova Senha Temporária</p>
-                  <p className="text-sm font-mono font-bold text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg inline-block select-all tracking-wider">
+                  <p className="text-[10px] font-medium text-muted-foreground">Nova senha temporária</p>
+                  <p className="text-sm font-mono font-semibold text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg inline-block select-all tracking-wider">
                     {resetPasswordData.senha}
                   </p>
                 </div>
@@ -2834,7 +2994,7 @@ export default function AdminUserDetails() {
           </AdminBaseDialog.Body>
           <AdminBaseDialog.Footer>
             <AdminBaseDialog.Action
-              label="Copiar Acesso"
+              label="Copiar acesso"
               variant="primary"
               onClick={async () => {
                 const cleanedCpf = data.user.cpfcnpj.replace(/\D/g, "");
@@ -2876,11 +3036,11 @@ export default function AdminUserDetails() {
           description="Assinatura digital cadastrada pelo motorista no aplicativo."
         >
           <AdminBaseDialog.Header
-            title={`Assinatura Digital — ${data.user.nome}`}
+            title={`Assinatura digital — ${data.user.nome}`}
             onClose={() => setIsSignatureModalOpen(false)}
           />
           <AdminBaseDialog.Body>
-            <div className="p-6 bg-white rounded-2xl border border-slate-700 flex items-center justify-center">
+            <div className="p-6 bg-white rounded-2xl border border-border flex items-center justify-center">
               <img
                 src={data.user.assinatura_digital_url}
                 alt="Assinatura Digital"

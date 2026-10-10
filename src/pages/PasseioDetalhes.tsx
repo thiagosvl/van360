@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useFretamentoDetalhesQuery,
@@ -7,9 +8,8 @@ import {
 import { usePasseioDetalhesCalculations } from "@/hooks/business/useFretamentoCalculations";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Banner } from "@/components/ui/Banner";
-import { Progress } from "@/components/ui/progress";
 import { formatCurrency, formatDateTime, formatarTelefone } from "@/utils/formatters";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -28,6 +28,8 @@ import {
   DollarSign,
   MoreVertical,
   RotateCcw,
+  Pencil,
+  Search,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,8 +47,10 @@ export default function PasseioDetalhes() {
     openAdicionarParticipantePasseioDialog,
     openRegistrarPagamentoParticipanteDialog,
     openConfirmationDialog,
+    openPasseioFormDialog,
   } = useLayout();
 
+  const [busca, setBusca] = useState("");
   const { data: detalhes, isLoading, refetch } = useFretamentoDetalhesQuery(id || "");
   const statusMutation = useAtualizarStatusParticipanteMutation();
   const removerMutation = useRemoverParticipanteMutation();
@@ -55,9 +59,9 @@ export default function PasseioDetalhes() {
 
   if (isLoading || !calculados) {
     return (
-      <div className="min-h-screen bg-surface max-w-5xl mx-auto p-6 space-y-4">
-        <div className="h-8 w-48 bg-slate-200 animate-pulse rounded-lg" />
-        <div className="h-36 bg-slate-200 animate-pulse rounded-2xl" />
+      <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 pt-1 sm:pt-2">
+        <div className="h-8 w-48 bg-[#e5e5e5] animate-pulse rounded-[18px]" />
+        <div className="h-44 bg-white border border-[#e5e5e5] animate-pulse rounded-[24px]" />
       </div>
     );
   }
@@ -143,139 +147,168 @@ export default function PasseioDetalhes() {
     });
   };
 
+  const participantesFiltrados = calculados.participantes.filter((p) => {
+    if (!busca.trim()) return true;
+    const termo = busca.toLowerCase();
+    return (
+      p.nome.toLowerCase().includes(termo) ||
+      (p.responsavel_nome && p.responsavel_nome.toLowerCase().includes(termo)) ||
+      (p.telefone && p.telefone.includes(termo))
+    );
+  });
+
   const dataFormatadaCabecalho = formatDateTime(calculados.data_inicio);
 
   return (
-    <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-4 pb-24">
+    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 pt-1 sm:pt-2">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.CHARTERS)}
-          className="text-slate-500 hover:text-slate-900 gap-1.5 -ml-2 font-medium text-xs h-8"
+          className="text-[#737373] hover:text-[#0a0a0a] hover:bg-white gap-1.5 -ml-2 font-medium text-xs h-8 sm:h-9 rounded-[18px] border border-transparent hover:border-[#e5e5e5] transition-all"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Voltar para Fretamentos e Passeios
+          <ArrowLeft className="h-4 w-4" />
+          <span>Voltar</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            openPasseioFormDialog({
+              editingItem: detalhes,
+              onSuccess: () => refetch(),
+            })
+          }
+          className="h-8 sm:h-9 rounded-[18px] text-xs font-medium text-[#0a0a0a] border-[#e5e5e5] hover:bg-white hover:border-[#0a0a0a] gap-1.5 transition-all active:scale-[0.98]"
+        >
+          <Pencil className="h-3.5 w-3.5 text-[#737373]" />
+          <span>Editar Passeio</span>
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3.5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge
-              variant="secondary"
-              className="bg-slate-100 text-slate-700 border border-slate-200/60 font-semibold text-xs py-0.5"
-            >
-              <Ticket className="h-3 w-3 mr-1" />
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+              <Ticket className="h-3 w-3 text-[#737373]" />
               Passeio Coletivo
-            </Badge>
+            </span>
             {calculados.isLotado && (
-              <Badge variant="destructive" className="font-semibold text-xs py-0.5">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-white text-[#e7000b] border border-[#e7000b]/40">
                 Vagas Esgotadas
-              </Badge>
+              </span>
             )}
             {calculados.valor_por_pessoa ? (
-              <Badge variant="outline" className="text-xs font-medium text-slate-700 bg-white border-slate-200 py-0.5">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-white text-[#0a0a0a] border border-[#e5e5e5]">
                 {formatCurrency(Number(calculados.valor_por_pessoa))} / pessoa
-              </Badge>
+              </span>
             ) : null}
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight pt-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#0a0a0a] tracking-tight leading-tight">
             {calculados.titulo}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pt-0.5">
-            <span className="flex items-center gap-1 font-medium">
-              <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              {calculados.destino}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-x-5 gap-y-1 text-xs text-[#737373] pt-0.5">
+            <span className="flex items-center gap-1.5 font-medium text-[#0a0a0a] truncate">
+              <MapPin className="h-3.5 w-3.5 text-[#737373] shrink-0" />
+              <span className="truncate">{calculados.destino}</span>
             </span>
-            <span className="flex items-center gap-1 font-medium">
-              <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              {dataFormatadaCabecalho}
+            <span className="flex items-center gap-1.5 font-medium text-[#0a0a0a] truncate">
+              <Calendar className="h-3.5 w-3.5 text-[#737373] shrink-0" />
+              <span className="truncate">{dataFormatadaCabecalho}</span>
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50/70 rounded-xl border border-slate-100 p-2.5 sm:p-3 text-center">
-          <div className="px-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Vagas</span>
-            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
+        <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#e5e5e5] text-center gap-2 sm:gap-0">
+          <div className="px-2 py-1.5 sm:py-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
+              Vagas
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5">
               {calculados.vagas_ocupadas}
-              <span className="text-xs font-normal text-slate-400 ml-0.5">
+              <span className="text-xs font-normal text-[#737373] ml-1">
                 /{calculados.vagas_totais ?? "∞"}
               </span>
             </div>
-            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 truncate block mt-0.5">
+            <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
               {calculados.vagasRestantes !== null
                 ? (calculados.vagasRestantes === 0 ? "Lotado" : `${calculados.vagasRestantes} livres`)
                 : "Abertas"}
             </span>
           </div>
 
-          <div className="px-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Arrecadado</span>
-            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 truncate">
+          <div className="px-2 py-1.5 sm:py-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
+              Arrecadado
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5 truncate">
               {formatCurrency(calculados.totalPagoParticipantes)}
             </div>
-            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 block mt-0.5 truncate">
+            <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
               {calculados.participantesPagosCount} pago(s)
             </span>
           </div>
 
-          <div className="px-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">A Receber</span>
-            <div className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 truncate">
+          <div className="px-2 py-1.5 sm:py-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
+              A Receber
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5 truncate">
               {formatCurrency(calculados.totalPendenteParticipantes)}
             </div>
-            <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 block mt-0.5 truncate">
+            <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
               {calculados.participantesPendentesCount} aberto(s)
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-0.5 w-full">
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full">
           <Button
             onClick={copiarLink}
             variant="outline"
-            size="sm"
-            className="flex-1 h-10 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 gap-1.5 shadow-2xs active:scale-95"
+            className="w-full sm:flex-1 h-10 rounded-[18px] text-xs sm:text-sm font-medium text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#fafafa] gap-2 transition-all active:scale-[0.98]"
           >
-            <Copy className="h-3.5 w-3.5 text-slate-400" />
-            Copiar Link
+            <Copy className="h-4 w-4 text-[#737373]" />
+            <span>Copiar Link</span>
           </Button>
 
           <Button
             onClick={compartilharWhatsApp}
-            size="sm"
-            className="flex-1 h-10 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#20b858] text-white gap-2 shadow-xs transition-all active:scale-95"
+            className="w-full sm:flex-1 h-10 rounded-[18px] text-xs sm:text-sm font-semibold bg-[#25D366] hover:bg-[#20b858] text-white gap-2 border-none shadow-xs transition-all active:scale-[0.98] cursor-pointer"
           >
             <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
-            Enviar no WhatsApp
+            <span>Enviar no WhatsApp</span>
           </Button>
         </div>
 
         {calculados.veiculos.length > 0 && (
-          <div className="flex items-center gap-2 pt-1 text-xs text-slate-500">
-            <Car className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-2 pt-2 text-xs text-[#737373] border-t border-[#e5e5e5]">
+            <Car className="h-3.5 w-3.5 text-[#737373] shrink-0" />
             <span className="font-medium text-[11px]">Vans:</span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5">
               {calculados.veiculos.map((v) => (
-                <Badge key={v.id} variant="outline" className="text-[11px] py-0 px-2 font-normal text-slate-600 bg-white border-slate-200">
+                <span
+                  key={v.id}
+                  className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#fafafa] text-[#0a0a0a] border border-[#e5e5e5]"
+                >
                   {v.placa} {v.modelo ? `(${v.modelo})` : ""}
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Lista de Participantes</h3>
-            <p className="text-xs text-slate-500">
-              Gerencie participantes, pagamentos, adiantamentos e confirmações.
+            <h2 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight">Participantes</h2>
+            <p className="text-xs text-[#737373] mt-0.5">
+              Confirmações de presença e pagamentos.
             </p>
           </div>
 
@@ -286,22 +319,38 @@ export default function PasseioDetalhes() {
                 onSuccess: () => refetch(),
               })
             }
-            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-10 px-4 rounded-xl gap-1.5 shadow-xs"
+            className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs h-9 sm:h-10 px-4 rounded-[18px] gap-2 border-none shadow-xs transition-all active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
-            Adicionar Participante
+            <span>Adicionar Participante</span>
           </Button>
         </div>
+
+        {calculados.participantes.length > 0 && (
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+            <Input
+              placeholder="Buscar participante por nome, responsável ou telefone..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
+            />
+          </div>
+        )}
 
         {calculados.participantes.length === 0 ? (
           <Banner
             variant="info"
             title="Nenhum participante confirmado ainda"
-            description="Compartilhe o link com os pais no WhatsApp ou clique em 'Adicionar Participante' para incluir os primeiros inscritos."
+            description="Compartilhe o link do passeio no WhatsApp ou clique em 'Adicionar Participante' para incluir os primeiros inscritos."
           />
+        ) : participantesFiltrados.length === 0 ? (
+          <div className="p-6 text-center text-xs text-[#737373] bg-[#fafafa] rounded-[18px] border border-[#e5e5e5]">
+            Nenhum participante encontrado para &quot;{busca}&quot;.
+          </div>
         ) : (
-          <div className="divide-y divide-slate-100 border border-slate-100 rounded-2xl overflow-hidden">
-            {calculados.participantes.map((p) => {
+          <div className="divide-y divide-[#e5e5e5] border border-[#e5e5e5] rounded-[18px] overflow-hidden bg-white">
+            {participantesFiltrados.map((p) => {
               const valorTotal = Number(p.valor || 0);
               const valorPago = Number(p.valor_pago ?? (p.status_pagamento === "pago" ? p.valor : 0));
               const isPago = p.status_pagamento === "pago" || (valorTotal > 0 && valorPago >= valorTotal);
@@ -311,113 +360,114 @@ export default function PasseioDetalhes() {
               return (
                 <div
                   key={p.id}
-                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors"
+                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#fafafa] transition-colors"
                 >
                   <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-sm">{p.nome}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-[#0a0a0a] text-sm">{p.nome}</span>
                       {p.passageiro_id ? (
-                        <Badge variant="outline" className="text-[10px] bg-[#1a3a5c]/10 text-[#1a3a5c] border-[#1a3a5c]/20 font-bold">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
                           Aluno da Van
-                        </Badge>
+                        </span>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200 font-medium">
-                          Convidado
-                        </Badge>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-white text-[#737373] border border-[#e5e5e5]">
+                          Não é Aluno
+                        </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#737373]">
                       {p.responsavel_nome && !p.is_proprio_responsavel && (
-                        <span>Resp: <strong className="text-slate-700">{p.responsavel_nome}</strong></span>
+                        <span className="truncate">Resp: <strong className="text-[#0a0a0a] font-medium">{p.responsavel_nome}</strong></span>
                       )}
                       {p.telefone && (
                         <a
                           href={buildWhatsAppUrl(p.telefone)}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1.5 text-slate-600 hover:text-emerald-600 font-medium"
+                          className="flex items-center gap-1 text-[#737373] hover:text-[#25D366] font-medium transition-colors"
                         >
                           <WhatsAppIcon className="w-3.5 h-3.5 fill-[#25D366] shrink-0" />
-                          {formatarTelefone(p.telefone)}
+                          <span>{formatarTelefone(p.telefone)}</span>
                         </a>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e5e5e5]">
                     <div className="text-left sm:text-right mr-1">
-                      <span className="font-bold text-slate-900 text-sm block leading-none">
+                      <span className="font-semibold text-[#0a0a0a] text-sm block leading-none">
                         {isParcial
                           ? `${formatCurrency(valorPago)} / ${formatCurrency(valorTotal)}`
                           : formatCurrency(valorTotal)}
                       </span>
                       {isParcial && (
-                        <span className="text-[10px] text-amber-700 font-medium mt-0.5 block">
+                        <span className="text-[10px] sm:text-[11px] text-[#737373] font-medium mt-0.5 block">
                           Resta {formatCurrency(saldoDevedor)}
                         </span>
                       )}
                     </div>
 
                     {isPago ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs select-none"
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0a0a]" />
                         Quitado
-                      </Badge>
+                      </span>
                     ) : isParcial ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-50/80 text-amber-700 border border-amber-200 font-semibold text-xs py-1 px-2.5 gap-1.5 shadow-2xs select-none"
-                      >
-                        <Clock className="h-3.5 w-3.5 text-amber-600" />
-                        Sinal Pago
-                      </Badge>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-[#fafafa] text-[#0a0a0a] border border-[#e5e5e5]">
+                        <Clock className="h-3.5 w-3.5 text-[#737373]" />
+                        Sinal
+                      </span>
                     ) : (
-                      <Badge
-                        variant="outline"
-                        className="bg-slate-50 text-slate-600 border border-slate-200 font-medium text-xs py-1 px-2.5 gap-1.5 select-none"
-                      >
-                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-white text-[#737373] border border-[#e5e5e5]">
+                        <Clock className="h-3.5 w-3.5 text-[#737373]" />
                         Pendente
-                      </Badge>
+                      </span>
                     )}
 
                     {!isPago && (
                       <Button
                         size="sm"
                         onClick={() => handleOpenRegistrarPagamento(p)}
-                        className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-8 px-3 rounded-lg gap-1.5 shadow-2xs transition-all active:scale-95"
+                        className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-[18px] gap-1 border-none shadow-xs transition-all active:scale-[0.98]"
                       >
                         <DollarSign className="h-3.5 w-3.5" />
-                        Registrar Pgto
+                        <span className="hidden sm:inline">Pgto</span>
                       </Button>
                     )}
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 rounded-lg">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-[18px] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
+                        >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenRegistrarPagamento(p)}>
-                          <DollarSign className="h-4 w-4 mr-2 text-slate-600" />
+                      <DropdownMenuContent align="end" className="rounded-[18px] border-[#e5e5e5] p-1.5">
+                        <DropdownMenuItem
+                          onClick={() => handleOpenRegistrarPagamento(p)}
+                          className="rounded-[10px] text-xs font-medium cursor-pointer"
+                        >
+                          <DollarSign className="h-3.5 w-3.5 mr-2 text-[#737373]" />
                           {isPago ? "Editar Pagamento" : "Informar Pagamento / Sinal"}
                         </DropdownMenuItem>
                         {(isPago || isParcial) && (
-                          <DropdownMenuItem onClick={() => handleMarcarComoPendente(p)}>
-                            <RotateCcw className="h-4 w-4 mr-2 text-amber-600" />
+                          <DropdownMenuItem
+                            onClick={() => handleMarcarComoPendente(p)}
+                            className="rounded-[10px] text-xs font-medium cursor-pointer"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5 mr-2 text-[#737373]" />
                             Marcar como Pendente
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
                           onClick={() => handleConfirmarRemocao(p)}
-                          className="text-red-600 focus:text-red-600"
+                          className="rounded-[10px] text-xs font-medium text-[#e7000b] focus:text-[#e7000b] cursor-pointer"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className="h-3.5 w-3.5 mr-2" />
                           Remover do Passeio
                         </DropdownMenuItem>
                       </DropdownMenuContent>

@@ -78,8 +78,6 @@ export function useEscolasViewModel() {
     [escolasData]
   );
 
-  const countEscolasAtivas = escolasData?.ativas ?? null;
-
   useEffect(() => {
     setPageTitle("Escolas");
   }, [setPageTitle]);

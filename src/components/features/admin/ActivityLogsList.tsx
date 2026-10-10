@@ -93,7 +93,7 @@ export function ActivityLogsList({
         {latestLog && (
           <div
             key={latestLog.id}
-            className="p-4 rounded-2xl bg-blue-950/30 border-2 border-blue-500/60 shadow-lg shadow-blue-500/10 relative space-y-3 animate-in fade-in slide-in-from-top-3 duration-500 transition-all"
+            className="p-4 rounded-xl bg-primary/5 border border-primary/20 relative space-y-3 animate-in fade-in slide-in-from-top-3 duration-300 transition-all"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -105,7 +105,7 @@ export function ActivityLogsList({
                       e.stopPropagation();
                       openImageFullscreen({ imageUrl: latestLogoUrl, alt: latestUserName });
                     }}
-                    className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                    className="h-10 w-10 rounded-lg bg-background border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                     title="Visualizar logo"
                   >
                     <img
@@ -117,12 +117,12 @@ export function ActivityLogsList({
                   </div>
                 )}
                 <div className="space-y-1 min-w-0 flex-1">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2 break-words">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 break-words">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
                     {!hideUserColumn && (latestLog.usuario_id || latestLog.usuarios?.id) ? (
                       <Link
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
-                        className="hover:text-blue-400 hover:underline transition-colors truncate"
+                        className="hover:text-primary hover:underline transition-colors truncate"
                       >
                         {latestUserName}
                       </Link>
@@ -130,34 +130,34 @@ export function ActivityLogsList({
                       <span className="truncate">{latestUserName}</span>
                     )}
                     {latestFullName && (
-                      <span className="text-[11px] font-normal text-slate-400 shrink-0">
+                      <span className="text-[11px] font-normal text-muted-foreground shrink-0">
                         ({latestFullName})
                       </span>
                     )}
                   </h4>
-                  <p className="text-xs font-medium text-slate-200 leading-relaxed break-words">
+                  <p className="text-xs font-normal text-muted-foreground leading-relaxed break-words">
                     {formatActivityDescription(latestLog.descricao)}
                   </p>
                 </div>
               </div>
-              <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
+              <div className="p-2 bg-primary/10 text-primary rounded-lg border border-primary/20 shrink-0">
                 <FileText className="h-4 w-4" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2.5 border-t border-blue-500/20 gap-2">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 text-xs font-extrabold font-mono shadow-sm shadow-blue-500/10">
-                <Clock className="h-4 w-4 text-blue-400" />
+            <div className="flex items-center justify-between pt-2.5 border-t border-primary/15 gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium font-mono">
+                <Clock className="h-3.5 w-3.5 text-primary" />
                 {formatRelativeTime(latestLog.created_at)}
               </span>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setSelectedLog(latestLog)}
-                className="h-8 px-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl shadow-md flex items-center gap-1.5 shrink-0"
+                className="h-8 px-3 rounded-lg flex items-center gap-1.5 shrink-0 bg-background border-border text-foreground hover:bg-secondary"
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">INSPECIONAR</span>
+                <span className="text-xs font-medium hidden sm:inline">Inspecionar</span>
               </Button>
             </div>
           </div>
@@ -176,11 +176,11 @@ export function ActivityLogsList({
           return (
             <div
               key={log.id}
-              className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-slate-900/90"
+              className="p-3.5 rounded-xl bg-secondary/40 border border-border flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4 transition-colors hover:bg-secondary/70"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800/80 shrink-0">
-                  <Clock className="h-3.5 w-3.5 text-slate-400" />
+                <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-medium font-mono text-muted-foreground bg-background px-2.5 py-1 rounded-lg border border-border shrink-0">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                   {formatRelativeTime(log.created_at)}
                 </span>
 
@@ -192,7 +192,7 @@ export function ActivityLogsList({
                       e.stopPropagation();
                       openImageFullscreen({ imageUrl: logoUrl, alt: displayName });
                     }}
-                    className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                    className="h-10 w-10 rounded-lg bg-background border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                     title="Visualizar logo"
                   >
                     <img
@@ -204,13 +204,13 @@ export function ActivityLogsList({
                   </div>
                 )}
 
-                <div className="space-y-1.5 md:space-y-0.5 min-w-0 flex-1 text-left">
+                <div className="space-y-1 md:space-y-0.5 min-w-0 flex-1 text-left">
                   <div className="flex items-center justify-between gap-2 md:block">
-                    <h5 className="text-xs font-bold text-slate-100 break-words md:truncate leading-tight flex items-center gap-1.5 flex-wrap">
+                    <h5 className="text-xs font-semibold text-foreground break-words md:truncate leading-tight flex items-center gap-1.5 flex-wrap">
                       {!hideUserColumn && userId ? (
                         <Link
                           to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
-                          className="hover:text-blue-400 hover:underline transition-colors"
+                          className="hover:text-primary hover:underline transition-colors"
                         >
                           {displayName}
                         </Link>
@@ -218,7 +218,7 @@ export function ActivityLogsList({
                         <span>{displayName}</span>
                       )}
                       {fullName && (
-                        <span className="text-[10px] font-normal text-slate-400">
+                        <span className="text-[10px] font-normal text-muted-foreground">
                           ({fullName})
                         </span>
                       )}
@@ -228,38 +228,37 @@ export function ActivityLogsList({
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedLog(log)}
-                      className="md:hidden h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
-                      title="Ver detalhes da atividade"
+                      className="md:hidden h-7 px-2 text-primary hover:bg-primary/10 rounded-lg"
                     >
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
                   </div>
 
-                  <p className="text-xs text-slate-300 md:text-slate-400 leading-relaxed md:leading-normal break-words md:truncate">
+                  <p className="text-xs text-muted-foreground line-clamp-2 md:truncate leading-normal">
                     {formatActivityDescription(log.descricao)}
                   </p>
-
-                  <div className="pt-1 md:hidden">
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800/80">
-                      <Clock className="h-3 w-3 text-slate-400" />
-                      {formatRelativeTime(log.created_at)}
-                    </span>
-                  </div>
                 </div>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedLog(log)}
-                className="hidden md:flex h-7 w-7 p-0 rounded-xl bg-slate-800 text-blue-400 hover:bg-blue-600 hover:text-white shrink-0"
-                title="Ver detalhes da atividade"
-              >
-                <Eye className="h-3.5 w-3.5" />
-              </Button>
+              <div className="flex items-center justify-between md:justify-end gap-2 shrink-0">
+                <span className="md:hidden text-[10px] font-mono text-muted-foreground">
+                  {formatRelativeTime(log.created_at)}
+                </span>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedLog(log)}
+                  className="hidden md:inline-flex h-8 px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg text-xs gap-1.5 font-medium"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Detalhes</span>
+                </Button>
+              </div>
             </div>
           );
         })}
+
       </div>
 
       {selectedLog && (
@@ -271,29 +270,29 @@ export function ActivityLogsList({
           maxWidth="lg"
         >
           <AdminBaseDialog.Header
-            title="Detalhes da Atividade"
+            title="Detalhes da atividade"
             subtitle="Informações registradas no sistema"
-            icon={<FileText className="w-5 h-5 text-blue-400" />}
+            icon={<FileText className="w-5 h-5 text-primary" />}
             onClose={handleCloseModal}
           />
           <AdminBaseDialog.Body>
-            <div className="grid grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 gap-3 bg-secondary/40 p-3.5 rounded-xl border border-border">
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Ação</p>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1 ${getActionBadgeStyle(selectedLog.acao)}`}>
+                <p className="text-xs font-medium text-muted-foreground">Ação</p>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border mt-1 ${getActionBadgeStyle(selectedLog.acao)}`}>
                   {selectedLog.acao.replace(/_/g, " ")}
                 </span>
               </div>
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Entidade</p>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700/80 mt-1">
+                <p className="text-xs font-medium text-muted-foreground">Entidade</p>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-foreground border border-border mt-1">
                   {selectedLog.entidade_tipo}
                 </span>
               </div>
             </div>
 
-            <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Usuário / Autor</p>
+            <div className="p-3.5 bg-secondary/40 rounded-xl border border-border space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Usuário / Autor</p>
               {selectedLog.usuarios ? (
                 <div className="flex items-center gap-3">
                   {selectedLog.usuarios.logo_url?.trim() && (
@@ -307,7 +306,7 @@ export function ActivityLogsList({
                           alt: selectedLog.usuarios?.nome || "Logo",
                         });
                       }}
-                      className="h-12 w-12 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                      className="h-12 w-12 rounded-lg bg-background border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                       title="Visualizar logo"
                     >
                       <img
@@ -318,11 +317,11 @@ export function ActivityLogsList({
                     </div>
                   )}
                   <div className="space-y-0.5 min-w-0 flex-1">
-                    <p className="text-sm font-bold text-white uppercase">
+                    <p className="text-sm font-semibold text-foreground">
                       {(selectedLog.usuario_id || selectedLog.usuarios?.id) ? (
                         <Link
                           to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedLog.usuario_id || selectedLog.usuarios?.id}`}
-                          className="hover:text-blue-400 hover:underline transition-colors"
+                          className="hover:text-primary hover:underline transition-colors"
                           onClick={handleCloseModal}
                         >
                           {selectedLog.usuarios.apelido || selectedLog.usuarios.nome}
@@ -332,41 +331,41 @@ export function ActivityLogsList({
                       )}
                     </p>
                     {selectedLog.usuarios.apelido && selectedLog.usuarios.nome && (
-                      <p className="text-xs text-slate-400">Nome: {selectedLog.usuarios.nome}</p>
+                      <p className="text-xs text-muted-foreground">Nome: {selectedLog.usuarios.nome}</p>
                     )}
                     {selectedLog.usuarios.email && (
-                      <p className="text-xs font-semibold text-slate-400">{selectedLog.usuarios.email}</p>
+                      <p className="text-xs font-medium text-muted-foreground">{selectedLog.usuarios.email}</p>
                     )}
                     {selectedLog.usuarios.telefone && (
-                      <p className="text-xs font-mono text-slate-400">{phoneMask(selectedLog.usuarios.telefone)}</p>
+                      <p className="text-xs font-mono text-muted-foreground">{phoneMask(selectedLog.usuarios.telefone)}</p>
                     )}
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 uppercase font-semibold">Sistema</p>
+                <p className="text-xs text-muted-foreground font-medium">Sistema</p>
               )}
             </div>
 
-            <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1">
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Descrição da Ação</p>
-              <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">{formatActivityDescription(selectedLog.descricao)}</p>
+            <div className="p-3.5 bg-secondary/40 rounded-xl border border-border space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Descrição da ação</p>
+              <p className="text-xs font-normal text-foreground leading-relaxed break-words">{formatActivityDescription(selectedLog.descricao)}</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-secondary/40 p-3.5 rounded-xl border border-border">
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Data e Hora</p>
-                <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
+                <p className="text-xs font-medium text-muted-foreground">Data e hora</p>
+                <p className="text-xs font-mono font-medium text-primary mt-0.5">
                   {new Date(selectedLog.created_at).toLocaleString("pt-BR")}
                 </p>
               </div>
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Endereço IP</p>
-                <p className="text-xs font-mono font-bold text-slate-300 mt-0.5">{selectedLog.ip_address || "—"}</p>
+                <p className="text-xs font-medium text-muted-foreground">Endereço IP</p>
+                <p className="text-xs font-mono font-medium text-foreground mt-0.5">{selectedLog.ip_address || "—"}</p>
               </div>
               {selectedLog.entidade_id && (
-                <div className="sm:col-span-2 pt-2 border-t border-slate-800/80">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">ID da Entidade</p>
-                  <p className="text-[11px] font-mono text-slate-400 mt-0.5 break-all">{selectedLog.entidade_id}</p>
+                <div className="sm:col-span-2 pt-2 border-t border-border">
+                  <p className="text-xs font-medium text-muted-foreground">ID da entidade</p>
+                  <p className="text-[11px] font-mono text-muted-foreground mt-0.5 break-all">{selectedLog.entidade_id}</p>
                 </div>
               )}
             </div>
@@ -374,7 +373,7 @@ export function ActivityLogsList({
             {selectedLog.meta && Object.keys(selectedLog.meta).length > 0 && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Metadados Completos (JSON)</p>
+                  <p className="text-xs font-medium text-muted-foreground">Metadados completos (JSON)</p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -382,12 +381,12 @@ export function ActivityLogsList({
                       await navigator.clipboard.writeText(JSON.stringify(selectedLog.meta, null, 2));
                       toast.success("Metadados copiados para a área de transferência!");
                     }}
-                    className="h-6 px-2 text-[9px] font-bold uppercase tracking-wider text-blue-400 hover:bg-slate-800 hover:text-blue-300"
+                    className="h-6 px-2 text-xs font-medium text-primary hover:bg-secondary"
                   >
                     Copiar JSON
                   </Button>
                 </div>
-                <pre className="bg-slate-950 text-emerald-400 border border-slate-800 p-3.5 rounded-xl text-[11px] overflow-x-auto font-mono max-h-48 scrollbar-thin select-all leading-tight">
+                <pre className="bg-background text-emerald-400 border border-border p-3.5 rounded-xl text-xs overflow-x-auto font-mono max-h-48 scrollbar-thin select-all leading-tight">
                   {JSON.stringify(selectedLog.meta, null, 2)}
                 </pre>
               </div>

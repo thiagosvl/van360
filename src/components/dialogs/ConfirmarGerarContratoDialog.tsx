@@ -2,10 +2,11 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Switch } from "@/components/ui/switch";
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName } from "@/utils/formatters";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { useCreateContrato, useSubstituirContrato } from "@/hooks/api/useContratos";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
-import { FileSignature, FileText } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface ConfirmarGerarContratoDialogProps {
   open: boolean;
@@ -33,25 +34,34 @@ export function ConfirmarGerarContratoDialog({
   onSuccess,
 }: ConfirmarGerarContratoDialogProps) {
   const [notificarResponsavel, setNotificarResponsavel] = useState(true);
+  const queryClient = useQueryClient();
   const createContrato = useCreateContrato();
   const substituirContrato = useSubstituirContrato();
 
   const isSubmitting = createContrato.isPending || substituirContrato.isPending;
 
-  const valorExibicao = valorMensal ?? (passageiro?.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined);
-  const diaExibicao = diaVencimento ?? passageiro?.dia_vencimento ?? undefined;
-  const firstName = formatFirstName(passageiro.nome);
+  const cachedPassageiro = passageiro?.id ? queryClient.getQueryData<Passageiro>(["passageiro", passageiro.id]) : null;
+  const currentPassageiro = cachedPassageiro || passageiro;
+
+  const valorExibicao = valorMensal ?? (currentPassageiro?.valor_cobranca ? Number(currentPassageiro.valor_cobranca) : undefined);
+  const diaExibicao = diaVencimento ?? currentPassageiro?.dia_vencimento ?? undefined;
+  const firstName = formatFirstName(currentPassageiro?.nome || "");
+
+  const responsavelNome =
+    currentPassageiro?.responsavel_principal?.nome ||
+    currentPassageiro?.responsaveis?.[0]?.nome ||
+    null;
 
   const handleClose = () => {
     safeCloseDialog(() => onOpenChange(false));
   };
 
   const handleConfirm = async () => {
-    if (!passageiro?.id) return;
+    if (!currentPassageiro?.id) return;
 
     try {
       if (isSubstituicao) {
-        const idAlvo = contratoIdParaSubstituir || passageiro.contrato_id;
+        const idAlvo = contratoIdParaSubstituir || currentPassageiro.contrato_id;
         if (!idAlvo) return;
         await substituirContrato.mutateAsync({
           contratoId: idAlvo,
@@ -59,11 +69,11 @@ export function ConfirmarGerarContratoDialog({
         });
       } else {
         await createContrato.mutateAsync({
-          passageiroId: passageiro.id,
+          passageiroId: currentPassageiro.id,
           valorMensal: valorExibicao,
           diaVencimento: diaExibicao ? Number(diaExibicao) : undefined,
-          dataInicio: dataInicio || passageiro.data_inicio_transporte || undefined,
-          dataFim: dataFim || passageiro.data_fim_transporte || undefined,
+          dataInicio: dataInicio || currentPassageiro.data_inicio_transporte || undefined,
+          dataFim: dataFim || currentPassageiro.data_fim_transporte || undefined,
           notificarResponsavel,
         });
       }
@@ -76,42 +86,61 @@ export function ConfirmarGerarContratoDialog({
   const dialogTitle = isSubstituicao ? "Substituir Contrato" : "Gerar Contrato";
   const actionLabel = isSubstituicao
     ? (notificarResponsavel ? "Substituir e Enviar" : "Apenas Substituir")
-    : (notificarResponsavel ? "Gerar e Enviar" : "Apenas Gerar");
+    : (notificarResponsavel ? "Gerar e Enviar" : "Gerar Contrato");
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={isSubmitting}>
+    <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={isSubmitting} maxWidth="md">
       <BaseDialog.Header
         title={dialogTitle}
-        icon={isSubstituicao ? <FileSignature className="w-5 h-5 opacity-80" /> : <FileText className="w-5 h-5 opacity-80" />}
         onClose={handleClose}
       />
 
       <BaseDialog.Body>
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 font-medium">
-            {isSubstituicao
-              ? `Confirme a atualização do contrato de ${firstName}.`
-              : `Confirme a geração do contrato de ${firstName}.`}
-          </p>
+        <div className="space-y-3.5">
+          <div className="p-4 rounded-[20px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-sm font-semibold truncate text-[#0a0a0a] leading-tight">
+                {currentPassageiro?.nome}
+              </h4>
+              {responsavelNome && (
+                <p className="text-xs text-[#737373] truncate mt-1 font-normal">
+                  {responsavelNome}
+                </p>
+              )}
+            </div>
+            {valorExibicao !== undefined && (
+              <div className="text-right shrink-0">
+                <span className="text-xs font-semibold text-[#0a0a0a] block">
+                  {formatCurrency(valorExibicao)}
+                </span>
+                {diaExibicao && (
+                  <span className="text-[11px] text-[#737373] block mt-0.5">
+                    Venc. dia {diaExibicao}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
           <div
-            className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs cursor-pointer select-none"
+            className="flex items-center justify-between rounded-[20px] bg-white border border-[#e5e5e5] p-4 transition-all hover:bg-[#fafafa] cursor-pointer shadow-xs select-none gap-4"
             onClick={() => !isSubmitting && setNotificarResponsavel((prev) => !prev)}
           >
-            <div className="space-y-0.5 pr-4">
-              <span className="text-slate-800 font-bold text-sm">
+            <div className="space-y-0.5 pr-2 flex-1 min-w-0">
+              <span className="text-sm font-semibold text-[#0a0a0a] block">
                 Enviar para os pais no WhatsApp
               </span>
-              <div className="text-xs text-slate-500 font-normal leading-relaxed">
+              <p className="text-xs text-[#737373] leading-relaxed">
                 {notificarResponsavel
-                  ? "Os pais receberão o link de assinatura assim que o contrato for gerado."
-                  : "O contrato será gerado sem envio. Você poderá enviar aos pais quando preferir."}
-              </div>
+                  ? "O responsável receberá o link de assinatura automaticamente no WhatsApp."
+                  : "O contrato será gerado, mas você terá que enviar o link manualmente para o responsável."}
+              </p>
             </div>
             <Switch
               checked={notificarResponsavel}
               onCheckedChange={setNotificarResponsavel}
               disabled={isSubmitting}
+              className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-[#e5e5e5] shrink-0"
               aria-label="Enviar para os pais no WhatsApp"
               onClick={(e) => e.stopPropagation()}
             />

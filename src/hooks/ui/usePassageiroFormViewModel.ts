@@ -8,7 +8,10 @@ import {
     useUpdatePassageiro, 
     useVeiculosWithFilters 
 } from "@/hooks";
-import { PassageiroFormModes } from "@/types/enums";
+import {
+  PassageiroFormModes,
+  ModoCobrancaEnum,
+} from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
@@ -320,6 +323,8 @@ export function usePassageiroFormViewModel({
     if (typeof purePayload.valor_cobranca === "string") {
       purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca);
     }
+
+    purePayload.modo_cobranca = data.modo_cobranca ? (data.modo_cobranca as ModoCobrancaEnum) : null;
 
     const commonOptions = {
       onSuccess: (responseData?: Passageiro) => {

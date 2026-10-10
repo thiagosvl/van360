@@ -3,20 +3,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
-import { ModalidadeCobrancaEnum, ContractMultaTipo } from "@/types/enums";
+import { ContractMultaTipo, ModoCobrancaEnum } from "@/types/enums";
 
 export type MotoristaConfiguracaoFinanceira = Tables<"motorista_configuracoes_financeiras"> & {
   taxa_efetiva: number;
 };
 
 export type UpdateMotoristaFinanceiroPayload = {
-  cobranca_automatica_ativa?: boolean;
+  modo_cobranca?: ModoCobrancaEnum;
   enviar_recibo_automatico?: boolean;
   chave_pix_repasse?: string | null;
   tipo_chave_pix?: string | null;
-  repassar_taxa_pais_padrao?: boolean;
   taxa_personalizada?: number | null;
-  modalidade_cobranca?: ModalidadeCobrancaEnum;
   cobrar_multa_atraso?: boolean;
   multa_atraso_tipo?: ContractMultaTipo | null;
   multa_atraso_valor?: number | null;
@@ -25,6 +23,7 @@ export type UpdateMotoristaFinanceiroPayload = {
   juros_atraso_valor?: number | null;
   dias_carencia_atraso?: number;
   dias_validade_apos_vencimento?: number;
+  aplicar_a_todos?: boolean;
 };
 
 const MOTORISTA_FINANCEIRO_QUERY_KEY = ["motorista-financeiro"];
@@ -70,7 +69,9 @@ export function useMotoristaFinanceiroApi() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_EXCECOES_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
     },
   });
 
@@ -82,3 +83,36 @@ export function useMotoristaFinanceiroApi() {
     isUpdating: mutation.isPending,
   };
 }
+
+export interface ResumoExcecoesModoCobranca {
+  total_alunos: number;
+  padrao_van: number;
+  excecoes: {
+    DESATIVADO: number;
+    LEMBRETES: number;
+    AUTOMATICA: number;
+  };
+  total_excecoes: number;
+}
+
+export const MOTORISTA_FINANCEIRO_EXCECOES_QUERY_KEY = ["motorista-financeiro-excecoes"];
+
+export function useMotoristaFinanceiroExcecoesApi() {
+  const query = useQuery<ResumoExcecoesModoCobranca>({
+    queryKey: MOTORISTA_FINANCEIRO_EXCECOES_QUERY_KEY,
+    queryFn: async () => {
+      const { data } = await apiClient.get<ResumoExcecoesModoCobranca>(
+        "/motorista/configuracoes-financeiras/excecoes-resumo"
+      );
+      return data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+
+  return {
+    resumoExcecoes: query.data,
+    isLoading: query.isLoading,
+    refetch: query.refetch,
+  };
+}
+

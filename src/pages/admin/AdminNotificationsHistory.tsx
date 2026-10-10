@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import {
-  Filter,
   RefreshCw,
   RotateCcw,
   ChevronLeft,
   ChevronRight,
   Bell,
-  User,
-  Calendar,
   CheckCircle2,
   AlertTriangle,
   MessageSquare,
@@ -22,8 +19,6 @@ import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { toast } from "@/utils/notifications/toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AdminBroadcastNotificationView } from "@/components/features/admin/broadcast/AdminBroadcastNotificationView";
-
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,7 +41,6 @@ import {
 import { useDebounce } from "@/hooks/ui/useDebounce";
 
 interface ExtendedNotificationFiltersState extends NotificationFiltersState {
-  searchMotorista: string;
   dataInicio: string;
   dataFim: string;
 }
@@ -55,7 +49,6 @@ export default function AdminNotificationsHistory() {
   const { setPageTitle, openConfirmationDialog } = useLayout();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("historico");
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
     setPageTitle("Notificações");
@@ -71,21 +64,11 @@ export default function AdminNotificationsHistory() {
     canal: NOTIFICATION_FILTER_ALL,
     status: NOTIFICATION_FILTER_ALL,
     search: "",
-    searchMotorista: "",
     dataInicio: today,
     dataFim: today,
   });
 
-  const [motoristaInput, setMotoristaInput] = useState("");
-  const debouncedMotorista = useDebounce(motoristaInput, 400);
-
-  useEffect(() => {
-    setFilters((prev) => {
-      if (prev.searchMotorista === debouncedMotorista) return prev;
-      return { ...prev, searchMotorista: debouncedMotorista };
-    });
-    setPage(1);
-  }, [debouncedMotorista]);
+  const debouncedSearch = useDebounce(filters.search.trim(), 400);
 
   const { data, isFetching } = useAdminGlobalNotifications(
     {
@@ -99,8 +82,7 @@ export default function AdminNotificationsHistory() {
         filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
       status:
         filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
-      search: filters.search.trim() || undefined,
-      searchMotorista: filters.searchMotorista.trim() || undefined,
+      search: debouncedSearch || undefined,
       dataInicio: filters.dataInicio || undefined,
       dataFim: filters.dataFim || undefined,
     },
@@ -117,22 +99,6 @@ export default function AdminNotificationsHistory() {
     setPage(1);
   };
 
-  const handleResetUpperFilters = () => {
-    setMotoristaInput("");
-    setFilters((prev) => ({
-      ...prev,
-      searchMotorista: "",
-      dataInicio: today,
-      dataFim: today,
-    }));
-    setPage(1);
-  };
-
-  const hasUpperFiltersActive =
-    motoristaInput.trim() !== "" ||
-    filters.dataInicio !== today ||
-    filters.dataFim !== today;
-
   const bulkRetryMutation = useAdminRetryBulkNotifications();
 
   const handleBatchRetryFiltered = () => {
@@ -140,30 +106,30 @@ export default function AdminNotificationsHistory() {
       title: "Reprocessar Notificações em Lote",
       description: (
         <div className="space-y-3 text-left">
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-muted-foreground">
             Deseja reenfileirar todas as notificações com falha ou canceladas que atendem aos filtros ativos?
           </p>
-          <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5 text-xs text-slate-400 font-mono">
+          <div className="p-3 bg-secondary/40 rounded-xl border border-border space-y-1.5 text-xs text-muted-foreground font-mono">
             <div>
-              <span className="text-slate-500">Período: </span>
-              <strong className="text-slate-200">{filters.dataInicio} até {filters.dataFim}</strong>
+              <span className="text-muted-foreground">Período: </span>
+              <strong className="text-foreground">{filters.dataInicio} até {filters.dataFim}</strong>
             </div>
             {filters.canal !== NOTIFICATION_FILTER_ALL && (
               <div>
-                <span className="text-slate-500">Canal: </span>
-                <strong className="text-slate-200">{filters.canal}</strong>
+                <span className="text-muted-foreground">Canal: </span>
+                <strong className="text-foreground">{filters.canal}</strong>
               </div>
             )}
             {filters.categoria !== NotificationCategoryEnum.TODOS && (
               <div>
-                <span className="text-slate-500">Categoria: </span>
-                <strong className="text-slate-200">{filters.categoria}</strong>
+                <span className="text-muted-foreground">Categoria: </span>
+                <strong className="text-foreground">{filters.categoria}</strong>
               </div>
             )}
-            {filters.searchMotorista && (
+            {filters.search.trim() && (
               <div>
-                <span className="text-slate-500">Motorista: </span>
-                <strong className="text-slate-200">{filters.searchMotorista}</strong>
+                <span className="text-muted-foreground">Busca: </span>
+                <strong className="text-foreground">{filters.search}</strong>
               </div>
             )}
           </div>
@@ -179,8 +145,7 @@ export default function AdminNotificationsHistory() {
               categoria: filters.categoria === NotificationCategoryEnum.TODOS ? undefined : filters.categoria,
               canal: filters.canal === NOTIFICATION_FILTER_ALL ? undefined : filters.canal,
               status: filters.status === NOTIFICATION_FILTER_ALL ? undefined : filters.status,
-              search: filters.search.trim() || undefined,
-              searchMotorista: filters.searchMotorista.trim() || undefined,
+              search: debouncedSearch || undefined,
               dataInicio: filters.dataInicio || undefined,
               dataFim: filters.dataFim || undefined,
             },
@@ -196,168 +161,90 @@ export default function AdminNotificationsHistory() {
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border/60 pb-4">
         <div>
-          <h1 className="text-xl font-headline font-black text-white uppercase tracking-tight flex items-center gap-2.5">
-            <Bell className="h-5 w-5 text-blue-400" />
+          <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground tracking-tight flex items-center gap-2.5">
+            <Bell className="h-6 w-6 text-primary" />
             <span>Notificações</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Histórico completo de eventos e disparo de comunicados em massa para motoristas
           </p>
         </div>
 
-        <TabsList className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl h-11 w-full sm:w-auto flex">
+        <TabsList className="bg-secondary/60 border border-border p-1 rounded-2xl h-11 w-full sm:w-auto flex">
           <TabsTrigger
             value="historico"
-            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-1.5 sm:gap-2"
+            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 sm:gap-2"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span className="sm:hidden">Histórico</span>
-            <span className="hidden sm:inline">Histórico e Reprocessamento</span>
+            <span className="hidden sm:inline">Histórico e reprocessamento</span>
           </TabsTrigger>
           <TabsTrigger
             value="broadcast"
-            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all flex items-center gap-1.5 sm:gap-2"
+            className="flex-1 sm:flex-initial justify-center rounded-xl px-3 sm:px-4 py-2 text-xs font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 sm:gap-2"
           >
             <Send className="h-3.5 w-3.5" />
             <span className="sm:hidden">Enviar</span>
-            <span className="hidden sm:inline">Disparar Notificações</span>
+            <span className="hidden sm:inline">Disparar notificações</span>
           </TabsTrigger>
         </TabsList>
       </div>
 
       <TabsContent value="historico" className="mt-0 space-y-6">
-        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-          <CardHeader className="pb-2 border-b border-slate-800/80 bg-slate-900/40">
+        <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+          <CardHeader className="pb-3 border-b border-border/60 bg-transparent">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                <Bell className="h-4 w-4 text-indigo-400" />
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Bell className="h-4 w-4 text-primary" />
                 <span className="sm:hidden">Histórico</span>
-                <span className="hidden sm:inline">Histórico de Notificações</span>
+                <span className="hidden sm:inline">Histórico de notificações</span>
               </CardTitle>
               <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleBatchRetryFiltered}
-                disabled={isFetching || bulkRetryMutation.isPending}
-                className="h-8 rounded-xl text-amber-400 bg-slate-900/60 border border-slate-800/80 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/40 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
-              >
-                {bulkRetryMutation.isPending ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <RotateCcw className="h-3.5 w-3.5" />
-                )}
-                <span className="hidden sm:inline">Reprocessar Falhas</span>
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setIsMobileFiltersOpen((p) => !p)}
-                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${
-                  isMobileFiltersOpen
-                    ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                    : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
-                }`}
-              >
-                <Filter className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  setPage(1);
-                  queryClient.invalidateQueries({
-                    queryKey: ["admin", "global", "notifications"],
-                  });
-                }}
-                disabled={isFetching}
-                className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`}
-                />
-                <span className="hidden sm:inline">Atualizar</span>
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-4 space-y-4">
-          <div
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800/80 ${
-              !isMobileFiltersOpen ? "hidden md:grid" : ""
-            }`}
-          >
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <User className="h-3 w-3 text-blue-400" />
-                <span>Motorista</span>
-              </Label>
-              <Input
-                type="text"
-                placeholder="Nome, apelido, telefone, CPF ou ID..."
-                value={motoristaInput}
-                onChange={(e) => setMotoristaInput(e.target.value)}
-                className="h-9 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
-              />
-            </div>
-
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <Calendar className="h-3 w-3 text-emerald-400" />
-                <span>Data Início</span>
-              </Label>
-              <Input
-                type="date"
-                value={filters.dataInicio}
-                onChange={(e) => {
-                  setPage(1);
-                  setFilters((p) => ({ ...p, dataInicio: e.target.value }));
-                }}
-                className="h-9 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-xs focus-visible:ring-blue-500"
-              />
-            </div>
-
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <Calendar className="h-3 w-3 text-emerald-400" />
-                <span>Data Fim</span>
-              </Label>
-              <Input
-                type="date"
-                value={filters.dataFim}
-                onChange={(e) => {
-                  setPage(1);
-                  setFilters((p) => ({ ...p, dataFim: e.target.value }));
-                }}
-                className="h-9 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-xs focus-visible:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-end">
-              {hasUpperFiltersActive && (
                 <Button
                   type="button"
-                  variant="ghost"
                   size="sm"
-                  onClick={handleResetUpperFilters}
-                  className="h-9 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 px-3 w-full border border-slate-800"
+                  onClick={handleBatchRetryFiltered}
+                  disabled={isFetching || bulkRetryMutation.isPending}
+                  className="h-9 rounded-lg text-amber-500 bg-secondary/60 border border-border hover:bg-amber-500/10 px-3 flex items-center gap-1.5 transition-all text-xs font-medium shadow-xs disabled:opacity-50"
                 >
-                  Limpar Período / Motorista
+                  {bulkRetryMutation.isPending ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  )}
+                  <span className="hidden sm:inline">Reprocessar falhas</span>
                 </Button>
-              )}
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setPage(1);
+                    queryClient.invalidateQueries({
+                      queryKey: ["admin", "global", "notifications"],
+                    });
+                  }}
+                  disabled={isFetching}
+                  className="h-9 rounded-lg text-primary bg-secondary/60 border border-border hover:bg-primary/10 px-3 flex items-center gap-1.5 transition-all text-xs font-medium shadow-xs disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`}
+                  />
+                  <span className="hidden sm:inline">Atualizar</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardHeader>
 
-          <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-6 px-6 pb-2 mb-2 md:grid md:grid-cols-2 lg:grid-cols-5 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
+          <CardContent className="pt-4 space-y-4">
+            <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-6 px-6 pb-2 mb-2 md:grid md:grid-cols-2 lg:grid-cols-5 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-0 touch-pan-x">
             <AdminKpiCard
-              title="TOTAL DE NOTIFICAÇÕES"
+              title="Total de notificações"
               value={kpis?.total ?? (isFetching ? "..." : 0)}
               subtext="No período selecionado"
-              cardBorder="border-blue-500/40 shadow-blue-500/10"
-              iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+              cardBorder="border-primary/40 shadow-xs"
+              iconBg="bg-primary/10 text-primary border-primary/20"
               icon={<Bell className="h-5 w-5" />}
               className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               onClick={() =>
@@ -371,7 +258,7 @@ export default function AdminNotificationsHistory() {
             />
 
             <AdminKpiCard
-              title="TAXA DE ENTREGA"
+              title="Taxa de entrega"
               value={kpis ? `${kpis.taxaSucesso}%` : (isFetching ? "..." : "100%")}
               subtext={
                 kpis
@@ -380,25 +267,25 @@ export default function AdminNotificationsHistory() {
                     : `${kpis.sent} enviadas com sucesso`
                   : "Envios concluídos"
               }
-              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
-              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              cardBorder="border-emerald-500/40 shadow-xs"
+              iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
               icon={<CheckCircle2 className="h-5 w-5" />}
               className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
             />
 
             <AdminKpiCard
-              title="FALHAS NO ENVIO"
+              title="Falhas no envio"
               value={kpis?.failed ?? (isFetching ? "..." : 0)}
               subtext="Clique para filtrar falhas"
               cardBorder={
                 kpis && kpis.failed > 0
-                  ? "border-rose-500/40 shadow-rose-500/10"
-                  : "border-slate-800 shadow-slate-900/50"
+                  ? "border-destructive/40 shadow-xs"
+                  : "border-border shadow-xs"
               }
               iconBg={
                 kpis && kpis.failed > 0
-                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                  : "bg-slate-800 text-slate-400 border-slate-700"
+                  ? "bg-destructive/10 text-destructive border-destructive/20"
+                  : "bg-secondary text-muted-foreground border-border"
               }
               icon={<AlertTriangle className="h-5 w-5" />}
               className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
@@ -406,29 +293,29 @@ export default function AdminNotificationsHistory() {
             />
 
             <AdminKpiCard
-              title="MENSAGENS WABA (META)"
+              title="Mensagens WABA (Meta)"
               value={kpis?.wabaSent ?? (isFetching ? "..." : 0)}
               subtext={
                 kpis && kpis.wabaFailed > 0
                   ? `${kpis.wabaFailed} falha(s) • Filtrar WABA`
                   : "Clique para filtrar WABA"
               }
-              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
-              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              cardBorder="border-emerald-500/40 shadow-xs"
+              iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
               icon={<MessageSquare className="h-5 w-5" />}
               className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
               onClick={() => handleBaseFiltersChange({ ...filters, canal: "WABA" })}
             />
 
             <AdminKpiCard
-              title="CUSTO ESTIMADO WABA"
+              title="Custo estimado WABA"
               value={
                 kpis
                   ? `R$ ${kpis.custoEstimadoWaba.toFixed(2).replace(".", ",")}`
                   : (isFetching ? "..." : "R$ 0,00")
               }
               subtext="Base R$ 0,04 / msg entregue"
-              cardBorder="border-purple-500/40 shadow-purple-500/10"
+              cardBorder="border-purple-500/40 shadow-xs"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<DollarSign className="h-5 w-5" />}
               className="w-[185px] sm:w-[200px] shrink-0 md:w-auto md:shrink flex flex-col justify-between"
@@ -436,18 +323,18 @@ export default function AdminNotificationsHistory() {
           </div>
 
           {kpis && kpis.total > 0 && (
-            <div className="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
-                Distribuição por Canal no Período:
+            <div className="bg-secondary/40 p-3 sm:p-4 rounded-2xl border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <span className="text-xs font-semibold text-muted-foreground shrink-0">
+                Distribuição por canal no período:
               </span>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 -mx-1 px-1 touch-pan-x">
                 {kpis.canais.waba > 0 && (
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "WABA" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[11px] font-bold hover:bg-emerald-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 text-xs font-medium hover:bg-emerald-500/20 transition-colors cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     WABA: {kpis.canais.waba} ({Math.round((kpis.canais.waba / kpis.total) * 100)}%)
                   </button>
                 )}
@@ -455,9 +342,9 @@ export default function AdminNotificationsHistory() {
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "FIREBASE" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-500 text-xs font-medium hover:bg-amber-500/20 transition-colors cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     Firebase: {kpis.canais.firebase} ({Math.round((kpis.canais.firebase / kpis.total) * 100)}%)
                   </button>
                 )}
@@ -465,9 +352,9 @@ export default function AdminNotificationsHistory() {
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "RESEND" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-400 text-[11px] font-bold hover:bg-sky-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-500 text-xs font-medium hover:bg-sky-500/20 transition-colors cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                     Resend: {kpis.canais.resend} ({Math.round((kpis.canais.resend / kpis.total) * 100)}%)
                   </button>
                 )}
@@ -475,9 +362,9 @@ export default function AdminNotificationsHistory() {
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "TELEGRAM" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-400 text-[11px] font-bold hover:bg-blue-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 border border-primary/25 text-primary text-xs font-medium hover:bg-primary/20 transition-colors cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Telegram: {kpis.canais.telegram} ({Math.round((kpis.canais.telegram / kpis.total) * 100)}%)
                   </button>
                 )}
@@ -485,9 +372,9 @@ export default function AdminNotificationsHistory() {
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "EVOLUTION" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-green-500/10 border border-green-500/25 text-green-400 text-[11px] font-bold hover:bg-green-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-green-500/10 border border-green-500/25 text-green-500 text-xs font-medium hover:bg-green-500/20 transition-colors cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     Evolution: {kpis.canais.evolution} ({Math.round((kpis.canais.evolution / kpis.total) * 100)}%)
                   </button>
                 )}
@@ -495,7 +382,7 @@ export default function AdminNotificationsHistory() {
                   <button
                     type="button"
                     onClick={() => handleBaseFiltersChange({ ...filters, canal: "SMS" })}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 text-[11px] font-bold hover:bg-indigo-500/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 text-xs font-medium hover:bg-indigo-500/20 transition-colors cursor-pointer"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                     SMS: {kpis.canais.sms} ({Math.round((kpis.canais.sms / kpis.total) * 100)}%)
@@ -511,18 +398,30 @@ export default function AdminNotificationsHistory() {
             filters={filters}
             onFiltersChange={handleBaseFiltersChange}
             hideDriverColumn={false}
+            showPeriodFilter={true}
+            startDate={filters.dataInicio}
+            endDate={filters.dataFim}
+            onPeriodChange={(start, end) => {
+              setPage(1);
+              setFilters((p) => ({ ...p, dataInicio: start, dataFim: end }));
+            }}
+            isPeriodActive={filters.dataInicio !== today || filters.dataFim !== today}
+            onResetAllFilters={() => {
+              setPage(1);
+              setFilters((p) => ({ ...p, dataInicio: today, dataFim: today }));
+            }}
           />
 
           {!isFetching && data && data.total > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
-              <p className="text-xs font-semibold text-slate-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-border/40 gap-4">
+              <p className="text-xs font-medium text-muted-foreground">
                 Página {data.page} de{" "}
                 {Math.max(1, Math.ceil(data.total / data.limit))} ({data.total}{" "}
                 notificações)
               </p>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs font-semibold text-slate-400">
+                  <Label className="text-xs font-medium text-muted-foreground">
                     Exibir:
                   </Label>
                   <Select
@@ -532,10 +431,10 @@ export default function AdminNotificationsHistory() {
                       setPage(1);
                     }}
                   >
-                    <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                    <SelectTrigger className="h-9 rounded-lg bg-background border border-border text-foreground text-xs focus-visible:ring-0 w-[70px]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                    <SelectContent className="bg-popover border-border text-popover-foreground">
                       <SelectItem value="25">25</SelectItem>
                       <SelectItem value="50">50</SelectItem>
                       <SelectItem value="100">100</SelectItem>
@@ -550,7 +449,7 @@ export default function AdminNotificationsHistory() {
                     size="icon"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                    className="h-9 w-9 rounded-lg border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -559,7 +458,7 @@ export default function AdminNotificationsHistory() {
                     size="icon"
                     disabled={page >= Math.ceil(data.total / data.limit)}
                     onClick={() => setPage((p) => p + 1)}
-                    className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                    className="h-9 w-9 rounded-lg border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

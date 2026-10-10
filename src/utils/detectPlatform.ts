@@ -15,18 +15,24 @@ export function detectPlatform(): PlatformType {
   if (platform === "android") return "android";
   if (platform === "ios") return "ios";
 
-  // Se 'web', distinguir desktop vs mobile e Android vs iOS
-  const isMobile =
-    window.matchMedia("(max-width: 768px)").matches ||
-    /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (typeof window !== "undefined") {
+    const searchMock = new URLSearchParams(window.location.search).get("mockPlatform");
+    const storageMock = window.localStorage.getItem(STORAGE_KEYS.MOCK_PLATFORM);
+    const mock = (searchMock || storageMock || "").toLowerCase();
 
-  if (!isMobile) return "desktop";
+    if (mock === "ios" || mock === "ios-web") return "ios-web";
+    if (mock === "android" || mock === "android-web") return "android-web";
+    if (mock === "desktop") return "desktop";
+  }
 
-  // Mobile no browser — detectar SO
-  if (/Android/i.test(navigator.userAgent)) return "android-web";
-  if (/iPhone|iPad/i.test(navigator.userAgent)) return "ios-web";
+  const isAndroid = typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
+  const isIpadOS = typeof navigator !== "undefined" && navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  const isIos = typeof navigator !== "undefined" && (/iPhone|iPad|iPod/i.test(navigator.userAgent) || isIpadOS);
 
-  return "desktop"; // fallback
+  if (isAndroid) return "android-web";
+  if (isIos) return "ios-web";
+
+  return "desktop";
 }
 
 export function getDispositivoCadastro(): DispositivoCadastro {
@@ -35,16 +41,19 @@ export function getDispositivoCadastro(): DispositivoCadastro {
   if (platform === "android") return DispositivoCadastro.APP_ANDROID;
   if (platform === "ios") return DispositivoCadastro.APP_IOS;
 
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  if (typeof window !== "undefined") {
+    const searchMock = new URLSearchParams(window.location.search).get("mockPlatform");
+    const storageMock = window.localStorage.getItem(STORAGE_KEYS.MOCK_PLATFORM);
+    const mock = (searchMock || storageMock || "").toLowerCase();
+
+    if (mock === "ios" || mock === "ios-web") return DispositivoCadastro.WEB_MOBILE_IOS;
+    if (mock === "android" || mock === "android-web") return DispositivoCadastro.WEB_MOBILE_ANDROID;
+    if (mock === "desktop") return DispositivoCadastro.WEB_DESKTOP;
+  }
+
+  const isAndroid = typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
   const isIpadOS = typeof navigator !== "undefined" && navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
-  const isIos = /iPhone|iPad/i.test(navigator.userAgent) || isIpadOS;
-
-  const isMobile =
-    window.matchMedia("(max-width: 768px)").matches ||
-    isAndroid ||
-    isIos;
-
-  if (!isMobile) return DispositivoCadastro.WEB_DESKTOP;
+  const isIos = typeof navigator !== "undefined" && (/iPhone|iPad|iPod/i.test(navigator.userAgent) || isIpadOS);
 
   if (isAndroid) return DispositivoCadastro.WEB_MOBILE_ANDROID;
   if (isIos) return DispositivoCadastro.WEB_MOBILE_IOS;
@@ -90,13 +99,15 @@ export const PLAY_STORE_MARKET_URL =
 
 export const PLAY_STORE_BADGE_URL = "/assets/badge-google-play.png";
 
-export const APP_STORE_URL = "https://apps.apple.com/app/van360";
+export const APP_STORE_URL = "https://apps.apple.com/app/id6816251189";
+
+export const APP_STORE_MARKET_URL = "itms-apps://itunes.apple.com/app/id6816251189";
 
 export const APP_STORE_BADGE_URL = "/assets/badge-app-store.png";
 
 export const APP_AVAILABILITY = {
   android: true,
-  ios: false,
+  ios: true,
 } as const;
 
 export function getAppPlatformEligibility() {

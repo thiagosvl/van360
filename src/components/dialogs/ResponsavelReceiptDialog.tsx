@@ -44,12 +44,12 @@ export const ResponsavelReceiptDialog = ({
         onClose={handleClose}
       />
 
-      <BaseDialog.Body className="p-4 sm:p-6 bg-slate-50/30">
-        <div className="relative w-full aspect-[4/5] bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center p-2">
+      <BaseDialog.Body className="p-4 sm:p-6 bg-[#f5f5f5]/60">
+        <div className="relative w-full aspect-[4/5] bg-white rounded-[20px] overflow-hidden border border-[#e5e5e5] shadow-xs flex items-center justify-center p-2">
           {isImageLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 animate-pulse">
-              <Loader2 className="h-8 w-8 text-slate-300 animate-spin mb-2" />
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Carregando recibo...</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#f5f5f5]/80 animate-pulse">
+              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin mb-2" />
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Carregando recibo...</p>
             </div>
           )}
           <img
@@ -57,7 +57,7 @@ export const ResponsavelReceiptDialog = ({
             alt="Recibo"
             onLoad={() => setIsImageLoading(false)}
             onError={() => setIsImageLoading(false)}
-            className={`max-w-full max-h-full object-contain rounded-xl transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+            className={`max-w-full max-h-full object-contain rounded-[14px] transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
           />
         </div>
       </BaseDialog.Body>
@@ -68,7 +68,7 @@ export const ResponsavelReceiptDialog = ({
           onClick={handleShare}
           disabled={isImageLoading}
           icon={<Share2 className="h-4 w-4" />}
-          className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold"
+          className="bg-primary hover:bg-primary-hover text-white font-semibold rounded-[18px] shadow-xs"
         />
       </BaseDialog.Footer>
     </BaseDialog>

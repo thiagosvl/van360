@@ -1,6 +1,7 @@
 import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { Gasto } from "@/types/gasto";
 import { formatarPlacaExibicao, getCategoriaMetadata, obterDescricaoFormatadaGasto } from "@/utils/domain";
@@ -8,7 +9,6 @@ import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
-import { cn } from "@/lib/utils";
 import { useGastoCategorias } from "@/hooks";
 
 interface GastosListProps {
@@ -39,7 +39,6 @@ const GastoMobileCard = memo(function GastoMobileCard({
     if (!dateStr) return "??";
     const parts = dateStr.split("-");
     if (parts.length === 3) return parts[2].substring(0, 2);
-    // Fallback if it's already in BR format or something else
     const day = dateStr.split("/")[0];
     return day.padStart(2, "0").substring(0, 2);
   };
@@ -50,47 +49,36 @@ const GastoMobileCard = memo(function GastoMobileCard({
 
   return (
     <MobileActionItem
-      actions={actions as any}
+      actions={actions}
       showHint={index === 0}
       className="bg-transparent"
       renderHeader={renderHeader}
     >
-      <div
-        className="bg-white p-3 pr-10 rounded-xl shadow-diff-shadow flex items-start gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-      >
-        <div className={cn(
-          "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-0.5 border border-transparent/10",
-          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
-          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
-        )}>
-          <span className="font-headline font-bold text-sm leading-none">
+      <div className="bg-white p-3.5 pr-10 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start gap-3 active:scale-[0.99] transition-all">
+        <div className="flex-shrink-0 w-9 h-9 rounded-[10px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center mt-0.5 text-[#0a0a0a]">
+          <span className="font-semibold text-xs leading-none">
             {gastoDia}
           </span>
         </div>
 
         <div className="flex-grow min-w-0">
-          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight capitalize">
+          <p className="font-semibold text-[#0a0a0a] text-sm truncate leading-tight capitalize">
             {getCategoriaMetadata(gasto.categoria, categoriasData).label}
           </p>
-          <div className="">
-            <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
-              {obterDescricaoFormatadaGasto(gasto)}
-            </p>
-          </div>
+          <p className="text-xs text-[#737373] truncate leading-relaxed mt-0.5">
+            {obterDescricaoFormatadaGasto(gasto)}
+          </p>
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5 min-w-[70px]">
-          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+          <p className="font-semibold text-[#0a0a0a] text-sm leading-none">
             {formatCurrency(gasto.valor)}
           </p>
-          <div className="flex flex-col items-end gap-1">
-            {/* Data removed here as requested, since it's now in the header block */}
-            {placa && (
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
-                {formatarPlacaExibicao(placa)}
-              </span>
-            )}
-          </div>
+          {placa && (
+            <span className="text-[10px] font-medium text-[#737373] uppercase tracking-wider mt-0.5">
+              {formatarPlacaExibicao(placa)}
+            </span>
+          )}
         </div>
       </div>
     </MobileActionItem>
@@ -123,35 +111,35 @@ export const GastosList = memo(function GastosList({
             onEdit={onEdit}
             onDelete={onDelete}
             veiculos={veiculos}
-            gastos={gastos} // Props requirement satisfaction
+            gastos={gastos}
           />
         )}
       >
-        <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
+        <div className="rounded-[24px] overflow-hidden bg-white border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)]">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100/80">
-                <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
+                <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Categoria
                 </th>
-                <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Descrição
                 </th>
-                <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Veículo
                 </th>
-                <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Data
                 </th>
-                <th className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                <th className="px-6 py-3.5 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Valor
                 </th>
-                <th className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                <th className="px-6 py-3.5 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#e5e5e5]">
               {gastos.map((gasto) => {
                 const placa = getVeiculoPlaca(gasto.veiculo_id);
 
@@ -168,43 +156,43 @@ export const GastosList = memo(function GastosList({
                   <tr
                     key={gasto.id}
                     onClick={() => setOpenedGasto(gasto)}
-                    className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    className="group hover:bg-[#fafafa]/80 transition-colors cursor-pointer"
                   >
-                    <td className="px-8 py-5 align-middle">
+                    <td className="px-6 py-4 align-middle">
                       <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "h-10 w-10 rounded-xl flex items-center justify-center border border-transparent/10",
-                          getCategoriaMetadata(gasto.categoria, categoriasData).bg || "bg-slate-50",
-                          getCategoriaMetadata(gasto.categoria, categoriasData).color || "text-[#1a3a5c]"
-                        )}>
-                          <span className="font-headline font-bold text-sm leading-none">
+                        <div className="h-8 w-8 rounded-[10px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a]">
+                          <span className="font-semibold text-xs leading-none">
                             {gastoDia}
                           </span>
                         </div>
-                        <span className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
+                        <span className="font-medium text-[#0a0a0a] text-sm capitalize">
                           {getCategoriaMetadata(gasto.categoria, categoriasData).label}
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 align-middle">
-                      <span className="text-sm text-slate-600 max-w-[180px] block truncate">
+                    <td className="px-6 py-4 align-middle">
+                      <span className="text-sm text-[#737373] max-w-[200px] block truncate">
                         {obterDescricaoFormatadaGasto(gasto)}
                       </span>
                     </td>
-                    <td className="px-8 py-5 align-middle">
-                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg", placa ? "bg-slate-50 border border-slate-100" : "")}>
-                        {placa ? formatarPlacaExibicao(placa) : "-"}
-                      </span>
+                    <td className="px-6 py-4 align-middle">
+                      {placa ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                          {formatarPlacaExibicao(placa)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[#737373]">-</span>
+                      )}
                     </td>
-                    <td className="px-8 py-5 align-middle text-sm font-medium text-slate-600">
+                    <td className="px-6 py-4 align-middle text-xs font-medium text-[#737373]">
                       {formatDateToBR(gasto.data)}
                     </td>
-                    <td className="px-8 py-5 text-right align-middle">
-                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                    <td className="px-6 py-4 text-right align-middle">
+                      <span className="font-semibold text-[#0a0a0a] text-sm">
                         {formatCurrency(gasto.valor)}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-right align-middle" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
                       <GastoActionsMenu
                         gasto={gasto}
                         onEdit={onEdit}
@@ -218,13 +206,13 @@ export const GastosList = memo(function GastosList({
           </table>
         </div>
       </ResponsiveDataList>
-      {/* Desktop-triggered ActionSheet (Quick View) */}
+
       {openedGasto && (
         <ActionSheetWrapper
           gasto={openedGasto}
           veiculoPlaca={getVeiculoPlaca(openedGasto.veiculo_id)}
           open={!!openedGasto}
-          onOpenChange={(open) => !open && setOpenedGasto(null)}
+          onOpenChange={(open) => !open && safeCloseDialog(() => setOpenedGasto(null))}
           onEdit={onEdit}
           onDelete={onDelete}
         />
@@ -233,7 +221,6 @@ export const GastosList = memo(function GastosList({
   );
 });
 
-// Wrapper to avoid calling useGastoActions for all rows upfront
 function ActionSheetWrapper({
   gasto,
   veiculoPlaca,
@@ -248,7 +235,7 @@ function ActionSheetWrapper({
   onOpenChange: (open: boolean) => void;
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
-}) {
+} & Record<string, unknown>) {
   const actions = useGastoActions({
     gasto,
     onEdit,
@@ -260,7 +247,7 @@ function ActionSheetWrapper({
       open={open}
       onOpenChange={onOpenChange}
       actions={actions.map(a => ({
-        ...a as any,
+        ...a,
         onClick: () => {
           onOpenChange(false);
           a.onClick();

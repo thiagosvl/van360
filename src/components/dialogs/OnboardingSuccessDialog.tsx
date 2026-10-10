@@ -164,7 +164,7 @@ export function OnboardingSuccessDialog({
         angle: 60,
         spread: 50,
         origin: { x: 0 },
-        colors: ["#10b981", "#34d399", "#1a3a5c", "#3b82f6"],
+        colors: ["#10b981", "#34d399", "#0b1a2e", "#2563eb"],
         zIndex: 99999,
       });
       confetti({
@@ -172,7 +172,7 @@ export function OnboardingSuccessDialog({
         angle: 120,
         spread: 50,
         origin: { x: 1 },
-        colors: ["#10b981", "#34d399", "#1a3a5c", "#3b82f6"],
+        colors: ["#10b981", "#34d399", "#0b1a2e", "#2563eb"],
         zIndex: 99999,
       });
 
@@ -220,11 +220,11 @@ export function OnboardingSuccessDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start sm:justify-center bg-slate-900/95 backdrop-blur-md text-white p-6 overflow-y-auto animate-in fade-in zoom-in-95 duration-300 py-12 sm:py-8">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start sm:justify-center bg-[#0b1a2e]/95 backdrop-blur-md text-white p-6 overflow-y-auto animate-in fade-in zoom-in-95 duration-300 py-12 sm:py-8">
       <button
         type="button"
         onClick={() => safeCloseDialog(onClose)}
-        className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-xl transition-colors cursor-pointer"
+        className="absolute top-5 right-5 p-2 text-white/60 hover:text-white rounded-[14px] transition-colors cursor-pointer"
         aria-label="Fechar"
       >
         <X className="w-6 h-6" />
@@ -238,11 +238,11 @@ export function OnboardingSuccessDialog({
           </div>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-black font-headline text-white text-center mb-2 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-semibold font-headline text-white text-center mb-2 tracking-tight">
           Parabéns pelo primeiro aluno! 🎉
         </h2>
 
-        <p className="text-sm font-medium text-slate-300 text-center max-w-sm mb-6 leading-relaxed">
+        <p className="text-sm font-normal text-white/70 text-center max-w-sm mb-6 leading-relaxed">
           Veja o que você já pode fazer:
         </p>
 
@@ -269,23 +269,23 @@ export function OnboardingSuccessDialog({
                   role={hasAction ? "button" : undefined}
                   tabIndex={hasAction ? 0 : undefined}
                   className={cn(
-                    "w-[200px] shrink-0 snap-start flex flex-col justify-between text-left p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60 shadow-xs transition-all select-none",
-                    hasAction && "cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800 active:scale-95 group"
+                    "w-[200px] shrink-0 snap-start flex flex-col justify-between text-left p-3.5 rounded-[18px] bg-[#0f243e] border border-white/10 shadow-xs transition-all select-none",
+                    hasAction && "cursor-pointer hover:border-emerald-500/50 hover:bg-[#132c4c] active:scale-95 group"
                   )}
                 >
                   <div>
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2">
+                    <div className="w-7 h-7 rounded-[10px] bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2">
                       <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <h3 className="text-xs font-bold text-white tracking-tight leading-snug">
+                    <h3 className="text-xs font-semibold text-white tracking-tight leading-snug">
                       {step.title}
                     </h3>
-                    <p className="text-[11px] text-slate-300 leading-snug mt-1">
+                    <p className="text-[11px] text-white/70 leading-snug mt-1 font-normal">
                       {step.description}
                     </p>
                   </div>
                   {step.actionLabel && hasAction && (
-                    <div className="mt-2.5 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[10px] font-bold text-emerald-400 group-hover:text-emerald-300 transition-colors">
+                    <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-semibold text-emerald-400 group-hover:text-emerald-300 transition-colors">
                       <span>{step.actionLabel}</span>
                       {step.actionType === "navigate" ? (
                         <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
@@ -307,7 +307,7 @@ export function OnboardingSuccessDialog({
                   "h-1.5 rounded-full transition-all duration-300",
                   idx === activeIndex
                     ? "w-4 bg-emerald-400"
-                    : "w-1.5 bg-slate-700"
+                    : "w-1.5 bg-white/20"
                 )}
               />
             ))}
@@ -318,7 +318,7 @@ export function OnboardingSuccessDialog({
           <Button
             type="button"
             onClick={handleGoToCarteirinha}
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/30 border-none cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="w-full h-12 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-[18px] shadow-xs border-none cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <span>Ver Carteirinha do Aluno</span>
             <ArrowRight className="w-4 h-4" />
@@ -328,7 +328,7 @@ export function OnboardingSuccessDialog({
             type="button"
             variant="ghost"
             onClick={() => safeCloseDialog(onClose)}
-            className="w-full h-11 text-slate-300 hover:text-white hover:bg-slate-800/80 font-bold text-sm rounded-xl transition-all active:scale-95 border border-slate-700/60 cursor-pointer"
+            className="w-full h-11 text-white/80 hover:text-white hover:bg-white/10 font-semibold text-sm rounded-[18px] transition-all active:scale-95 border border-white/10 cursor-pointer"
           >
             <span>Continuar explorando</span>
           </Button>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -47,10 +47,10 @@ export const ResponsavelLoginForm: React.FC = () => {
           <form onSubmit={phoneForm.handleSubmit(handlePhoneSubmit)}>
             <Banner
               variant="info"
-              className="mb-4 p-3 rounded-2xl"
+              className="mb-4"
               description={
                 <span>
-                  <strong>Pais e Responsáveis:</strong> digite o número de <strong>WhatsApp</strong> cadastrado pelo motorista para acessar a carteirinha. Não é necessário criar uma conta.
+                  Para acessar, digite o número do telefone informado no cadastro do aluno.
                 </span>
               }
             />
@@ -60,60 +60,53 @@ export const ResponsavelLoginForm: React.FC = () => {
                 name="telefone"
                 render={({ field, fieldState }) => (
                   <FormItem>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      Telefone (WhatsApp)
+                    </FormLabel>
                     <FormControl>
-                      <div
-                        className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                          ? "border-red-500 ring-2 ring-red-500/20"
-                          : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                          }`}
-                      >
-                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                          <Phone className="w-5 h-5" />
-                        </div>
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                            Telefone (WhatsApp)
-                          </label>
-                          <Input
-                            autoFocus
-                            {...field}
-                            ref={(e) => {
-                              field.ref(e);
-                              phoneInputRef.current = e;
-                            }}
-                            type="tel"
-                            placeholder="(00) 00000-0000"
-                            onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                            className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-300"
-                            disabled={isPending}
-                          />
-                        </div>
+                      <div className="relative">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                        <Input
+                          autoFocus
+                          {...field}
+                          ref={(e) => {
+                            field.ref(e);
+                            phoneInputRef.current = e;
+                          }}
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                          className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
+                            ? "border-[#e7000b] focus:border-[#e7000b]"
+                            : "border-[#e5e5e5] focus:border-[#2563eb]"
+                            }`}
+                          disabled={isPending}
+                        />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-xs ml-1 text-red-500" />
+                    <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                   </FormItem>
                 )}
               />
             </div>
 
-            {/* Checkbox "Lembrar meu telefone" com UI/UX identica a de motoristas */}
             <div className="flex items-center gap-2 mt-5 ml-1">
               <Checkbox
                 id="rememberPhone"
                 checked={rememberPhone}
                 onCheckedChange={(checked) => setRememberPhone(Boolean(checked))}
-                className="bg-white border-slate-300 shadow-sm rounded-[4px] data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c] w-[18px] h-[18px] cursor-pointer"
+                className="bg-white border-[#e5e5e5] shadow-2xs rounded-[6px] data-[state=checked]:bg-[#2563eb] data-[state=checked]:border-[#2563eb] w-[18px] h-[18px] cursor-pointer"
               />
               <Label
                 htmlFor="rememberPhone"
-                className="text-[13px] font-medium text-slate-600 cursor-pointer select-none"
+                className="text-[13px] font-medium text-[#737373] cursor-pointer select-none"
               >
                 Lembrar meu telefone
               </Label>
             </div>
 
             {phoneForm.formState.errors.root && (
-              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
+              <div className="mt-4 p-3 rounded-[14px] bg-red-50 border border-red-200 flex items-start gap-2 text-xs font-medium text-[#e7000b]">
                 <span className="mt-0.5">⚠️</span>
                 <span>{phoneForm.formState.errors.root.message}</span>
               </div>
@@ -123,7 +116,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-12 rounded-[18px] text-[15px] font-bold bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isPending ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -141,18 +134,18 @@ export const ResponsavelLoginForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleBackToPhone}
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#1a3a5c] transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#737373] hover:text-[#0a0a0a] transition-colors p-1.5 rounded-[12px] hover:bg-[#f5f5f5] cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Trocar Telefone</span>
               </button>
-              <span className="text-xs font-semibold text-slate-400">{telefoneFormatted}</span>
+              <span className="text-xs font-semibold text-[#737373]">{telefoneFormatted}</span>
             </div>
 
             {isFirstAccess && (
               <Banner
                 variant="info"
-                className="mb-4 p-3 rounded-2xl"
+                className="mb-4"
                 description={
                   <span>
                     <strong>Primeiro acesso:</strong> crie uma <strong>senha de 4 dígitos</strong> para entrar no app nas próximas vezes.
@@ -166,49 +159,43 @@ export const ResponsavelLoginForm: React.FC = () => {
               name="pin"
               render={({ field, fieldState }) => (
                 <FormItem>
+                  <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                    Senha de 4 Dígitos
+                  </FormLabel>
                   <FormControl>
-                    <div
-                      className={`flex items-center border rounded-2xl p-2 bg-white shadow-sm transition-all ${fieldState.error
-                        ? "border-red-500 ring-2 ring-red-500/20"
-                        : "border-slate-200 focus-within:ring-2 focus-within:ring-[#1a3a5c]/20 focus-within:border-[#1a3a5c]"
-                        }`}
-                    >
-                      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 mr-3 shrink-0">
-                        <Lock className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-col flex-1 min-w-0">
-                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 truncate select-none">
-                          Senha de 4 Dígitos
-                        </label>
-                        <Input
-                          {...field}
-                          autoFocus
-                          type={showPin ? "text" : "password"}
-                          maxLength={4}
-                          onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                          placeholder="••••"
-                          className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none tracking-widest placeholder:tracking-normal placeholder:text-slate-300"
-                          disabled={isPending}
-                        />
-                      </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                      <Input
+                        {...field}
+                        autoFocus
+                        type={showPin ? "text" : "password"}
+                        maxLength={4}
+                        onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+                        placeholder="••••"
+                        className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm font-semibold text-[#0a0a0a] tracking-widest placeholder:tracking-normal placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
+                          ? "border-[#e7000b] focus:border-[#e7000b]"
+                          : "border-[#e5e5e5] focus:border-[#2563eb]"
+                          }`}
+                        disabled={isPending}
+                      />
                       <button
                         type="button"
                         onClick={() => setShowPin(!showPin)}
-                        className="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-600 transition-colors shrink-0 outline-none"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
                         tabIndex={-1}
                         title={showPin ? "Ocultar senha" : "Exibir senha"}
                       >
-                        {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </FormControl>
-                  <FormMessage className="text-xs ml-1 text-red-500" />
+                  <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                 </FormItem>
               )}
             />
 
             {pinForm.formState.errors.root && (
-              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2 text-xs font-medium text-red-600">
+              <div className="mt-4 p-3 rounded-[14px] bg-red-50 border border-red-200 flex items-start gap-2 text-xs font-medium text-[#e7000b]">
                 <span className="mt-0.5">⚠️</span>
                 <span>{pinForm.formState.errors.root.message}</span>
               </div>
@@ -218,7 +205,7 @@ export const ResponsavelLoginForm: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full h-14 rounded-2xl text-[16px] font-bold bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-12 rounded-[18px] text-[15px] font-bold bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isPending ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -233,7 +220,7 @@ export const ResponsavelLoginForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsRecuperarOpen(true)}
-                  className="text-[14px] text-[#2d5a88] hover:text-[#1a3a5c] hover:underline transition-colors font-medium cursor-pointer"
+                  className="text-sm text-[#2563eb] hover:text-[#1d4ed8] hover:underline transition-colors font-medium cursor-pointer"
                 >
                   Esqueci minha senha
                 </button>

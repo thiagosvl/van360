@@ -7,19 +7,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { CalendarDays, DollarSign, ShieldCheck } from "lucide-react";
 import { monthOptions } from "@/utils/dateUtils";
 import { Banner } from "@/components/ui/Banner";
+import { PassageiroModoCobrancaField } from "./PassageiroModoCobrancaField";
 import { useMemo } from "react";
 import {
   getAnoCobrancaFimOptions,
@@ -52,9 +47,9 @@ export function PassageiroFormFinanceiro({
 
   return (
     <div id="section-parcelas" className="space-y-6">
-      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-          <DollarSign className="w-5 h-5" />
+      <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-6">
+        <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+          <DollarSign className="w-4 h-4" />
         </div>
         Parcelas
       </div>
@@ -64,12 +59,12 @@ export function PassageiroFormFinanceiro({
           control={form.control}
           name="isento"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-4 shadow-sm">
+            <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 sm:p-4">
               <div className="space-y-0.5 pr-4">
-                <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer">
                   Aluno Isento
                 </FormLabel>
-                <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                <div className="text-[11px] sm:text-xs text-[#737373] font-normal leading-relaxed">
                   Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
                 </div>
               </div>
@@ -77,7 +72,7 @@ export function PassageiroFormFinanceiro({
                 <Switch
                   checked={!!field.value}
                   onCheckedChange={field.onChange}
-                  className="data-[state=checked]:bg-[#1a3a5c]"
+                  className="data-[state=checked]:bg-primary"
                 />
               </FormControl>
             </FormItem>
@@ -95,8 +90,7 @@ export function PassageiroFormFinanceiro({
                     field={field}
                     label="Valor da Parcela"
                     required={!isExternal}
-                    labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                    labelClassName="text-[#0a0a0a] font-medium text-xs"
                   />
                 )}
               />
@@ -104,33 +98,25 @@ export function PassageiroFormFinanceiro({
                 control={form.control}
                 name="dia_vencimento"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Dia do Vencimento {!isExternal && <span className="text-red-600">*</span>}
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Dia do Vencimento {!isExternal && <span className="text-[#e7000b]">*</span>}
                     </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || undefined}>
-                      <FormControl>
-                        <div className="relative">
-                          <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                              fieldState.error && "border-red-500",
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione o dia" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        icon={<CalendarDays className="h-4 w-4" />}
+                        value={field.value || ""}
+                        error={!!fieldState.error}
+                      >
+                        <option value="" disabled hidden>Selecionar</option>
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                          <SelectItem key={day} value={day.toString()}>
+                          <option key={day} value={day.toString()}>
                             Dia {day}
-                          </SelectItem>
+                          </option>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </NativeSelect>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -144,39 +130,28 @@ export function PassageiroFormFinanceiro({
                     control={form.control}
                     name="mes_inicio_cobranca"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Início da Cobrança {!isExternal && <span className="text-red-600">*</span>}
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Início da Cobrança {!isExternal && <span className="text-[#e7000b]">*</span>}
                         </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            field.onChange(val);
-                            form.trigger("mes_fim_cobranca");
-                          }}
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <div className="relative">
-                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500",
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Mês" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
+                        <FormControl>
+                          <NativeSelect
+                            icon={<CalendarDays className="h-4 w-4" />}
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              form.trigger("mes_fim_cobranca");
+                            }}
+                            error={!!fieldState.error}
+                          >
+                            <option value="" disabled hidden>Mês</option>
                             {monthOptions.map((m) => (
-                              <SelectItem key={m.value} value={m.value}>
+                              <option key={m.value} value={m.value}>
                                 {m.label}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -187,35 +162,31 @@ export function PassageiroFormFinanceiro({
                     control={form.control}
                     name="ano_inicio_cobranca"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Ano {!isExternal && <span className="text-red-600">*</span>}
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Ano {!isExternal && <span className="text-[#e7000b]">*</span>}
                         </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            field.onChange(val);
-                            form.setValue("ano_fim_cobranca", val);
-                            if (parseInt(val, 10) > new Date().getFullYear()) {
-                              form.setValue("mes_inicio_cobranca", "");
-                              form.setValue("mes_fim_cobranca", "");
-                            }
-                            form.trigger("mes_fim_cobranca");
-                          }}
-                          value={field.value || (anoInicioOptions[0] || "")}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                              <SelectValue placeholder="Ano" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || (anoInicioOptions[0] || "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val);
+                              form.setValue("ano_fim_cobranca", val);
+                              if (parseInt(val, 10) > new Date().getFullYear()) {
+                                form.setValue("mes_inicio_cobranca", "");
+                                form.setValue("mes_fim_cobranca", "");
+                              }
+                              form.trigger("mes_fim_cobranca");
+                            }}
+                          >
                             {anoInicioOptions.map((y) => (
-                              <SelectItem key={y} value={y}>
+                              <option key={y} value={y}>
                                 {y}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -229,39 +200,28 @@ export function PassageiroFormFinanceiro({
                     control={form.control}
                     name="mes_fim_cobranca"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Término da Cobrança {!isExternal && <span className="text-red-600">*</span>}
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Término da Cobrança {!isExternal && <span className="text-[#e7000b]">*</span>}
                         </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            field.onChange(val);
-                            form.trigger("mes_fim_cobranca");
-                          }}
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <div className="relative">
-                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500",
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Mês" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
+                        <FormControl>
+                          <NativeSelect
+                            icon={<CalendarDays className="h-4 w-4" />}
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              form.trigger("mes_fim_cobranca");
+                            }}
+                            error={!!fieldState.error}
+                          >
+                            <option value="" disabled hidden>Mês</option>
                             {monthOptions.map((m) => (
-                              <SelectItem key={m.value} value={m.value}>
+                              <option key={m.value} value={m.value}>
                                 {m.label}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -272,30 +232,25 @@ export function PassageiroFormFinanceiro({
                     control={form.control}
                     name="ano_fim_cobranca"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Ano {!isExternal && <span className="text-red-600">*</span>}
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Ano {!isExternal && <span className="text-[#e7000b]">*</span>}
                         </FormLabel>
-                        <Select
-                          onValueChange={(val) => {
-                            field.onChange(val);
-                            form.trigger("mes_fim_cobranca");
-                          }}
-                          value={field.value || (anoFimOptions[0] || "")}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                              <SelectValue placeholder="Ano" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || (anoFimOptions[0] || "")}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              form.trigger("mes_fim_cobranca");
+                            }}
+                          >
                             {anoFimOptions.map((y) => (
-                              <SelectItem key={y} value={y}>
+                              <option key={y} value={y}>
                                 {y}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -303,6 +258,10 @@ export function PassageiroFormFinanceiro({
                 </div>
               </div>
             </div>
+
+            {!isExternal && (
+              <PassageiroModoCobrancaField control={form.control} />
+            )}
 
             <Banner
               variant={isRetroativo ? "warning" : "info"}

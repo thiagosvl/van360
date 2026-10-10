@@ -27,6 +27,5 @@ export interface Cobranca {
   pix_qrcode_url?: string | null;
   pix_expiracao?: string | null;
   valor_taxa_plataforma?: number | null;
-  taxa_repassada_ao_pai?: boolean | null;
   repasse_em_processamento?: boolean | null;
 }

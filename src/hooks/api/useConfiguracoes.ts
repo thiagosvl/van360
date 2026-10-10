@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export interface ConfiguracoesUsuario {
-  notificar_pais_cobrancas: boolean;
   cobranca_aviso_previo_ativo: boolean;
   cobranca_aviso_previo_whatsapp_ativo?: boolean;
   cobranca_dias_aviso_previo: number | null;
@@ -29,7 +28,6 @@ export interface ConfiguracoesUsuario {
 export type UpdateConfiguracoesInput = Partial<
   Pick<
     ConfiguracoesUsuario,
-    | "notificar_pais_cobrancas"
     | "cobranca_aviso_previo_ativo"
     | "cobranca_dias_aviso_previo"
     | "cobranca_vencimento_hoje_ativo"

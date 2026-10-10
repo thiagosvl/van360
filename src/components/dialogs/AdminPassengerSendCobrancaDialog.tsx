@@ -101,24 +101,24 @@ export default function AdminPassengerSendCobrancaDialog({
       description="Confirmação de envio forçado do lembrete de cobrança"
     >
       <AdminBaseDialog.Header
-        title="Forçar Lembrete de Cobrança"
+        title="Forçar lembrete de cobrança"
         subtitle="Disparo da parcela do mês para o responsável"
-        icon={<Send className="h-5 w-5" />}
+        icon={<Send className="h-5 w-5 text-primary" />}
         onClose={() => safeCloseDialog(onClose)}
       />
 
       <AdminBaseDialog.Body className="space-y-4">
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-left space-y-2.5">
-          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-blue-400" />
-            Carteirinha do Aluno
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-secondary/30 border border-border text-left space-y-2.5">
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 text-primary" />
+            Carteirinha do aluno
           </span>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-headline font-bold text-white leading-tight">
+              <p className="text-xs sm:text-sm font-semibold text-foreground leading-tight">
                 {passageiro.nome}
               </p>
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                 <GraduationCap className="h-3 w-3 text-purple-400" />
                 <span>{passageiro.escolas?.nome || "Escola não informada"}</span>
                 {passageiro.turno && <span>• Turno {passageiro.turno}</span>}
@@ -126,42 +126,42 @@ export default function AdminPassengerSendCobrancaDialog({
             </div>
             {motoristaNome && (
               <div className="text-right">
-                <span className="text-[9px] uppercase font-bold text-slate-500 block">
+                <span className="text-[10px] font-medium text-muted-foreground block">
                   Motorista
                 </span>
-                <span className="text-xs font-semibold text-slate-300 block">
+                <span className="text-xs font-semibold text-foreground block">
                   {motoristaNome}
                 </span>
               </div>
             )}
           </div>
 
-          <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-1 text-xs">
+          <div className="pt-2 border-t border-border flex flex-col gap-1 text-xs">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-slate-400 font-medium">Responsável:</span>
-              <span className="text-slate-200 font-semibold">
+              <span className="text-muted-foreground font-medium">Responsável:</span>
+              <span className="text-foreground font-semibold">
                 {resp?.nome || "Não informado"}
                 {resp?.parentesco ? ` (${resp.parentesco})` : ""}
               </span>
             </div>
             {resp?.telefone && (
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-medium flex items-center gap-1">
+                <span className="text-muted-foreground font-medium flex items-center gap-1">
                   <Phone className="h-3 w-3 text-emerald-400" />
                   WhatsApp:
                 </span>
-                <span className="text-emerald-400 font-mono font-bold">
+                <span className="text-emerald-400 font-mono font-semibold">
                   {phoneMask(resp.telefone)}
                 </span>
               </div>
             )}
             {resp?.email && (
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-medium flex items-center gap-1">
-                  <Mail className="h-3 w-3 text-slate-400" />
+                <span className="text-muted-foreground font-medium flex items-center gap-1">
+                  <Mail className="h-3 w-3 text-muted-foreground" />
                   E-mail:
                 </span>
-                <span className="text-slate-300 font-mono">
+                <span className="text-foreground font-mono">
                   {resp.email}
                 </span>
               </div>
@@ -170,28 +170,28 @@ export default function AdminPassengerSendCobrancaDialog({
         </div>
 
         {cobranca && (
-          <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-left space-y-3">
-            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-secondary/30 border border-border text-left space-y-3">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
-              Parcela de Cobrança ({cobranca.mes}/{cobranca.ano})
+              Parcela de cobrança ({cobranca.mes}/{cobranca.ano})
             </span>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Valor da Parcela
+              <div className="p-2.5 rounded-xl bg-card border border-border">
+                <span className="text-[10px] font-medium text-muted-foreground block">
+                  Valor da parcela
                 </span>
-                <span className="text-base font-black text-emerald-400 font-headline mt-0.5 block">
+                <span className="text-sm sm:text-base font-bold text-emerald-400 font-headline mt-0.5 block">
                   {formatCurrency(Number(cobranca.valor))}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Data de Vencimento
+              <div className="p-2.5 rounded-xl bg-card border border-border">
+                <span className="text-[10px] font-medium text-muted-foreground block">
+                  Data de vencimento
                 </span>
-                <span className="text-xs font-bold text-slate-200 mt-0.5 block flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                <span className="text-xs font-semibold text-foreground mt-0.5 block flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-primary" />
                   {formatarDataVencimento(cobranca.data_vencimento)}
                 </span>
               </div>
@@ -199,18 +199,18 @@ export default function AdminPassengerSendCobrancaDialog({
 
             {situacao && (
               <div className="flex items-center justify-between pt-1 text-xs">
-                <span className="text-slate-400 text-[11px] font-medium flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-slate-400" />
+                <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
                   Situação temporal:
                 </span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${situacao.badgeClass}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${situacao.badgeClass}`}>
                   {situacao.texto}
                 </span>
               </div>
             )}
 
             {cobranca.data_envio_ultima_notificacao && (
-              <div className="text-[10px] text-slate-400 italic pt-1">
+              <div className="text-[10px] text-muted-foreground italic pt-1">
                 Último envio registrado em: {formatarDataVencimento(cobranca.data_envio_ultima_notificacao)}
               </div>
             )}
@@ -219,7 +219,7 @@ export default function AdminPassengerSendCobrancaDialog({
 
         <Banner
           variant="warning"
-          title="Envio Imediato e Real"
+          title="Envio imediato e real"
           description="A notificação será disparada imediatamente ao WhatsApp do responsável em nome do motorista, atualizando o registro de último envio."
         />
 
@@ -228,12 +228,12 @@ export default function AdminPassengerSendCobrancaDialog({
             <span className="text-[11px]">
               Lembretes automáticos estão desativados nesta cobrança.
             </span>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none font-bold">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none font-semibold">
               <input
                 type="checkbox"
                 checked={force}
                 onChange={(e) => setForce(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500 h-4 w-4"
+                className="rounded border-border bg-card text-amber-500 focus:ring-amber-500 h-4 w-4"
               />
               <span className="text-[11px]">Forçar mesmo assim</span>
             </label>
@@ -242,24 +242,20 @@ export default function AdminPassengerSendCobrancaDialog({
       </AdminBaseDialog.Body>
 
       <AdminBaseDialog.Footer>
-        <Button
-          type="button"
-          variant="ghost"
+        <AdminBaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
           onClick={() => safeCloseDialog(onClose)}
           disabled={dispatchMutation.isPending}
-          className="rounded-xl text-slate-400 hover:text-white"
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="button"
+        />
+        <AdminBaseDialog.Action
+          label={dispatchMutation.isPending ? "Disparando..." : "Enviar lembrete agora"}
+          variant="primary"
+          icon={<Send className="h-4 w-4" />}
           onClick={handleConfirm}
+          isLoading={dispatchMutation.isPending}
           disabled={dispatchMutation.isPending || (!force && cobranca?.desativar_lembretes)}
-          className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20"
-        >
-          <Send className="h-4 w-4" />
-          {dispatchMutation.isPending ? "Disparando..." : "Enviar Lembrete Agora"}
-        </Button>
+        />
       </AdminBaseDialog.Footer>
     </AdminBaseDialog>
   );

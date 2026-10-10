@@ -56,54 +56,54 @@ export function AdminBrazilMapChart({
   ).length;
 
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left flex flex-col h-full w-full min-w-0">
-      <CardHeader className="p-6 pb-2">
-        <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between gap-2">
+    <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-left flex flex-col h-full w-full min-w-0">
+      <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+        <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <Compass className="h-4 w-4 text-cyan-400 shrink-0" />
-            <span className="truncate">MAPA DE DENSIDADE NACIONAL</span>
+            <Compass className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">Densidade geográfica nacional</span>
           </div>
-          <span className="text-[10px] font-bold font-mono text-slate-400 shrink-0 ml-2">
-            {estadosAtivos} DE 27 UFS ATIVAS
+          <span className="text-xs font-mono font-normal text-muted-foreground shrink-0 ml-2">
+            {estadosAtivos} de 27 UFs ativas
           </span>
         </CardTitle>
-        <p className="text-[11px] font-medium text-slate-400 mt-1">
-          Distribuição e intensidade geográfica estimada por DDD do WhatsApp
+        <p className="text-xs font-normal text-muted-foreground mt-0.5">
+          Distribuição e concentração de motoristas estimada por DDD do WhatsApp
         </p>
       </CardHeader>
 
-      <CardContent className="p-6 pt-2 flex-1 flex flex-col justify-between w-full min-w-0">
+      <CardContent className="p-5 sm:p-6 pt-2 flex-1 flex flex-col justify-between w-full min-w-0">
         <div className="relative w-full flex-1 flex items-center justify-center min-h-[380px] my-auto">
           {hoveredItem && (
             <div
-              className={`absolute top-2 z-20 pointer-events-none bg-slate-950/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md min-w-[170px] animate-in fade-in zoom-in-95 duration-150 ${
+              className={`absolute top-2 z-20 pointer-events-none bg-card border border-border rounded-2xl p-3 shadow-xl min-w-[170px] animate-in fade-in zoom-in-95 duration-150 ${
                 isLeftHalf ? "right-2" : "left-2"
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="font-mono font-black text-xs px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <span className="font-mono font-semibold text-xs px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                   {hoveredItem.uf}
                 </span>
                 <span
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-lg border ${
                     REGIAO_BADGES[hoveredItem.regiao] || ""
                   }`}
                 >
                   {hoveredItem.regiao}
                 </span>
               </div>
-              <div className="font-bold text-slate-200 text-xs truncate">
+              <div className="font-medium text-foreground text-xs truncate">
                 {hoveredItem.nome}
               </div>
-              <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400 text-[11px]">Motoristas:</span>
-                <span className="font-black text-white">
+              <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between text-xs font-mono">
+                <span className="text-muted-foreground text-[11px]">Motoristas:</span>
+                <span className="font-semibold text-foreground">
                   {hoveredItem.quantidade}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs font-mono mt-0.5">
-                <span className="text-slate-400 text-[11px]">Participação:</span>
-                <span className="font-black text-cyan-400">
+                <span className="text-muted-foreground text-[11px]">Participação:</span>
+                <span className="font-semibold text-primary">
                   {hoveredItem.porcentagem}%
                 </span>
               </div>
@@ -195,29 +195,29 @@ export function AdminBrazilMapChart({
           </svg>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+        <div className="mt-4 pt-3 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 font-mono">
-            <Users className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-            <span>Total Nacional:</span>
-            <span className="font-bold text-slate-200 font-mono">
+            <Users className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Total nacional:</span>
+            <span className="font-semibold text-foreground font-mono">
               {totalMotoristas} motoristas
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+            <span className="text-xs font-medium text-muted-foreground">
               Densidade:
             </span>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] font-mono text-slate-400">0</span>
-              <div className="flex h-2 w-28 rounded-full overflow-hidden border border-slate-800">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-mono text-muted-foreground">0</span>
+              <div className="flex h-2 w-28 rounded-full overflow-hidden border border-border/60">
                 <div className="w-1/5 bg-[#162032]" title="0" />
                 <div className="w-1/5 bg-[#1e3a8a]" title="Baixa" />
                 <div className="w-1/5 bg-[#1d4ed8]" title="Moderada" />
                 <div className="w-1/5 bg-[#0284c7]" title="Média-Alta" />
                 <div className="w-1/5 bg-[#0ea5e9]" title="Alta" />
               </div>
-              <span className="text-[10px] font-mono font-bold text-cyan-400">
+              <span className="text-xs font-mono font-semibold text-primary">
                 {maxQuantidade}
               </span>
             </div>

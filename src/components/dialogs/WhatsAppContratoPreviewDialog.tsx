@@ -42,7 +42,7 @@ export function WhatsAppContratoPreviewDialog({
         onClose={() => safeCloseDialog(onClose)}
       />
 
-      <BaseDialog.Body className="p-3 sm:p-4 bg-slate-100/60 flex flex-col items-center overflow-y-auto">
+      <BaseDialog.Body className="p-3 sm:p-4 bg-[#f5f5f5]/60 flex flex-col items-center overflow-y-auto">
         <WhatsAppMessageContainer
           driverName={activeDriverName}
           time="16:50"

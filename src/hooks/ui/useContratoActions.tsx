@@ -1,7 +1,6 @@
 import { ActionItem } from "@/types/actions";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import {
-  Copy,
   Download,
   ExternalLink,
   Eye,
@@ -25,7 +24,6 @@ interface UseContratoActionsProps {
   isDesativado?: boolean;
   usarContratos?: boolean;
   onVerPassageiro: (id: string) => void;
-  onCopiarLink?: (token: string) => void;
   onEnviarWhatsApp?: () => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
   onDownload?: (item: ContratoListItem) => void;
@@ -45,7 +43,6 @@ export function useContratoActions({
   isDesativado = false,
   usarContratos = true,
   onVerPassageiro,
-  onCopiarLink,
   onEnviarWhatsApp,
   onCompartilharWhatsApp,
   onDownload,
@@ -84,7 +81,7 @@ export function useContratoActions({
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
             onCompletarCadastro?.(passId, item);
           },
-          swipeColor: 'bg-slate-600',
+          swipeColor: 'bg-[#0a0a0a]',
           hasSeparatorAfter: false
         });
       } else if (onGerarContrato) {
@@ -97,7 +94,7 @@ export function useContratoActions({
             onGerarContrato(passId, item);
           },
           disabled: isFeatureDisabled,
-          swipeColor: 'bg-slate-600',
+          swipeColor: 'bg-[#0a0a0a]',
           hasSeparatorAfter: false
         });
       }
@@ -112,7 +109,7 @@ export function useContratoActions({
           const passData = item.passageiro || (tipo === 'passageiro' ? (item as unknown as Passageiro) : undefined);
           onImportarContrato(passId, passData);
         },
-        swipeColor: 'bg-slate-700',
+        swipeColor: 'bg-[#0a0a0a]',
         hasSeparatorAfter: true
       });
     }
@@ -133,7 +130,7 @@ export function useContratoActions({
 
       if (isAssinado && urlContrato && onDownload) {
         list.push({
-          label: 'Download',
+          label: 'Baixar Contrato',
           icon: <Download className="h-4 w-4" />,
           onClick: () => onDownload(item),
           swipeColor: 'bg-indigo-600',
@@ -142,7 +139,7 @@ export function useContratoActions({
       }
     }
 
-    if (isAssinado && isMobile && onCompartilharWhatsApp && urlContrato) {
+    if (isAssinado && onCompartilharWhatsApp && urlContrato) {
       list.push({
         label: 'Enviar por WhatsApp',
         icon: <WhatsAppIcon className="h-4 w-4" />,
@@ -154,25 +151,14 @@ export function useContratoActions({
     }
 
     if (isPendente && onEnviarWhatsApp) {
-      if (isMobile) {
-        list.push({
-          label: 'Reenviar Contrato',
-          icon: <WhatsAppIcon className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(),
-          disabled: isFeatureDisabled,
-          swipeColor: 'bg-[#25D366]',
-          hasSeparatorAfter: true
-        });
-      } else {
-        list.push({
-          label: 'Copiar Link para Assinatura',
-          icon: <Copy className="h-4 w-4" />,
-          onClick: () => onEnviarWhatsApp(),
-          disabled: isFeatureDisabled,
-          swipeColor: 'bg-indigo-600',
-          hasSeparatorAfter: true
-        });
-      }
+      list.push({
+        label: 'Reenviar Contrato',
+        icon: <WhatsAppIcon className="h-4 w-4" />,
+        onClick: () => onEnviarWhatsApp(),
+        disabled: isFeatureDisabled,
+        swipeColor: 'bg-[#25D366]',
+        hasSeparatorAfter: true
+      });
     }
 
     if (hasContract && !isImportado && !isFeatureDisabled) {
@@ -190,7 +176,7 @@ export function useContratoActions({
       label: 'Ver Carteirinha',
       icon: <User className="h-4 w-4" />,
       onClick: () => onVerPassageiro(tipo === 'passageiro' ? item.id : item.passageiro_id),
-      swipeColor: 'bg-gray-500',
+      swipeColor: 'bg-[#737373]',
       hasSeparatorAfter: true
     });
 
@@ -200,12 +186,12 @@ export function useContratoActions({
         icon: <Trash2 className="h-4 w-4" />,
         onClick: () => onExcluir?.(item.id),
         disabled: !onExcluir,
-        className: 'text-red-600 font-medium',
+        className: 'text-[#e7000b] font-medium',
         isDestructive: true,
-        swipeColor: 'bg-red-600'
+        swipeColor: 'bg-[#e7000b]'
       });
     }
 
     return list;
-  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onCopiarLink, onEnviarWhatsApp, onCompartilharWhatsApp, onDownload, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
+  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onEnviarWhatsApp, onCompartilharWhatsApp, onDownload, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
 }

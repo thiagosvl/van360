@@ -148,7 +148,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
+          <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest leading-none px-2">
             {displayCobrancas.length} {displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}
           </span>
         </div>
@@ -173,14 +173,6 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
             const nomeMes = getMesNome(item.mes);
             const cobrancaDesc = `Recibo de ${item.mes}/${item.ano}`;
             const valorNum = Number(item.valor) || 0;
-
-            const statusColor = isCancelada
-              ? "bg-slate-100 text-slate-600"
-              : isPago
-                ? "bg-emerald-50 text-emerald-600"
-                : isAtrasado
-                  ? "bg-red-50 text-red-600"
-                  : "bg-amber-50 text-amber-600";
 
             const cobrancaObjParaSummary = {
               id: item.id,
@@ -238,37 +230,37 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                 )}
                 hideTriggerOnDesktop
               >
-                <div className="p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative cursor-pointer">
+                <div className="p-3.5 rounded-[18px] sm:rounded-[20px] shadow-xs flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-[#ffffff] border-[#e5e5e5] relative hover:border-[#d4d4d4] cursor-pointer">
                   <div
                     className={cn(
-                      "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
+                      "flex-shrink-0 w-9 h-9 rounded-[14px] flex items-center justify-center shrink-0 border transition-colors",
                       isCancelada
-                        ? "bg-slate-400"
+                        ? "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
                         : isPago
-                          ? "bg-emerald-500"
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : isAtrasado
-                            ? "bg-red-500"
-                            : "bg-amber-500"
+                            ? "bg-red-50 text-[#e7000b] border-red-100"
+                            : "bg-amber-50 text-amber-600 border-amber-100"
                     )}
                   >
                     {isCancelada ? (
-                      <Clock className="h-4 w-4 text-white" />
+                      <Clock className="h-4 w-4" />
                     ) : isPago ? (
-                      <CheckCircle2 className="h-4 w-4 text-white" />
+                      <CheckCircle2 className="h-4 w-4" />
                     ) : isAtrasado ? (
-                      <AlertCircle className="h-4 w-4 text-white" />
+                      <AlertCircle className="h-4 w-4" />
                     ) : (
-                      <Clock className="h-4 w-4 text-white" />
+                      <Clock className="h-4 w-4" />
                     )}
                   </div>
 
                   <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
-                    <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                    <p className="font-bold text-[#0a0a0a] text-sm truncate leading-tight">
                       {nomeMes}
                       {item.ano && item.ano !== currentYear ? `/${item.ano}` : ""}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
+                      <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">
                         {isCancelada
                           ? `Venc. ${formatDateToBR(item.data_vencimento)}`
                           : isPago
@@ -281,8 +273,8 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
-                    <div className="flex flex-col items-end gap-1">
-                      <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+                    <div className="flex flex-col items-center sm:items-end gap-1">
+                      <p className="font-bold text-[#0a0a0a] text-[13px] leading-none mb-0.5 text-center sm:text-right">
                         {valorNum.toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
@@ -296,11 +288,27 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                               ? CobrancaStatus.PAGO
                               : CobrancaStatus.PENDENTE
                         }
-                        dataVencimento={isCancelada ? undefined : item.data_vencimento}
                         className={cn(
-                          "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                          statusColor
+                          "sm:hidden font-bold text-[8px] h-3.5 px-1.5 rounded-[18px] border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                          isCancelada
+                            ? "bg-[#f5f5f5] text-[#737373]"
+                            : isPago
+                              ? "bg-emerald-50 text-emerald-600"
+                              : isAtrasado
+                                ? "bg-red-50 text-[#e7000b]"
+                                : "bg-amber-50 text-amber-600"
                         )}
+                      />
+                      <StatusBadge
+                        status={
+                          isCancelada
+                            ? CobrancaStatus.CANCELADA
+                            : isPago
+                              ? CobrancaStatus.PAGO
+                              : CobrancaStatus.PENDENTE
+                        }
+                        dataVencimento={isCancelada ? undefined : item.data_vencimento}
+                        className="hidden sm:inline-flex"
                       />
                     </div>
                   </div>

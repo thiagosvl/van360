@@ -182,22 +182,21 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
   return (
     <div className="space-y-6">
-      {/* TABELA 1: TRIALS EM ANDAMENTO (PIPELINE A VENCER) */}
-      <Card className="border border-slate-800/80 bg-[#131b2e] rounded-3xl shadow-xl overflow-hidden text-left">
-        <CardHeader className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/40 space-y-4">
+      <Card className="border border-border bg-card rounded-3xl shadow-xs overflow-hidden text-left">
+        <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-secondary/40 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+              <div className="h-10 w-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
                   <span>Vencimento de Trials</span>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 font-bold">
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
                     {activeTrials.length} em andamento
                   </span>
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Acompanhamento de trials ordenados por data de expiração, histórico de ações e uso real.
                 </p>
               </div>
@@ -205,6 +204,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
             <div className="flex items-center gap-2 w-full md:w-auto">
               <div className="relative w-full md:w-64">
+                <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Buscar por nome, apelido ou telefone..."
@@ -213,9 +213,8 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                     setSearchActive(e.target.value);
                     setPageActive(1);
                   }}
-                  className="bg-slate-950/90 border-slate-800 text-xs text-white placeholder-slate-500 pl-8 rounded-xl h-9"
+                  className="bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground pl-9 pr-3 rounded-lg h-9 w-full focus-visible:ring-0 focus:border-primary transition-colors"
                 />
-                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-3" />
               </div>
 
               {onRefresh && (
@@ -225,10 +224,10 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                   variant="outline"
                   onClick={onRefresh}
                   disabled={isLoading}
-                  className="h-9 w-9 rounded-xl border-slate-800 bg-slate-950/90 text-slate-300 hover:text-white shrink-0"
+                  className="h-9 w-9 rounded-lg border-border bg-background text-foreground hover:bg-secondary shrink-0"
                   title="Atualizar lista de trials"
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", isLoading && "animate-spin text-blue-400")} />
+                  <RefreshCw className={cn("w-3.5 h-3.5", isLoading && "animate-spin text-primary")} />
                 </Button>
               )}
             </div>
@@ -239,70 +238,70 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
               type="button"
               onClick={() => handlePeriodFilterChange("todos")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
+                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
                 periodFilter === "todos"
-                  ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  ? "bg-primary/20 border-primary text-foreground shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Todos</span>
-              <span className="text-base font-black text-white">{activeCounts.todos} trials</span>
+              <span className="text-[11px] font-medium text-muted-foreground block uppercase tracking-wider">Todos</span>
+              <span className="text-base font-bold text-foreground">{activeCounts.todos} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("1a2")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
+                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
                 periodFilter === "1a2"
-                  ? "bg-rose-600/20 border-rose-500 text-white shadow-lg shadow-rose-500/10"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  ? "bg-destructive/20 border-destructive text-foreground shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-bold text-rose-400 block uppercase tracking-wider">Em 1 a 2 dias</span>
-              <span className="text-base font-black text-white">{activeCounts.ate2} trials</span>
+              <span className="text-[11px] font-medium text-destructive block uppercase tracking-wider">Em 1 a 2 dias</span>
+              <span className="text-base font-bold text-foreground">{activeCounts.ate2} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("3a5")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
+                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
                 periodFilter === "3a5"
-                  ? "bg-amber-600/20 border-amber-500 text-white shadow-lg shadow-amber-500/10"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  ? "bg-amber-500/20 border-amber-500 text-foreground shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-bold text-amber-400 block uppercase tracking-wider">Em 3 a 5 dias</span>
-              <span className="text-base font-black text-white">{activeCounts.de3a5} trials</span>
+              <span className="text-[11px] font-medium text-amber-500 block uppercase tracking-wider">Em 3 a 5 dias</span>
+              <span className="text-base font-bold text-foreground">{activeCounts.de3a5} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("6a10")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
+                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
                 periodFilter === "6a10"
-                  ? "bg-sky-600/20 border-sky-500 text-white shadow-lg"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  ? "bg-sky-500/20 border-sky-500 text-foreground shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-bold text-sky-400 block uppercase tracking-wider">Em 6 a 10 dias</span>
-              <span className="text-base font-black text-white">{activeCounts.de6a10} trials</span>
+              <span className="text-[11px] font-medium text-sky-500 block uppercase tracking-wider">Em 6 a 10 dias</span>
+              <span className="text-base font-bold text-foreground">{activeCounts.de6a10} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("mais10")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-2xl border transition-all",
+                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
                 periodFilter === "mais10"
-                  ? "bg-purple-600/20 border-purple-500 text-white shadow-lg"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  ? "bg-purple-500/20 border-purple-500 text-foreground shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Mais de 10 dias</span>
-              <span className="text-base font-black text-white">{activeCounts.mais10} trials</span>
+              <span className="text-[11px] font-medium text-muted-foreground block uppercase tracking-wider">Mais de 10 dias</span>
+              <span className="text-base font-bold text-foreground">{activeCounts.mais10} trials</span>
             </button>
           </div>
         </CardHeader>
@@ -497,7 +496,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
                 {totalPagesActive > 1 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-400 text-xs mr-2 font-medium">
+                    <span className="text-muted-foreground text-xs mr-2 font-medium">
                       Página {pageActive} de {totalPagesActive}
                     </span>
                     <Button
@@ -506,7 +505,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                       size="icon"
                       disabled={pageActive <= 1}
                       onClick={() => setPageActive((p) => Math.max(1, p - 1))}
-                      className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                      className="h-9 w-9 rounded-lg border border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       title="Página anterior"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -517,7 +516,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                       size="icon"
                       disabled={pageActive >= totalPagesActive}
                       onClick={() => setPageActive((p) => Math.min(totalPagesActive, p + 1))}
-                      className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                      className="h-9 w-9 rounded-lg border border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       title="Próxima página"
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -530,22 +529,21 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
         </CardContent>
       </Card>
 
-      {/* TABELA 2: TRIALS VENCIDOS RECENTEMENTE (ÚLTIMOS 5 DIAS) */}
-      <Card className="border border-rose-500/30 bg-[#131b2e] rounded-3xl shadow-xl overflow-hidden text-left">
-        <CardHeader className="p-4 sm:p-5 border-b border-slate-800/80 bg-rose-950/10 space-y-4">
+      <Card className="border border-destructive/30 bg-card rounded-3xl shadow-xs overflow-hidden text-left">
+        <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-destructive/5 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+              <div className="h-10 w-10 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shrink-0">
                 <ClockAlert className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
                   <span>Trials Vencidos Recentemente</span>
-                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">
+                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-destructive/15 text-destructive border border-destructive/30 font-semibold">
                     {recentExpiredTrials.length} nos últimos 5 dias
                   </span>
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Motoristas com trial expirado nos últimos 5 dias que ainda não ativaram plano. Priorize contato com quem teve alto engajamento.
                 </p>
               </div>
@@ -553,6 +551,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
             <div className="flex items-center gap-2 w-full md:w-auto">
               <div className="relative w-full md:w-64">
+                <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Buscar vencidos por nome ou telefone..."
@@ -561,9 +560,8 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                     setSearchExpired(e.target.value);
                     setPageExpired(1);
                   }}
-                  className="bg-slate-950/90 border-slate-800 text-xs text-white placeholder-slate-500 pl-8 rounded-xl h-9"
+                  className="bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground pl-9 pr-3 rounded-lg h-9 w-full focus-visible:ring-0 focus:border-primary transition-colors"
                 />
-                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-3" />
               </div>
             </div>
           </div>
@@ -750,16 +748,16 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                 </tbody>
               </table>
 
-              <div className="p-3 sm:p-4 border-t border-slate-800/80 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-slate-400 font-medium">
-                  Listando <strong className="text-white">{totalExpired > 0 ? (pageExpired - 1) * pageSize + 1 : 0}</strong> a{" "}
-                  <strong className="text-white">{Math.min(pageExpired * pageSize, totalExpired)}</strong> de{" "}
-                  <strong className="text-white">{totalExpired}</strong> {totalExpired === 1 ? "trial vencido" : "trials vencidos"}
+              <div className="p-3 sm:p-4 border-t border-border/80 bg-secondary/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <span className="text-muted-foreground font-medium">
+                  Listando <strong className="text-foreground">{totalExpired > 0 ? (pageExpired - 1) * pageSize + 1 : 0}</strong> a{" "}
+                  <strong className="text-foreground">{Math.min(pageExpired * pageSize, totalExpired)}</strong> de{" "}
+                  <strong className="text-foreground">{totalExpired}</strong> {totalExpired === 1 ? "trial vencido" : "trials vencidos"}
                 </span>
 
                 {totalPagesExpired > 1 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-400 text-xs mr-2 font-medium">
+                    <span className="text-muted-foreground text-xs mr-2 font-medium">
                       Página {pageExpired} de {totalPagesExpired}
                     </span>
                     <Button
@@ -768,7 +766,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                       size="icon"
                       disabled={pageExpired <= 1}
                       onClick={() => setPageExpired((p) => Math.max(1, p - 1))}
-                      className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                      className="h-9 w-9 rounded-lg border border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       title="Página anterior"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -779,7 +777,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                       size="icon"
                       disabled={pageExpired >= totalPagesExpired}
                       onClick={() => setPageExpired((p) => Math.min(totalPagesExpired, p + 1))}
-                      className="h-8 w-8 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                      className="h-9 w-9 rounded-lg border border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       title="Próxima página"
                     >
                       <ChevronRight className="h-4 w-4" />

@@ -34,12 +34,12 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
       const success = await copyToClipboard(referralLink);
       if (success) {
         setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 2000);
       }
     } finally {
-      setTimeout(() => {
-        setIsCopying(false);
-        setIsCopied(false);
-      }, 3500);
+      setIsCopying(false);
     }
   };
 
@@ -63,7 +63,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
     } finally {
       setTimeout(() => {
         setIsSharingWhatsApp(false);
-      }, 3500);
+      }, 1000);
     }
   };
 
@@ -71,33 +71,33 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
 
   if (isCompact) {
     return (
-      <div className="flex w-full gap-1.5 mt-1">
+      <div className="flex w-full gap-2 mt-1">
         <Button
           variant="outline"
           onClick={handleCopyReferral}
           disabled={isCopying || isCopied}
           className={cn(
-            "flex-1 transition-all rounded-xl h-10 px-2 text-[11px] lg:text-[12px] whitespace-nowrap font-bold border active:scale-95 cursor-pointer",
+            "flex-1 transition-all rounded-[18px] h-10 px-3 text-xs font-medium whitespace-nowrap border active:scale-95 cursor-pointer shadow-xs",
             darkTheme
-              ? "bg-white text-[#0b1a2e] hover:bg-slate-100 border-white/20"
-              : "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 shadow-xs",
-            isCopied ? "bg-emerald-100 text-emerald-700 border-emerald-200 cursor-not-allowed pointer-events-none" : "",
-            isCopying ? "opacity-75 cursor-not-allowed pointer-events-none" : ""
+              ? "bg-white text-[#0b1a2e] hover:bg-[#f5f5f5] border-white/20"
+              : "bg-white text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#fafafa]",
+            isCopied && "bg-emerald-50 text-emerald-700 border-emerald-200 cursor-not-allowed pointer-events-none",
+            isCopying && "opacity-75 cursor-not-allowed pointer-events-none"
           )}
         >
           {isCopying ? (
             <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin text-emerald-700" />
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-[#737373]" />
               Copiando...
             </>
           ) : isCopied ? (
             <>
-              <Check className="w-4 h-4 mr-1 text-emerald-700" />
+              <Check className="w-4 h-4 mr-1.5 text-emerald-700" />
               Copiado!
             </>
           ) : (
             <>
-              <Copy className={cn("w-4 h-4 mr-1", darkTheme ? "text-[#0b1a2e]" : "text-emerald-700")} />
+              <Copy className={cn("w-4 h-4 mr-1.5", darkTheme ? "text-[#0b1a2e]" : "text-[#737373]")} />
               Copiar
             </>
           )}
@@ -106,21 +106,21 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
           onClick={handleShareWhatsApp}
           disabled={isSharingWhatsApp}
           className={cn(
-            "flex-1 rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-10 text-[10px] lg:text-[11px] whitespace-nowrap px-1 cursor-pointer active:scale-95",
+            "flex-1 rounded-[18px] font-medium shadow-xs flex items-center justify-center transition-all h-10 text-xs whitespace-nowrap px-3 cursor-pointer active:scale-95",
             darkTheme
-              ? "bg-white text-[#0b1a2e] hover:bg-slate-100"
-              : "bg-[#25D366] hover:bg-[#20b858] text-white",
+              ? "bg-white text-[#0b1a2e] hover:bg-[#f5f5f5]"
+              : "bg-[#25D366] hover:bg-[#20ba59] text-white",
             isSharingWhatsApp && "opacity-75 cursor-not-allowed pointer-events-none"
           )}
         >
           {isSharingWhatsApp ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
               Abrindo...
             </>
           ) : (
             <>
-              <WhatsAppIcon className={cn("w-3.5 h-3.5 mr-1", darkTheme ? "text-[#0b1a2e]" : "")} />
+              <WhatsAppIcon className={cn("w-3.5 h-3.5 mr-1.5", darkTheme ? "text-[#0b1a2e]" : "")} />
               Indicar no WhatsApp
             </>
           )}
@@ -132,38 +132,38 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
   return (
     <>
       <div className="w-full text-left mb-3">
-        <label className="text-[12px] font-bold text-slate-800 block mb-2 px-1">
+        <label className="text-xs font-medium text-[#737373] block mb-1.5 px-0.5">
           Seu link de indicação
         </label>
-        <div className="flex items-center w-full border border-slate-200 rounded-xl bg-white shadow-sm p-1.5 pl-3">
-          <span className="text-slate-600 truncate flex-1 min-w-0 font-medium text-[12px] sm:text-[13px] mr-2">
+        <div className="flex items-center w-full border border-[#e5e5e5] rounded-[18px] bg-[#f5f5f5] shadow-xs p-1.5 pl-3.5">
+          <span className="text-[#171717] truncate flex-1 min-w-0 font-medium text-xs sm:text-[13px] mr-2 select-all">
             {referralLink || "Gerando link..."}
           </span>
           <button
             onClick={handleCopyReferral}
             disabled={isCopying || isCopied}
             className={cn(
-              "h-9 px-3.5 text-[13px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-95 cursor-pointer select-none",
+              "h-8 px-3 text-xs font-medium rounded-[14px] transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-95 cursor-pointer select-none",
               isCopied
-                ? "bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-none cursor-not-allowed pointer-events-none"
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-none cursor-not-allowed pointer-events-none"
                 : isCopying
-                ? "bg-white text-emerald-700 border border-emerald-200 opacity-75 cursor-not-allowed pointer-events-none"
-                : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 shadow-xs"
+                ? "bg-white text-[#737373] border border-[#e5e5e5] opacity-75 cursor-not-allowed pointer-events-none"
+                : "bg-white text-[#0a0a0a] border border-[#e5e5e5] hover:bg-[#fafafa] shadow-2xs"
             )}
           >
             {isCopying ? (
               <>
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-700" />
+                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-[#737373]" />
                 <span>Copiando...</span>
               </>
             ) : isCopied ? (
               <>
-                <Check className="h-4 w-4 shrink-0 text-emerald-700" />
+                <Check className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
                 <span>Copiado!</span>
               </>
             ) : (
               <>
-                <Copy className="h-4 w-4 shrink-0" />
+                <Copy className="h-3.5 w-3.5 shrink-0 text-[#737373]" />
                 <span>Copiar</span>
               </>
             )}
@@ -175,7 +175,7 @@ export function ReferralShareBlock({ referralLink, variant = "default", darkThem
         onClick={handleShareWhatsApp}
         disabled={isSharingWhatsApp}
         className={cn(
-          "w-full bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold shadow-sm flex items-center justify-center transition-all h-11 text-[13px] gap-2 cursor-pointer active:scale-95",
+          "w-full bg-[#25D366] hover:bg-[#20ba59] text-white rounded-[18px] font-medium shadow-xs flex items-center justify-center transition-all h-10 text-xs sm:text-sm gap-2 cursor-pointer active:scale-95",
           isSharingWhatsApp && "opacity-75 cursor-not-allowed pointer-events-none"
         )}
       >

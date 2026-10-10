@@ -19,12 +19,12 @@ export const CarteirinhaReciboAnualCard: React.FC<CarteirinhaReciboAnualCardProp
 }) => {
   if (isLoading || !reciboUrl) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5 sm:p-4 shadow-sm">
+      <div className="relative overflow-hidden rounded-[18px] sm:rounded-[20px] border border-[#e5e5e5] bg-[#fafafa] p-3.5 sm:p-4 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-200/70 text-slate-500">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#f5f5f5] text-[#737373]">
             <Loader2 className="h-4 w-4 animate-spin" />
           </div>
-          <p className="text-xs font-medium text-slate-600">
+          <p className="text-xs font-medium text-[#737373]">
             Gerando recibo anual...
           </p>
         </div>
@@ -33,17 +33,17 @@ export const CarteirinhaReciboAnualCard: React.FC<CarteirinhaReciboAnualCardProp
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-sm transition-all hover:border-slate-300">
+    <div className="relative overflow-hidden rounded-[18px] sm:rounded-[20px] border border-[#e5e5e5] bg-[#ffffff] p-3.5 sm:p-4 shadow-xs transition-all hover:border-[#d4d4d4]">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a]">
             <ReceiptText className="h-5 w-5" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-800">
+            <h4 className="text-sm font-semibold text-[#0a0a0a]">
               Recibo Anual
             </h4>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#737373]">
               Referência: {ano}
             </p>
           </div>
@@ -52,9 +52,9 @@ export const CarteirinhaReciboAnualCard: React.FC<CarteirinhaReciboAnualCardProp
         <Button
           type="button"
           onClick={onVisualizar}
-          className="bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs h-9 px-4 rounded-xl shadow-sm transition-all active:scale-95 shrink-0"
+          className="bg-primary/10 hover:bg-primary hover:text-white text-primary border border-primary/20 font-semibold text-xs h-9 px-4 rounded-[18px] shadow-none transition-all active:scale-95 shrink-0 gap-1.5 cursor-pointer"
         >
-          <Eye className="h-4 w-4 mr-1.5" />
+          <Eye className="h-4 w-4" />
           <span>Ver Recibo</span>
         </Button>
       </div>

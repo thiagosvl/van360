@@ -14,10 +14,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    document.documentElement.classList.add("dark");
+
     const win = window as unknown as { clarity?: (action: string, ...args: unknown[]) => void };
     if (typeof win.clarity === "function") {
       win.clarity("stop");
     }
+
+    return () => {
+      document.documentElement.classList.remove("dark");
+    };
   }, []);
 
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -73,18 +79,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <LayoutProvider>
-      <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-body selection:bg-blue-500/20 selection:text-blue-300">
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:block">
+      <div className="dark flex min-h-screen bg-background text-foreground font-body selection:bg-primary/20 selection:text-primary">
+        <div className="hidden lg:block shrink-0 sticky top-0 h-screen self-start z-50">
           <AdminSidebar />
         </div>
 
-        {/* Mobile Sidebar (Drawer) */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetContent 
             ref={sheetRef}
             side="left" 
-            className="p-0 border-r-0 w-72 bg-[#0d1424] [&>button]:text-white [&>button]:hover:text-white/80"
+            className="p-0 border-r-0 w-72 bg-sidebar text-sidebar-foreground [&>button]:text-sidebar-foreground [&>button]:hover:text-sidebar-foreground/80"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -93,7 +97,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
           <AdminNavbar onMenuToggle={() => setIsMobileMenuOpen(true)} />
 
@@ -102,7 +105,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               {children}
             </div>
           </main>
-
         </div>
       </div>
     </LayoutProvider>

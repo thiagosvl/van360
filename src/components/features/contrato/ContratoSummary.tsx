@@ -4,10 +4,10 @@ import { formatCurrency, formatMonthYearToBR, formatShortName } from "@/utils/fo
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { useAppPreferences } from "@/hooks";
-import { AlertCircle, Calendar } from "lucide-react";
-
+import { Calendar } from "lucide-react";
 import { ContratoListItem } from "@/types/contract";
 import { isResponsavelIncompleto } from "@/utils/domain";
+import { Banner } from "@/components/ui/Banner";
 
 interface ContratoSummaryProps {
   item: ContratoListItem;
@@ -49,59 +49,65 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
       : "Emitido em";
 
   return (
-    <div className="flex flex-col p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left w-full min-w-0 overflow-hidden">
-      <div className="flex justify-between items-center mb-2 w-full min-w-0 gap-2">
-        <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider leading-none shrink-0">
-          CONTRATO
-        </p>
+    <div className="flex flex-col p-4 sm:p-5 bg-[#fafafa] rounded-[22px] border border-[#e5e5e5] text-left w-full min-w-0 overflow-hidden shadow-2xs">
+      <div className="flex justify-between items-center mb-2.5 w-full min-w-0 gap-2">
+        <span className="text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em] shrink-0">
+          Contrato do Aluno
+        </span>
 
-        <div className={cn(
-          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
-          isImportado ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30" :
-            isAssinado ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" :
-              isPendente ? "bg-amber-50 text-amber-600 dark:bg-amber-950/30" :
-                isSemContrato && isMissingResponsible ? "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30" :
-                  "bg-slate-50 text-slate-500 dark:bg-zinc-800"
-        )}>
+        <span
+          className={cn(
+            "px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium tracking-tight shrink-0 border transition-colors",
+            isAssinado
+              ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
+              : isImportado
+                ? "bg-sky-500/[0.08] text-sky-700 border-sky-500/20"
+                : isPendente
+                  ? "bg-amber-500/[0.08] text-amber-700 border-amber-500/20"
+                  : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
+          )}
+        >
           {statusLabel}
-        </div>
+        </span>
       </div>
 
-      <div className="flex items-start gap-2 mt-0.5 w-full min-w-0">
-        <h1 className="text-base sm:text-lg font-bold text-[#1a3a5c] dark:text-zinc-100 leading-snug line-clamp-3 break-words w-full min-w-0">
+      <div className="flex items-start gap-2 w-full min-w-0">
+        <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight leading-snug line-clamp-2 break-words w-full min-w-0">
           {formatShortName(nomePassageiro, true)}
-        </h1>
+        </h2>
       </div>
 
       {nomeResponsavel ? (
-        <p className={cn(
-          "text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-snug w-full min-w-0",
-          formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-2 break-words"
-        )}>
+        <p
+          className={cn(
+            "text-xs font-normal text-[#737373] mt-0.5 leading-snug w-full min-w-0",
+            formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-2 break-words"
+          )}
+        >
           {nomeResponsavel}
         </p>
       ) : isMissingResponsible ? (
-        <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
+        <p className="text-xs font-normal text-[#737373] mt-0.5 leading-snug line-clamp-2 break-words w-full min-w-0">
           Responsável não cadastrado
         </p>
       ) : null}
 
       {isSemContrato && isMissingResponsible && (
-        <div className="mt-3 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
-            Para emitir o contrato, cadastre o responsável. Ao salvar, a emissão do contrato será iniciada automaticamente.
-          </p>
+        <div className="mt-3">
+          <Banner
+            variant="warning"
+            title="Cadastro incompleto"
+            description="Complete o cadastro do responsável para emitir o contrato."
+          />
         </div>
       )}
 
-      {/* LINHA 3: Footer com Valor e Data */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60 dark:border-zinc-800/80 w-full min-w-0 gap-2">
-        <div className="flex flex-col gap-1.5 min-w-0">
+      <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-[#e5e5e5] w-full min-w-0 gap-2">
+        <div className="flex flex-col gap-1 min-w-0">
           {(isAssinado || isPendente || isImportado) && (
             <div className="flex items-center gap-1.5 min-w-0">
-              <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-              <span className="max-[320px]:text-[10px] text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
+              <Calendar className="h-3.5 w-3.5 text-[#737373] shrink-0" />
+              <span className="text-[11px] font-medium text-[#737373] tracking-tight truncate">
                 {dataLabel} {formatMonthYearToBR(dataExibicao)}
               </span>
             </div>
@@ -109,11 +115,11 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
         </div>
 
         {valor && (
-          <div className="flex items-center shrink-0">
-            <span className="max-[320px]:text-sm text-lg sm:text-[20px] font-bold text-[#1a3a5c] dark:text-zinc-100 tracking-tight leading-none">
+          <div className="flex items-baseline shrink-0">
+            <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-none">
               {formatCurrency(valor)}
-              <span className="text-[11px] font-bold text-slate-400 ml-0.5">/MÊS</span>
             </span>
+            <span className="text-[11px] font-medium text-[#737373] ml-1">/mês</span>
           </div>
         )}
       </div>

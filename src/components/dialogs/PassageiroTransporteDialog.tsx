@@ -9,13 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -303,7 +297,7 @@ export function PassageiroTransporteDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="xl">
       <BaseDialog.Header
         title="Editar Transporte e Endereço"
-        icon={<Bus className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<Bus className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
 
@@ -317,9 +311,9 @@ export function PassageiroTransporteDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Car className="w-4 h-4 text-[#1a3a5c]" />
-                <h4 className="text-sm font-bold text-[#1a3a5c]">Veículo e Modalidade</h4>
+              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
+                <Car className="w-4 h-4 text-[#0a0a0a]" />
+                <h4 className="text-sm font-semibold text-[#0a0a0a]">Veículo e Modalidade</h4>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -327,48 +321,38 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="veiculo_id"
                   render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Veículo
                       </FormLabel>
-                      <Select
-                        value={field.value || undefined}
-                        onValueChange={(val) => {
-                          if (val === "add-new-vehicle") {
-                            handleAddNewVehicle();
-                            return;
-                          }
-                          field.onChange(val);
-                        }}
-                        disabled={isLoadingVeiculos}
-                      >
-                        <FormControl>
-                          <div className="relative">
-                            <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <SelectTrigger
-                              className={cn(
-                                "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                fieldState.error && "border-red-500"
-                              )}
-                            >
-                              <SelectValue placeholder={isLoadingVeiculos ? "Carregando veículos..." : "Selecione o veículo"} />
-                            </SelectTrigger>
-                          </div>
-                        </FormControl>
-                        <SelectContent className="max-h-60 overflow-y-auto">
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "add-new-vehicle") {
+                              handleAddNewVehicle();
+                              return;
+                            }
+                            field.onChange(val);
+                          }}
+                          disabled={isLoadingVeiculos}
+                          icon={<Car className="h-4 w-4 text-[#737373]" />}
+                          error={!!fieldState.error}
+                        >
+                          <option value="">
+                            {isLoadingVeiculos ? "Carregando veículos..." : "Selecione o veículo"}
+                          </option>
                           {veiculosList.map((veiculo) => (
-                            <SelectItem key={veiculo.id} value={veiculo.id}>
+                            <option key={veiculo.id} value={veiculo.id}>
                               {formatarPlacaExibicao(veiculo.placa)} {veiculo.modelo ? `- ${veiculo.modelo}` : ""}
-                            </SelectItem>
+                            </option>
                           ))}
-                          <SelectItem
-                            value="add-new-vehicle"
-                            className="font-semibold text-[#1a3a5c] cursor-pointer"
-                          >
+                          <option value="add-new-vehicle">
                             + Cadastrar Veículo
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                          </option>
+                        </NativeSelect>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -378,30 +362,24 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="modalidade"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Modalidade
                       </FormLabel>
-                      <Select
-                        value={field.value || undefined}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <div className="relative">
-                            <Compass className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                            <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left">
-                              <SelectValue placeholder="Selecione a modalidade" />
-                            </SelectTrigger>
-                          </div>
-                        </FormControl>
-                        <SelectContent>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          icon={<Compass className="h-4 w-4 text-[#737373]" />}
+                        >
+                          <option value="">Selecionar</option>
                           {modalidades.map((m) => (
-                            <SelectItem key={m.value} value={m.value}>
+                            <option key={m.value} value={m.value}>
                               {m.label}
-                            </SelectItem>
+                            </option>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </NativeSelect>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -410,9 +388,9 @@ export function PassageiroTransporteDialog({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Clock className="w-4 h-4 text-[#1a3a5c]" />
-                <h4 className="text-sm font-bold text-[#1a3a5c]">Período e Horários</h4>
+              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
+                <Clock className="w-4 h-4 text-[#0a0a0a]" />
+                <h4 className="text-sm font-semibold text-[#0a0a0a]">Período e Horários</h4>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -420,42 +398,42 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="data_inicio_transporte"
                   render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Início do Transporte
                       </FormLabel>
                       <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <div className="relative group">
-                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <CalendarDays className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                               <Button
                                 type="button"
                                 variant="outline"
                                 className={cn(
-                                  "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  !field.value && "text-muted-foreground",
-                                  fieldState.error && "border-red-500"
+                                  "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
+                                  !field.value && "text-[#737373]",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               >
                                 {field.value ? field.value : "dd/mm/aaaa"}
                               </Button>
                               {field.value && (
                                 <div
-                                  className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                  className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
                                     field.onChange("");
                                   }}
                                 >
-                                  <X className="h-5 w-5" />
+                                  <X className="h-4 w-4" />
                                 </div>
                               )}
                             </div>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
@@ -480,42 +458,42 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="data_fim_transporte"
                   render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Término do Transporte
                       </FormLabel>
                       <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <div className="relative group">
-                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <CalendarDays className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                               <Button
                                 type="button"
                                 variant="outline"
                                 className={cn(
-                                  "w-full pl-12 pr-10 h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal hover:bg-slate-100 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  !field.value && "text-muted-foreground",
-                                  fieldState.error && "border-red-500"
+                                  "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
+                                  !field.value && "text-[#737373]",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               >
                                 {field.value ? field.value : "dd/mm/aaaa"}
                               </Button>
                               {field.value && (
                                 <div
-                                  className="absolute right-3 top-3.5 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
+                                  className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
                                     field.onChange("");
                                   }}
                                 >
-                                  <X className="h-5 w-5" />
+                                  <X className="h-4 w-4" />
                                 </div>
                               )}
                             </div>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
@@ -542,19 +520,31 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="horario_entrada"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Horário de Entrada
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 pointer-events-none" />
+                          <Clock className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             type="time"
                             {...field}
                             value={field.value || ""}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                            className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
                           />
+                          {field.value && (
+                            <div
+                              className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                field.onChange("");
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </div>
+                          )}
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -566,19 +556,31 @@ export function PassageiroTransporteDialog({
                   control={form.control}
                   name="horario_saida"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                         Horário de Saída
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 pointer-events-none" />
+                          <Clock className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             type="time"
                             {...field}
                             value={field.value || ""}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                            className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
                           />
+                          {field.value && (
+                            <div
+                              className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                field.onChange("");
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </div>
+                          )}
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -589,14 +591,14 @@ export function PassageiroTransporteDialog({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
-                <h4 className="text-sm font-bold text-[#1a3a5c]">Endereço Principal</h4>
+              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
+                <MapPin className="w-4 h-4 text-[#0a0a0a]" />
+                <h4 className="text-sm font-semibold text-[#0a0a0a]">Endereço Principal</h4>
               </div>
 
               {!hasExistingResponsible && (
-                <div className="space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-xs text-slate-600 font-medium">
+                <div className="space-y-3 p-3.5 bg-[#fafafa] rounded-[18px] border border-[#e5e5e5]">
+                  <p className="text-xs text-[#737373] font-medium">
                     Informe quem é o responsável para vincular este endereço:
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -604,18 +606,18 @@ export function PassageiroTransporteDialog({
                       control={form.control}
                       name="nome_responsavel"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1 text-xs">
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Nome do Responsável
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                              <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Nome completo"
                                 {...field}
                                 value={field.value || ""}
-                                className="pl-10 h-10 rounded-xl bg-white border-slate-200 text-sm"
+                                className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                               />
                             </div>
                           </FormControl>
@@ -628,19 +630,19 @@ export function PassageiroTransporteDialog({
                       control={form.control}
                       name="telefone_responsavel"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1 text-xs">
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             WhatsApp do Responsável
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Phone className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                              <Phone className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="(11) 99999-9999"
                                 {...field}
                                 value={field.value || ""}
                                 onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                className="pl-10 h-10 rounded-xl bg-white border-slate-200 text-sm"
+                                className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                               />
                             </div>
                           </FormControl>

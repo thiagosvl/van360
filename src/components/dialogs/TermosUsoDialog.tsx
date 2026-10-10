@@ -13,10 +13,11 @@ export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
   const handleClose = () => safeCloseDialog(() => onOpenChange(false));
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange}>
+    <BaseDialog open={open} onOpenChange={onOpenChange} maxWidth="2xl">
       <BaseDialog.Header
         title="Termos de Uso"
-        icon={<FileText className="w-5 h-5" />}
+        subtitle="Condições e diretrizes para uso da plataforma Van360"
+        icon={<FileText className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
       <BaseDialog.Body>
@@ -26,7 +27,7 @@ export function TermosUsoDialog({ open, onOpenChange }: TermosUsoDialogProps) {
         <BaseDialog.Action
           label="Fechar"
           onClick={handleClose}
-          variant="primary"
+          variant="outline"
         />
       </BaseDialog.Footer>
     </BaseDialog>

@@ -1,6 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useSession } from "@/hooks/business/useSession";
 import { CanalAquisicao } from "@/types/enums";
 import { CanalAquisicaoLabels, CANAL_AQUISICAO_ORDERED_OPTIONS } from "@/utils/acquisition-channel.utils";
@@ -85,7 +85,7 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
         onClose={handleDismiss}
       />
       <BaseDialog.Body>
-        <div className="mb-6 mt-2 text-sm text-slate-600">
+        <div className="mb-6 mt-2 text-sm text-[#737373]">
           Conta pra gente rapidinho: por onde você ouviu falar ou encontrou o aplicativo pela primeira vez?
         </div>
         <Form {...form}>
@@ -95,23 +95,22 @@ export default function AcquisitionChannelDialog({ isOpen, onClose }: Acquisitio
               name="canal_aquisicao"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Selecione uma opção <span className="text-red-600">*</span>
+                  <FormLabel className="text-[#0a0a0a] font-semibold ml-1">
+                    Selecione uma opção <span className="text-[#e7000b]">*</span>
                   </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
-                        <SelectValue placeholder="Escolha uma opção..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+                  <FormControl>
+                    <NativeSelect
+                      {...field}
+                      value={field.value || ""}
+                    >
+                      <option value="" disabled hidden>Escolha uma opção...</option>
                       {CANAL_AQUISICAO_ORDERED_OPTIONS.map((channelKey) => (
-                        <SelectItem key={channelKey} value={channelKey}>
+                        <option key={channelKey} value={channelKey}>
                           {CanalAquisicaoLabels[channelKey]}
-                        </SelectItem>
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </NativeSelect>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -171,24 +171,24 @@ export function ReordenarParadaSheet({
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DrawerContent className="max-w-md mx-auto rounded-t-[32px] bg-white border-none p-0 flex flex-col overflow-hidden shadow-2xl pb-0">
-        <DrawerHeader className="pt-2 pb-4 px-6 bg-white border-b border-slate-100 flex flex-col items-center justify-center text-center shrink-0 sticky top-0 z-20">
-          <DrawerTitle className="text-xl font-extrabold text-[#1a3a5c] font-headline tracking-tight">
+      <DrawerContent className="max-w-md mx-auto rounded-t-[28px] bg-white border-t border-[#e5e5e5] p-0 flex flex-col overflow-hidden shadow-xl pb-0">
+        <DrawerHeader className="pt-4 pb-3 px-6 bg-white border-b border-[#e5e5e5] flex flex-col items-center justify-center text-center shrink-0 sticky top-0 z-20">
+          <DrawerTitle className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight">
             Reordenar Parada
           </DrawerTitle>
-          <span className="text-xs font-normal text-slate-400 mt-0.5">
-            Mover <span className="font-medium text-slate-600">{targetNome}</span> para outra posição
+          <span className="text-xs font-normal text-[#737373] mt-0.5">
+            Mover <span className="font-semibold text-[#0a0a0a]">{targetNome}</span> para outra posição
           </span>
         </DrawerHeader>
 
-        <div className="px-3 py-3 sm:px-4 bg-[#eef2f6] text-left">
-          <div className="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-xs flex flex-col gap-2 relative">
-            <h3 className="text-xs font-semibold text-slate-600">
+        <div className="px-3.5 py-3 sm:px-4 bg-[#f5f5f5] text-left">
+          <div className="bg-white rounded-[24px] p-3.5 border border-[#e5e5e5] shadow-xs flex flex-col gap-2 relative">
+            <h3 className="text-xs font-semibold text-[#0a0a0a]">
               Escolha a nova posição:
             </h3>
 
             {alternativePointsCount === 0 && (
-              <p className="text-xs text-slate-400 font-medium text-center py-4">
+              <p className="text-xs text-[#737373] font-normal text-center py-4">
                 Não há outras paradas para reordenar.
               </p>
             )}
@@ -196,14 +196,14 @@ export function ReordenarParadaSheet({
             <div className="relative">
               {canScrollUp && (
                 <div className="absolute -top-1.5 left-0 right-0 h-5 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none z-10 flex items-center justify-center">
-                  <ChevronUp className="w-4 h-4 text-[#1a3a5c]/70 animate-bounce" />
+                  <ChevronUp className="w-4 h-4 text-[#737373] animate-bounce" />
                 </div>
               )}
 
               <div
                 ref={scrollContainerRef}
                 onScroll={checkScrollState}
-                className="max-h-[300px] sm:max-h-[340px] overflow-y-auto px-2 pt-1 pb-1 space-y-1.5 scrollbar-thin scroll-smooth"
+                className="max-h-[300px] sm:max-h-[340px] overflow-y-auto px-1 pt-1 pb-1 space-y-1.5 scrollbar-thin scroll-smooth"
               >
                 {validInsertionPoints.map((pt) => {
                   const isSelected = selectedTargetIndex === pt.targetIndex;
@@ -218,35 +218,35 @@ export function ReordenarParadaSheet({
                         setTimeout(checkScrollState, 50);
                       }}
                       className={cn(
-                        "relative flex items-center gap-2.5 py-3 px-3.5 transition-all select-none rounded-xl border cursor-pointer",
+                        "relative flex items-center gap-2.5 py-3 px-3.5 transition-all select-none rounded-[18px] border cursor-pointer",
                         isSelected
-                          ? "bg-[#1a3a5c]/5 border-2 border-[#1a3a5c] text-[#1a3a5c] shadow-2xs"
-                          : "bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50"
+                          ? "bg-primary/5 border-2 border-primary text-[#0a0a0a] shadow-xs"
+                          : "bg-white border-[#e5e5e5] text-[#0a0a0a] hover:bg-[#fafafa]"
                       )}
                     >
                       <div
                         className={cn(
                           "w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all self-center ml-0.5",
                           isSelected
-                            ? "border-[5px] border-[#1a3a5c] bg-white"
-                            : "border-2 border-slate-300"
+                            ? "border-[5px] border-primary bg-white"
+                            : "border-2 border-[#e5e5e5]"
                         )}
                       />
 
                       <div className="flex flex-col min-w-0 flex-1 text-left ml-1">
                         <span
                           className={cn(
-                            "text-xs font-bold leading-snug break-words",
-                            isSelected ? "text-[#1a3a5c]" : "text-slate-800"
+                            "text-xs font-semibold leading-snug break-words",
+                            isSelected ? "text-primary" : "text-[#0a0a0a]"
                           )}
                         >
                           {pt.label}
                         </span>
 
                         {pt.subtext && (
-                          <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mt-1">
+                          <div className="flex items-center gap-1 text-[11px] font-normal text-[#737373] mt-1">
                             {pt.targetIndex !== 0 && (
-                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 self-start mt-0.5" />
+                              <MapPin className="w-3.5 h-3.5 text-[#737373] shrink-0 self-start mt-0.5" />
                             )}
                             <span className="break-words leading-snug">{pt.subtext}</span>
                           </div>
@@ -259,23 +259,23 @@ export function ReordenarParadaSheet({
 
               {canScrollDown && (
                 <div className="absolute -bottom-1.5 left-0 right-0 h-5 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10 flex items-center justify-center">
-                  <ChevronDown className="w-4 h-4 text-[#1a3a5c]/70 animate-bounce" />
+                  <ChevronDown className="w-4 h-4 text-[#737373] animate-bounce" />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <DrawerFooter className="px-5 pt-0 pb-[calc(1.25rem+var(--safe-area-bottom))] bg-[#eef2f6] border-none shrink-0">
+        <DrawerFooter className="px-4 pt-3 pb-[calc(1.5rem+var(--safe-area-bottom))] bg-white border-t border-[#e5e5e5] shrink-0">
           <Button
             type="button"
             disabled={isSamePositionOrNull || isSubmitting}
             onClick={handleConfirm}
             className={cn(
-              "w-full font-extrabold h-12 rounded-xl text-sm shadow-md transition-all active:scale-[0.98]",
+              "w-full font-semibold h-11 rounded-[18px] text-xs sm:text-sm shadow-xs transition-all active:scale-[0.98] cursor-pointer border-none",
               isSamePositionOrNull || isSubmitting
-                ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none opacity-80"
-                : "bg-[#1a3a5c] hover:bg-[#15304d] text-white shadow-[#1a3a5c]/20"
+                ? "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] cursor-not-allowed shadow-none"
+                : "bg-primary hover:bg-primary-hover text-white"
             )}
           >
             {isSubmitting ? (

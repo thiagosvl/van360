@@ -17,17 +17,17 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
 
   if (!contrato || !status) {
     return (
-      <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-5 flex flex-col gap-4 text-left">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 flex flex-col gap-4 text-left">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#16314f]">Contrato</h3>
+          <h3 className="text-base font-semibold text-[#0a0a0a]">Contrato</h3>
         </div>
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+        <div className="rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-[14px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] shrink-0">
             <FileX2 className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-sm font-bold text-[#1a3a5c]">Nenhum contrato ativo</span>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <span className="block text-sm font-semibold text-[#0a0a0a]">Aluno sem contrato</span>
+            <p className="text-xs text-[#737373] mt-0.5">
               Não há contratos vinculados a este aluno no momento.
             </p>
           </div>
@@ -54,35 +54,28 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
   };
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs p-5 flex flex-col gap-4 text-left">
+    <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 flex flex-col gap-4 text-left">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold text-[#16314f]">Contrato de Transporte</h3>
+        <h3 className="text-base font-semibold text-[#0a0a0a]">Contrato de Transporte</h3>
       </div>
 
-      <div
-        className={cn(
-          "rounded-2xl border p-4 transition-all flex flex-col gap-3",
-          isAssinado
-            ? "bg-slate-50 border-slate-200/80"
-            : "bg-amber-50/40 border-amber-100/80"
-        )}
-      >
+      <div className="rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-4 transition-all flex flex-col gap-3">
         <div className="flex items-start gap-3 w-full">
           <div
             className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs border border-black/5",
+              "w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 border",
               isAssinado
-                ? "text-emerald-600 bg-emerald-100/50 border-emerald-200/20"
-                : "text-amber-600 bg-amber-100/50 border-amber-200/20"
+                ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/20"
+                : "text-amber-700 bg-amber-500/10 border-amber-500/20"
             )}
           >
             {isAssinado ? <FileCheck2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
           </div>
           <div className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug">
+            <span className="block text-sm font-semibold text-[#0a0a0a] mt-0.5 leading-snug">
               {isAssinado ? "Contrato Assinado" : "Assinatura Pendente"}
             </span>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <p className="text-xs text-[#737373] mt-0.5">
               {isAssinado
                 ? "Documento assinado digitalmente e em conformidade."
                 : "Seu contrato está aguardando assinatura. Clique abaixo para assinar online."}
@@ -94,10 +87,10 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
           type="button"
           onClick={handleAction}
           className={cn(
-            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all shadow-xs hover:shadow active:scale-[0.99] cursor-pointer",
+            "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-[18px] text-xs font-medium transition-all shadow-xs active:scale-[0.99] cursor-pointer",
             isAssinado
-              ? "bg-white border border-[#1a3a5c] text-[#1a3a5c] hover:bg-slate-50"
-              : "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white"
+              ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white"
+              : "bg-primary hover:bg-primary-hover text-white shadow-sm"
           )}
         >
           {isAssinado ? (

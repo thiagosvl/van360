@@ -161,49 +161,49 @@ export default function AdminDispatchNotificationDialog({
       description="Diálogo de teste e disparo manual de notificações para motorista"
     >
       <AdminBaseDialog.Header
-        title="Disparar Notificação de Teste"
+        title="Disparar notificação de teste"
         subtitle="Selecione um evento operacional para testar o envio em tempo real."
-        icon={<Bell className="h-5 w-5 text-blue-400" />}
+        icon={<Bell className="h-5 w-5 text-primary" />}
         onClose={() => safeCloseDialog(onClose)}
       />
 
       <AdminBaseDialog.Body>
-        <div className="space-y-5 py-1">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+        <div className="space-y-4 py-1">
+          <div className="rounded-2xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="h-11 w-11 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-black text-base shrink-0 shadow-sm">
-                {userName ? userName.charAt(0).toUpperCase() : <User className="h-5 w-5" />}
+              <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                {userName ? userName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-white truncate">{userName || "Motorista"}</p>
-                <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{userName || "Motorista"}</p>
+                <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mt-0.5">
                   {formattedPhone && <span>{formattedPhone}</span>}
                   {formattedPhone && userEmail && <span>•</span>}
                   {userEmail && <span className="truncate">{userEmail}</span>}
                 </div>
               </div>
             </div>
-            <span className="inline-flex items-center self-start sm:self-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0">
+            <span className="inline-flex items-center self-start sm:self-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
               Destinatário
             </span>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block px-0.5">
-              Selecione o Evento Operacional
+          <div className="space-y-2.5">
+            <label className="text-xs font-semibold text-foreground block px-0.5">
+              Selecione o evento operacional
             </label>
 
-            <div className="grid gap-3">
+            <div className="grid gap-2.5">
               {NOTIFICATION_EVENTS.map((event) => {
                 const isSelected = selectedEventId === event.id;
                 return (
                   <div
                     key={event.id}
                     onClick={() => setSelectedEventId(event.id)}
-                    className={`relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer text-left ${
+                    className={`relative p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer text-left ${
                       isSelected
-                        ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/5 ring-1 ring-blue-500/30"
-                        : "border-slate-800/90 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-800/40"
+                        ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/30"
+                        : "border-border bg-card hover:border-border/80 hover:bg-secondary/40"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -211,28 +211,28 @@ export default function AdminDispatchNotificationDialog({
                         <div
                           className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                             isSelected
-                              ? "border-blue-400 bg-blue-500 text-white shadow-sm"
-                              : "border-slate-600 bg-slate-900"
+                              ? "border-primary bg-primary text-primary-foreground shadow-xs"
+                              : "border-border bg-secondary"
                           }`}
                         >
                           {isSelected && <CheckCircle2 className="h-3.5 w-3.5" />}
                         </div>
-                        <h4 className="text-sm font-bold text-white truncate">
+                        <h4 className="text-xs sm:text-sm font-semibold text-foreground truncate">
                           {event.title}
                         </h4>
                       </div>
 
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-muted-foreground border border-border shrink-0">
                         {event.category}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-300/80 mt-2 pl-8 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-2 pl-8 leading-relaxed">
                       {event.description}
                     </p>
 
                     <div className="flex items-center gap-2 mt-3 pl-8 flex-wrap">
-                      <span className="text-[11px] font-semibold text-slate-400">
+                      <span className="text-[11px] font-medium text-muted-foreground">
                         Canais acionados:
                       </span>
                       {event.channels.map((ch, idx) => (
@@ -247,8 +247,7 @@ export default function AdminDispatchNotificationDialog({
 
           <Banner
             variant="warning"
-            className="bg-amber-500/10 border-amber-500/20 text-amber-200"
-            contentClassName="text-xs text-amber-200/90 font-medium"
+            title="Atenção ao contexto do motorista"
             description="O disparo consulta a base de dados real do motorista. Se não houver cobranças pendentes ou aniversariantes para a semana atual, o sistema avisará informando a ausência de dados."
           />
         </div>
@@ -262,7 +261,7 @@ export default function AdminDispatchNotificationDialog({
           disabled={dispatchMutation.isPending}
         />
         <AdminBaseDialog.Action
-          label={dispatchMutation.isPending ? "Enviando..." : "Disparar Notificação"}
+          label={dispatchMutation.isPending ? "Enviando..." : "Disparar notificação"}
           variant="primary"
           icon={<Send className="h-4 w-4" />}
           onClick={handleDispatch}

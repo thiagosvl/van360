@@ -8,7 +8,6 @@ import { useState } from "react";
 import { ControllerRenderProps, FieldPath, FieldValues, useFormContext } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
-import { StitchField } from "./StitchField";
 
 interface CepInputProps<T extends FieldValues> {
   field: ControllerRenderProps<T, FieldPath<T>>;
@@ -87,56 +86,27 @@ export function CepInput<T extends FieldValues>({
     }
   };
 
-  if (isExternal) {
-    return (
-      <FormItem className={className}>
-        <FormControl>
-          <StitchField icon={MapPin} label={label} required={required} error={hasError}>
-            <div className="relative flex items-center">
-              <Input
-                {...field}
-                placeholder="00000-000"
-                maxLength={9}
-                type="text"
-                inputMode="numeric"
-                className="h-7 p-0 rounded-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-semibold text-slate-700 shadow-none placeholder:text-slate-400 placeholder:font-normal w-full pr-6"
-                onChange={(e) => handleCepChange(e.target.value)}
-                aria-invalid={hasError}
-              />
-              {loadingCep && (
-                <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#1a3a5c]" />
-                </div>
-              )}
-            </div>
-          </StitchField>
-        </FormControl>
-        <FormMessage className="text-xs ml-1 mt-1 text-red-500" />
-      </FormItem>
-    );
-  }
-
   return (
-    <FormItem className={className}>
-      <FormLabel className={labelClassName}>
-        {label} {required ? <span className="text-red-600">*</span> : <span className="text-xs font-normal text-slate-400 ml-1">(Opcional)</span>}
+    <FormItem className={cn("space-y-1.5", className)}>
+      <FormLabel className={cn("text-[#0a0a0a] font-medium text-xs", labelClassName)}>
+        {label} {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[11px] font-normal text-[#737373] ml-1">(Opcional)</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">
-          <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
           <Input
             {...field}
             placeholder="00000-000"
             maxLength={9}
             type="text"
             inputMode="numeric"
-            className={cn("pl-12 pr-8", inputClassName)}
+            className={cn("pl-10 pr-8 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
             aria-invalid={hasError}
           />
           {loadingCep && (
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-              <Loader2 className="h-4 w-4 animate-spin text-[#1a3a5c]" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
             </div>
           )}
         </div>

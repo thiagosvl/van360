@@ -1,11 +1,8 @@
 import { useLayoutEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { PenTool, Trash2 } from "lucide-react";
+import { PenTool, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Interface para as ações que o componente pai pode disparar via ref.
- */
 export interface SignaturePadRef {
   clear: () => void;
   toDataURL: (type?: string, encoderOptions?: number) => string;
@@ -14,53 +11,51 @@ export interface SignaturePadRef {
 }
 
 interface SignaturePadProps {
-  /** Callback disparado sempre que a assinatura terminar um traço */
   onChange?: (dataURL: string | null) => void;
-  /** Valor inicial caso já exista uma assinatura prévia */
   initialValue?: string | null;
-  /** Classes extras para o container externo */
   className?: string;
-  /** Cor da caneta */
   penColor?: string;
+  showClearButton?: boolean;
 }
 
-const SIGNATURE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' fill='%231a3a5c' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='m15 5 4 4' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 22, crosshair`;
+const SIGNATURE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' fill='%230a0a0a' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='m15 5 4 4' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 22, crosshair`;
 
 const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
-  ({ onChange, initialValue, className, penColor = "#1a3a5c" }, ref) => {
+  ({ onChange, initialValue, className, penColor = "#0a0a0a", showClearButton = true }, ref) => {
     const sigCanvasRef = useRef<SignatureCanvas>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const ratio = typeof window !== "undefined" ? Math.max(window.devicePixelRatio || 1, 1) : 1;
 
-    // Expõe métodos para o pai controlar o canvas
+    const getTrimmedDataUrl = (type = "image/png"): string => {
+      if (!sigCanvasRef.current || sigCanvasRef.current.isEmpty()) return "";
+      try {
+        return sigCanvasRef.current.getTrimmedCanvas().toDataURL(type);
+      } catch {
+        return sigCanvasRef.current.toDataURL(type);
+      }
+    };
+
     useImperativeHandle(ref, () => ({
       clear: () => {
         sigCanvasRef.current?.clear();
         onChange?.(null);
       },
-      toDataURL: (type, options) => sigCanvasRef.current?.toDataURL(type, options) || "",
+      toDataURL: (type = "image/png") => getTrimmedDataUrl(type),
       isEmpty: () => sigCanvasRef.current?.isEmpty() ?? true,
       fromDataURL: (dataURL) => sigCanvasRef.current?.fromDataURL(dataURL),
     }));
 
-    /**
-     * Sincroniza o tamanho interno do canvas com o container visual.
-     * Isso previne o bug de offset (onde o traço não acompanha o cursor/dedo).
-     */
     const resizeCanvas = () => {
       if (sigCanvasRef.current && containerRef.current) {
         const canvas = sigCanvasRef.current.getCanvas();
         const container = containerRef.current;
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
 
-        // Armazena a imagem atual para não perder o desenho no resize
         const currentData = sigCanvasRef.current.isEmpty() ? null : sigCanvasRef.current.toDataURL();
 
         canvas.width = container.offsetWidth * ratio;
         canvas.height = container.offsetHeight * ratio;
         canvas.getContext("2d")?.scale(ratio, ratio);
 
-        // Restaura a assinatura se existir
         if (currentData) {
           sigCanvasRef.current.fromDataURL(currentData);
         } else {
@@ -73,7 +68,6 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
       const timeout = setTimeout(resizeCanvas, 150);
       window.addEventListener("resize", resizeCanvas);
 
-      // Carrega valor inicial se fornecido
       if (initialValue && sigCanvasRef.current) {
         sigCanvasRef.current.fromDataURL(initialValue);
       }
@@ -86,7 +80,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
 
     const handleEnd = () => {
       if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) {
-        onChange?.(sigCanvasRef.current.toDataURL("image/png"));
+        onChange?.(getTrimmedDataUrl());
       }
     };
 
@@ -96,46 +90,52 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     };
 
     return (
-      <div className={cn("space-y-4", className)}>
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-100 rounded-[2.2rem] blur opacity-40 group-hover:opacity-60 transition-opacity" />
+      <div className={cn("space-y-3", className)}>
+        <div
+          ref={containerRef}
+          style={{ cursor: SIGNATURE_CURSOR }}
+          className="relative w-full h-48 sm:h-56 rounded-[22px] bg-[#fafafa] border border-[#e5e5e5] overflow-hidden select-none transition-colors"
+        >
+          <div className="absolute inset-x-5 sm:inset-x-8 bottom-3 sm:bottom-4 pointer-events-none flex flex-col gap-1">
+            <div className="w-full border-b border-[#e5e5e5] border-dashed" />
+            <div className="flex items-center text-[10px] sm:text-[11px] text-[#a3a3a3] select-none px-0.5">
+              <span>✕ Assine na linha acima</span>
+            </div>
+          </div>
 
-          <div
-            ref={containerRef}
-            style={{ cursor: SIGNATURE_CURSOR }}
-            className="relative border-4 border-white rounded-[2.1rem] bg-slate-50/50 overflow-hidden shadow-inner h-52 transition-all"
-          >
-            <SignatureCanvas
-              ref={sigCanvasRef}
-              penColor={penColor}
-              minWidth={1.5}
-              maxWidth={3.5}
-              onEnd={handleEnd}
-              canvasProps={{
-                className: "w-full h-full",
-                style: { cursor: SIGNATURE_CURSOR, touchAction: "none" },
-              }}
-              backgroundColor="transparent"
-            />
+          <SignatureCanvas
+            ref={sigCanvasRef}
+            penColor={penColor}
+            minWidth={1.5}
+            maxWidth={3.5}
+            onEnd={handleEnd}
+            canvasProps={{
+              className: "w-full h-full relative z-10",
+              style: { cursor: SIGNATURE_CURSOR, touchAction: "none" },
+            }}
+            backgroundColor="transparent"
+          />
 
-            <div className="absolute top-4 right-4 pointer-events-none">
-              <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-100 shadow-sm">
-                <PenTool className="w-3 h-3 text-[#1a3a5c] opacity-60" />
-                <span className="text-[9px] font-black text-[#1a3a5c] uppercase tracking-wider">Faça sua assinatura</span>
-              </div>
+          <div className="absolute top-3 right-3 pointer-events-none z-20">
+            <div className="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-[18px] flex items-center gap-1.5 border border-[#e5e5e5] shadow-2xs">
+              <PenTool className="w-3 h-3 text-[#737373]" />
+              <span className="text-[11px] font-medium text-[#0a0a0a]">Assinatura</span>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={handleClear}
-            className="text-[10px] font-black text-slate-300 hover:text-rose-500 flex items-center gap-1.5 uppercase tracking-widest transition-all active:scale-95 py-2 px-4 rounded-full hover:bg-rose-50/50"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Limpar e refazer
-          </button>
-        </div>
+        {showClearButton && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-xs font-medium text-[#737373] hover:text-[#e7000b] flex items-center gap-1.5 transition-colors cursor-pointer py-1.5 px-3 rounded-[16px] bg-[#f5f5f5] hover:bg-red-50 border border-[#e5e5e5]"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Limpar assinatura</span>
+            </button>
+          </div>
+        )}
       </div>
     );
   }

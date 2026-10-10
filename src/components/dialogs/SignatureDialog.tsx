@@ -37,16 +37,14 @@ export function SignatureDialog({
 
       <BaseDialog.Body className="space-y-6">
         <div className="text-center space-y-2 mb-2">
-          <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
+          <p className="text-[11px] text-muted-foreground italic px-6 font-medium leading-relaxed">
             Sua assinatura aparecerá no final do contrato em PDF automaticamente.
           </p>
         </div>
-        <div className="bg-slate-50/50 p-2 rounded-[2rem] border border-slate-100/50">
-          <SignaturePad
-            ref={sigCanvas}
-            className="w-full"
-          />
-        </div>
+        <SignaturePad
+          ref={sigCanvas}
+          className="w-full"
+        />
         <Banner
           variant="warning"
           description={

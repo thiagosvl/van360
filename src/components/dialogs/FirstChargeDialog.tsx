@@ -1,16 +1,9 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Banner } from "@/components/ui/Banner";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { AlertCircle, CheckCircle2, ChevronLeft, FileText, Wallet } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronLeft, Clock, FileText, Wallet } from "lucide-react";
 import { CobrancaStatus } from "@/types/enums";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import {
@@ -68,7 +61,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
     if (step === "CONTRACT_CHECK") {
       if (!showPaymentStep) {
         if (!wantsContract) return "Concluir";
-        return notificarResponsavel ? "Gerar e Enviar" : "Apenas Gerar Contrato";
+        return notificarResponsavel ? "Gerar e Enviar" : "Gerar Contrato";
       }
       return "Próximo";
     }
@@ -92,8 +85,8 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
     : (showContractStep ? "Emissão de Contrato" : "Parcela do Mês");
 
   const dialogIcon = showContractStep && !showPaymentStep
-    ? <FileText className="w-5 h-5 opacity-80" />
-    : <Wallet className="w-5 h-5 opacity-80" />;
+    ? <FileText className="w-5 h-5 text-[#0a0a0a]" />
+    : <Wallet className="w-5 h-5 text-[#0a0a0a]" />;
 
   return (
     <BaseDialog open={isOpen} onOpenChange={() => { }} lockClose>
@@ -108,16 +101,14 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
       <BaseDialog.Body>
         {step === "CONTRACT_CHECK" && (
           <div className="space-y-4">
-            <div className="py-1">
-              <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-700">
-                  Gerar contrato?
-                </h2>
-                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                  Gostaria de gerar o contrato digital para{" "}
-                  <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
-                </p>
-              </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-[#0a0a0a]">
+                Gerar contrato?
+              </h3>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Gostaria de gerar o contrato digital para{" "}
+                <strong className="text-[#0a0a0a] font-medium">{firstNamePassageiro}</strong>?
+              </p>
             </div>
             <div className="space-y-2.5">
               {[
@@ -125,23 +116,15 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                   value: true,
                   label: "Sim, gerar o contrato",
                   sublabel: "O documento ficará disponível no app",
-                  icon: <CheckCircle2 className="w-6 h-6" />,
-                  activeColor: "border-[#1a3a5c] bg-blue-50/40 shadow-xs ring-1 ring-blue-200",
-                  iconActive: "bg-[#1a3a5c] text-white shadow-xs shadow-blue-900/10",
-                  textActive: "text-[#1a3a5c]",
-                  radioActive: "border-[#1a3a5c] bg-[#1a3a5c]",
+                  icon: <CheckCircle2 className="w-5 h-5" />,
                 },
                 {
                   value: false,
                   label: "Não gerar o contrato",
                   sublabel: "Você poderá gerar depois pela carteirinha",
-                  icon: <AlertCircle className="w-6 h-6" />,
-                  activeColor: "border-slate-400 bg-slate-50 shadow-xs ring-1 ring-slate-200",
-                  iconActive: "bg-slate-400 text-white shadow-xs shadow-slate-200",
-                  textActive: "text-slate-900",
-                  radioActive: "border-slate-400 bg-slate-400",
+                  icon: <AlertCircle className="w-5 h-5" />,
                 },
-              ].map(({ value, label, sublabel, icon, activeColor, iconActive, textActive, radioActive }) => {
+              ].map(({ value, label, sublabel, icon }) => {
                 const isActive = wantsContract === value;
                 return (
                   <button
@@ -149,18 +132,32 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                     type="button"
                     onClick={() => setWantsContract(value)}
                     className={cn(
-                      "w-full p-3.5 rounded-2xl border transition-all flex items-center gap-3.5 active:scale-[0.98] group",
-                      isActive ? activeColor : "border-slate-100 bg-white hover:border-slate-200 shadow-xs"
+                      "w-full p-3.5 sm:p-4 rounded-[18px] border transition-all flex items-center gap-3.5 sm:gap-4 active:scale-[0.99] cursor-pointer group text-left",
+                      isActive
+                        ? "border-primary bg-white shadow-xs ring-1 ring-primary/20"
+                        : "border-[#e5e5e5] bg-[#fafafa] hover:bg-white hover:border-[#737373]/40"
                     )}
                   >
-                    <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? iconActive : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 transition-colors",
+                        isActive
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-white text-[#737373] border border-[#e5e5e5]"
+                      )}
+                    >
                       {icon}
                     </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className={cn("text-[13px] font-bold", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
-                      <p className="text-xs font-medium text-slate-500 mt-0.5">{sublabel}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-[#0a0a0a]">{label}</p>
+                      <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">{sublabel}</p>
                     </div>
-                    <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", isActive ? radioActive : "border-slate-300")}>
+                    <div
+                      className={cn(
+                        "w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all",
+                        isActive ? "border-primary bg-primary" : "border-[#e5e5e5] bg-white"
+                      )}
+                    >
                       {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </div>
                   </button>
@@ -169,80 +166,60 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
             </div>
 
             {wantsContract && (
-              <div className="pt-1 space-y-3">
+              <div className="pt-1">
                 <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setNotificarResponsavel(!notificarResponsavel)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setNotificarResponsavel(!notificarResponsavel);
-                    }
-                  }}
-                  className="flex items-start gap-3 p-3 rounded-2xl border border-slate-200/80 bg-white hover:bg-slate-50/80 transition-colors cursor-pointer select-none"
+                  className="flex items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 sm:p-4 transition-all hover:bg-white cursor-pointer shadow-xs select-none gap-4"
+                  onClick={() => !isLoading && setNotificarResponsavel((prev) => !prev)}
                 >
-                  <Checkbox
-                    checked={notificarResponsavel}
-                    onCheckedChange={(val) => setNotificarResponsavel(!!val)}
-                    className="mt-0.5"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-semibold text-slate-800 leading-tight block">
-                      Enviar link de assinatura para o responsável no WhatsApp agora
+                  <div className="space-y-0.5 pr-2 flex-1 min-w-0">
+                    <span className="text-xs sm:text-sm font-medium text-[#0a0a0a] block">
+                      Enviar para os pais no WhatsApp
                     </span>
-                    <p className="text-[11px] text-slate-500 font-medium">
-                      O responsável receberá a mensagem com o link para assinar digitalmente.
+                    <p className="text-xs text-[#737373] leading-relaxed">
+                      {notificarResponsavel
+                        ? "O responsável receberá o link de assinatura automaticamente no WhatsApp."
+                        : "O contrato será gerado, mas você terá que enviar o link manualmente para o responsável."}
                     </p>
                   </div>
+                  <Switch
+                    checked={notificarResponsavel}
+                    onCheckedChange={setNotificarResponsavel}
+                    disabled={isLoading}
+                    className="data-[state=checked]:bg-primary shrink-0"
+                    aria-label="Enviar para os pais no WhatsApp"
+                    onClick={(e) => e.stopPropagation()}
+                  />
                 </div>
-
-                {notificarResponsavel ? (
-                  <Banner
-                    variant="warning"
-                    description="O WhatsApp será enviado automaticamente para o responsável ao gerar o contrato."
-                  />
-                ) : (
-                  <Banner
-                    variant="info"
-                    description="O contrato ficará salvo na carteirinha do aluno para você enviar quando desejar."
-                  />
-                )}
               </div>
             )}
           </div>
         )}
 
         {step === "PAYMENT_STATUS" && (
-          <div className="space-y-5">
-            <div className="py-2">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-700">A parcela de {currentMonthNameCapitalized} já foi paga?</h3>
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-[#0a0a0a]">
+                A parcela de {currentMonthNameCapitalized} já foi paga?
+              </h3>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Defina o status inicial da parcela deste mês para {firstNamePassageiro}.
+              </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {[
                 {
                   value: CobrancaStatus.PAGO,
                   label: "Sim, já recebi",
                   sublabel: "Registrar como paga agora",
-                  icon: <CheckCircle2 className="w-6 h-6" />,
-                  activeColor: "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200",
-                  iconActive: "bg-emerald-500 text-white shadow-lg shadow-emerald-200",
-                  textActive: "text-emerald-900",
-                  radioActive: "border-emerald-500 bg-emerald-500",
+                  icon: <CheckCircle2 className="w-5 h-5" />,
                 },
                 {
                   value: CobrancaStatus.PENDENTE,
                   label: "Não, ainda vou receber",
                   sublabel: "Manter como pendente",
-                  icon: <AlertCircle className="w-6 h-6" />,
-                  activeColor: "border-amber-500 bg-amber-50/50 shadow-lg shadow-amber-500/5 ring-1 ring-amber-200",
-                  iconActive: "bg-amber-500 text-white shadow-lg shadow-amber-200",
-                  textActive: "text-amber-900",
-                  radioActive: "border-amber-500 bg-amber-500",
+                  icon: <Clock className="w-5 h-5" />,
                 },
-              ].map(({ value, label, sublabel, icon, activeColor, iconActive, textActive, radioActive }) => {
+              ].map(({ value, label, sublabel, icon }) => {
                 const isActive = paymentStatus === value;
                 return (
                   <button
@@ -250,16 +227,32 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                     type="button"
                     onClick={() => setPaymentStatus(value)}
                     className={cn(
-                      "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
-                      isActive ? activeColor : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                      "w-full p-3.5 sm:p-4 rounded-[18px] border transition-all flex items-center gap-3.5 sm:gap-4 active:scale-[0.99] cursor-pointer group text-left",
+                      isActive
+                        ? "border-primary bg-white shadow-xs ring-1 ring-primary/20"
+                        : "border-[#e5e5e5] bg-[#fafafa] hover:bg-white hover:border-[#737373]/40"
                     )}
                   >
-                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? iconActive : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100")}>{icon}</div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className={cn("text-[13px] font-bold", isActive ? textActive : "text-[#1a3a5c]")}>{label}</p>
-                      <p className="text-xs font-medium text-slate-500 mt-0.5">{sublabel}</p>
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 transition-colors",
+                        isActive
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-white text-[#737373] border border-[#e5e5e5]"
+                      )}
+                    >
+                      {icon}
                     </div>
-                    <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all", isActive ? radioActive : "border-slate-300")}>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-[#0a0a0a]">{label}</p>
+                      <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">{sublabel}</p>
+                    </div>
+                    <div
+                      className={cn(
+                        "w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all",
+                        isActive ? "border-primary bg-primary" : "border-[#e5e5e5] bg-white"
+                      )}
+                    >
                       {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </div>
                   </button>
@@ -270,44 +263,22 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
         )}
 
         {step === "PAYMENT_METHOD" && (
-          <div className="space-y-5">
-            <div className="py-2">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-700">Forma de pagamento</h3>
-                <p className="text-xs font-medium text-slate-500 mt-1">Como o pagamento foi realizado?</p>
-              </div>
-            </div>
-            <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-1 shadow-sm">
-              <Select onValueChange={setPaymentMethod} value={paymentMethod}>
-                <SelectTrigger
-                  className={cn(
-                    "h-11 rounded-lg bg-white border-0 px-3 text-[13px] font-medium shadow-none hover:bg-white focus:ring-0 focus:ring-offset-0 transition-all outline-none",
-                    !paymentMethod && "text-slate-400"
-                  )}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-slate-50 flex items-center justify-center text-[#1a3a5c]/60">
-                      <Wallet className="w-3.5 h-3.5 shrink-0" />
-                    </div>
-                    <SelectValue placeholder="Selecionar" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="max-h-[280px] rounded-xl border-slate-100 shadow-diff-shadow p-1.5">
-                  {PAYMENT_METHODS.map((method) => (
-                    <SelectItem
-                      key={method.value}
-                      value={method.value}
-                      className="py-2.5 rounded-lg cursor-pointer focus:bg-slate-50 text-slate-600 focus:text-[#1a3a5c] text-[13px] font-medium"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-4 h-4 flex items-center justify-center opacity-70 scale-90">{method.icon}</div>
-                        <span>{method.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-[#0a0a0a] block">
+              Forma de pagamento <span className="text-[#e7000b]">*</span>
+            </label>
+            <NativeSelect
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              icon={<Wallet className="w-4 h-4 text-[#737373]" />}
+            >
+              <option value="" disabled hidden>Selecionar</option>
+              {PAYMENT_METHODS.map((method) => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
         )}
       </BaseDialog.Body>

@@ -1,10 +1,10 @@
 import { memo, useMemo, useState } from "react";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { Input } from "@/components/ui/input";
 import {
   ChevronDown,
   HelpCircle,
   Lightbulb,
-  MessageCircle,
   Search,
   Users,
   BadgeDollarSign,
@@ -116,7 +116,7 @@ const FAQS_DATA: FaqItemData[] = [
     category: "contratos",
     question: "Posso importar contratos que já tenho assinados no papel ou em PDF?",
     answer:
-      "Sim! Se você já possui um contrato assinado pelo responsável que esteja em PDF, basta ir em Contratos e clicar em 'Importar Contrato Assinado'. O documento digitalizado ficará arquivado na carteirinha do aluno como um contrato assinado e válido. Atenção: essa opção não serve para cadastrar modelos em branco; para personalizar as cláusulas e o modelo padrão da sua van, acesse 'Configurar Modelo de Contrato'.",
+      "Sim! Se você já possui um contrato assinado pelo responsável que esteja em PDF, basta ir em Contratos e clicar em 'Importar Contrato Assinado'. O documento digitalizado ficará arquivado na carteirinha do aluno como um contrato assinado e válido. Atenção: essa opção não serve para cadastrar modelos em branco; para personalizar as cláusulas e o modelo padrão da sua van, acesse 'Configurar Modelo'.",
   },
 
   // GPS & Mapa
@@ -142,19 +142,19 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-slate-100 last:border-0">
+    <div className="border-b border-[#e5e5e5] last:border-0">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-4 sm:py-4.5 text-left group cursor-pointer"
       >
-        <span className="text-sm sm:text-[15px] font-semibold text-slate-800 group-hover:text-[#1a3a5c] transition-colors leading-snug pr-4">
+        <span className="text-sm sm:text-[15px] font-semibold text-[#0a0a0a] group-hover:text-[#0a0a0a] transition-colors leading-snug pr-4">
           {question}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0",
-            isOpen && "rotate-180 text-[#1a3a5c]"
+            "h-4 w-4 text-[#737373] transition-transform duration-300 shrink-0",
+            isOpen && "rotate-180 text-[#0a0a0a]"
           )}
         />
       </button>
@@ -164,7 +164,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
           isOpen ? "max-h-96 pb-4" : "max-h-0"
         )}
       >
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50/70 p-3.5 sm:p-4 rounded-xl border border-slate-100">
+        <p className="text-xs sm:text-sm text-[#737373] leading-relaxed bg-[#fafafa] p-3.5 sm:p-4 rounded-[14px] border border-[#e5e5e5]">
           {answer}
         </p>
       </div>
@@ -195,59 +195,39 @@ export const AjudaTab = memo(function AjudaTab() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      {/* Suporte Direto WhatsApp */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-4">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+      <WhatsAppSupportButton
+        variant="clean"
+        title="Falar com Suporte"
+        subtitle="Atendimento rápido para tirar dúvidas sobre o app"
+        message="Olá, preciso de ajuda com o Van360"
+      />
+
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <Lightbulb className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-[#1a3a5c]">
-              Atendimento Direto
-            </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500">
-              Precisa de ajuda com a sua conta ou suporte técnico?
-            </p>
-          </div>
-        </div>
-
-        <WhatsAppSupportButton
-          size="lg"
-          title="Falar com Suporte"
-          subtitle="Atendimento rápido para tirar dúvidas sobre o app"
-          message="Olá, preciso de ajuda com o Van360"
-        />
-      </div>
-
-      {/* Central de Dúvidas Frequentes */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-5">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div>
-            <h2 className="text-sm sm:text-base font-bold text-[#1a3a5c]">
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
               Dúvidas Frequentes
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500">
+            <p className="text-xs text-[#737373] mt-0.5">
               Guias rápidos para as principais etapas do aplicativo
             </p>
           </div>
         </div>
 
-        {/* Campo de Busca Rápida */}
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
+          <Search className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Input
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar dúvida ou funcionalidade..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] transition-all"
+            className="w-full pl-10 pr-4 h-10 sm:h-11 bg-white border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] text-sm font-normal text-[#0a0a0a] placeholder:text-[#737373] transition-all"
           />
         </div>
 
-        {/* Filtro por Categorias / Pílulas */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -258,10 +238,10 @@ export const AjudaTab = memo(function AjudaTab() {
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[18px] text-xs font-medium shrink-0 transition-all cursor-pointer",
                   isSelected
-                    ? "bg-[#1a3a5c] text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-[#f5f5f5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#e5e5e5]/60"
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -271,15 +251,14 @@ export const AjudaTab = memo(function AjudaTab() {
           })}
         </div>
 
-        {/* Lista de FAQs */}
-        <div className="divide-y divide-slate-100 pt-1">
+        <div className="divide-y divide-[#e5e5e5] pt-1">
           {filteredFaqs.length === 0 ? (
             <div className="text-center py-8 space-y-2">
-              <HelpCircle className="w-8 h-8 text-slate-300 mx-auto" />
-              <p className="text-sm font-semibold text-slate-700">
+              <HelpCircle className="w-8 h-8 text-[#737373] opacity-40 mx-auto" />
+              <p className="text-sm font-semibold text-[#0a0a0a]">
                 Nenhuma dúvida encontrada
               </p>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              <p className="text-xs text-[#737373] max-w-xs mx-auto">
                 Tente buscar com outras palavras ou fale diretamente com a gente no WhatsApp acima.
               </p>
             </div>

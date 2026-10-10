@@ -2,7 +2,7 @@ import { MoneyInput } from "@/components/forms";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
     Form,
@@ -17,13 +17,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { CobrancaFormData, useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
@@ -159,34 +153,30 @@ export function CobrancaFormContent({
                         control={form.control}
                         name="mes"
                         render={({ field, fieldState }) => (
-                            <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                    Mês <span className="text-red-600">*</span>
+                            <FormItem className="space-y-1.5">
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                    Mês <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value != null ? String(field.value) : undefined} disabled={lockMesAno}>
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className={cn(
-                                                "h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all",
-                                                fieldState.error && "border-red-500"
-                                            )}
-                                        >
-                                            <SelectValue placeholder="Mês" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent className="max-h-60">
+                                <FormControl>
+                                    <NativeSelect
+                                        value={field.value != null ? String(field.value) : ""}
+                                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                        disabled={lockMesAno}
+                                        error={!!fieldState.error}
+                                    >
+                                        <option value="" disabled hidden>Mês</option>
                                         {(() => {
                                             const options = availableMonths && availableMonths.length > 0
                                                 ? meses.filter((m) => availableMonths.includes(Number(m.value)))
                                                 : meses;
                                             return options.map((m) => (
-                                                <SelectItem key={m.value} value={m.value}>
+                                                <option key={m.value} value={m.value}>
                                                     {m.label}
-                                                </SelectItem>
+                                                </option>
                                             ));
                                         })()}
-                                    </SelectContent>
-                                </Select>
+                                    </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -195,29 +185,26 @@ export function CobrancaFormContent({
                         control={form.control}
                         name="ano"
                         render={({ field, fieldState }) => (
-                            <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                    Ano <span className="text-red-600">*</span>
+                            <FormItem className="space-y-1.5">
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                    Ano <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value != null ? String(field.value) : undefined} disabled>
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className={cn(
-                                                "h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all opacity-80",
-                                                fieldState.error && "border-red-500"
-                                            )}
-                                        >
-                                            <SelectValue placeholder="Ano" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent className="max-h-60">
+                                <FormControl>
+                                    <NativeSelect
+                                        value={field.value != null ? String(field.value) : ""}
+                                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                        disabled
+                                        error={!!fieldState.error}
+                                        className="opacity-80"
+                                    >
+                                        <option value="" disabled hidden>Ano</option>
                                         {anos.filter(a => a.value === String(getNowBR().getFullYear())).map((a) => (
-                                            <SelectItem key={a.value} value={a.value}>
+                                            <option key={a.value} value={a.value}>
                                                 {a.label}
-                                            </SelectItem>
+                                            </option>
                                         ))}
-                                    </SelectContent>
-                                </Select>
+                                    </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -243,8 +230,8 @@ export function CobrancaFormContent({
                         field={field}
                         required
                         disabled={shouldDisableValue}
-                        labelClassName="text-slate-700 font-semibold ml-1"
-                        inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
+                        labelClassName="text-[#0a0a0a] font-medium text-xs"
+                        inputClassName="pl-12 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] focus:bg-white focus:border-[#0a0a0a] transition-all"
                         label={lockFoiPago ? "Valor Pago" : "Valor da Parcela"}
                     />
                 )}
@@ -256,9 +243,9 @@ export function CobrancaFormContent({
                     control={form.control}
                     name="data_vencimento"
                     render={({ field, fieldState }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                                Data do Vencimento <span className="text-red-600">*</span>
+                        <FormItem className="flex flex-col space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                Data do Vencimento <span className="text-[#e7000b]">*</span>
                             </FormLabel>
                             <Popover
                                 open={openCalendarVencimento}
@@ -269,15 +256,15 @@ export function CobrancaFormContent({
                                 <PopoverTrigger asChild>
                                     <FormControl>
                                         <div className="relative">
-                                            <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                            <CalendarIcon className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 disabled={shouldDisableDueDate}
                                                 className={cn(
-                                                    "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left font-normal hover:bg-gray-100 text-md justify-start",
-                                                    !field.value && "text-muted-foreground",
-                                                    fieldState.error && "border-red-500"
+                                                    "w-full pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white text-sm text-[#0a0a0a] justify-start shadow-none",
+                                                    !field.value && "text-[#737373]",
+                                                    fieldState.error && "border-[#e7000b]"
                                                 )}
                                             >
                                                 {field.value ? formatLocalDate(field.value) : "Selecione"}
@@ -285,7 +272,7 @@ export function CobrancaFormContent({
                                         </div>
                                     </FormControl>
                                 </PopoverTrigger>
-                                <PopoverContent align="start" className="w-auto p-0">
+                                <PopoverContent align="start" className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl">
                                     <Calendar
                                         mode="single"
                                         selected={field.value}
@@ -313,23 +300,30 @@ export function CobrancaFormContent({
                     control={form.control}
                     name="foi_pago"
                     render={({ field }) => (
-                        <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                            <div className="flex items-center gap-3">
-                                <FormControl>
-                                    <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                        disabled={lockFoiPago}
-                                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                </FormControl>
-                                <div className="flex-1 space-y-1 leading-none">
-                                    <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                                        Esta parcela já foi paga?
-                                    </FormLabel>
-                                </div>
+                        <FormItem
+                            className="flex flex-row items-center justify-between rounded-[20px] bg-[#fafafa] border border-[#e5e5e5] p-4 transition-all hover:bg-[#f5f5f5] cursor-pointer shadow-xs select-none gap-4"
+                            onClick={() => !lockFoiPago && field.onChange(!field.value)}
+                        >
+                            <div className="space-y-0.5 pr-2 flex-1 min-w-0">
+                                <FormLabel className="text-sm font-semibold text-[#0a0a0a] block cursor-pointer">
+                                    Esta parcela já foi paga?
+                                </FormLabel>
+                                <p className="text-xs text-[#737373] leading-relaxed">
+                                    {field.value
+                                        ? "A parcela será registrada como paga com baixa imediata."
+                                        : "A parcela permanecerá pendente de pagamento."}
+                                </p>
                             </div>
-                            <FormMessage className="pt-2" />
+                            <FormControl>
+                                <Switch
+                                    checked={!!field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={lockFoiPago}
+                                    className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-[#e5e5e5] shrink-0"
+                                    aria-label="Esta parcela já foi paga?"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            </FormControl>
                         </FormItem>
                     )}
                 />
@@ -345,22 +339,22 @@ export function CobrancaFormContent({
                         control={form.control}
                         name="data_pagamento"
                         render={({ field, fieldState }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                    Data do pagamento <span className="text-red-600">*</span>
+                            <FormItem className="flex flex-col space-y-1.5">
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                    Data do pagamento <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
                                 <Popover open={openCalendarPagamento} onOpenChange={setOpenCalendarPagamento}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <div className="relative">
-                                                <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                                <CalendarIcon className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     className={cn(
-                                                        "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left text-base hover:bg-gray-100 justify-start",
-                                                        !field.value && "text-muted-foreground",
-                                                        fieldState.error && "border-red-500"
+                                                        "w-full pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left text-sm text-[#0a0a0a] hover:bg-white justify-start shadow-none",
+                                                        !field.value && "text-[#737373]",
+                                                        fieldState.error && "border-[#e7000b]"
                                                     )}
                                                 >
                                                     {field.value ? formatLocalDate(field.value) : "Selecione a data"}
@@ -368,7 +362,7 @@ export function CobrancaFormContent({
                                             </div>
                                         </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
+                                    <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
                                         <Calendar
                                             mode="single"
                                             selected={field.value}
@@ -394,32 +388,25 @@ export function CobrancaFormContent({
                         control={form.control}
                         name="tipo_pagamento"
                         render={({ field, fieldState }) => (
-                            <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                    Forma de pagamento <span className="text-red-600">*</span>
+                            <FormItem className="space-y-1.5">
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                    Forma de pagamento <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                            <SelectTrigger
-                                                className={cn(
-                                                    "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all",
-                                                    fieldState.error && "border-red-500"
-                                                )}
-                                            >
-                                                <SelectValue placeholder="Selecione a forma" />
-                                            </SelectTrigger>
-                                        </div>
-                                    </FormControl>
-                                    <SelectContent>
+                                <FormControl>
+                                    <NativeSelect
+                                        icon={<CreditCard className="h-4 w-4" />}
+                                        value={field.value || ""}
+                                        onChange={field.onChange}
+                                        error={!!fieldState.error}
+                                    >
+                                        <option value="" disabled hidden>Selecionar</option>
                                         {tiposPagamento.map((t) => (
-                                            <SelectItem key={t.value} value={t.value}>
+                                            <option key={t.value} value={t.value}>
                                                 {t.label}
-                                            </SelectItem>
+                                            </option>
                                         ))}
-                                    </SelectContent>
-                                </Select>
+                                    </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -428,22 +415,29 @@ export function CobrancaFormContent({
                         control={form.control}
                         name="enviar_recibo_whatsapp_manual"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                                <div className="flex items-center gap-3">
-                                    <FormControl>
-                                        <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        />
-                                    </FormControl>
-                                    <div className="flex-1 space-y-1 leading-none">
-                                        <FormLabel className="flex-1 cursor-pointer font-medium text-slate-700 m-0">
-                                            Enviar Recibo no WhatsApp
-                                        </FormLabel>
-                                    </div>
+                            <FormItem
+                                className="flex flex-row items-center justify-between rounded-[20px] bg-white border border-[#e5e5e5] p-4 transition-all hover:bg-[#fafafa] cursor-pointer shadow-xs select-none gap-4"
+                                onClick={() => field.onChange(!field.value)}
+                            >
+                                <div className="space-y-0.5 pr-2 flex-1 min-w-0">
+                                    <FormLabel className="text-sm font-semibold text-[#0a0a0a] block cursor-pointer">
+                                        Enviar Recibo no WhatsApp
+                                    </FormLabel>
+                                    <p className="text-xs text-[#737373] leading-relaxed">
+                                        {field.value
+                                            ? "O comprovante de pagamento será enviado automaticamente para o WhatsApp do responsável."
+                                            : "O pagamento será salvo sem enviar comprovante por WhatsApp."}
+                                    </p>
                                 </div>
-                                <FormMessage className="pt-2" />
+                                <FormControl>
+                                    <Switch
+                                        checked={!!field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-[#e5e5e5] shrink-0"
+                                        aria-label="Enviar Recibo no WhatsApp"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                </FormControl>
                             </FormItem>
                         )}
                     />
@@ -454,14 +448,14 @@ export function CobrancaFormContent({
                 control={form.control}
                 name="observacao"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Observação <span className="text-xs text-slate-400 font-normal">(apenas para você)</span>
+                    <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Observação <span className="text-[11px] text-[#737373] font-normal">(apenas para você)</span>
                         </FormLabel>
                         <FormControl>
                             <Textarea
                                 placeholder="Anotações internas sobre esta parcela..."
-                                className="min-h-[70px] rounded-xl bg-gray-50 border-gray-200 resize-none text-sm focus:border-blue-500 transition-all"
+                                className="min-h-[80px] rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] resize-none text-sm text-[#0a0a0a] focus:bg-white focus:border-[#0a0a0a] transition-all"
                                 {...field}
                                 value={field.value || ""}
                             />
@@ -472,20 +466,20 @@ export function CobrancaFormContent({
             />
 
             {!hideButtons && (
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-3 pt-4">
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={onCancel}
                         disabled={isSubmitting}
-                        className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 font-medium"
+                        className="flex-1 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] hover:bg-[#e5e5e5] text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer"
                     >
                         Cancelar
                     </Button>
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                        className="flex-1 h-10 sm:h-11 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
                     >
                         {isSubmitting ? (
                             <>

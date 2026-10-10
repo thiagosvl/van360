@@ -1,7 +1,7 @@
 import { BASE_DOMAIN, TRIAL_DURATION_DAYS } from "@/constants";
 import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
 import { PassageiroGenero } from "@/types/enums";
-import { PLAY_STORE_URL } from "@/utils/detectPlatform";
+import { PLAY_STORE_URL, APP_STORE_URL } from "@/utils/detectPlatform";
 import {
   formatDateToBR,
   formatFirstName,
@@ -22,9 +22,9 @@ export interface CobrancaWhatsAppParams {
 }
 
 export interface ContratoWhatsAppParams {
-  telefoneResponsavel: string;
-  nomeResponsavel: string;
-  nomePassageiro: string;
+  telefoneResponsavel?: string | null;
+  nomeResponsavel?: string | null;
+  nomePassageiro?: string | null;
   link: string;
 }
 
@@ -33,6 +33,7 @@ export interface ResponsavelAppInviteParams {
   nomeResponsavel: string;
   nomePassageiro: string;
   appAndroidLink?: string;
+  appIosLink?: string;
   webLoginLink?: string;
 }
 
@@ -152,13 +153,16 @@ export function buildCobrancaWhatsAppUrl(params: CobrancaWhatsAppParams): string
 }
 
 export function buildContratoWhatsAppMessage(params: ContratoWhatsAppParams): string {
-  const primeiroNomeResp = formatFirstName(params.nomeResponsavel);
-  const primeiroNomePassageiro = formatFirstName(params.nomePassageiro);
+  const primeiroNomeResp = params.nomeResponsavel ? formatFirstName(params.nomeResponsavel) : "";
+  const primeiroNomePassageiro = params.nomePassageiro ? formatFirstName(params.nomePassageiro) : "";
+
+  const saudacao = primeiroNomeResp ? `Olá, ${primeiroNomeResp}! Tudo bem? 🚐📄` : "Olá! Tudo bem? 🚐📄";
+  const passageiroTexto = primeiroNomePassageiro ? ` de *${primeiroNomePassageiro}*` : "";
 
   return [
-    `Olá, ${primeiroNomeResp}! Tudo bem? 🚐📄`,
+    saudacao,
     "",
-    `O contrato de prestação de serviços do transporte escolar de *${primeiroNomePassageiro}* já está disponível.`,
+    `O contrato de prestação de serviços do transporte escolar${passageiroTexto} já está disponível.`,
     "",
     "A assinatura é 100% digital, segura e leva menos de 1 minuto pelo celular:",
     "",
@@ -174,10 +178,35 @@ export function buildContratoWhatsAppUrl(params: ContratoWhatsAppParams): string
   return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
 }
 
+export function buildContratoAssinadoWhatsAppMessage(params: ContratoWhatsAppParams): string {
+  const primeiroNomeResp = params.nomeResponsavel ? formatFirstName(params.nomeResponsavel) : "";
+  const primeiroNomePassageiro = params.nomePassageiro ? formatFirstName(params.nomePassageiro) : "";
+
+  const saudacao = primeiroNomeResp ? `Olá, ${primeiroNomeResp}! Tudo bem? 🚐📄` : "Olá! Tudo bem? 🚐📄";
+  const passageiroTexto = primeiroNomePassageiro ? ` de *${primeiroNomePassageiro}*` : "";
+
+  return [
+    saudacao,
+    "",
+    `Segue o contrato assinado de prestação de serviços do transporte escolar${passageiroTexto}.`,
+    "",
+    "📄 *Toque no link abaixo para visualizar o documento assinado:*",
+    params.link,
+    "",
+    "Agradecemos a confiança em nossos serviços!"
+  ].join("\n");
+}
+
+export function buildContratoAssinadoWhatsAppUrl(params: ContratoWhatsAppParams): string {
+  const mensagem = buildContratoAssinadoWhatsAppMessage(params);
+  return buildWhatsAppUrl(params.telefoneResponsavel, mensagem);
+}
+
 export function buildResponsavelAppInviteMessage(params: ResponsavelAppInviteParams): string {
   const respNome = formatFirstName(params.nomeResponsavel);
   const passNome = formatFirstName(params.nomePassageiro);
   const appAndroidLink = params.appAndroidLink || PLAY_STORE_URL;
+  const appIosLink = params.appIosLink || APP_STORE_URL;
   const webLoginLink = params.webLoginLink || `${BASE_DOMAIN}/login`;
 
   return [
@@ -190,8 +219,9 @@ export function buildResponsavelAppInviteMessage(params: ResponsavelAppInvitePar
     "• Receba notificações sobre rotas e avisos",
     "• Registre ausências",
     "",
-    "📲 *Baixe o app para Android:*",
-    appAndroidLink,
+    "📲 *Baixe o aplicativo oficial:*",
+    `• Android (Google Play): ${appAndroidLink}`,
+    `• iPhone (App Store): ${appIosLink}`,
     "",
     "🌐 *Ou acesse diretamente pelo navegador:*",
     webLoginLink,

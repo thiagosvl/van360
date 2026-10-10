@@ -1,13 +1,9 @@
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionItem } from "@/types/actions";
 import {
   Table,
   TableBody,
@@ -26,8 +22,8 @@ import {
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { Passageiro } from "@/types/passageiro";
 import { cn } from "@/lib/utils";
 import {
   formatarTelefone,
@@ -148,62 +144,54 @@ export default function PrePassageiros({
   }: {
     prePassageiro: PrePassageiro;
     showReviewOption: boolean;
-  }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
-        {showReviewOption && (
-          <DropdownMenuItem
-            className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleFinalizeClick(prePassageiro);
-            }}
-          >
-            <Eye className="w-4 h-4" />
-            Revisar
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem
-          className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-red-600 focus:text-red-600"
-          onClick={(e) => {
-            e.stopPropagation();
-            openConfirmationDialog({
-              title: getMessage("prePassageiro.info.confirmarExclusao"),
-              description: getMessage("prePassageiro.info.confirmarExclusaoDescricao"),
-              variant: "destructive",
-              confirmText: "Excluir",
-              cancelText: "Cancelar",
-              onConfirm: async () => {
-                if (prePassageiro.id) {
-                  try {
-                    await deletePrePassageiro.mutateAsync(prePassageiro.id);
-                    safeCloseDialog(closeConfirmationDialog);
-                  } catch (error) {
-                    safeCloseDialog(closeConfirmationDialog);
-                    // Error handled by mutation hook or global handler
-                    console.error(error);
-                  }
+  }) => {
+    const actions: ActionItem[] = [
+      ...(showReviewOption
+        ? [
+            {
+              label: "Revisar",
+              icon: <Eye className="w-4 h-4" />,
+              description: "Finalizar cadastro do aluno",
+              onClick: () => handleFinalizeClick(prePassageiro),
+            },
+          ]
+        : []),
+      {
+        label: "Excluir",
+        icon: <Trash2 className="w-4 h-4" />,
+        description: "Remover solicitação de cadastro",
+        isDestructive: true,
+        onClick: () => {
+          openConfirmationDialog({
+            title: getMessage("prePassageiro.info.confirmarExclusao"),
+            description: getMessage("prePassageiro.info.confirmarExclusaoDescricao"),
+            variant: "destructive",
+            confirmText: "Excluir",
+            cancelText: "Cancelar",
+            onConfirm: async () => {
+              if (prePassageiro.id) {
+                try {
+                  await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                  safeCloseDialog(closeConfirmationDialog);
+                } catch (error) {
+                  safeCloseDialog(closeConfirmationDialog);
+                  console.error(error);
                 }
-              },
-            });
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-          Excluir
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+              }
+            },
+          });
+        },
+      },
+    ];
+
+    return (
+      <ActionsDropdown
+        actions={actions}
+        title={formatShortName(prePassageiro.nome, true)}
+        description="Solicitação de cadastro"
+      />
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -223,20 +211,20 @@ export default function PrePassageiros({
       ) : (
         <>
           {/* Desktop Table */}
-          <div className="hidden md:block rounded-xl border border-gray-100 overflow-hidden bg-white shadow-sm">
+          <div className="hidden md:block rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
             <Table>
-              <TableHeader className="bg-gray-50/50">
-                <TableRow className="hover:bg-transparent border-b border-gray-100">
-                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
+              <TableHeader className="bg-[#fafafa]">
+                <TableRow className="hover:bg-transparent border-b border-[#e5e5e5]">
+                  <TableHead className="px-6 py-3.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wider w-[320px]">
                     Aluno
                   </TableHead>
-                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                  <TableHead className="px-6 py-3.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wider">
                     WhatsApp
                   </TableHead>
-                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                  <TableHead className="px-6 py-3.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wider">
                     Quando
                   </TableHead>
-                  <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest pr-20">
+                  <TableHead className="px-6 py-3.5 text-right text-xs font-medium text-[#737373] uppercase tracking-wider pr-16">
                     Ações
                   </TableHead>
                 </TableRow>
@@ -245,24 +233,22 @@ export default function PrePassageiros({
                 {prePassageiros.map((prePassageiro) => (
                   <TableRow
                     key={prePassageiro.id}
-                    className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                    className="hover:bg-[#fafafa] border-b border-[#e5e5e5] last:border-0 transition-colors cursor-pointer"
                     onClick={() => handleFinalizeClick(prePassageiro)}
                   >
-                    <TableCell className="py-4 pl-6">
+                    <TableCell className="py-3.5 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                          <span className="text-white font-headline font-bold text-sm leading-none">
+                        <div className="flex-shrink-0 w-9 h-9 bg-[#f5f5f5] border border-[#e5e5e5] rounded-full flex items-center justify-center">
+                          <span className="text-[#0a0a0a] font-semibold text-xs leading-none">
                             {getInitials(prePassageiro.nome)}
                           </span>
                         </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                              {formatShortName(prePassageiro.nome, true)}
-                            </p>
-                          </div>
+                        <div className="flex flex-col min-w-0">
+                          <p className="font-semibold text-[#0a0a0a] text-sm truncate">
+                            {formatShortName(prePassageiro.nome, true)}
+                          </p>
                           <p className={cn(
-                            "text-[10px] text-gray-400 font-medium tracking-wider",
+                            "text-xs text-[#737373]",
                             formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
                           )}>
                             {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
@@ -270,29 +256,29 @@ export default function PrePassageiros({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4">
-                      <span className="text-sm text-gray-500">
+                    <TableCell className="py-3.5">
+                      <span className="text-xs text-[#737373] font-normal">
                         {formatarTelefone(
                           prePassageiro.telefone_responsavel,
                         )}
                       </span>
                     </TableCell>
-                    <TableCell className="py-4">
-                      <span className="text-sm text-gray-500">
+                    <TableCell className="py-3.5">
+                      <span className="text-xs text-[#737373] font-normal">
                         {formatRelativeTime(prePassageiro.created_at)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right py-4 pr-6">
+                    <TableCell className="text-right py-3.5 pr-6">
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           size="sm"
-                          className="bg-primary text-white shadow-sm h-8"
+                          className="h-8 px-3 rounded-[18px] bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/15 text-xs font-medium gap-1.5 cursor-pointer transition-colors shadow-none"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleFinalizeClick(prePassageiro);
                           }}
                         >
-                          <Eye className="w-4 h-4 mr-2" />
+                          <Eye className="w-3.5 h-3.5" />
                           Revisar
                         </Button>
                         <ActionsMenu
@@ -308,17 +294,17 @@ export default function PrePassageiros({
           </div>
 
           {/* Mobile Cards */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden space-y-2.5 sm:space-y-3">
             {prePassageiros.map((prePassageiro, index) => {
               const mobileActions = [
                 {
                   label: "Revisar Cadastro",
-                  icon: <Eye className="h-5 w-5" />,
+                  icon: <Eye className="h-4 w-4" />,
                   onClick: () => handleFinalizeClick(prePassageiro),
                 },
                 {
                   label: "Excluir",
-                  icon: <Trash2 className="h-5 w-5" />,
+                  icon: <Trash2 className="h-4 w-4 text-[#e7000b]" />,
                   isDestructive: true,
                   onClick: () =>
                     openConfirmationDialog({
@@ -349,18 +335,18 @@ export default function PrePassageiros({
                   showHint={index === 0}
                   className="bg-transparent"
                   renderHeader={() => (
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                        <span className="text-white font-headline font-bold text-sm leading-none">
+                    <div className="flex items-center gap-3 bg-[#fafafa] p-3.5 sm:p-4 rounded-[22px] border border-[#e5e5e5] shadow-2xs w-full text-left">
+                      <div className="flex-shrink-0 w-10 h-10 bg-white border border-[#e5e5e5] rounded-[14px] flex items-center justify-center">
+                        <span className="text-[#0a0a0a] font-semibold text-xs leading-none">
                           {getInitials(prePassageiro.nome)}
                         </span>
                       </div>
-                      <div className="flex flex-col">
-                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                      <div className="flex flex-col min-w-0">
+                        <p className="font-semibold text-[#0a0a0a] text-sm">
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
                         <p className={cn(
-                          "text-[10px] text-gray-400 font-medium tracking-wider",
+                          "text-xs text-[#737373] mt-0.5",
                           formatoNomeResponsavel === "completo" ? "truncate max-w-[200px]" : "truncate"
                         )}>
                           {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
@@ -369,22 +355,25 @@ export default function PrePassageiros({
                     </div>
                   )}
                 >
-                  <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4">
-                    <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                      <span className="text-white font-headline font-bold text-sm leading-none">
+                  <div
+                    onClick={() => handleFinalizeClick(prePassageiro)}
+                    className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-center gap-3.5 active:scale-[0.99] transition-all cursor-pointer relative"
+                  >
+                    <div className="flex-shrink-0 w-9 h-9 bg-[#f5f5f5] border border-[#e5e5e5] rounded-full flex items-center justify-center">
+                      <span className="text-[#0a0a0a] font-semibold text-xs leading-none">
                         {getInitials(prePassageiro.nome)}
                       </span>
                     </div>
 
                     <div className="flex-grow min-w-0 pr-10">
                       <div className="flex items-center gap-1.5">
-                        <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                        <p className="font-semibold text-[#0a0a0a] text-sm truncate leading-tight">
                           {formatShortName(prePassageiro.nome, true)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-1">
                         <p className={cn(
-                          "text-[10px] text-gray-500 font-medium opacity-60",
+                          "text-xs text-[#737373]",
                           formatoNomeResponsavel === "completo" ? "truncate" : "truncate"
                         )}>
                           {formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel)}
@@ -392,8 +381,8 @@ export default function PrePassageiros({
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
-                      <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-4 top-1/2 -translate-y-1/2">
+                      <p className="text-[11px] text-[#737373] font-normal">
                         {formatRelativeTime(prePassageiro.created_at)}
                       </p>
                     </div>

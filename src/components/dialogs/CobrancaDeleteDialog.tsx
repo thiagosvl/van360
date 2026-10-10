@@ -46,12 +46,12 @@ export default function CobrancaDeleteDialog({
     <BaseDialog open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Header
         title="Cancelar parcela"
-        icon={<Ban className="w-5 h-5 opacity-80" />}
+        icon={<Ban className="w-5 h-5 text-[#e7000b]" />}
         onClose={() => onOpenChange(false)}
       />
       <BaseDialog.Body>
-        <div className="space-y-6">
-          <p className="text-slate-500 text-sm font-medium leading-relaxed">
+        <div className="space-y-4">
+          <p className="text-[#737373] text-sm font-normal leading-relaxed">
             Tem certeza que deseja cancelar esta parcela? Ela ficará marcada como cancelada na carteirinha e não será cobrada.
           </p>
 
@@ -87,7 +87,7 @@ export default function CobrancaDeleteDialog({
         )}
         <BaseDialog.Action
           label={showLoading ? "Cancelando..." : "Cancelar Parcela"}
-          variant="primary"
+          variant="destructive"
           isLoading={showLoading}
           onClick={handleConfirm}
         />

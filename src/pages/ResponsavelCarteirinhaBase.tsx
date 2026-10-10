@@ -20,6 +20,7 @@ import {
 } from "@/components/features/responsavel/carteirinha";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
+import { Banner } from "@/components/ui/Banner";
 import { AppPermissionStatus, PermissionRescueType, UserType } from "@/types/enums";
 
 import { useLayoutSafe } from "@/contexts/LayoutContext";
@@ -87,8 +88,8 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen bg-slate-50/90 text-slate-800 flex flex-col">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
+    <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a] flex flex-col">
+      <header className="border-b border-[#e5e5e5] bg-white px-4 sm:px-6 lg:px-8 pt-[calc(0.875rem+var(--safe-area-top))] pb-3.5 sticky top-0 z-50 shadow-xs">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2">
             <img
@@ -104,9 +105,9 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSwitchPassageiro}
-                className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-1.5 text-xs font-semibold text-[#1a3a5c] hover:bg-blue-100 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 rounded-[18px] border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary hover:bg-primary hover:text-white transition-all cursor-pointer"
               >
-                <ArrowLeftRight className="h-3.5 w-3.5 text-[#1a3a5c]" />
+                <ArrowLeftRight className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Trocar Aluno</span>
               </button>
             )}
@@ -114,9 +115,9 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/80 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] px-3.5 py-1.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-all cursor-pointer"
             >
-              <LogOut className="h-3.5 w-3.5 text-slate-500" />
+              <LogOut className="h-3.5 w-3.5 text-[#737373]" />
               <span>Sair</span>
             </button>
           </div>
@@ -134,27 +135,28 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
               <CarteirinhaSkeleton />
             </div>
           ) : error || !carteirinha ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600 text-sm font-medium text-center">
-              Erro ao carregar os dados do aluno. Tente atualizar a página.
-            </div>
+            <Banner
+              variant="danger"
+              title="Erro ao carregar os dados"
+              description="Não foi possível carregar os dados do aluno. Tente atualizar a página."
+            />
           ) : (
             <>
               {/* Header do Aluno */}
               <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
 
-              {/* Abas com Scroll Lateral no Mobile e Grid no Desktop */}
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="overflow-x-auto no-scrollbar bg-slate-200/50 p-1 rounded-[1.25rem]">
-                  <TabsList ref={tabListRef} className="flex min-w-full w-max md:w-full md:grid md:grid-cols-6 min-h-[44px] bg-transparent p-0 gap-1 text-[13px]">
+                <div className="overflow-x-auto no-scrollbar bg-[#f5f5f5] border border-[#e5e5e5] p-1 rounded-[22px]">
+                  <TabsList ref={tabListRef} className="flex min-w-full w-max md:w-full md:grid md:grid-cols-6 min-h-[38px] sm:min-h-[42px] bg-transparent p-0 gap-1 text-xs sm:text-sm">
                     <TabsTrigger
                       value="geral"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Geral
                     </TabsTrigger>
                     <TabsTrigger
                       value="parcelas"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Parcelas
                     </TabsTrigger>
@@ -162,13 +164,13 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       value="ausencias"
                       disabled={(carteirinha.rotas || []).length === 0}
                       title={(carteirinha.rotas || []).length === 0 ? "Aluno não possui rota atribuída" : undefined}
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Ausências
                     </TabsTrigger>
                     <TabsTrigger
                       value="responsaveis"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Responsáveis
                     </TabsTrigger>
@@ -176,13 +178,13 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                       value="contrato"
                       disabled={!carteirinha.contrato}
                       title={!carteirinha.contrato ? "Aluno não possui contrato" : undefined}
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Contrato
                     </TabsTrigger>
                     <TabsTrigger
                       value="dados-pessoais"
-                      className="rounded-[1rem] h-full min-h-[36px] px-3 md:px-4 font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 cursor-pointer text-center flex items-center justify-center"
+                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
                     >
                       Dados Pessoais
                     </TabsTrigger>

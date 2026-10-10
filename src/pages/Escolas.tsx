@@ -36,15 +36,12 @@ export default function Escolas() {
     await refetch();
   };
 
-  const sectionCount = escolas.length;
+  const totalEscolas = escolas.length;
   const hasSearch = hasActiveFilters || !!searchTerm.trim();
-  const countLabel = hasSearch
-    ? (sectionCount === 1 ? "ENCONTRADA" : "ENCONTRADAS")
-    : (sectionCount === 1 ? "CADASTRADA" : "CADASTRADAS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+      <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
         <EscolasToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -53,16 +50,16 @@ export default function Escolas() {
           onClearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           onApplyFilters={setFilters}
-          onRegister={can("escolas.gerenciar") ? handleRegister : () => { }}
+          onRegister={can("escolas.gerenciar") ? handleRegister : () => {}}
           isRegisterDisabled={!can("escolas.gerenciar")}
         />
 
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-            {/* Escolas */}
-          </h2>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-            {sectionCount} {countLabel}
+        <div className="flex items-center justify-end px-1">
+          <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
+            {totalEscolas}{" "}
+            {hasSearch
+              ? (totalEscolas === 1 ? "ENCONTRADA" : "ENCONTRADAS")
+              : (totalEscolas === 1 ? "ESCOLA" : "ESCOLAS")}
           </span>
         </div>
 
@@ -78,21 +75,21 @@ export default function Escolas() {
             }
             description={
               searchTerm || hasActiveFilters
-                ? `Não encontramos escolas com os filtros selecionados.`
+                ? "Não encontramos escolas com os filtros selecionados."
                 : "Cadastre as escolas que você atende para organizar seus alunos."
             }
             action={
-              (searchTerm || hasActiveFilters)
+              searchTerm || hasActiveFilters
                 ? {
-                  label: "Limpar Filtros",
-                  onClick: clearFilters,
-                }
+                    label: "Limpar Filtros",
+                    onClick: clearFilters,
+                  }
                 : can("escolas.gerenciar")
-                  ? {
+                ? {
                     label: "Cadastrar Escola",
                     onClick: handleRegister,
                   }
-                  : undefined
+                : undefined
             }
           />
         ) : (

@@ -1,7 +1,7 @@
 import { FormEnderecoFields, PhoneInput } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { safeCloseDialog } from "@/hooks";
 import { isDevEnv } from "@/utils/detectPlatform";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -13,13 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { phoneSchema } from "@/schemas/common";
 import { ParentescoResponsavel, TipoResponsavel } from "@/types/enums";
@@ -165,8 +159,10 @@ export default function ResponsavelFormDialog({
   const alunoEstado = passageiro?.responsavel_principal?.estado || (passageiro as { estado?: string })?.estado || "";
 
   const searchedTermsSet = useRef<Set<string>>(new Set());
+  const isFillingMockRef = useRef(false);
 
   const handleFillMock = () => {
+    isFillingMockRef.current = true;
     const mockName = mockGenerator.name();
     const mockAddress = mockGenerator.address();
     const parentescosList: ParentescoResponsavel[] = [
@@ -196,6 +192,10 @@ export default function ResponsavelFormDialog({
       tornar_principal: false,
       notificacoes_rota_habilitadas: true,
     });
+
+    setTimeout(() => {
+      isFillingMockRef.current = false;
+    }, 400);
   };
 
   const form = useForm<ResponsavelFormData>({
@@ -253,10 +253,16 @@ export default function ResponsavelFormDialog({
   const { mutateAsync: lookupResponsavel } = useBuscarResponsavel();
 
   const handleSearchResponsavel = useCallback(async (term: string) => {
-    if (editingResponsavel || isResponsavelPortal) return;
+    if (editingResponsavel || isResponsavelPortal || isFillingMockRef.current) {
+      return;
+    }
     const pureTerm = String(term || "").replace(/\D/g, "");
-    if (pureTerm.length < 10 || pureTerm.length > 11) return;
-    if (searchedTermsSet.current.has(pureTerm)) return;
+    if (pureTerm.length < 10 || pureTerm.length > 11) {
+      return;
+    }
+    if (searchedTermsSet.current.has(pureTerm)) {
+      return;
+    }
 
     try {
       searchedTermsSet.current.add(pureTerm);
@@ -303,8 +309,7 @@ export default function ResponsavelFormDialog({
           id: "lookup-responsavel-found"
         });
       }
-    } catch {
-    }
+    } catch {}
   }, [editingResponsavel, isResponsavelPortal, lookupResponsavel, form]);
 
   useEffect(() => {
@@ -362,7 +367,7 @@ export default function ResponsavelFormDialog({
   const telefoneValue = form.watch("telefone");
 
   useEffect(() => {
-    if (editingResponsavel || isResponsavelPortal) return;
+    if (editingResponsavel || isResponsavelPortal || isFillingMockRef.current) return;
     const pureCpf = cpfValue ? String(cpfValue).replace(/\D/g, "") : "";
     if (pureCpf && pureCpf.length === 11) {
       handleSearchResponsavel(pureCpf);
@@ -370,7 +375,7 @@ export default function ResponsavelFormDialog({
   }, [cpfValue, handleSearchResponsavel, editingResponsavel, isResponsavelPortal]);
 
   useEffect(() => {
-    if (editingResponsavel || isResponsavelPortal) return;
+    if (editingResponsavel || isResponsavelPortal || isFillingMockRef.current) return;
     const purePhone = telefoneValue ? String(telefoneValue).replace(/\D/g, "") : "";
     if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
       handleSearchResponsavel(purePhone);
@@ -468,21 +473,21 @@ export default function ResponsavelFormDialog({
 
   return (
     <BaseDialog
-      maxWidth="2xl" open={isOpen} onOpenChange={onClose} lockClose={isSubmitting}>
+      maxWidth="2xl" open={isOpen} onOpenChange={(val) => !val && safeCloseDialog(onClose)} lockClose={isSubmitting}>
       <BaseDialog.Header
         title={title}
-        icon={<Contact className="w-5 h-5" />}
-        onClose={onClose}
+        icon={<Contact className="w-5 h-5 text-[#0a0a0a]" />}
+        onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[14px] h-10 w-10 shadow-xs border border-[#e5e5e5]"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
@@ -502,17 +507,17 @@ export default function ResponsavelFormDialog({
                   control={form.control}
                   name="nome"
                   render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col space-y-2">
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Nome <span className="text-red-600">*</span>
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Nome <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <User className="absolute left-4 top-3 h-4 w-4 text-[#737373]" />
                           <Input
                             {...field}
                             placeholder="Digite o nome completo"
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
+                            className="pl-11 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a]"
                             aria-invalid={!!fieldState.error}
                           />
                         </div>
@@ -531,8 +536,8 @@ export default function ResponsavelFormDialog({
                     field={field}
                     label="Telefone (WhatsApp)"
                     required
-                    labelClassName="text-slate-700 font-semibold ml-1"
-                    inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 text-base"
+                    labelClassName="text-[#0a0a0a] font-medium text-xs"
+                    inputClassName="pl-11 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a]"
                   />
                 )}
               />
@@ -541,32 +546,24 @@ export default function ResponsavelFormDialog({
                 control={form.control}
                 name="parentesco"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Parentesco <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Parentesco <span className="text-[#e7000b]">*</span>
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger
-                          className={cn(
-                            "h-12 rounded-xl bg-slate-50 border-slate-200 text-base focus:border-[#1a3a5c]",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          <SelectValue placeholder="Selecione o parentesco" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        error={!!fieldState.error}
+                      >
+                        <option value="">Selecionar</option>
                         {parentescos.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
+                          <option key={option.value} value={option.value}>
                             {option.label}
-                          </SelectItem>
+                          </option>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </NativeSelect>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -576,13 +573,13 @@ export default function ResponsavelFormDialog({
                 control={form.control}
                 name="cpf"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       CPF
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Hash className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Hash className="absolute left-4 top-3 h-4 w-4 text-[#737373]" />
                         <Input
                           {...field}
                           inputMode="numeric"
@@ -590,7 +587,7 @@ export default function ResponsavelFormDialog({
                           onChange={(e) => {
                             field.onChange(cpfMask(e.target.value));
                           }}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
+                          className="pl-11 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a]"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -604,19 +601,19 @@ export default function ResponsavelFormDialog({
                 control={form.control}
                 name="email"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       E-mail
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Mail className="absolute left-4 top-3 h-4 w-4 text-[#737373]" />
                         <Input
                           {...field}
                           type="email"
                           value={field.value || ""}
                           placeholder="email@exemplo.com.br"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base"
+                          className="pl-11 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a]"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
@@ -629,14 +626,19 @@ export default function ResponsavelFormDialog({
 
             <div className="pt-2">
               <div
-                className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs cursor-pointer select-none"
-                onClick={() => !isSubmitting && handleToggleInformarEndereco(!informarEndereco)}
+                className="flex flex-row items-center justify-between rounded-[18px] sm:rounded-[20px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 shadow-xs cursor-pointer select-none"
+                onClick={(e) => {
+                  if (isSubmitting) return;
+                  const target = e.target as HTMLElement;
+                  if (target.closest('[role="switch"]') || target.tagName === "INPUT") return;
+                  handleToggleInformarEndereco(!informarEndereco);
+                }}
               >
                 <div className="space-y-0.5 pr-4">
-                  <span className="text-slate-800 font-bold text-sm block">
+                  <span className="text-[#0a0a0a] font-medium text-xs sm:text-sm block">
                     Informar endereço
                   </span>
-                  <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                  <div className="text-xs text-[#737373] font-normal leading-relaxed">
                     É opcional o preenchimento do endereço
                   </div>
                 </div>
@@ -645,7 +647,6 @@ export default function ResponsavelFormDialog({
                   onCheckedChange={handleToggleInformarEndereco}
                   disabled={isSubmitting}
                   aria-label="Informar endereço do responsável"
-                  onClick={(e) => e.stopPropagation()}
                 />
               </div>
 
@@ -656,62 +657,62 @@ export default function ResponsavelFormDialog({
               )}
             </div>
 
-
             {!isAlreadyPrincipal && !isResponsavelPortal && (
               <FormField
                 control={form.control}
                 name="tornar_principal"
                 render={({ field }) => (
                   <div className="space-y-3" ref={alertRef}>
-                    <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-0">
-                      <Checkbox
-                        id="tornar_principal"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="h-5 w-5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
-                      />
-                      <FormLabel
-                        htmlFor="tornar_principal"
-                        className="flex-1 cursor-pointer font-base text-slate-700 m-0 text-sm"
-                      >
-                        Definir como responsável principal
-                      </FormLabel>
+                    <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 sm:p-4">
+                      <div className="space-y-0.5 pr-4">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer block">
+                          Definir como responsável principal
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={!!field.value}
+                          onCheckedChange={field.onChange}
+                          className="data-[state=checked]:bg-primary"
+                          aria-label="Definir como responsável principal"
+                        />
+                      </FormControl>
                     </FormItem>
 
                     {field.value && (
-                      <div className="bg-blue-50/50 border border-blue-100/50 rounded-xl p-4 animate-in slide-in-from-top-2 fade-in duration-200">
-                        <p className="text-xs font-bold text-slate-800 mb-3">
+                      <div className="bg-blue-50/40 border border-blue-200/50 rounded-[18px] p-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                        <p className="text-xs font-semibold text-[#0a0a0a] mb-3">
                           Ao salvar, as seguintes informações serão atualizadas:
                         </p>
 
                         <div className="space-y-2.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100/20">
+                            <div className="w-6 h-6 rounded-[8px] bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-200/40">
                               <MessageSquare className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Notificações WhatsApp</p>
-                              <p className="text-[10px] text-slate-500 leading-tight">Lembretes e avisos irão apenas para este contato.</p>
+                              <p className="text-[11px] font-semibold text-[#0a0a0a] leading-none mb-0.5">Notificações WhatsApp</p>
+                              <p className="text-[10px] text-[#737373] leading-tight">Lembretes e avisos irão apenas para este contato.</p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2.5">
-                            <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200/20">
+                            <div className="w-6 h-6 rounded-[8px] bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200/40">
                               <FileText className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Contratos e Documentos</p>
-                              <p className="text-[10px] text-slate-500 leading-tight">Serão gerados com os dados deste novo responsável.</p>
+                              <p className="text-[11px] font-semibold text-[#0a0a0a] leading-none mb-0.5">Contratos e Documentos</p>
+                              <p className="text-[10px] text-[#737373] leading-tight">Serão gerados com os dados deste novo responsável.</p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2.5">
-                            <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c] shrink-0 border border-[#1a3a5c]/10">
+                            <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] flex items-center justify-center text-[#0a0a0a] shrink-0 border border-[#e5e5e5]">
                               <MapPin className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <p className="text-[11px] font-bold text-slate-700 leading-none mb-0.5">Endereço Principal</p>
-                              <p className="text-[10px] text-slate-500 leading-tight">Utilizado como padrão para as rotas do aluno.</p>
+                              <p className="text-[11px] font-semibold text-[#0a0a0a] leading-none mb-0.5">Endereço Principal</p>
+                              <p className="text-[10px] text-[#737373] leading-tight">Utilizado como padrão para as rotas do aluno.</p>
                             </div>
                           </div>
                         </div>
@@ -729,7 +730,7 @@ export default function ResponsavelFormDialog({
         <BaseDialog.Action
           variant="secondary"
           label="Cancelar"
-          onClick={onClose}
+          onClick={() => safeCloseDialog(onClose)}
           disabled={isSubmitting}
         />
         <BaseDialog.Action

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Banner } from "@/components/ui/Banner";
@@ -61,45 +61,26 @@ export default function Rotas() {
 
   return (
     <PullToRefreshWrapper onRefresh={vm.handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
-        {/* Banner de Rota Ativa */}
-        {execucoesAtivas.length > 0 && (
-          <Banner
-            variant="success"
-            icon={
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-              </span>
-            }
-            title={
-              execucoesAtivas.length === 1
-                ? "1 rota acontecendo agora!"
-                : `${execucoesAtivas.length} rotas acontecendo agora!`
-            }
-            description={
-              execucoesAtivas.length === 1
-                ? "Confira abaixo a rota que está com status em execução."
-                : `Confira abaixo as ${execucoesAtivas.length} rotas que estão com status em execução.`
-            }
+      <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-5 pb-24 pt-1 sm:pt-2">
+
+        <Tabs value={vm.activeTab} onValueChange={vm.setActiveTab} className="w-full space-y-4 sm:space-y-5">
+          <RotasToolbar
+            activeTab={vm.activeTab}
+            countMinhasRotas={vm.rotas.length}
+            countHistorico={execucoesHistoricoTotal.length}
           />
-        )}
 
-        <Tabs value={vm.activeTab} onValueChange={vm.setActiveTab} className="w-full space-y-6">
-          <RotasToolbar />
-
-          <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 mt-0">
-            {/* Filtro por Veículo (para gestores com múltiplas vans) */}
+          <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 sm:space-y-5 mt-0">
             {vm.isGestor && veiculosDisponiveis.length > 1 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                 <button
                   type="button"
                   onClick={() => setSelectedVeiculoFilter("TODOS")}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer",
+                    "px-3 py-1.5 rounded-[18px] text-xs font-medium shrink-0 transition-all cursor-pointer",
                     selectedVeiculoFilter === "TODOS"
-                      ? "bg-[#1a3a5c] text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? "bg-primary/10 text-primary border border-primary/25 font-semibold shadow-2xs"
+                      : "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#ebebeb]"
                   )}
                 >
                   Todas as Vans
@@ -110,10 +91,10 @@ export default function Rotas() {
                     type="button"
                     onClick={() => setSelectedVeiculoFilter(v.id)}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer",
+                      "px-3 py-1.5 rounded-[18px] text-xs font-medium shrink-0 transition-all cursor-pointer",
                       selectedVeiculoFilter === v.id
-                        ? "bg-[#1a3a5c] text-white shadow-xs"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-primary/10 text-primary border border-primary/25 font-semibold shadow-2xs"
+                        : "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#ebebeb]"
                     )}
                   >
                     {v.label}
@@ -122,24 +103,23 @@ export default function Rotas() {
               </div>
             )}
 
-            {/* Barra de Ações Rápidas */}
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2.5 w-full">
               <Button
                 variant="outline"
                 disabled={!hasRotas}
                 onClick={() => setIsProximasAusenciasOpen(true)}
-                className="flex-1 border border-slate-200/90 bg-white hover:bg-slate-50 text-[#1a3a5c] font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                className="flex-1 border border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] font-medium text-xs sm:text-sm h-11 rounded-[18px] px-3 sm:px-4 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
               >
-                <CalendarDays className="h-4.5 w-4.5 text-amber-500 shrink-0" />
+                <CalendarDays className="h-4 w-4 text-amber-500 shrink-0" />
                 <span>Ausências</span>
               </Button>
 
               {vm.can("rotas.criar_editar") && (
                 <Button
                   onClick={vm.handleOpenCreateRouteDialog}
-                  className="flex-1 border-none bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 border-none bg-primary hover:bg-primary-hover text-white font-medium text-xs sm:text-sm h-11 rounded-[18px] px-3 sm:px-4 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Plus className="h-4.5 w-4.5 shrink-0" />
+                  <Plus className="h-4 w-4 shrink-0" />
                   <span>Nova Rota</span>
                 </Button>
               )}

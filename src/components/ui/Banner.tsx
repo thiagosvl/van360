@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, ChevronRight, Info, Loader2, X, XCircle } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, ChevronRight, Info, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type BannerVariant = "info" | "warning" | "neutral" | "success" | "danger";
@@ -30,7 +30,6 @@ const VARIANT_CONFIG: Record<
   BannerVariant,
   {
     container: string;
-    iconBox: string;
     title: string;
     description: string;
     chevron: string;
@@ -40,54 +39,49 @@ const VARIANT_CONFIG: Record<
   }
 > = {
   info: {
-    container: "bg-blue-50/80 border-blue-100/90 text-blue-900",
-    iconBox: "bg-blue-100/60 text-[#1a3a5c] border-blue-200/60",
-    title: "text-[#1a3a5c]",
-    description: "text-slate-600",
-    chevron: "text-blue-400 group-hover:text-blue-600",
-    defaultIcon: <Info className="w-5 h-5" />,
-    actionButton: "bg-[#1a3a5c] text-white hover:bg-[#1a3a5c]/90 shadow-xs shadow-blue-900/10",
-    dismissButton: "text-blue-400 hover:text-blue-700 hover:bg-blue-100/60",
+    container: "bg-primary/[0.06] hover:bg-primary/[0.08] dark:bg-primary/10 dark:hover:bg-primary/15 border-primary/20 dark:border-primary/30 text-foreground",
+    title: "text-foreground font-semibold",
+    description: "text-muted-foreground",
+    chevron: "text-primary/70 group-hover:text-primary",
+    defaultIcon: <Info className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary shrink-0" />,
+    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    dismissButton: "text-primary/60 hover:text-primary hover:bg-primary/10",
   },
   warning: {
-    container: "bg-amber-50/90 border-amber-200/80 text-amber-950",
-    iconBox: "bg-amber-100/80 text-amber-600 border-amber-200/60",
-    title: "text-amber-900",
-    description: "text-amber-800/90",
-    chevron: "text-amber-400 group-hover:text-amber-600",
-    defaultIcon: <AlertTriangle className="w-5 h-5" />,
-    actionButton: "bg-amber-600 text-white hover:bg-amber-700 shadow-xs shadow-amber-200/50",
-    dismissButton: "text-amber-400 hover:text-amber-700 hover:bg-amber-100/60",
+    container: "bg-amber-500/[0.08] hover:bg-amber-500/[0.11] dark:bg-amber-500/10 dark:hover:bg-amber-500/15 border-amber-500/25 dark:border-amber-500/30 text-foreground",
+    title: "text-foreground font-semibold",
+    description: "text-muted-foreground",
+    chevron: "text-amber-600/70 group-hover:text-amber-600",
+    defaultIcon: <AlertTriangle className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-amber-500 shrink-0" />,
+    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    dismissButton: "text-amber-600/60 hover:text-amber-700 hover:bg-amber-500/15",
   },
   neutral: {
-    container: "bg-slate-50/90 border-slate-200/80 text-slate-800",
-    iconBox: "bg-white text-slate-600 border-slate-200/60 shadow-2xs",
-    title: "text-slate-800",
-    description: "text-slate-600",
-    chevron: "text-slate-400 group-hover:text-slate-600",
-    defaultIcon: <Info className="w-5 h-5" />,
-    actionButton: "bg-slate-800 text-white hover:bg-slate-900 shadow-xs shadow-slate-200/50",
-    dismissButton: "text-slate-400 hover:text-slate-700 hover:bg-slate-200/60",
+    container: "bg-[#f5f5f5] hover:bg-[#eeeeee] dark:bg-secondary/40 dark:hover:bg-secondary/60 border-[#e5e5e5] dark:border-border text-foreground",
+    title: "text-foreground font-semibold",
+    description: "text-muted-foreground",
+    chevron: "text-muted-foreground group-hover:text-foreground",
+    defaultIcon: <Info className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-muted-foreground shrink-0" />,
+    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    dismissButton: "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5",
   },
   success: {
-    container: "bg-emerald-50/90 border-emerald-200/80 text-emerald-950",
-    iconBox: "bg-emerald-100/80 text-emerald-600 border-emerald-200/60",
-    title: "text-emerald-950",
-    description: "text-emerald-800/90",
-    chevron: "text-emerald-400 group-hover:text-emerald-600",
-    defaultIcon: <CheckCircle2 className="w-5 h-5" />,
-    actionButton: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs shadow-emerald-200/50",
-    dismissButton: "text-emerald-400 hover:text-emerald-700 hover:bg-emerald-100/60",
+    container: "bg-emerald-500/[0.08] hover:bg-emerald-500/[0.11] dark:bg-emerald-500/10 dark:hover:bg-emerald-500/15 border-emerald-500/25 dark:border-emerald-500/30 text-foreground",
+    title: "text-foreground font-semibold",
+    description: "text-muted-foreground",
+    chevron: "text-emerald-600/70 group-hover:text-emerald-600",
+    defaultIcon: <CheckCircle2 className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-500 shrink-0" />,
+    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    dismissButton: "text-emerald-600/60 hover:text-emerald-700 hover:bg-emerald-500/15",
   },
   danger: {
-    container: "bg-rose-50/90 border-rose-200/80 text-rose-950",
-    iconBox: "bg-rose-100/80 text-rose-600 border-rose-200/60",
-    title: "text-rose-900",
-    description: "text-rose-700/90",
-    chevron: "text-rose-400 group-hover:text-rose-600",
-    defaultIcon: <AlertCircle className="w-5 h-5" />,
-    actionButton: "bg-rose-600 text-white hover:bg-rose-700 shadow-xs shadow-rose-200/50",
-    dismissButton: "text-rose-400 hover:text-rose-700 hover:bg-rose-100/60",
+    container: "bg-destructive/[0.08] hover:bg-destructive/[0.11] dark:bg-destructive/10 dark:hover:bg-destructive/15 border-destructive/25 dark:border-destructive/30 text-foreground",
+    title: "text-foreground font-semibold",
+    description: "text-muted-foreground",
+    chevron: "text-destructive/70 group-hover:text-destructive",
+    defaultIcon: <AlertCircle className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-destructive shrink-0" />,
+    actionButton: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-2xs",
+    dismissButton: "text-destructive/60 hover:text-destructive hover:bg-destructive/15",
   },
 };
 
@@ -100,64 +94,36 @@ export function Banner({
   action,
   onClick,
   onDismiss,
-  dismissPosition = "floating",
+  dismissPosition = "default",
   className,
   contentClassName,
 }: BannerProps) {
   const config = VARIANT_CONFIG[variant];
   const renderedIcon = icon === undefined ? config.defaultIcon : icon;
-
   const isClickable = !action && Boolean(onClick);
 
   const content = (
     <>
-      {onDismiss && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDismiss(e);
-          }}
-          title="Fechar aviso"
-          className={cn(
-            dismissPosition === "floating"
-              ? "absolute -top-2 -right-2 sm:-top-2.5 sm:-right-2.5 w-6 h-6 rounded-full bg-white border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all active:scale-90 z-20 cursor-pointer"
-              : cn(
-                  "absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-1.5 rounded-lg transition-colors z-10 cursor-pointer",
-                  config.dismissButton
-                )
-          )}
-        >
-          <X className={dismissPosition === "floating" ? "h-3.5 w-3.5" : "h-4 w-4"} />
-        </button>
-      )}
-
       <div
         className={cn(
-          "flex items-center gap-3.5 flex-1 w-full min-w-0",
-          onDismiss && dismissPosition !== "floating" && "pr-6 sm:pr-8",
+          "flex items-start gap-2.5 sm:gap-3 flex-1 min-w-0",
           contentClassName
         )}
       >
         {renderedIcon !== null && (
-          <div
-            className={cn(
-              "h-10 w-10 flex items-center justify-center rounded-xl shrink-0 border transition-transform",
-              isClickable && "group-hover:scale-105",
-              config.iconBox
-            )}
-          >
+          <div className="shrink-0 mt-0.5 flex items-center justify-center">
             {renderedIcon}
           </div>
         )}
+
         <div className="flex-1 min-w-0">
           {title && (
-            <p className={cn("text-[13px] font-bold tracking-tight leading-snug", config.title)}>
+            <p className={cn("text-xs sm:text-[13px] font-semibold tracking-tight leading-snug", config.title)}>
               {title}
             </p>
           )}
           {description && (
-            <div className={cn("text-[11px] leading-tight font-medium mt-0.5", config.description)}>
+            <div className={cn("text-xs sm:text-[13px] leading-relaxed font-normal", title && "mt-0.5", config.description)}>
               {description}
             </div>
           )}
@@ -171,34 +137,50 @@ export function Banner({
           onClick={action.onClick}
           disabled={action.disabled || action.isLoading}
           className={cn(
-            "h-11 px-4 md:px-5 text-sm sm:text-md font-bold rounded-xl transition-all shadow-xs shrink-0 active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
-            onDismiss && dismissPosition !== "floating" && "sm:mr-8",
+            "h-7 px-3 text-xs font-medium rounded-[10px] transition-all shrink-0 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed self-center",
             config.actionButton,
             action.className
           )}
         >
           {action.isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-3 h-3 animate-spin" />
           ) : (
             action.label
           )}
         </button>
       )}
 
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss(e);
+          }}
+          title="Fechar aviso"
+          className={cn(
+            "shrink-0 p-1 -mr-1 -mt-0.5 rounded-md transition-colors cursor-pointer self-start",
+            config.dismissButton
+          )}
+        >
+          <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        </button>
+      )}
+
       {isClickable && (
-        <div className="shrink-0 pl-1 flex items-center">
-          <ChevronRight className={cn("w-5 h-5 transition-all duration-200 group-hover:translate-x-0.5", config.chevron)} />
+        <div className="shrink-0 pl-0.5 self-center flex items-center">
+          <ChevronRight className={cn("w-4 h-4 transition-all duration-200 group-hover:translate-x-0.5", config.chevron)} />
         </div>
       )}
     </>
   );
 
   const containerClasses = cn(
-    "relative p-4 rounded-2xl border shadow-xs animate-in fade-in slide-in-from-top-2 duration-500",
+    "relative py-2.5 px-3.5 sm:py-2.5 sm:px-4 rounded-[12px] border transition-all text-xs sm:text-[13px]",
     action
-      ? "flex flex-col sm:flex-row items-start sm:items-center gap-4"
-      : "flex flex-row items-center justify-between gap-3 sm:gap-4",
-    isClickable && "cursor-pointer group hover:shadow-xs active:scale-[0.99] text-left w-full",
+      ? "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3"
+      : "flex flex-row items-start justify-between gap-2.5 sm:gap-3",
+    isClickable && "cursor-pointer group text-left w-full active:scale-[0.99]",
     config.container,
     className
   );

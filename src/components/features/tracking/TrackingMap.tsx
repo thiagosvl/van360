@@ -18,7 +18,7 @@ interface TrackingMapProps {
 export const TrackingMap: React.FC<TrackingMapProps> = ({
   vanCoord,
   heading,
-  className = "w-full h-64 rounded-2xl overflow-hidden shadow-inner border border-slate-200"
+  className = "w-full h-64 rounded-[24px] overflow-hidden shadow-xs border border-[#e5e5e5]"
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);

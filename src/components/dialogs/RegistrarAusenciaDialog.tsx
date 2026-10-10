@@ -199,6 +199,7 @@ export function RegistrarAusenciaDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <BaseDialog.Header
         title="Registrar Ausência"
+        subtitle="Informe as ausências previstas para as rotas do aluno"
         icon={<CalendarX className="w-5 h-5" />}
         onClose={handleClose}
       />
@@ -213,9 +214,9 @@ export function RegistrarAusenciaDialog({
 
           {/* Campo Aluno */}
           {!lockedPassageiro && (
-            <div className="space-y-1">
-              <Label className="text-slate-700 font-semibold ml-1">
-                Aluno <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-medium text-[#737373]">
+                Aluno <span className="text-[#e7000b]">*</span>
               </Label>
 
               <Popover open={isPassageiroDropdownOpen} onOpenChange={setIsPassageiroDropdownOpen}>
@@ -233,22 +234,22 @@ export function RegistrarAusenciaDialog({
                         setIsPassageiroDropdownOpen(true);
                       }}
                       className={cn(
-                        "h-12 rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base pr-9 cursor-text",
-                        errors.passageiroId && "border-red-500"
+                        "h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-sm text-[#0a0a0a] font-normal placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] pr-9 cursor-text",
+                        errors.passageiroId && "border-[#e7000b]"
                       )}
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center justify-center">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] pointer-events-none flex items-center justify-center">
                       {isLoadingRouteDetail || isLoadingAlunoRotas ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                        <Loader2 className="w-4 h-4 animate-spin text-[#737373]" />
                       ) : (
-                        <Search className="w-4 h-4 text-slate-400" />
+                        <Search className="w-4 h-4 text-[#737373]" />
                       )}
                     </div>
                   </div>
                 </PopoverAnchor>
 
                 <PopoverContent
-                  className="w-[var(--radix-popover-trigger-width)] p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999] max-h-56 overflow-y-auto overscroll-contain touch-auto divide-y divide-slate-100"
+                  className="w-[var(--radix-popover-trigger-width)] p-1 bg-white border border-[#e5e5e5] rounded-[18px] shadow-xl z-[9999] max-h-56 overflow-y-auto overscroll-contain touch-auto divide-y divide-[#f5f5f5]"
                   align="start"
                   side="bottom"
                   sideOffset={4}
@@ -257,7 +258,7 @@ export function RegistrarAusenciaDialog({
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
                   {filteredPassageiros.length === 0 ? (
-                    <div className="p-3 text-xs text-slate-400 text-center font-medium">
+                    <div className="p-3 text-xs text-[#737373] text-center font-normal">
                       Nenhum aluno encontrado.
                     </div>
                   ) : (
@@ -272,22 +273,22 @@ export function RegistrarAusenciaDialog({
                           type="button"
                           onClick={() => handleSelectPassageiro(p)}
                           className={cn(
-                            "w-full text-left p-3 hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer",
-                            isSelected && "bg-slate-50 font-bold"
+                            "w-full text-left p-2.5 rounded-[14px] hover:bg-[#f5f5f5] transition-colors flex items-center justify-between gap-2 cursor-pointer",
+                            isSelected && "bg-[#f5f5f5] font-semibold text-[#0a0a0a]"
                           )}
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-slate-800 leading-snug truncate">
+                            <p className="text-xs font-semibold text-[#0a0a0a] leading-snug truncate">
                               {p.nome}
                             </p>
 
                             {temTurmaOuEscola && (
-                              <p className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5 truncate">
+                              <p className="text-[10px] text-[#737373] font-normal leading-tight mt-0.5 truncate">
                                 {[p.turma, nomeEscola].filter(Boolean).join(" • ")}
                               </p>
                             )}
                           </div>
-                          {isSelected && <Check className="w-4 h-4 text-[#1a3a5c] shrink-0" />}
+                          {isSelected && <Check className="w-4 h-4 text-[#0a0a0a] shrink-0" />}
                         </button>
                       );
                     })
@@ -296,17 +297,16 @@ export function RegistrarAusenciaDialog({
               </Popover>
 
               {errors.passageiroId && (
-                <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+                <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                   {errors.passageiroId}
                 </p>
               )}
             </div>
           )}
 
-          {/* Campo Rotas */}
-          <div className="space-y-1">
-            <Label className="text-slate-700 font-semibold ml-1">
-              Rotas <span className="text-red-500">*</span>
+          <div className="space-y-1.5">
+            <Label className="text-[13px] font-medium text-[#737373]">
+              Rotas <span className="text-[#e7000b]">*</span>
             </Label>
             <RotaMultiSelect
               rotas={rotasDisponiveis}
@@ -326,13 +326,12 @@ export function RegistrarAusenciaDialog({
               }
             />
             {errors.rotas && (
-              <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+              <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                 {errors.rotas}
               </p>
             )}
           </div>
 
-          {/* Campos de Período (Início e Término com Alternador) */}
           <PeriodoAusenciaCampos
             dataInicio={dataInicio}
             dataFim={dataFim}
@@ -351,17 +350,15 @@ export function RegistrarAusenciaDialog({
             }}
           />
 
-          {/* Checkbox Padronizado: Cadastrar outra em seguida */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <div className="flex items-center gap-2.5 pt-0.5 px-0.5">
             <Checkbox
               id="keepOpenAusencia"
               checked={keepOpen}
               onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
-              className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
             />
             <label
               htmlFor="keepOpenAusencia"
-              className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-xs sm:text-sm select-none"
+              className="text-[13px] text-[#737373] hover:text-[#0a0a0a] font-medium cursor-pointer select-none"
             >
               Cadastrar outra em seguida
             </label>

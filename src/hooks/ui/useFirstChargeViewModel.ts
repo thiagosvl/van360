@@ -45,7 +45,7 @@ export function useFirstChargeViewModel({
   const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "PAYMENT_STATUS");
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [wantsContract, setWantsContract] = useState<boolean>(showContractStep);
+  const [wantsContract, setWantsContract] = useState<boolean>(false);
   const [notificarResponsavel, setNotificarResponsavel] = useState<boolean>(true);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
 
@@ -57,6 +57,16 @@ export function useFirstChargeViewModel({
   const createContrato = useCreateContrato();
   const { openGerarContratoValidadorDialog, openOnboardingSuccessDialog } = useLayout();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(showContractStep ? "CONTRACT_CHECK" : "PAYMENT_STATUS");
+      setPaymentStatus(null);
+      setPaymentMethod("");
+      setWantsContract(false);
+      setNotificarResponsavel(true);
+    }
+  }, [isOpen, showContractStep]);
 
   useEffect(() => {
     if (isOpen && !showContractStep && !showPaymentStep) {
@@ -142,11 +152,14 @@ export function useFirstChargeViewModel({
         openGerarContratoValidadorDialog({
           passageiroId: passageiro.id!,
           initialPassageiro: passageiro,
-          onSuccess: async (id, _bypassed, updatedValues) => {
+          onSuccess: async (id, _bypassed, updatedValues, updatedPassageiro) => {
+            const finalPass = updatedPassageiro || passageiro;
             await createContrato.mutateAsync({
               passageiroId: id,
               valorMensal: updatedValues?.valorMensal,
               diaVencimento: updatedValues?.diaVencimento,
+              dataInicio: finalPass?.data_inicio_transporte || undefined,
+              dataFim: finalPass?.data_fim_transporte || undefined,
               notificarResponsavel: notificarResponsavel === true,
             });
           }

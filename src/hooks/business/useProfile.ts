@@ -23,10 +23,10 @@ export function useProfile(userId?: string) {
     queryKey: ["profile"], 
     queryFn: () => usuarioApi.getProfile(userId!), 
     enabled: !!userId,
-    staleTime: 5000, 
+    staleTime: 5 * 60 * 1000, 
     retry: false,
-    refetchOnWindowFocus: true,     
-    refetchOnMount: true,
+    refetchOnWindowFocus: false,     
+    refetchOnMount: false,
   });
 
   const refreshProfile = useCallback(async () => {

@@ -9,13 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { PassageiroPeriodo } from "@/types/enums";
@@ -147,7 +141,7 @@ export function PassageiroEscolaDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
         title="Editar Escola"
-        icon={<GraduationCap className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<GraduationCap className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
 
@@ -164,48 +158,38 @@ export function PassageiroEscolaDialog({
               control={form.control}
               name="escola_id"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Escola <span className="text-red-500">*</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Escola <span className="text-[#e7000b]">*</span>
                   </FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={(val) => {
-                      if (val === "add-new-school") {
-                        handleAddNewSchool();
-                        return;
-                      }
-                      field.onChange(val);
-                    }}
-                    disabled={isLoadingEscolas}
-                  >
-                    <FormControl>
-                      <div className="relative">
-                        <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <SelectTrigger
-                          className={cn(
-                            "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                            fieldState.error && "border-red-500"
-                          )}
-                        >
-                          <SelectValue placeholder={isLoadingEscolas ? "Carregando escolas..." : "Selecione a escola"} />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent className="max-h-60 overflow-y-auto">
+                  <FormControl>
+                    <NativeSelect
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "add-new-school") {
+                          handleAddNewSchool();
+                          return;
+                        }
+                        field.onChange(val);
+                      }}
+                      disabled={isLoadingEscolas}
+                      icon={<School className="h-4 w-4 text-[#737373]" />}
+                      error={!!fieldState.error}
+                    >
+                      <option value="">
+                        {isLoadingEscolas ? "Carregando escolas..." : "Selecione a escola"}
+                      </option>
                       {escolasList.map((escola) => (
-                        <SelectItem key={escola.id} value={escola.id}>
+                        <option key={escola.id} value={escola.id}>
                           {escola.nome}
-                        </SelectItem>
+                        </option>
                       ))}
-                      <SelectItem
-                        value="add-new-school"
-                        className="font-semibold text-[#1a3a5c] cursor-pointer"
-                      >
+                      <option value="add-new-school">
                         + Cadastrar Escola
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                      </option>
+                    </NativeSelect>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -215,30 +199,24 @@ export function PassageiroEscolaDialog({
               control={form.control}
               name="periodo"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                     Turno / Período
                   </FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <div className="relative">
-                        <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                        <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left">
-                          <SelectValue placeholder="Selecione o turno" />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent>
+                  <FormControl>
+                    <NativeSelect
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      icon={<Clock className="h-4 w-4 text-[#737373]" />}
+                    >
+                      <option value="">Selecionar</option>
                       {periodos.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
+                        <option key={p.value} value={p.value}>
                           {p.label}
-                        </SelectItem>
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </NativeSelect>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -249,18 +227,18 @@ export function PassageiroEscolaDialog({
                 control={form.control}
                 name="turma"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       Turma
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <BookOpen className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <BookOpen className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Ex: 5º Ano B"
                           {...field}
                           value={field.value || ""}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                         />
                       </div>
                     </FormControl>
@@ -273,18 +251,18 @@ export function PassageiroEscolaDialog({
                 control={form.control}
                 name="sala"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       Sala
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <DoorClosed className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <DoorClosed className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
                           placeholder="Ex: Sala 12"
                           {...field}
                           value={field.value || ""}
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                         />
                       </div>
                     </FormControl>
@@ -298,18 +276,18 @@ export function PassageiroEscolaDialog({
               control={form.control}
               name="nome_professor"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                     Professor(a)
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                      <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         placeholder="Ex: Profa. Juliana"
                         {...field}
                         value={field.value || ""}
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                        className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                       />
                     </div>
                   </FormControl>

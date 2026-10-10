@@ -45,6 +45,7 @@ interface ActiveRouteExecutionViewProps {
   totalStops: number;
   progressPercentage: number;
   isPreview?: boolean;
+  onBack?: () => void;
   isVehicleOccupied?: boolean;
   occupiedRouteName?: string;
   iniciarMutation?: any;
@@ -67,6 +68,7 @@ export function ActiveRouteExecutionView({
   totalStops,
   progressPercentage,
   isPreview = false,
+  onBack,
   isVehicleOccupied = false,
   occupiedRouteName = "",
   iniciarMutation,
@@ -485,8 +487,7 @@ export function ActiveRouteExecutionView({
 
       setIsChamadaDialogOpen(false);
       toast.success("Chamada concluída com sucesso!");
-    } catch (err) {
-      // Erro notificado via onError da mutation
+    } catch {
     }
   };
 
@@ -636,6 +637,7 @@ export function ActiveRouteExecutionView({
         concludedStops={concludedStops}
         progressPercentage={progressPercentage}
         isPreview={isPreview}
+        onBack={onBack || (() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES))}
         isVehicleOccupied={isVehicleOccupied}
         occupiedRouteName={occupiedRouteName}
         iniciarMutation={iniciarMutation}

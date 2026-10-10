@@ -1,11 +1,5 @@
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 
 interface StatusFilterProps {
   value: string;
@@ -35,21 +29,24 @@ export function StatusFilter({
   return (
     <div className={className}>
       <div className="space-y-2">
-        <Label htmlFor={id}>{label}</Label>
-        <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger id={id} className="h-11 rounded-xl bg-white border-gray-200">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent className="max-h-60 overflow-y-auto">
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Label htmlFor={id} className="text-xs font-medium text-[#0a0a0a]">
+          {label}
+        </Label>
+        <NativeSelect
+          id={id}
+          value={value}
+          onChange={(e) => onValueChange(e.target.value)}
+        >
+          {placeholder && !options.some(o => o.value === value) && (
+            <option value="" disabled hidden>{placeholder}</option>
+          )}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </NativeSelect>
       </div>
     </div>
   );
 }
-

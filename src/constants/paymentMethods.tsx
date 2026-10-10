@@ -71,7 +71,7 @@ export const PAYMENT_METHODS: PaymentMethodOption[] = [
     value: CobrancaTipoPagamento.BOLETO,
     label: formatPaymentType(CobrancaTipoPagamento.BOLETO),
     icon: <FileText className="w-5 h-5" />,
-    color: "text-slate-600",
+    color: "text-[#737373]",
   },
 ];
 

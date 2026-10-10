@@ -2,7 +2,10 @@ import {
   dateSchema,
   timeSchema,
 } from "@/schemas/common";
-import { PassageiroFormModes } from "@/types/enums";
+import {
+  PassageiroFormModes,
+  ModoCobrancaEnum,
+} from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
@@ -86,6 +89,7 @@ export const passageiroSchema = z
     mes_fim_cobranca: z.string().optional().or(z.literal("")),
     ano_inicio_cobranca: z.string().optional().or(z.literal("")),
     ano_fim_cobranca: z.string().optional().or(z.literal("")),
+    modo_cobranca: z.string().optional().nullable(),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -309,9 +313,8 @@ export function usePassageiroForm({
           ano_letivo: editingPassageiro.ano_letivo?.toString() || getYearFromDate(editingPassageiro.data_inicio_cobranca) || new Date().getFullYear().toString(),
           observacoes: editingPassageiro.observacoes || "",
           escola_id: editingPassageiro.escola_id || "",
-          veiculo_id: editingPassageiro.veiculo_id || "",
-
           ativo: editingPassageiro.ativo,
+          modo_cobranca: editingPassageiro.modo_cobranca || "",
         });
 
         setOpenAccordionItems([
@@ -332,6 +335,7 @@ export function usePassageiroForm({
           ano_inicio_cobranca: preData.ano_inicio_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
           ano_fim_cobranca: preData.ano_fim_cobranca || targetAnoLetivo || new Date().getFullYear().toString(),
           isento: false,
+          modo_cobranca: "",
         });
 
         form.trigger([
@@ -394,6 +398,7 @@ export function usePassageiroForm({
           mes_fim_cobranca: "12",
           ano_inicio_cobranca: new Date().getFullYear().toString(),
           ano_fim_cobranca: new Date().getFullYear().toString(),
+          modo_cobranca: "",
 
           ativo: true,
         });

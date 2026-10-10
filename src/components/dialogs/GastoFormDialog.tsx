@@ -16,15 +16,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateGasto, useUpdateGasto, useVeiculos, useGastoCategorias, useCreateGastoCategoria, useProfile, useSession } from "@/hooks";
+import {
+  useCreateGasto,
+  useUpdateGasto,
+  useVeiculos,
+  useGastoCategorias,
+  useCreateGastoCategoria,
+  useProfile,
+  useSession,
+  safeCloseDialog,
+} from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { GastoEscopoAcao, GastoTipoCalculoParcela } from "@/types/enums";
@@ -41,11 +44,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bus,
   CalendarIcon,
+  ChevronDown,
   Tag,
   TrendingDown,
   Wand2,
-  CalendarRange,
-  Calculator,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -115,7 +117,7 @@ export default function GastoFormDialog({
 
   const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
-  const defaultVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || (veiculos.length === 1 ? veiculos[0].id : "none");
+  const defaultVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || (veiculos.length === 1 ? veiculos[0].id : "");
 
   const isActionLoading = createGasto.isPending || updateGasto.isPending || createCategoriaMutation.isPending;
 
@@ -125,7 +127,7 @@ export default function GastoFormDialog({
       valor: "",
       categoria: "",
       descricao: "",
-      veiculo_id: defaultVeiculoId,
+      veiculo_id: defaultVeiculoId || "",
       parcelado: false,
       parcelas: 2,
       tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -143,7 +145,7 @@ export default function GastoFormDialog({
           data: parseLocalDate(gastoToEdit.data),
           categoria: gastoToEdit.categoria,
           descricao: descLimpa,
-          veiculo_id: gastoToEdit.veiculo_id || defaultVeiculoId,
+          veiculo_id: gastoToEdit.veiculo_id || defaultVeiculoId || "",
           parcelado: false,
           parcelas: 2,
           tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -155,7 +157,7 @@ export default function GastoFormDialog({
           data: undefined,
           categoria: "",
           descricao: "",
-          veiculo_id: defaultVeiculoId,
+          veiculo_id: defaultVeiculoId || "",
           parcelado: false,
           parcelas: 2,
           tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
@@ -165,15 +167,18 @@ export default function GastoFormDialog({
     }
   }, [isOpen, gastoToEdit, form, defaultVeiculoId]);
 
-  // Se houver apenas 1 veículo ou veículo do perfil, autoseleciona automaticamente
   useEffect(() => {
-    if (isOpen && defaultVeiculoId !== "none") {
+    if (isOpen && defaultVeiculoId && defaultVeiculoId !== "none") {
       const currentVal = form.getValues("veiculo_id");
       if (!currentVal || currentVal === "none") {
         form.setValue("veiculo_id", defaultVeiculoId);
       }
     }
   }, [isOpen, defaultVeiculoId, form]);
+
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
 
   const handleSubmit = async (data: GastoFormData) => {
     if (!usuarioId) return;
@@ -185,14 +190,14 @@ export default function GastoFormDialog({
     }
 
     const successCallback = () => {
-      onClose();
+      handleClose();
       if (onSuccess) onSuccess();
     };
 
     const formattedData = {
       ...data,
       valor: moneyToNumber(data.valor),
-      veiculo_id: data.veiculo_id === "none" || !data.veiculo_id ? null : data.veiculo_id,
+      veiculo_id: data.veiculo_id && data.veiculo_id !== "none" ? data.veiculo_id : null,
       parcelado: data.parcelado || false,
       parcelas: data.parcelado ? Number(data.parcelas) : undefined,
       tipo_calculo_parcela: data.parcelado ? data.tipo_calculo_parcela : undefined,
@@ -238,31 +243,31 @@ export default function GastoFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose} lockClose={isActionLoading}>
+    <BaseDialog open={isOpen} onOpenChange={(val) => !val && handleClose()} lockClose={isActionLoading}>
       <BaseDialog.Header
         title={gastoToEdit ? "Editar Gasto" : "Registrar Gasto"}
-        icon={<TrendingDown className="w-5 h-5" />}
-        onClose={onClose}
+        icon={<TrendingDown className="w-5 h-5 text-[#0a0a0a]" />}
+        onClose={handleClose}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95 shadow-sm"
+            className="h-9 w-9 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#e5e5e5] transition-all active:scale-95 shadow-none"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
 
-      <BaseDialog.Body>
+      <BaseDialog.Body className="space-y-4">
         <Form {...form}>
           <form
             id="gasto-form"
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-4 mt-2"
+            className="space-y-4"
           >
             <FormField
               control={form.control}
@@ -272,18 +277,17 @@ export default function GastoFormDialog({
                   field={field}
                   required
                   label="Valor"
-                  className="flex flex-col"
-                  labelClassName="text-slate-700 font-semibold ml-1"
-                  inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                  labelClassName="text-[#0a0a0a] font-medium text-xs"
+                  inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] transition-all"
                 />
               )}
             />
 
             {!gastoToEdit && moneyToNumber(form.watch("valor") || 0) > 0 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                <FormItem className="flex flex-col space-y-2">
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Tipo de Lançamento <span className="text-red-600">*</span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                    Tipo de Lançamento <span className="text-[#e7000b]">*</span>
                   </FormLabel>
                   <FormControl>
                     <Tabs
@@ -301,16 +305,16 @@ export default function GastoFormDialog({
                       }}
                       className="w-full"
                     >
-                      <TabsList className="grid w-full grid-cols-2 h-10 bg-slate-100/80 p-1 rounded-xl">
+                      <TabsList className="grid w-full grid-cols-2 min-h-[38px] sm:min-h-[42px] bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5]">
                         <TabsTrigger
                           value="unico"
-                          className="rounded-lg text-xs font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                          className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer"
                         >
                           Único
                         </TabsTrigger>
                         <TabsTrigger
                           value="parcelado"
-                          className="rounded-lg text-xs font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                          className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer"
                         >
                           Parcelado
                         </TabsTrigger>
@@ -321,32 +325,27 @@ export default function GastoFormDialog({
 
                 {form.watch("parcelado") && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <FormField
                         control={form.control}
                         name="parcelas"
                         render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-slate-700 font-semibold text-xs ml-1">
-                              Quantidade de parcelas <span className="text-red-600">*</span>
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Quantidade de parcelas <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select
-                              value={String(field.value || 2)}
-                              onValueChange={(val) => field.onChange(Number(val))}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-10 rounded-xl bg-gray-50 border-gray-200 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500">
-                                  <SelectValue placeholder="Selecione..." />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="max-h-56">
+                            <FormControl>
+                              <NativeSelect
+                                value={String(field.value || 2)}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              >
                                 {Array.from({ length: 35 }, (_, i) => i + 2).map((num) => (
-                                  <SelectItem key={num} value={String(num)}>
+                                  <option key={num} value={String(num)}>
                                     {num}x
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -354,7 +353,7 @@ export default function GastoFormDialog({
 
                       {form.watch("data") && (
                         <div className="flex flex-col justify-end pb-1 px-1">
-                          <span className="text-slate-500 font-medium text-xs flex items-center gap-1.5 flex-wrap italic">
+                          <span className="text-[#737373] font-medium text-xs flex items-center gap-1.5 flex-wrap italic">
                             Período: {obterTextoPeriodo(form.watch("data"), form.watch("parcelas") || 2)}
                           </span>
                         </div>
@@ -365,78 +364,76 @@ export default function GastoFormDialog({
                       control={form.control}
                       name="tipo_calculo_parcela"
                       render={({ field, fieldState }) => (
-                        <FormItem className="space-y-2 mb-4">
-                          <FormLabel className="text-slate-800 font-bold text-xs ml-1">
-                            Como serão as parcelas? <span className="text-red-600">*</span>
+                        <FormItem className="space-y-1.5 mb-4">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Como serão as parcelas? <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="grid grid-cols-1 gap-2">
-                              {/* Card 1: VALOR DIVIDIDO (DIVIDIR) */}
                               <button
                                 type="button"
                                 onClick={() => field.onChange(GastoTipoCalculoParcela.TOTAL)}
                                 className={cn(
-                                  "w-full text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1",
+                                  "w-full text-left p-3.5 rounded-[18px] border transition-all cursor-pointer flex flex-col gap-1",
                                   field.value === GastoTipoCalculoParcela.TOTAL
-                                    ? "border-[#1a3a5c] bg-blue-50/70 ring-1 ring-[#1a3a5c]/30 shadow-xs"
+                                    ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] shadow-xs"
                                     : fieldState.error
-                                      ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                      : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                      ? "border-[#e7000b]/40 bg-red-50/20 text-[#0a0a0a] hover:bg-red-50/40"
+                                      : "border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
                                 )}
                               >
                                 <div className="flex items-center gap-2.5">
                                   <div className={cn(
-                                    "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                                    "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
                                     field.value === GastoTipoCalculoParcela.TOTAL
-                                      ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                                      ? "border-[#0a0a0a] bg-[#0a0a0a]"
                                       : fieldState.error
-                                        ? "border-red-400 bg-white"
-                                        : "border-slate-300 bg-white"
+                                        ? "border-[#e7000b]/60 bg-white"
+                                        : "border-[#e5e5e5] bg-white"
                                   )}>
                                     {field.value === GastoTipoCalculoParcela.TOTAL && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
-                                  <span className="font-bold text-sm text-[#1a3a5c]">
+                                  <span className="font-semibold text-sm text-[#0a0a0a]">
                                     {form.watch("parcelas")} parcelas de R$ {(
                                       moneyToNumber(form.watch("valor") || "0") / (form.watch("parcelas") || 2)
                                     ).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </span>
                                 </div>
 
-                                <div className="pl-6 text-xs text-slate-500 font-medium">
+                                <div className="pl-6 text-xs text-[#737373] font-normal">
                                   Total: {form.watch("valor") || "R$ 0,00"}
                                 </div>
                               </button>
 
-                              {/* Card 2: VALOR MULTIPLICADO (PARCELA) */}
                               <button
                                 type="button"
                                 onClick={() => field.onChange(GastoTipoCalculoParcela.PARCELA)}
                                 className={cn(
-                                  "w-full text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1",
+                                  "w-full text-left p-3.5 rounded-[18px] border transition-all cursor-pointer flex flex-col gap-1",
                                   field.value === GastoTipoCalculoParcela.PARCELA
-                                    ? "border-[#1a3a5c] bg-blue-50/70 ring-1 ring-[#1a3a5c]/30 shadow-xs"
+                                    ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] shadow-xs"
                                     : fieldState.error
-                                      ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                      : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                      ? "border-[#e7000b]/40 bg-red-50/20 text-[#0a0a0a] hover:bg-red-50/40"
+                                      : "border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
                                 )}
                               >
                                 <div className="flex items-center gap-2.5">
                                   <div className={cn(
-                                    "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                                    "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
                                     field.value === GastoTipoCalculoParcela.PARCELA
-                                      ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                                      ? "border-[#0a0a0a] bg-[#0a0a0a]"
                                       : fieldState.error
-                                        ? "border-red-400 bg-white"
-                                        : "border-slate-300 bg-white"
+                                        ? "border-[#e7000b]/60 bg-white"
+                                        : "border-[#e5e5e5] bg-white"
                                   )}>
                                     {field.value === GastoTipoCalculoParcela.PARCELA && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
-                                  <span className="font-bold text-sm text-[#1a3a5c]">
+                                  <span className="font-semibold text-sm text-[#0a0a0a]">
                                     {form.watch("parcelas")} parcelas de {form.watch("valor") || "R$ 0,00"}
                                   </span>
                                 </div>
 
-                                <div className="pl-6 text-xs text-slate-500 font-medium">
+                                <div className="pl-6 text-xs text-[#737373] font-normal">
                                   Total: R$ {(
                                     moneyToNumber(form.watch("valor") || "0") * (form.watch("parcelas") || 2)
                                   ).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -457,30 +454,29 @@ export default function GastoFormDialog({
               control={form.control}
               name="categoria"
               render={({ field, fieldState }) => (
-                <FormItem className="space-y-2">
-                  <div className="flex justify-between items-center ml-1">
-                    <FormLabel className="text-slate-700 font-semibold">
-                      Categoria <span className="text-red-600">*</span>
+                <FormItem className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Categoria <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     {!isAddingNewCat && (
-                      <Button
+                      <button
                         type="button"
-                        variant="link"
-                        className="h-auto p-0 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                        className="text-xs font-medium text-primary hover:text-primary-hover hover:underline cursor-pointer"
                         onClick={() => setIsAddingNewCat(true)}
                       >
                         + Nova Categoria
-                      </Button>
+                      </button>
                     )}
                   </div>
 
                   {isAddingNewCat ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4 shadow-sm transition-all animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] p-4 shadow-none transition-all animate-in fade-in slide-in-from-top-1 duration-200">
                       <GastoCategoriaForm
                         onSubmit={async ({ nome, cor }) => {
                           const novaCat = await createCategoriaMutation.mutateAsync({
                             nome,
-                            cor,
+                            cor: cor || "slate",
                             icone: "Tag"
                           });
                           field.onChange(novaCat.slug);
@@ -493,50 +489,39 @@ export default function GastoFormDialog({
                       />
                     </div>
                   ) : (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <div className="relative">
-                          <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                              fieldState.error && "border-red-500"
-                            )}
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <SelectValue placeholder="Selecione a categoria" />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        icon={<Tag className="h-4 w-4 text-[#737373]" />}
+                        error={!!fieldState.error}
+                      >
+                        <option value="">Selecionar</option>
                         {isLoadingCategorias ? (
-                          <div className="p-4 text-center text-sm text-slate-400">Carregando...</div>
+                          <option disabled value="">Carregando...</option>
                         ) : (
                           categoriasData?.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.slug}>
+                            <option key={cat.id} value={cat.slug}>
                               {cat.nome}
-                            </SelectItem>
+                            </option>
                           ))
                         )}
-                      </SelectContent>
-                    </Select>
+                      </NativeSelect>
+                    </FormControl>
                   )}
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="data"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Data <span className="text-red-600">*</span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Data <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <Popover
                       open={openCalendar}
@@ -545,30 +530,26 @@ export default function GastoFormDialog({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <div className="relative">
-                            <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                            <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none z-10" />
                             <Button
                               type="button"
                               variant="outline"
                               className={cn(
-                                "w-full pl-12 h-12 text-base rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
-                                !field.value && "text-muted-foreground",
-                                fieldState.error &&
-                                "border-red-500 ring-red-500"
+                                "w-full pl-10 pr-3.5 h-10 sm:h-11 text-sm rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-[#0a0a0a] focus:bg-white focus:border-[#0a0a0a] hover:bg-[#fafafa] justify-between font-normal transition-all shadow-none",
+                                !field.value && "text-[#737373]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                               aria-invalid={!!fieldState.error}
                             >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy")
-                              ) : (
-                                <span className="text-gray-500">
-                                  Selecione a data
-                                </span>
-                              )}
+                              <span className={cn("truncate", !field.value && "text-[#737373]")}>
+                                {field.value ? format(field.value, "dd/MM/yyyy") : "Selecione a data"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#737373]" />
                             </Button>
                           </div>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0 rounded-[24px] border border-[#e5e5e5] bg-white shadow-lg">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -592,44 +573,31 @@ export default function GastoFormDialog({
                 control={form.control}
                 name="veiculo_id"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col space-y-2">
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       Veículo
                     </FormLabel>
-                    <Select
-                      disabled={isLoadingVeiculos || isSubConta}
-                      onValueChange={(val) => {
-                        if (!isSubConta) {
-                          field.onChange(val);
-                        }
-                      }}
-                      value={field.value || defaultVeiculoId || "none"}
-                    >
-                      <FormControl>
-                        <div className="relative">
-                          <Bus className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger
-                            loading={isLoadingVeiculos}
-                            className={cn(
-                              "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left",
-                              isLoadingVeiculos && "bg-gray-100 opacity-80 cursor-not-allowed"
-                            )}
-                          >
-                            <SelectValue placeholder={isLoadingVeiculos ? "Carregando veículos..." : "Selecione um veículo"} />
-                          </SelectTrigger>
-                        </div>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          Não especificar
-                        </SelectItem>
+                    <FormControl>
+                      <NativeSelect
+                        disabled={isLoadingVeiculos || isSubConta}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          if (!isSubConta) {
+                            field.onChange(e.target.value);
+                          }
+                        }}
+                        icon={<Bus className="h-4 w-4 text-[#737373]" />}
+                      >
+                        <option value="">
+                          {isLoadingVeiculos ? "Carregando veículos..." : "Não especificar"}
+                        </option>
                         {veiculos.map((v) => (
-                          <SelectItem key={v.id} value={v.id}>
+                          <option key={v.id} value={v.id}>
                             {v.modelo ? `${v.modelo} (${formatarPlacaExibicao(v.placa)})` : formatarPlacaExibicao(v.placa)}
-                          </SelectItem>
+                          </option>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </NativeSelect>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -643,103 +611,100 @@ export default function GastoFormDialog({
                   control={form.control}
                   name="escopo"
                   render={({ field, fieldState }) => (
-                    <FormItem className="space-y-2 border-t border-slate-100 pt-4">
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Aplicar alterações em: <span className="text-red-600">*</span>
+                    <FormItem className="space-y-2 border-t border-[#e5e5e5] pt-4">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Aplicar alterações em: <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="grid grid-cols-1 gap-2">
-                          {/* Opção 1: Somente esta parcela */}
                           <button
                             type="button"
                             onClick={() => field.onChange(GastoEscopoAcao.UNICA)}
                             className={cn(
-                              "flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all text-sm font-medium cursor-pointer",
+                              "flex items-center gap-3 p-3.5 rounded-[18px] border text-left transition-all text-sm font-medium cursor-pointer",
                               field.value === GastoEscopoAcao.UNICA
-                                ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
+                                ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] shadow-xs"
                                 : fieldState.error
-                                  ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                  : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                  ? "border-[#e7000b]/40 bg-red-50/20 text-[#0a0a0a] hover:bg-red-50/40"
+                                  : "border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
                             )}
                           >
                             <div className={cn(
                               "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
                               field.value === GastoEscopoAcao.UNICA
-                                ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                                ? "border-[#0a0a0a] bg-[#0a0a0a]"
                                 : fieldState.error
-                                  ? "border-red-400 bg-white"
-                                  : "border-slate-300 bg-white"
+                                  ? "border-[#e7000b]/60 bg-white"
+                                  : "border-[#e5e5e5] bg-white"
                             )}>
                               {field.value === GastoEscopoAcao.UNICA && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
                             <div>
-                              <span className="font-semibold block">{detalhesEdicao.unica.titulo}</span>
-                              <span className="text-xs text-slate-500 font-normal leading-relaxed block">{detalhesEdicao.unica.descricao}</span>
+                              <span className="font-semibold text-[#0a0a0a] block">{detalhesEdicao.unica.titulo}</span>
+                              <span className="text-xs text-[#737373] font-normal leading-relaxed block">{detalhesEdicao.unica.descricao}</span>
                             </div>
                           </button>
 
-                          {/* Opção 2: Esta e as próximas parcelas */}
                           {detalhesEdicao.futuras && (
                             <button
                               type="button"
                               onClick={() => field.onChange(GastoEscopoAcao.FUTURAS)}
                               className={cn(
-                                "flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all text-sm font-medium cursor-pointer",
+                                "flex items-center gap-3 p-3.5 rounded-[18px] border text-left transition-all text-sm font-medium cursor-pointer",
                                 field.value === GastoEscopoAcao.FUTURAS
-                                  ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
+                                  ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] shadow-xs"
                                   : fieldState.error
-                                    ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                    : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                    ? "border-[#e7000b]/40 bg-red-50/20 text-[#0a0a0a] hover:bg-red-50/40"
+                                    : "border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
                               )}
                             >
                               <div className={cn(
                                 "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
                                 field.value === GastoEscopoAcao.FUTURAS
-                                  ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                                  ? "border-[#0a0a0a] bg-[#0a0a0a]"
                                   : fieldState.error
-                                    ? "border-red-400 bg-white"
-                                    : "border-slate-300 bg-white"
+                                    ? "border-[#e7000b]/60 bg-white"
+                                    : "border-[#e5e5e5] bg-white"
                               )}>
                                 {field.value === GastoEscopoAcao.FUTURAS && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                               </div>
                               <div>
-                                <span className="font-semibold block">{detalhesEdicao.futuras.titulo}</span>
-                                <span className="text-xs text-slate-500 font-normal leading-relaxed block">{detalhesEdicao.futuras.descricao}</span>
+                                <span className="font-semibold text-[#0a0a0a] block">{detalhesEdicao.futuras.titulo}</span>
+                                <span className="text-xs text-[#737373] font-normal leading-relaxed block">{detalhesEdicao.futuras.descricao}</span>
                               </div>
                             </button>
                           )}
 
-                          {/* Opção 3: Todas as parcelas */}
                           <button
                             type="button"
                             onClick={() => field.onChange(GastoEscopoAcao.TODAS)}
                             className={cn(
-                              "flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all text-sm font-medium cursor-pointer",
+                              "flex items-center gap-3 p-3.5 rounded-[18px] border text-left transition-all text-sm font-medium cursor-pointer",
                               field.value === GastoEscopoAcao.TODAS
-                                ? "border-[#1a3a5c] bg-blue-50/70 text-[#1a3a5c] shadow-xs ring-1 ring-[#1a3a5c]/30"
+                                ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a] bg-[#fafafa] shadow-xs"
                                 : fieldState.error
-                                  ? "border-red-400 bg-red-50/20 text-slate-700 hover:bg-red-50/40 ring-1 ring-red-400/30"
-                                  : "border-gray-200 bg-gray-50 text-slate-700 hover:bg-gray-100/80"
+                                  ? "border-[#e7000b]/40 bg-red-50/20 text-[#0a0a0a] hover:bg-red-50/40"
+                                  : "border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
                             )}
                           >
                             <div className={cn(
                               "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
                               field.value === GastoEscopoAcao.TODAS
-                                ? "border-[#1a3a5c] bg-[#1a3a5c]"
+                                ? "border-[#0a0a0a] bg-[#0a0a0a]"
                                 : fieldState.error
-                                  ? "border-red-400 bg-white"
-                                  : "border-slate-300 bg-white"
+                                  ? "border-[#e7000b]/60 bg-white"
+                                  : "border-[#e5e5e5] bg-white"
                             )}>
                               {field.value === GastoEscopoAcao.TODAS && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
                             <div>
-                              <span className="font-semibold block">{detalhesEdicao.todas.titulo}</span>
-                              <span className="text-xs text-slate-500 font-normal leading-relaxed block">{detalhesEdicao.todas.descricao}</span>
+                              <span className="font-semibold text-[#0a0a0a] block">{detalhesEdicao.todas.titulo}</span>
+                              <span className="text-xs text-[#737373] font-normal leading-relaxed block">{detalhesEdicao.todas.descricao}</span>
                             </div>
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-xs text-red-500 font-medium mt-1.5 ml-1" />
+                      <FormMessage className="text-xs text-[#e7000b] font-medium mt-1.5 ml-1" />
                     </FormItem>
                   )}
                 />
@@ -750,15 +715,15 @@ export default function GastoFormDialog({
               control={form.control}
               name="descricao"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                     Observação
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       placeholder="Detalhes do gasto (opcional)"
-                      className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all resize-none"
+                      className="min-h-[80px] p-3.5 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] transition-all resize-none"
                       aria-invalid={!!fieldState.error}
                     />
                   </FormControl>
@@ -774,7 +739,7 @@ export default function GastoFormDialog({
         <BaseDialog.Action
           label="Cancelar"
           variant="secondary"
-          onClick={onClose}
+          onClick={handleClose}
           disabled={isActionLoading}
         />
         <BaseDialog.Action

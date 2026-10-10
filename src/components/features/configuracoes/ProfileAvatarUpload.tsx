@@ -99,9 +99,9 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
           aria-label={logoUrl ? "Alterar logotipo da van" : "Adicionar logotipo da van"}
           title={canEdit ? (logoUrl ? "Clique para alterar o logotipo" : "Clique para adicionar o logotipo") : undefined}
           className={cn(
-            "h-16 w-16 sm:h-18 sm:w-18 rounded-full border border-slate-200 text-[#1a3a5c] flex items-center justify-center font-bold text-xl sm:text-2xl shadow-xs overflow-hidden transition-all relative",
-            logoUrl ? "bg-white" : "bg-slate-100",
-            canEdit && !isBusy && "cursor-pointer group hover:ring-2 hover:ring-[#1a3a5c]/20 hover:border-[#1a3a5c]/40 active:scale-95",
+            "h-16 w-16 sm:h-18 sm:w-18 rounded-full border border-[#e5e5e5] text-[#0a0a0a] flex items-center justify-center font-semibold text-xl sm:text-2xl shadow-none overflow-hidden transition-all relative",
+            logoUrl ? "bg-white" : "bg-[#f5f5f5]",
+            canEdit && !isBusy && "cursor-pointer group hover:ring-2 hover:ring-[#0a0a0a]/10 hover:border-[#0a0a0a]/40 active:scale-95",
             (!canEdit || isBusy) && "cursor-default"
           )}
         >
@@ -109,19 +109,19 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
             <img
               src={logoUrl}
               alt={displayName}
-              className="h-full w-full object-contain p-1 transition-opacity group-hover:opacity-90"
+              className="h-full w-full object-cover rounded-full transition-opacity group-hover:opacity-90"
             />
           ) : canEdit ? (
-            <div className="flex flex-col items-center justify-center leading-tight text-center select-none text-slate-500 group-hover:text-[#1a3a5c] transition-colors px-1">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-tight">Seu</span>
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-tight">Logo</span>
+            <div className="flex flex-col items-center justify-center leading-tight text-center select-none text-[#737373] group-hover:text-[#0a0a0a] transition-colors px-1">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-tight">Seu</span>
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-tight">Logo</span>
             </div>
           ) : (
             <span className="transition-opacity group-hover:opacity-80">{userInitials}</span>
           )}
 
           {isBusy && (
-            <div className="absolute inset-0 bg-slate-900/60 rounded-full flex items-center justify-center text-white z-10 backdrop-blur-[1px]">
+            <div className="absolute inset-0 bg-[#0a0a0a]/60 rounded-full flex items-center justify-center text-white z-10 backdrop-blur-[1px]">
               <Loader2 className="w-6 h-6 animate-spin text-white" />
             </div>
           )}
@@ -136,9 +136,9 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
             }}
             aria-label={logoUrl ? "Alterar logotipo da van" : "Adicionar logotipo da van"}
             title={logoUrl ? "Alterar logotipo" : "Adicionar logotipo"}
-            className="absolute -bottom-1 -right-1 sm:bottom-0 sm:right-0 translate-y-[3px] h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-[#1a3a5c] text-white flex items-center justify-center ring-2 ring-white shadow-xs hover:bg-[#152e4a] active:scale-90 transition-all cursor-pointer z-10"
+            className="absolute -bottom-1 -right-1 sm:bottom-0 sm:right-0 translate-y-[3px] h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center ring-2 ring-white shadow-xs hover:bg-primary-hover active:scale-90 transition-all cursor-pointer z-10"
           >
-            <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+            <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground" />
           </button>
         )}
       </div>

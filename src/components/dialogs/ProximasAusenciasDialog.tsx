@@ -384,38 +384,38 @@ export function ProximasAusenciasDialog({
     return (
       <div
         key={aluno.id}
-        className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-3 transition-all"
+        className="bg-white border border-[#e5e5e5] rounded-[18px] p-3 shadow-xs flex items-center gap-3 transition-all"
       >
-        <Avatar className="w-8 h-8 shrink-0 border border-slate-200/60">
-          <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
+        <Avatar className="w-8 h-8 shrink-0 border border-[#e5e5e5]">
+          <AvatarFallback className="text-[10px] font-semibold bg-[#f5f5f5] text-[#0a0a0a]">
             {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
+            <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate">
               {formatShortName(aluno.nome, true)}
             </span>
             {aluno.turma && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] shrink-0">
                 {aluno.turma}
               </span>
             )}
           </div>
 
           {(respName || aluno.escolaNome) && (
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium truncate mt-0.5">
+            <div className="flex items-center gap-1.5 text-[11px] text-[#737373] font-normal truncate mt-0.5">
               {respName && (
                 <>
-                  <span className="truncate text-slate-500">
+                  <span className="truncate text-[#737373]">
                     {respName}
                   </span>
-                  {aluno.escolaNome && <span className="text-slate-300">•</span>}
+                  {aluno.escolaNome && <span className="text-[#d4d4d4]">•</span>}
                 </>
               )}
               {aluno.escolaNome && (
-                <span className="truncate text-slate-400">
+                <span className="truncate text-[#737373]">
                   {aluno.escolaNome}
                 </span>
               )}
@@ -443,31 +443,29 @@ export function ProximasAusenciasDialog({
       />
 
       <BaseDialog.Body className="p-4 sm:p-6 space-y-4">
-        {/* Accordion / Colapso de Registrar Ausência no topo */}
-        <div className="border border-slate-200/90 rounded-2xl p-3 bg-slate-50/70 transition-all">
+        <div className="border border-[#e5e5e5] rounded-[24px] p-3.5 bg-white shadow-xs transition-all">
           <button
             type="button"
             onClick={() => setIsRegisterOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between text-xs sm:text-sm font-bold text-[#1a3a5c] cursor-pointer"
+            className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#0a0a0a] cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shadow-2xs">
+              <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center border border-[#e5e5e5]">
                 <UserPlus className="w-4 h-4" />
               </div>
               <span>Registrar Ausência</span>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+            <div className="flex items-center gap-1.5 text-[#737373] text-xs">
               <span>{isRegisterOpen ? "Fechar" : "Nova"}</span>
               <ChevronDown className={cn("w-4 h-4 transition-transform", isRegisterOpen && "rotate-180")} />
             </div>
           </button>
 
           {isRegisterOpen && (
-            <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-              {/* Campo Aluno */}
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700">
-                  Aluno <span className="text-red-500">*</span>
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5] space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-medium text-[#737373]">
+                  Aluno <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div ref={alunoSearchContainerRef} className="relative">
                   <input
@@ -493,39 +491,39 @@ export function ProximasAusenciasDialog({
                       }
                     }}
                     className={cn(
-                      "w-full h-10 pl-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] placeholder:text-slate-400 placeholder:font-normal transition-colors",
-                      formErrors.passageiroId && "border-red-500"
+                      "w-full h-11 pl-3.5 pr-9 rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] text-sm text-[#0a0a0a] font-normal focus:outline-none focus:bg-white focus:border-[#0a0a0a] placeholder:text-[#737373] transition-colors",
+                      formErrors.passageiroId && "border-[#e7000b]"
                     )}
                   />
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     {isLoadingAlunos || isLoadingRotasAluno ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#737373]" />
                     ) : alunoSelecionado ? (
                       <button
                         type="button"
                         onClick={handleClearAluno}
-                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                        className="text-[#737373] hover:text-[#0a0a0a] cursor-pointer p-0.5"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     ) : (
-                      <Search className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                      <Search className="w-3.5 h-3.5 text-[#737373] pointer-events-none" />
                     )}
                   </div>
 
                   {isDropdownOpen && !alunoSelecionado && searchAluno.trim().length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute left-0 right-0 top-full mt-1.5 p-1 bg-white border border-[#e5e5e5] rounded-[18px] shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-[#f5f5f5] animate-in fade-in slide-in-from-top-1 duration-150">
                       {searchAluno.trim().length < 3 ? (
-                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                        <div className="p-3 text-[11px] text-[#737373] text-center font-normal">
                           Digite pelo menos 3 letras para buscar...
                         </div>
                       ) : isLoadingAlunos ? (
-                        <div className="p-3 text-[11px] text-slate-500 text-center flex items-center justify-center gap-2">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                        <div className="p-3 text-[11px] text-[#737373] text-center flex items-center justify-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                           <span>Buscando alunos...</span>
                         </div>
                       ) : alunosEncontrados.length === 0 ? (
-                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                        <div className="p-3 text-[11px] text-[#737373] text-center font-normal">
                           Nenhum aluno encontrado{activeRotaIdForSearch ? " nesta rota" : ""}.
                         </div>
                       ) : (
@@ -542,36 +540,36 @@ export function ProximasAusenciasDialog({
                                 handleSelectAluno(aluno);
                               }}
                               className={cn(
-                                "w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 cursor-pointer",
-                                isSelected && "bg-slate-100 font-bold text-[#1a3a5c]"
+                                "w-full text-left px-3 py-2 text-xs rounded-[14px] hover:bg-[#f5f5f5] transition-colors flex items-center justify-between gap-2 cursor-pointer",
+                                isSelected && "bg-[#f5f5f5] font-semibold text-[#0a0a0a]"
                               )}
                             >
                               <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="truncate font-semibold text-slate-800">
+                                  <span className="truncate font-semibold text-[#0a0a0a]">
                                     {formatShortName(aluno.nome, true)}
                                   </span>
                                   {aluno.turma && (
-                                    <span className="text-[10px] text-slate-500 font-medium px-1.5 py-0.2 rounded bg-slate-100 border border-slate-200/50 shrink-0">
+                                    <span className="text-[10px] text-[#737373] font-medium px-1.5 py-0.2 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] shrink-0">
                                       {aluno.turma}
                                     </span>
                                   )}
                                 </div>
                                 {(respName || aluno.escola_nome) && (
-                                  <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                  <div className="flex items-center gap-1 text-[10px] text-[#737373] font-normal truncate mt-0.5">
                                     {respName && (
                                       <>
-                                        <span className="text-slate-500 truncate">{respName}</span>
-                                        {aluno.escola_nome && <span className="text-slate-300">•</span>}
+                                        <span className="text-[#737373] truncate">{respName}</span>
+                                        {aluno.escola_nome && <span className="text-[#d4d4d4]">•</span>}
                                       </>
                                     )}
                                     {aluno.escola_nome && (
-                                      <span className="truncate text-slate-400">{aluno.escola_nome}</span>
+                                      <span className="truncate text-[#737373]">{aluno.escola_nome}</span>
                                     )}
                                   </div>
                                 )}
                               </div>
-                              {isSelected && <Check className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#0a0a0a] shrink-0" />}
                             </button>
                           );
                         })
@@ -579,10 +577,9 @@ export function ProximasAusenciasDialog({
                     </div>
                   )}
                 </div>
-                {formErrors.passageiroId && <p className="text-[11px] text-red-500 font-medium">{formErrors.passageiroId}</p>}
+                {formErrors.passageiroId && <p className="text-[11px] text-[#e7000b] font-medium">{formErrors.passageiroId}</p>}
               </div>
 
-              {/* Se o aluno foi selecionado e não tem rotas */}
               {alunoSelecionado && !isLoadingRotasAluno && alunoRotas.length === 0 && !lockedRotaId && (
                 <Banner
                   variant="warning"
@@ -590,11 +587,10 @@ export function ProximasAusenciasDialog({
                 />
               )}
 
-              {/* Campo Rotas (MultiSelect com Checkbox quadrado) */}
               {!lockedRotaId && (
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-700">
-                    Rotas <span className="text-red-500">*</span>
+                <div className="space-y-1.5">
+                  <Label className="text-[13px] font-medium text-[#737373]">
+                    Rotas <span className="text-[#e7000b]">*</span>
                   </Label>
                   <RotaMultiSelect
                     rotas={rotasDisponiveis}
@@ -613,11 +609,10 @@ export function ProximasAusenciasDialog({
                         : "Selecione a(s) rota(s)"
                     }
                   />
-                  {formErrors.rotas && <p className="text-[11px] text-red-500 font-medium">{formErrors.rotas}</p>}
+                  {formErrors.rotas && <p className="text-[11px] text-[#e7000b] font-medium">{formErrors.rotas}</p>}
                 </div>
               )}
 
-              {/* Campos de Período (Apenas 1 dia / Período com dias úteis) */}
               <PeriodoAusenciaCampos
                 dataInicio={dataInicio}
                 dataFim={dataFim}
@@ -635,28 +630,25 @@ export function ProximasAusenciasDialog({
                 }}
               />
 
-              {/* Checkbox Padronizado: Cadastrar outra em seguida */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-2.5 pt-0.5 px-0.5">
                 <Checkbox
                   id="keepOpenProximasAusencias"
                   checked={keepOpen}
                   onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
-                  className="data-[state=checked]:bg-[#1a3a5c] data-[state=checked]:border-[#1a3a5c]"
                 />
                 <label
                   htmlFor="keepOpenProximasAusencias"
-                  className="text-xs text-slate-700 font-medium cursor-pointer select-none"
+                  className="text-[13px] text-[#737373] hover:text-[#0a0a0a] font-medium cursor-pointer select-none"
                 >
                   Cadastrar outra em seguida
                 </label>
               </div>
 
-              {/* Botão Salvar */}
               <Button
                 type="button"
                 onClick={handleSalvarAusencia}
                 disabled={registrarMutation.isPending}
-                className="w-full h-10 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                className="w-full h-11 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-[18px] transition-all active:scale-95 cursor-pointer shadow-xs flex items-center justify-center gap-2 border-none"
               >
                 {registrarMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -675,17 +667,25 @@ export function ProximasAusenciasDialog({
             onValueChange={(val) => setActiveTab(val as TabMode)}
             className="w-full"
           >
-            <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-              <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
+            <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5]">
+              <TabsList className="grid grid-cols-2 w-full min-h-[38px] sm:min-h-[42px] bg-transparent p-0 gap-1 mt-0 border-0">
                 <TabsTrigger
                   value="dia"
-                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                  className={cn(
+                    "w-full rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
+                    "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                    "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                  )}
                 >
                   Por Dia
                 </TabsTrigger>
                 <TabsTrigger
                   value="rota"
-                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                  className={cn(
+                    "w-full rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
+                    "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                    "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                  )}
                 >
                   Por Rota
                 </TabsTrigger>
@@ -698,22 +698,22 @@ export function ProximasAusenciasDialog({
           {isCarregandoAusencias ? (
             <div className="space-y-4 py-2">
               <div className="space-y-2">
-                <Skeleton className="h-5 w-28 rounded-lg" />
-                <div className="pl-3.5 ml-1 border-l-2 border-slate-100 space-y-2">
-                  <Skeleton className="h-11 w-full rounded-xl" />
-                  <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="h-5 w-28 rounded-[12px]" />
+                <div className="pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-2">
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Skeleton className="h-5 w-28 rounded-lg" />
-                <div className="pl-3.5 ml-1 border-l-2 border-slate-100 space-y-2">
-                  <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="h-5 w-28 rounded-[12px]" />
+                <div className="pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-2">
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
                 </div>
               </div>
             </div>
           ) : isError ? (
             <div className="py-8 text-center space-y-2">
-              <p className="text-xs sm:text-sm font-medium text-rose-500">
+              <p className="text-xs sm:text-sm font-medium text-[#e7000b]">
                 Ocorreu um erro ao carregar as ausências. Tente novamente mais tarde.
               </p>
             </div>
@@ -722,21 +722,19 @@ export function ProximasAusenciasDialog({
               icon={CalendarCheck2}
               title="Nenhuma ausência futura"
               description="Todos os alunos estão confirmados para os próximos dias de rota."
-              className="my-2 border-slate-200/80 bg-slate-50/50"
-              iconClassName="text-emerald-500"
             />
           ) : lockedRotaId ? (
             <div className="space-y-4">
               {treePorDia.map((grupoDia) => (
                 <div key={grupoDia.dataStr} className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#1a3a5c] shrink-0" />
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className="w-2 h-2 rounded-full bg-[#0a0a0a] shrink-0" />
+                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
                       {grupoDia.dataLabel}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-1 border-l-2 border-slate-200/80 space-y-1.5">
+                  <div className="relative pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-1.5">
                     {grupoDia.rotas.flatMap((r) => r.alunos).map(renderAlunoCard)}
                   </div>
                 </div>
@@ -747,19 +745,19 @@ export function ProximasAusenciasDialog({
               {treePorDia.map((grupoDia) => (
                 <div key={grupoDia.dataStr} className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
                       <Calendar className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
                       {grupoDia.dataLabel}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-3 border-l-2 border-slate-200/80 space-y-3">
+                  <div className="relative pl-3.5 ml-3 border-l-2 border-[#e5e5e5] space-y-3">
                     {grupoDia.rotas.map((rota) => (
                       <div key={rota.rotaId} className="space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-semibold">
-                          <Bus className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] text-[11px] font-medium">
+                          <Bus className="w-3 h-3 text-[#0a0a0a] shrink-0" />
                           <span className="truncate max-w-[220px] sm:max-w-none">{rota.rotaNome}</span>
                         </div>
 
@@ -777,19 +775,19 @@ export function ProximasAusenciasDialog({
               {treePorRota.map((grupoRota) => (
                 <div key={grupoRota.rotaId} className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
                       <Bus className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate">
                       {grupoRota.rotaNome}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-3 border-l-2 border-slate-200/80 space-y-3">
+                  <div className="relative pl-3.5 ml-3 border-l-2 border-[#e5e5e5] space-y-3">
                     {grupoRota.dias.map((dia) => (
                       <div key={dia.dataStr} className="space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-semibold">
-                          <Calendar className="w-3.5 h-3.5" />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] text-[11px] font-medium">
+                          <Calendar className="w-3.5 h-3.5 text-[#0a0a0a]" />
                           <span>{dia.dataLabel}</span>
                         </div>
 

@@ -6,7 +6,7 @@ import { NavigateFunction } from "react-router-dom";
 import { VeiculoSummary } from "./VeiculoSummary";
 
 interface VeiculoActionsMenuProps {
-  veiculo: Veiculo;
+  veiculo: Veiculo & { passageiros_ativos_count?: number };
   navigate: NavigateFunction;
   onEdit: (veiculo: Veiculo) => void;
   onToggleAtivo: (veiculo: Veiculo) => void;

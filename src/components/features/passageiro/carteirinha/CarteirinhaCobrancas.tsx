@@ -27,7 +27,9 @@ import {
   Plus,
   ShieldCheck,
   MessageSquare,
+  SlidersHorizontal,
 } from "lucide-react";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { UnifiedEmptyState } from "@/components/empty";
 import { forwardRef } from "react";
@@ -82,6 +84,8 @@ export const CarteirinhaCobrancas = ({
   const selectedYear = Number(yearFilter) || currentYear;
 
   const { openAnnualReceiptDialog, openPassageiroFormDialog, openPassageiroFinanceiroDialog } = useLayout();
+  const { can } = usePermissions();
+  const canManageFinancials = can("passageiros.gerenciar") || can("cobrancas.gerenciar");
   const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
     passageiro,
     selectedYear,
@@ -204,6 +208,7 @@ export const CarteirinhaCobrancas = ({
 
   const hasRetroactiveMonths = availableRetroMonths.length > 0;
   const isIncomplete = isPassageiroIncompleto(passageiro);
+  const showAjusteBanner = !passageiro.isento && isIncomplete;
 
 
   const emptyStateInfo = useMemo(() => {
@@ -332,30 +337,39 @@ export const CarteirinhaCobrancas = ({
         />
       )}
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none px-2">
-            {`${displayCobrancas.length} ${displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}`}
-          </span>
+      {((canManageFinancials && !showAjusteBanner) || hasRetroactiveMonths) && (
+        <div className="flex items-center justify-between gap-3 min-h-[32px]">
+          <div>
+            {canManageFinancials && !showAjusteBanner && (
+              <button
+                type="button"
+                onClick={() => openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess })}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group py-1"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
+                <span>Ajustar Condições</span>
+              </button>
+            )}
+          </div>
+
+          {hasRetroactiveMonths && (
+            <Button
+              type="button"
+              onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
+              className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold text-xs h-8 px-3.5 rounded-[18px] shadow-xs transition-all active:scale-95 shrink-0 gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Registrar Parcela</span>
+            </Button>
+          )}
         </div>
+      )}
 
-        {hasRetroactiveMonths && (
-          <Button
-            type="button"
-            onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
-            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-semibold text-xs h-8 px-3 rounded-lg shadow-sm transition-all active:scale-95 shrink-0"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            <span>Registrar Parcela</span>
-          </Button>
-        )}
-      </div>
-
-      {!passageiro.isento && isIncomplete && (
+      {showAjusteBanner && (
         <Banner
           variant="info"
           title="Ajuste as parcelas do aluno"
-          description="Esta lista é uma prévia do ano e você pode ajustar. Preencha o valor e o vencimento para exibir corretamente e ativar as cobranças."
+          description="Esta lista é uma prévia do ano e você pode ajustar. Preencha o valor e o vencimento para exibir as parcelas corretamente."
           action={{
             label: "Ajustar parcelas",
             onClick: () =>
@@ -480,16 +494,16 @@ const CobrancaItemPassageiro = forwardRef<
   const valorExibicao = getCobrancaValorExibicao(cobranca);
 
   const statusColor = isCancelada
-    ? "bg-slate-100 text-slate-600"
+    ? "bg-[#f5f5f5] text-[#737373]"
     : isPaid
       ? "bg-emerald-50 text-emerald-600"
       : isAtrasado
-        ? "bg-red-50 text-red-600"
+        ? "bg-red-50 text-[#e7000b]"
         : "bg-amber-50 text-amber-600";
 
   const respPrincipal = passageiro.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
-  const onEnviarCobranca = !isCancelada && telefoneResponsavel && !cobranca.isProjection
+  const onEnviarCobranca = !isCancelada && telefoneResponsavel && !isIncomplete && (valorExibicao > 0 || !cobranca.isProjection)
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
       nomeResponsavel: formatNomeResponsavelCompletoExibicao(respPrincipal?.nome),
@@ -508,7 +522,7 @@ const CobrancaItemPassageiro = forwardRef<
 
   const handleIncompletePaymentClick = () => {
     openConfirmationDialog({
-      title: "Valor da parcela não configurado",
+      title: "Valor das parcelas não configurado",
       description:
         "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
       confirmText: "Configurar agora",
@@ -542,7 +556,7 @@ const CobrancaItemPassageiro = forwardRef<
     onExcluirCobranca: isCancelada ? undefined : () => onExcluirCobranca(cobranca),
     onDesfazerPagamento: cobranca.isProjection || isCancelada ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined),
     onVerRecibo: cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined),
-    onEnviarCobranca: cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca,
+    onEnviarCobranca: isCancelada ? undefined : onEnviarCobranca,
     showHistory: cobranca.isProjection ? false : true,
     onActionSuccess,
   });
@@ -570,35 +584,35 @@ const CobrancaItemPassageiro = forwardRef<
         <div
           onClick={cobranca.isProjection && isIncomplete ? handleIncompletePaymentClick : undefined}
           className={cn(
-            "p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-white border-gray-100/50 relative",
+            "p-3.5 rounded-[18px] sm:rounded-[20px] shadow-xs flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border bg-[#ffffff] border-[#e5e5e5] relative hover:border-[#d4d4d4]",
             cobranca.isProjection && "cursor-pointer"
           )}
         >
           <div className={cn(
-            "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-headline font-bold text-sm text-white shadow-sm",
-            isCancelada ? "bg-slate-400" :
-              isPaid ? "bg-emerald-500" :
-                isAtrasado ? "bg-red-500" :
-                  "bg-amber-500"
+            "flex-shrink-0 w-9 h-9 rounded-[14px] flex items-center justify-center shrink-0 border transition-colors",
+            isCancelada ? "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]" :
+              isPaid ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                isAtrasado ? "bg-red-50 text-[#e7000b] border-red-100" :
+                  "bg-amber-50 text-amber-600 border-amber-100"
           )}>
-            {isCancelada ? <Clock className="h-4 w-4 text-white" /> :
-              isPaid ? <CheckCircle2 className="h-4 w-4 text-white" /> :
-                isAtrasado ? <AlertCircle className="h-4 w-4 text-white" /> :
-                  <Clock className="h-4 w-4 text-white" />}
+            {isCancelada ? <Clock className="h-4 w-4" /> :
+              isPaid ? <CheckCircle2 className="h-4 w-4" /> :
+                isAtrasado ? <AlertCircle className="h-4 w-4" /> :
+                  <Clock className="h-4 w-4" />}
           </div>
 
           <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
             <div className="flex items-center gap-1.5 min-w-0">
-              <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+              <p className="font-bold text-[#0a0a0a] text-sm truncate leading-tight">
                 {getMesNome(cobranca.mes)}
                 {cobranca.ano && cobranca.ano !== (selectedYear || passageiro.ano_letivo) ? `/${cobranca.ano}` : ""}
               </p>
               {cobranca.observacao?.trim() && (
-                <MessageSquare className="h-3 w-3 text-slate-400 shrink-0" />
+                <MessageSquare className="h-3 w-3 text-[#737373] shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-[10px] text-gray-500 font-medium leading-snug opacity-70 break-words line-clamp-2">
+              <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">
                 {isCancelada
                   ? `Venc. ${formatDateToBR(cobranca.data_vencimento)}`
                   : isPaid
@@ -613,8 +627,8 @@ const CobrancaItemPassageiro = forwardRef<
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
-            <div className="flex flex-col items-end gap-1">
-              <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+            <div className="flex flex-col items-center sm:items-end gap-1">
+              <p className="font-bold text-[#0a0a0a] text-[13px] sm:text-sm leading-none tabular-nums mb-0.5 text-center sm:text-right">
                 {valorExibicao > 0
                   ? valorExibicao.toLocaleString("pt-BR", {
                     style: "currency",
@@ -623,22 +637,39 @@ const CobrancaItemPassageiro = forwardRef<
                   : "R$ --"}
               </p>
               {cobranca.repasse_em_processamento ? (
-                <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-blue-200 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-blue-50 text-blue-700 animate-pulse">
-                  Processando
-                </span>
+                <>
+                  <span className="sm:hidden font-bold text-[8px] h-3.5 px-1.5 rounded-[18px] border border-blue-200 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-blue-50 text-blue-700 animate-pulse">
+                    Processando
+                  </span>
+                  <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
+                    Processando Repasse
+                  </span>
+                </>
               ) : isParcial ? (
-                <span className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
-                  Parcial
-                </span>
+                <>
+                  <span className="sm:hidden font-bold text-[8px] h-3.5 px-1.5 rounded-[18px] border border-amber-200/60 uppercase tracking-widest whitespace-nowrap leading-none flex items-center bg-amber-50 text-amber-700">
+                    Parcial
+                  </span>
+                  <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/60">
+                    Parcial
+                  </span>
+                </>
               ) : (
-                <StatusBadge
-                  status={cobranca.status}
-                  dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
-                  className={cn(
-                    "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                    statusColor
-                  )}
-                />
+                <>
+                  <StatusBadge
+                    status={cobranca.status}
+                    dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
+                    className={cn(
+                      "sm:hidden font-bold text-[8px] h-3.5 px-1.5 rounded-[18px] border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                      statusColor
+                    )}
+                  />
+                  <StatusBadge
+                    status={cobranca.status}
+                    dataVencimento={isIncomplete || isCancelada ? undefined : cobranca.data_vencimento}
+                    className="hidden sm:inline-flex"
+                  />
+                </>
               )}
             </div>
 
@@ -659,7 +690,7 @@ const CobrancaItemPassageiro = forwardRef<
                 onExcluirCobranca={isCancelada ? undefined : () => onExcluirCobranca(cobranca)}
                 onDesfazerPagamento={cobranca.isProjection || isCancelada ? undefined : (onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined)}
                 onVerRecibo={cobranca.isProjection || isCancelada ? undefined : (cobranca.recibo_url ? () => onVerRecibo(cobranca.recibo_url!, cobranca) : undefined)}
-                onEnviarCobranca={cobranca.isProjection || isCancelada ? undefined : onEnviarCobranca}
+                onEnviarCobranca={isCancelada ? undefined : onEnviarCobranca}
                 onActionSuccess={onActionSuccess}
               />
             </div>
@@ -684,17 +715,17 @@ const MiniKPI = ({
   colorClass: string;
   icon: React.ReactNode;
 }) => (
-  <div className={cn("rounded-2xl p-2 sm:p-3 text-center min-w-0 flex flex-col items-center justify-center", colorClass)}>
+  <div className={cn("rounded-[18px] sm:rounded-[20px] p-2.5 sm:p-3 text-center min-w-0 flex flex-col items-center justify-center border border-[#e5e5e5] bg-[#ffffff] shadow-xs", colorClass)}>
     <div className="flex items-center justify-center gap-1 mb-1 max-w-full">
       {icon}
-      <span className="text-[8px] font-bold uppercase tracking-wider opacity-70 whitespace-nowrap">
+      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#737373] whitespace-nowrap">
         {label}
       </span>
     </div>
-    <span className="text-xs max-[320px]:text-[10px] font-headline font-bold text-[#1a3a5c] block tabular-nums truncate w-full">
+    <span className="text-xs sm:text-sm max-[320px]:text-[10px] font-bold text-[#0a0a0a] block tabular-nums truncate w-full">
       {value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
     </span>
-    <span className="text-[9px] font-semibold text-slate-400 block mt-0.5 truncate w-full">
+    <span className="text-[9px] font-medium text-[#737373] block mt-0.5 truncate w-full">
       {count} {count === 1 ? "parcela" : "parcelas"}
     </span>
   </div>

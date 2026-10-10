@@ -284,11 +284,11 @@ export default function EscolaFormDialog({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95 shadow-sm"
+            className="h-9 w-9 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#eeeeee] transition-all active:scale-95 shadow-none"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
@@ -297,7 +297,7 @@ export default function EscolaFormDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-4 pb-6"
+            className="space-y-4 pb-4"
           >
             <div className="space-y-4">
               <FormField
@@ -305,24 +305,24 @@ export default function EscolaFormDialog({
                 name="nome"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Nome da Escola <span className="text-red-600">*</span>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs ml-0.5">
+                      Nome da Escola <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                        <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373]" />
                         <Input
                           {...field}
                           placeholder="Ex.: Santa Maria"
-                          className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base transition-all"
+                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] transition-all"
                           aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
-                    <p className="text-xs text-slate-500 mt-1.5 ml-1">
-                      Use o nome como você costuma chamar no dia a dia. Não precisa ser o nome oficial.
+                    <p className="text-xs text-[#737373] mt-1 ml-0.5">
+                      Use o nome como você costuma chamar no dia a dia.
                     </p>
-                    <FormMessage />
+                    <FormMessage className="text-xs text-[#e7000b]" />
                   </FormItem>
                 )}
               />
@@ -331,35 +331,36 @@ export default function EscolaFormDialog({
                   control={form.control}
                   name="ativo"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0">
-                      <Checkbox
-                        id="ativo"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <FormLabel
-                        htmlFor="ativo"
-                        className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
-                      >
-                        Escola Ativa
-                      </FormLabel>
+                    <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 sm:p-4">
+                      <div className="space-y-0.5 pr-4">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer block">
+                          Escola Ativa
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={!!field.value}
+                          onCheckedChange={field.onChange}
+                          className="data-[state=checked]:bg-primary"
+                          aria-label="Escola Ativa"
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
               )}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <div
-                className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs cursor-pointer select-none"
+                className="flex flex-row items-center justify-between rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] p-3.5 cursor-pointer select-none transition-all hover:bg-[#f0f0f0]"
                 onClick={() => !isSaving && handleToggleInformarEndereco(!informarEndereco)}
               >
                 <div className="space-y-0.5 pr-4">
-                  <span className="text-slate-800 font-bold text-sm block">
+                  <span className="text-[#0a0a0a] font-medium text-xs sm:text-sm block">
                     Informar endereço
                   </span>
-                  <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                  <div className="text-xs text-[#737373] font-normal leading-relaxed">
                     É opcional o preenchimento do endereço
                   </div>
                 </div>
@@ -380,18 +381,18 @@ export default function EscolaFormDialog({
             </div>
 
             {allowBatchCreation && !editingEscola && (
-              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-3 p-3.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
                 <Checkbox
                   id="keepOpen"
                   checked={keepOpen}
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]"
                 />
                 <label
                   htmlFor="keepOpen"
-                  className="flex-1 cursor-pointer font-medium text-slate-700 m-0 text-sm"
+                  className="flex-1 cursor-pointer font-medium text-[#0a0a0a] m-0 text-xs sm:text-sm"
                 >
                   Cadastrar outra em seguida
                 </label>

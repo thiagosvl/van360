@@ -1,17 +1,16 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { memo } from "react";
-
 import { ContratoListItem } from "@/types/contract";
+import { ContratoSummary } from "./ContratoSummary";
 
 interface ContratoActionsMenuProps {
   item: ContratoListItem;
-  tipo: 'contrato' | 'passageiro';
+  tipo: "contrato" | "passageiro";
   status?: string;
   isDesativado?: boolean;
   usarContratos?: boolean;
   onVerPassageiro: (id: string) => void;
-  onCopiarLink?: (token: string) => void;
   onEnviarWhatsApp?: () => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
   onDownload?: (item: ContratoListItem) => void;
@@ -23,14 +22,12 @@ interface ContratoActionsMenuProps {
   onVisualizarFinal?: (url: string) => void;
 }
 
-import { ContratoSummary } from "./ContratoSummary";
-
 export const ContratoActionsMenu = memo(function ContratoActionsMenu(props: ContratoActionsMenuProps) {
   const actions = useContratoActions(props);
 
   return (
-    <ActionsDropdown 
-      actions={actions} 
+    <ActionsDropdown
+      actions={actions}
       header={<ContratoSummary item={props.item} />}
     />
   );

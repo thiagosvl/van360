@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { moneyMask } from "@/utils/masks";
 import { DollarSign } from "lucide-react";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 interface MoneyInputProps<T extends FieldValues> {
   field: ControllerRenderProps<T, FieldPath<T>>;
@@ -29,18 +30,21 @@ export function MoneyInput<T extends FieldValues>({
 
   return (
     <FormItem className={className}>
-      <FormLabel className={labelClassName}>
-        {label} {required && <span className="text-red-600">*</span>}
+      <FormLabel className={cn("text-[#0a0a0a] font-medium text-xs", labelClassName)}>
+        {label} {required && <span className="text-[#e7000b]">*</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">
-          <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none z-10" />
           <Input
             {...field}
             placeholder={placeholder}
             type="text"
             inputMode="numeric"
-            className={inputClassName}
+            className={cn(
+              "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] transition-all",
+              inputClassName
+            )}
             disabled={disabled}
             onChange={(e) => {
               field.onChange(moneyMask(e.target.value));

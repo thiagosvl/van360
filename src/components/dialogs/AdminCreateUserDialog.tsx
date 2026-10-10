@@ -149,7 +149,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
     return (
       <AdminBaseDialog open={isOpen} onOpenChange={handleSuccessRedirect} maxWidth="md">
         <AdminBaseDialog.Header
-          title="Cadastro Concluído"
+          title="Cadastro concluído"
           icon={<Check className="w-5 h-5 text-emerald-400" />}
           onClose={handleSuccessRedirect}
         />
@@ -159,25 +159,25 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
               <Check className="w-8 h-8 text-emerald-400" />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-white">Motorista cadastrado com sucesso!</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+            <div className="space-y-1.5">
+              <h3 className="text-base font-semibold text-foreground">Motorista cadastrado com sucesso!</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
                 As credenciais de acesso provisórias do motorista foram geradas e devem ser compartilhadas com ele.
               </p>
             </div>
 
-            <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 text-left space-y-3.5 max-w-sm mx-auto">
+            <div className="p-4 bg-secondary/30 rounded-2xl border border-border text-left space-y-3 max-w-sm mx-auto">
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</p>
-                <p className="text-sm font-bold text-slate-100 mt-0.5">{successData.nome}</p>
+                <p className="text-[10px] font-medium text-muted-foreground">Motorista</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">{successData.nome}</p>
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF/CNPJ de Login</p>
-                <p className="text-sm font-bold text-slate-100 mt-0.5">{successData.cpf}</p>
+                <p className="text-[10px] font-medium text-muted-foreground">CPF/CNPJ de login</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">{successData.cpf}</p>
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Senha Temporária</p>
-                <p className="text-sm font-mono font-bold text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg inline-block select-all tracking-wider">
+                <p className="text-[10px] font-medium text-muted-foreground">Senha temporária</p>
+                <p className="text-sm font-mono font-semibold text-amber-400 mt-0.5 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg inline-block select-all tracking-wider">
                   {successData.senha}
                 </p>
               </div>
@@ -186,14 +186,14 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
         </AdminBaseDialog.Body>
         <AdminBaseDialog.Footer>
           <AdminBaseDialog.Action
-            label={copied ? "Dados Copiados" : "Copiar Acesso"}
+            label={copied ? "Dados copiados" : "Copiar acesso"}
             variant="secondary"
             icon={copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
             onClick={handleCopyAccess}
             disabled={copied}
           />
           <AdminBaseDialog.Action
-            label="Ver Detalhes"
+            label="Ver detalhes"
             variant="primary"
             onClick={handleSuccessRedirect}
           />
@@ -205,16 +205,16 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
   return (
     <AdminBaseDialog open={isOpen} onOpenChange={onClose} maxWidth="lg">
       <AdminBaseDialog.Header
-        title="Novo Motorista"
+        title="Novo motorista"
         subtitle="Preencha os dados abaixo para cadastrar um novo motorista"
-        icon={<User className="w-5 h-5 text-blue-400" />}
+        icon={<User className="w-5 h-5 text-primary" />}
         onClose={onClose}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl h-10 w-10 border border-slate-800"
+            className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl h-10 w-10 border border-border"
             onClick={() => {
               form.setValue("nome", "Thiago Barros Abilio");
               form.setValue("email", "thiago-svl@hotmail.com");
@@ -242,19 +242,19 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                       control={form.control}
                       name="cpfcnpj"
                       render={({ field }) => (
-                        <FormItem className="text-left">
-                          <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
+                        <FormItem className="text-left space-y-1.5">
+                          <FormLabel className="text-foreground font-medium text-xs">
                             CPF ou CNPJ <span className="text-rose-400">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                              <User className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                               <Input
                                 {...field}
                                 maxLength={18}
                                 onChange={(e) => field.onChange(maskCpf(e.target.value))}
                                 placeholder="CPF ou CNPJ"
-                                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                                className="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                               />
                             </div>
                           </FormControl>
@@ -267,18 +267,18 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                       control={form.control}
                       name="email"
                       render={({ field }) => (
-                        <FormItem className="text-left">
-                          <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
+                        <FormItem className="text-left space-y-1.5">
+                          <FormLabel className="text-foreground font-medium text-xs">
                             E-mail <span className="text-rose-400">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                               <Input
                                 type="email"
                                 placeholder="motorista@email.com"
                                 {...field}
-                                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                                className="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                               />
                             </div>
                           </FormControl>
@@ -292,25 +292,25 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                     control={form.control}
                     name="razao_social"
                     render={({ field, fieldState, formState }) => (
-                      <FormItem className="text-left">
-                        <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
-                          Razão Social {isCnpj && <span className="text-rose-400">*</span>}
+                      <FormItem className="text-left space-y-1.5">
+                        <FormLabel className="text-foreground font-medium text-xs">
+                          Razão social {isCnpj && <span className="text-rose-400">*</span>}
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                            <User className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                               placeholder="Razão social do motorista"
                               {...field}
                               value={field.value || ""}
-                              className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                              className="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                               aria-invalid={!!fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)}
                             />
                           </div>
                         </FormControl>
                         <FormMessage />
                         {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                          <p className="text-[0.8rem] font-medium text-rose-400 mt-1.5 ml-1">Razão social é obrigatória para CNPJ</p>
+                          <p className="text-xs font-medium text-rose-500 mt-1">Razão social é obrigatória para CNPJ</p>
                         )}
                       </FormItem>
                     )}
@@ -320,17 +320,17 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                     control={form.control}
                     name="nome"
                     render={({ field }) => (
-                      <FormItem className="text-left">
-                        <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
-                          Nome Completo <span className="text-rose-400">*</span>
+                      <FormItem className="text-left space-y-1.5">
+                        <FormLabel className="text-foreground font-medium text-xs">
+                          Nome completo <span className="text-rose-400">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                            <User className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                               placeholder="Nome completo do motorista"
                               {...field}
-                              className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                              className="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                             />
                           </div>
                         </FormControl>
@@ -347,10 +347,10 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                         <PhoneInput
                           field={field}
                           label="Telefone"
-                          labelClassName="text-slate-300 font-semibold text-xs ml-1"
+                          labelClassName="text-foreground font-medium text-xs"
                           placeholder="(00) 00000-0000"
                           required
-                          inputClassName="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                          inputClassName="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                         />
                       )}
                     />
@@ -359,20 +359,20 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                       control={form.control}
                       name="data_nascimento"
                       render={({ field, fieldState }) => (
-                        <FormItem className="text-left">
-                          <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
-                            Data de Nascimento <span className="text-rose-400">*</span>
+                        <FormItem className="text-left space-y-1.5">
+                          <FormLabel className="text-foreground font-medium text-xs">
+                            Data de nascimento <span className="text-rose-400">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Calendar className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                              <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                               <Input
                                 {...field}
                                 inputMode="numeric"
                                 maxLength={10}
                                 onChange={(e) => field.onChange(maskDate(e.target.value))}
                                 placeholder="dd/mm/aaaa"
-                                className="pl-11 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                                className="pl-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                                 aria-invalid={!!fieldState.error}
                               />
                             </div>
@@ -387,23 +387,23 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                     control={form.control}
                     name="senha"
                     render={({ field }) => (
-                      <FormItem className="text-left">
-                        <FormLabel className="text-slate-300 font-semibold text-xs ml-1">
-                          Senha Temporária <span className="text-rose-400">*</span>
+                      <FormItem className="text-left space-y-1.5">
+                        <FormLabel className="text-foreground font-medium text-xs">
+                          Senha temporária <span className="text-rose-400">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="flex gap-2">
                             <div className="relative flex-1">
-                              <Key className="absolute left-4 top-3.5 h-4 w-4 text-slate-500" />
+                              <Key className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                               <Input
                                 type={showPassword ? "text" : "password"}
                                 {...field}
-                                className="pl-11 pr-10 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 transition-colors"
+                                className="pl-10 pr-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary transition-colors"
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors"
+                                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
                               >
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </button>
@@ -412,7 +412,7 @@ export default function AdminCreateUserDialog({ isOpen, onClose, onSuccess }: Ad
                               type="button"
                               onClick={handleRegeneratePassword}
                               title="Gerar nova senha"
-                              className="w-11 h-11 border border-slate-800 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
+                              className="w-10 h-10 border border-border rounded-xl bg-secondary/50 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shrink-0"
                             >
                               <RefreshCw className="h-4 w-4" />
                             </button>

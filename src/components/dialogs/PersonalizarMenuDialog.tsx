@@ -7,7 +7,7 @@ import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { LayoutDashboard, Lock, Menu, SlidersHorizontal, RotateCcw, Plus, X } from "lucide-react";
+import { Home, LayoutGrid, Lock, SlidersHorizontal, RotateCcw, Plus, X } from "lucide-react";
 
 interface PersonalizarMenuDialogProps {
   isOpen: boolean;
@@ -119,21 +119,21 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between px-0.5">
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
               Barra do App
             </span>
-            <span className="text-[11px] font-semibold text-slate-500">
+            <span className="text-xs font-medium text-[#737373]">
               {slots.filter(Boolean).length} de 3 selecionados
             </span>
           </div>
 
-          <div className="flex items-stretch justify-between rounded-xl border border-slate-200 bg-slate-50/90 p-1 shadow-inner gap-1">
-            <div className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg p-1 text-slate-400 opacity-60 select-none min-w-0">
+          <div className="flex items-stretch justify-between rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-1.5 shadow-2xs gap-1.5">
+            <div className="flex flex-1 flex-col items-center justify-center gap-1 rounded-[14px] p-1.5 text-[#737373] opacity-60 select-none min-w-0">
               <div className="relative">
-                <LayoutDashboard className="h-4 w-4" />
-                <Lock className="absolute -bottom-1 -right-1.5 h-2.5 w-2.5 text-slate-400" />
+                <Home className="h-4 w-4 text-[#737373]" />
+                <Lock className="absolute -bottom-1 -right-1.5 h-2.5 w-2.5 text-[#737373]" />
               </div>
-              <span className="text-[9px] font-medium leading-tight">Início</span>
+              <span className="text-[10px] font-medium leading-tight">Início</span>
             </div>
 
             {dockSlots.map((item, idx) => {
@@ -141,10 +141,10 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
                 return (
                   <div
                     key={`empty-slot-${idx}`}
-                    className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg p-1 border-2 border-dashed border-amber-400 bg-amber-50/70 text-amber-700 min-w-0 animate-pulse"
+                    className="flex flex-1 flex-col items-center justify-center gap-1 rounded-[14px] p-1.5 border-2 border-dashed border-primary/40 bg-primary/5 text-primary min-w-0 animate-pulse"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="text-[8px] font-bold leading-tight">
+                    <span className="text-[10px] font-semibold leading-tight">
                       Vazio
                     </span>
                   </div>
@@ -156,41 +156,41 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
               return (
                 <div
                   key={`dock-slot-${idx}`}
-                  className="relative flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg p-1 min-w-0 bg-white shadow-xs border border-slate-200"
+                  className="relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[14px] p-1.5 min-w-0 bg-white shadow-2xs border border-[#e5e5e5]"
                 >
                   <button
                     type="button"
                     onClick={() => handleClearSlot(idx)}
                     title="Remover atalho"
-                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-slate-600 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-xs z-10 cursor-pointer"
+                    className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-[#171717] text-white flex items-center justify-center hover:bg-[#e7000b] active:scale-90 transition-all shadow-xs z-10 cursor-pointer"
                   >
-                    <X className="h-2.5 w-2.5" />
+                    <X className="h-3 w-3" />
                   </button>
 
-                  <Icon className="h-4 w-4 shrink-0 text-slate-700" />
-                  <span className="text-[9px] font-bold text-slate-800 truncate max-w-full text-center leading-tight">
+                  <Icon className="h-4 w-4 shrink-0 text-[#0a0a0a]" />
+                  <span className="text-[10px] font-semibold text-[#0a0a0a] truncate max-w-full text-center leading-tight">
                     {item.title}
                   </span>
                 </div>
               );
             })}
 
-            <div className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg p-1 text-slate-400 opacity-60 select-none min-w-0">
+            <div className="flex flex-1 flex-col items-center justify-center gap-1 rounded-[14px] p-1.5 text-[#737373] opacity-60 select-none min-w-0">
               <div className="relative">
-                <Menu className="h-4 w-4" />
-                <Lock className="absolute -bottom-1 -right-1.5 h-2.5 w-2.5 text-slate-400" />
+                <LayoutGrid className="h-4 w-4 text-[#737373]" />
+                <Lock className="absolute -bottom-1 -right-1.5 h-2.5 w-2.5 text-[#737373]" />
               </div>
-              <span className="text-[9px] font-medium leading-tight">Mais</span>
+              <span className="text-[10px] font-medium leading-tight">Menu</span>
             </div>
           </div>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 px-0.5">
+        <div className="space-y-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] px-0.5">
             Recursos Disponíveis
           </span>
 
-          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white overflow-hidden max-h-48 overflow-y-auto">
+          <div className="divide-y divide-[#e5e5e5] rounded-[18px] border border-[#e5e5e5] bg-white overflow-hidden max-h-52 overflow-y-auto">
             {availableItems.map((item) => {
               const isAlreadyInBar = slots.includes(item.href);
               const Icon = item.icon;
@@ -202,48 +202,48 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
                   disabled={isAlreadyInBar || !hasEmptySlot}
                   onClick={() => handleSelectOption(item.href)}
                   className={cn(
-                    "w-full flex items-center justify-between py-2 px-2.5 text-left transition-colors min-w-0",
+                    "w-full flex items-center justify-between py-2.5 px-3 text-left transition-colors min-w-0",
                     isAlreadyInBar
-                      ? "bg-slate-50/70 opacity-60 cursor-not-allowed"
+                      ? "bg-[#fafafa]/80 opacity-60 cursor-not-allowed"
                       : hasEmptySlot
-                        ? "hover:bg-amber-50/50 cursor-pointer"
+                        ? "hover:bg-primary/5 cursor-pointer"
                         : "opacity-40 cursor-not-allowed"
                   )}
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
                     <div
                       className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border",
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border transition-colors",
                         isAlreadyInBar
-                          ? "bg-slate-100 text-slate-400 border-slate-200"
+                          ? "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
                           : hasEmptySlot
-                            ? "bg-white text-slate-700 border-slate-300 shadow-2xs"
-                            : "bg-slate-50 text-slate-400 border-slate-200"
+                            ? "bg-white text-[#0a0a0a] border-[#e5e5e5] shadow-2xs"
+                            : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" />
+                      <Icon className="h-4 w-4" />
                     </div>
 
-                    <span className="text-xs font-bold text-slate-800 truncate">
+                    <span className="text-xs font-semibold text-[#0a0a0a] truncate">
                       {item.title}
                     </span>
                   </div>
 
                   <div className="shrink-0">
                     {isAlreadyInBar ? (
-                      <span className="text-[10px] font-semibold text-slate-400 px-1.5 py-0.5 rounded bg-slate-100">
+                      <span className="text-[11px] font-medium text-[#737373] px-2 py-0.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
                         Na barra
                       </span>
                     ) : (
                       <span
                         className={cn(
-                          "inline-flex items-center justify-center h-5 w-5 rounded-full border transition-colors",
+                          "inline-flex items-center justify-center h-6 w-6 rounded-full border transition-all",
                           hasEmptySlot
-                            ? "border-amber-400 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                            : "border-slate-200 text-slate-300"
+                            ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-white shadow-2xs"
+                            : "border-[#e5e5e5] text-[#737373]/50"
                         )}
                       >
-                        <Plus className="h-3 w-3" />
+                        <Plus className="h-3.5 w-3.5" />
                       </span>
                     )}
                   </div>
@@ -256,9 +256,9 @@ export default function PersonalizarMenuDialog({ isOpen, onClose }: Personalizar
         <button
           type="button"
           onClick={handleReset}
-          className="w-full flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
         >
-          <RotateCcw className="w-3 h-3" />
+          <RotateCcw className="w-3.5 h-3.5" />
           <span>Restaurar atalhos padrão</span>
         </button>
       </BaseDialog.Body>

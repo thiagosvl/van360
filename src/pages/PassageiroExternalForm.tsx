@@ -49,10 +49,10 @@ export default function PassageiroExternalForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#e8ecf1] flex flex-col justify-center items-center py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-[max(1rem,var(--safe-area-top))] pb-[max(5rem,var(--safe-area-bottom))]">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col justify-center items-center py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-[max(1rem,var(--safe-area-top))] pb-[max(5rem,var(--safe-area-bottom))]">
       <div className="w-full max-w-2xl relative z-10 space-y-6">
 
-        <div className="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-200">
+        <div className="bg-white rounded-[24px] shadow-xs overflow-hidden border border-[#e5e5e5]">
           <div className="text-center p-6 pb-2 relative">
             {isDevEnv() && (
               <div className="absolute right-2 top-2 z-10">
@@ -60,7 +60,7 @@ export default function PassageiroExternalForm() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-gray-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-full transition-all"
+                  className="text-[#737373] hover:text-primary hover:bg-[#f5f5f5] rounded-full transition-all"
                   onClick={handleFillMock}
                   title="Preencher com dados de teste"
                 >
@@ -84,10 +84,10 @@ export default function PassageiroExternalForm() {
                 />
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1a3a5c] drop-shadow-sm">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a]">
                   Cadastro do Aluno
                 </h1>
-                <p className="text-slate-500 text-sm sm:text-base font-medium text-center px-4 max-w-md">
+                <p className="text-[#737373] text-sm sm:text-base font-medium text-center px-4 max-w-md">
                   Leva menos de 2 minutinhos e as informações vão direto para {subtitleDestino}!
                 </p>
               </div>
@@ -138,23 +138,23 @@ export default function PassageiroExternalForm() {
 
         {/* Footer info */}
         <div className="text-center pb-12">
-          <p className="text-xs text-slate-400 font-medium tracking-wide">
+          <p className="text-xs text-muted-foreground font-medium tracking-wide">
             © {getNowBR().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>
       </div>
 
       {/* Floating Action Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-50/90 border-t border-slate-200 backdrop-blur-md z-50">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 border-t border-[#e5e5e5] backdrop-blur-md z-50">
         <div className="max-w-2xl mx-auto px-4 md:px-0">
           <Button
             onClick={form.handleSubmit(handleSubmit, onFormError)}
             disabled={submitting}
-            className="w-full h-14 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-lg shadow-lg shadow-[#1a3a5c]/20 hover:shadow-[#1a3a5c]/30 transition-all active:scale-[0.98]"
+            className="w-full h-12 sm:h-14 rounded-[18px] bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm sm:text-base shadow-xs transition-all active:scale-[0.98] cursor-pointer"
           >
             {submitting ? (
               <>
-                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 Salvando...
               </>
             ) : (

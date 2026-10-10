@@ -25,6 +25,10 @@ export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
   });
 
   return (
-    <ActionsDropdown actions={actions} />
+    <ActionsDropdown
+      actions={actions}
+      title={props.passageiro.nome}
+      description={props.passageiro.escola?.nome || "Aluno"}
+    />
   );
 });

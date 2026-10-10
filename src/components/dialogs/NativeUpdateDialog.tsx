@@ -2,7 +2,13 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ArrowDownToLine, AlertTriangle } from "lucide-react";
-import { PLAY_STORE_MARKET_URL, PLAY_STORE_URL } from "@/utils/detectPlatform";
+import { Capacitor } from "@capacitor/core";
+import {
+  PLAY_STORE_MARKET_URL,
+  PLAY_STORE_URL,
+  APP_STORE_MARKET_URL,
+  APP_STORE_URL,
+} from "@/utils/detectPlatform";
 
 export interface NativeUpdateDialogProps {
   isOpen: boolean;
@@ -19,16 +25,19 @@ export function NativeUpdateDialog({
   title,
   message = "Uma nova versão do Van360 está disponível com melhorias de estabilidade, desempenho e novos recursos. Atualize para continuar aproveitando a melhor experiência.",
   isMandatory = false,
-  storeUrl = PLAY_STORE_MARKET_URL,
+  storeUrl,
 }: NativeUpdateDialogProps) {
   const defaultTitle = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
   const displayTitle = title || defaultTitle;
 
   const handleOpenStore = () => {
+    const isIos = Capacitor.getPlatform() === "ios";
+    const targetUrl = storeUrl || (isIos ? APP_STORE_MARKET_URL : PLAY_STORE_MARKET_URL);
+    const fallbackUrl = isIos ? APP_STORE_URL : PLAY_STORE_URL;
     try {
-      window.open(storeUrl || PLAY_STORE_MARKET_URL, "_system");
+      window.open(targetUrl, "_system");
     } catch {
-      window.open(PLAY_STORE_URL, "_system");
+      window.open(fallbackUrl, "_system");
     }
   };
 
@@ -55,7 +64,7 @@ export function NativeUpdateDialog({
           isMandatory ? (
             <AlertTriangle className="w-5 h-5 text-amber-600" />
           ) : (
-            <ArrowDownToLine className="w-5 h-5 text-[#1a3a5c]" />
+            <ArrowDownToLine className="w-5 h-5 text-primary" />
           )
         }
         hideCloseButton={isMandatory}
@@ -63,11 +72,11 @@ export function NativeUpdateDialog({
       />
 
       <BaseDialog.Body className="space-y-4 pt-4">
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <div className="rounded-[20px] border border-[#e5e5e5] bg-[#f5f5f5] p-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             O que há de novo:
           </p>
-          <div className="text-xs sm:text-sm text-slate-700 font-normal leading-relaxed whitespace-pre-line space-y-1">
+          <div className="text-xs sm:text-sm text-foreground font-normal leading-relaxed whitespace-pre-line space-y-1">
             {message}
           </div>
         </div>

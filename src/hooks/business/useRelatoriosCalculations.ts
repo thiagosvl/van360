@@ -8,6 +8,7 @@ import {
   HelpCircle,
   Wallet,
   Wrench,
+  type LucideIcon,
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -21,13 +22,12 @@ import { formatPaymentType } from "@/utils/formatters";
 import { getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { parseLocalDate } from "@/utils/dateUtils";
 
-// Constantes para agrupamento
 const VEICULO_OUTROS = "outros";
 const PERIODO_NAO_INFORMADO = "Não informado";
 
 export const CATEGORIA_ICONS: Record<
   string,
-  { icon: any; color: string; bg: string; label: string }
+  { icon: LucideIcon; color: string; bg: string; label: string }
 > = {
   [GastoCategoria.COMBUSTIVEL]: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100", label: "Combustível" },
   [GastoCategoria.MANUTENCAO]: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100", label: "Manutenção" },
@@ -36,7 +36,7 @@ export const CATEGORIA_ICONS: Record<
   [GastoCategoria.LAVAGEM]: { icon: Cog, color: "text-cyan-600", bg: "bg-cyan-100", label: "Lavagem" },
   [GastoCategoria.ALIMENTACAO]: { icon: Wallet, color: "text-green-600", bg: "bg-green-100", label: "Alimentação" },
   [GastoCategoria.SEGURO]: { icon: ClipboardCheck, color: "text-indigo-600", bg: "bg-indigo-100", label: "Seguro" },
-  [GastoCategoria.OUTROS]: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100", label: "Outros" },
+  [GastoCategoria.OUTROS]: { icon: HelpCircle, color: "text-[#737373]", bg: "bg-[#f5f5f5]", label: "Outros" },
 };
 
 
@@ -197,7 +197,7 @@ export const useRelatoriosCalculations = ({
       .map(([tipo, dados]) => {
         const labelData = FORMAS_PAGAMENTO_LABELS[tipo] || {
           label: tipo,
-          color: "bg-gray-500",
+          color: "bg-[#737373]",
         };
         return {
           metodo: labelData.label,

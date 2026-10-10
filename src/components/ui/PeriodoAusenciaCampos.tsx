@@ -92,42 +92,45 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
   const minStartDate = new Date(new Date().setHours(0, 0, 0, 0));
 
   return (
-    <div className="space-y-3">
-      {/* Segmented Control: Apenas 1 dia vs Período */}
-      <div className="bg-slate-100 p-1 rounded-xl grid grid-cols-2 gap-1">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => handleModoChange("unico")}
-          className={cn(
-            "h-8 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
-            modo === "unico"
-              ? "bg-white text-[#16314f] shadow-xs"
-              : "text-slate-500 hover:text-slate-800"
-          )}
-        >
-          Apenas 1 dia
-        </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => handleModoChange("periodo")}
-          className={cn(
-            "h-8 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
-            modo === "periodo"
-              ? "bg-white text-[#16314f] shadow-xs"
-              : "text-slate-500 hover:text-slate-800"
-          )}
-        >
-          Período
-        </button>
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label className="text-[13px] font-medium text-[#737373]">
+          Período da Ausência
+        </Label>
+        <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] grid grid-cols-2 gap-1 w-full">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => handleModoChange("unico")}
+            className={cn(
+              "w-full rounded-[18px] px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
+              modo === "unico"
+                ? "bg-white text-[#0a0a0a] shadow-xs"
+                : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+            )}
+          >
+            Apenas 1 dia
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => handleModoChange("periodo")}
+            className={cn(
+              "w-full rounded-[18px] px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
+              modo === "periodo"
+                ? "bg-white text-[#0a0a0a] shadow-xs"
+                : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+            )}
+          >
+            Período
+          </button>
+        </div>
       </div>
 
       {modo === "unico" ? (
-        /* Modo 1 dia: Apenas um campo */
-        <div className="space-y-1">
-          <Label className="text-slate-700 font-semibold ml-1">
-            Data da Ausência <span className="text-red-500">*</span>
+        <div className="space-y-1.5">
+          <Label className="text-[13px] font-medium text-[#737373]">
+            Data da Ausência <span className="text-[#e7000b]">*</span>
           </Label>
 
           <Popover open={isStartOpen && !disabled} onOpenChange={setIsStartOpen}>
@@ -137,19 +140,19 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
                 variant="outline"
                 disabled={disabled}
                 className={cn(
-                  "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
-                  !dataInicio && "text-slate-400 font-normal",
-                  dataInicio && "text-slate-700 font-medium",
-                  errors.dataInicio && "border-red-500",
-                  disabled && "opacity-60 cursor-not-allowed bg-slate-100"
+                  "h-11 w-full rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-left font-normal px-3.5 flex items-center justify-between shadow-none hover:bg-white transition-colors cursor-pointer",
+                  !dataInicio && "text-[#737373] font-normal",
+                  dataInicio && "text-[#0a0a0a] font-normal",
+                  errors.dataInicio && "border-[#e7000b]",
+                  disabled && "opacity-60 cursor-not-allowed bg-[#f5f5f5]"
                 )}
               >
                 <span>{startDateObj ? format(startDateObj, "dd/MM/yyyy") : "dd/mm/aaaa"}</span>
-                <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
+                <CalendarIcon className="w-4 h-4 text-[#737373] shrink-0 ml-auto" />
               </Button>
             </PopoverTrigger>
 
-            <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
+            <PopoverContent align="start" className="w-auto p-0 bg-white border border-[#e5e5e5] rounded-[20px] sm:rounded-[24px] shadow-xl z-[9999]">
               <Calendar
                 mode="single"
                 selected={startDateObj}
@@ -165,18 +168,17 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
           </Popover>
 
           {errors.dataInicio && (
-            <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+            <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
               {errors.dataInicio}
             </p>
           )}
         </div>
       ) : (
-        /* Modo Período: Dois campos */
-        <div className="space-y-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label className="text-slate-700 font-semibold ml-1">
-                Data de Início <span className="text-red-500">*</span>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-medium text-[#737373]">
+                Data de Início <span className="text-[#e7000b]">*</span>
               </Label>
 
               <Popover open={isStartOpen && !disabled} onOpenChange={setIsStartOpen}>
@@ -186,19 +188,19 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
                     variant="outline"
                     disabled={disabled}
                     className={cn(
-                      "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
-                      !dataInicio && "text-slate-400 font-normal",
-                      dataInicio && "text-slate-700 font-medium",
-                      errors.dataInicio && "border-red-500",
-                      disabled && "opacity-60 cursor-not-allowed bg-slate-100"
+                      "h-11 w-full rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-left font-normal px-3.5 flex items-center justify-between shadow-none hover:bg-white transition-colors cursor-pointer",
+                      !dataInicio && "text-[#737373] font-normal",
+                      dataInicio && "text-[#0a0a0a] font-normal",
+                      errors.dataInicio && "border-[#e7000b]",
+                      disabled && "opacity-60 cursor-not-allowed bg-[#f5f5f5]"
                     )}
                   >
                     <span>{startDateObj ? format(startDateObj, "dd/MM/yyyy") : "dd/mm/aaaa"}</span>
-                    <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
+                    <CalendarIcon className="w-4 h-4 text-[#737373] shrink-0 ml-auto" />
                   </Button>
                 </PopoverTrigger>
 
-                <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
+                <PopoverContent align="start" className="w-auto p-0 bg-white border border-[#e5e5e5] rounded-[20px] sm:rounded-[24px] shadow-xl z-[9999]">
                   <Calendar
                     mode="single"
                     selected={startDateObj}
@@ -214,15 +216,15 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
               </Popover>
 
               {errors.dataInicio && (
-                <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+                <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                   {errors.dataInicio}
                 </p>
               )}
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-slate-700 font-semibold ml-1">
-                Data de Término <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-medium text-[#737373]">
+                Data de Término <span className="text-[#e7000b]">*</span>
               </Label>
 
               <Popover open={isEndOpen && !disabled && Boolean(dataInicio)} onOpenChange={setIsEndOpen}>
@@ -232,19 +234,19 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
                     variant="outline"
                     disabled={disabled || !dataInicio}
                     className={cn(
-                      "h-12 w-full rounded-lg bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-base text-left font-medium px-3.5 flex items-center justify-between shadow-none hover:bg-slate-100 transition-colors cursor-pointer",
-                      !dataFim && "text-slate-400 font-normal",
-                      dataFim && "text-slate-700 font-medium",
-                      errors.dataFim && "border-red-500",
-                      (disabled || !dataInicio) && "opacity-60 cursor-not-allowed bg-slate-100"
+                      "h-11 w-full rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-left font-normal px-3.5 flex items-center justify-between shadow-none hover:bg-white transition-colors cursor-pointer",
+                      !dataFim && "text-[#737373] font-normal",
+                      dataFim && "text-[#0a0a0a] font-normal",
+                      errors.dataFim && "border-[#e7000b]",
+                      (disabled || !dataInicio) && "opacity-60 cursor-not-allowed bg-[#f5f5f5]"
                     )}
                   >
                     <span>{endDateObj ? format(endDateObj, "dd/MM/yyyy") : "dd/mm/aaaa"}</span>
-                    <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0 ml-auto" />
+                    <CalendarIcon className="w-4 h-4 text-[#737373] shrink-0 ml-auto" />
                   </Button>
                 </PopoverTrigger>
 
-                <PopoverContent align="start" className="w-auto p-0 bg-white border border-slate-200 rounded-xl shadow-xl z-[9999]">
+                <PopoverContent align="start" className="w-auto p-0 bg-white border border-[#e5e5e5] rounded-[20px] sm:rounded-[24px] shadow-xl z-[9999]">
                   <Calendar
                     mode="single"
                     selected={endDateObj}
@@ -260,7 +262,7 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
               </Popover>
 
               {errors.dataFim && (
-                <p className="text-xs text-red-500 font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+                <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                   {errors.dataFim}
                 </p>
               )}
@@ -268,9 +270,9 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
           </div>
 
           {diasUteis > 1 && (
-            <div className="px-1 text-xs text-slate-500 font-medium flex items-center gap-1.5">
+            <div className="px-1 text-xs text-[#737373] font-normal flex items-center gap-1.5">
               <span>Período de</span>
-              <span className="font-bold text-[#1a3a5c]">{diasUteis} dias úteis</span>
+              <span className="font-semibold text-[#0a0a0a]">{diasUteis} dias úteis</span>
               <span>(fins de semana desconsiderados)</span>
             </div>
           )}

@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { Menu } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { useLocation, NavLink } from "react-router-dom";
-import { pagesItems, getBottomNavHrefs } from "@/utils/domain/pages/pagesUtils";
+import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { ROUTES } from "@/constants/routes";
 
-import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 
@@ -14,7 +14,6 @@ interface BottomNavbarProps {
 export function BottomNavbar({ isSubscriptionBlocked }: BottomNavbarProps = {}) {
   if (isSubscriptionBlocked) return null;
 
-  const { setIsMobileMenuOpen } = useLayout();
   const location = useLocation();
   const { user } = useSession();
   const { activeHrefs } = useBottomNavPreferences(user?.id);
@@ -22,36 +21,50 @@ export function BottomNavbar({ isSubscriptionBlocked }: BottomNavbarProps = {}) 
   const navItems = activeHrefs
     .map(href => pagesItems.find(item => item.href === href))
     .filter(Boolean) as typeof pagesItems;
-  const isMoreActive = !navItems.some(item => location.pathname === item.href);
+
+  const isMenuActive = location.pathname === ROUTES.PRIVATE.MOTORISTA.MENU || !navItems.some(item => location.pathname === item.href);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[calc(4rem+var(--safe-area-bottom))] items-center justify-around border-t border-gray-100 bg-white/80 px-2 pb-[var(--safe-area-bottom)] backdrop-blur-lg md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[calc(4rem+var(--safe-area-bottom))] items-center border-t border-[#e5e5e5] bg-white/95 px-1 pb-[var(--safe-area-bottom)] backdrop-blur-md md:hidden">
       {navItems.map((item) => (
         <NavLink
           key={item.href}
           to={item.href}
           className={({ isActive }) =>
             cn(
-              "flex flex-col items-center justify-center gap-1 transition-colors px-2 py-1 rounded-xl",
-              isActive ? "text-primary" : "text-slate-400"
+              "flex-1 flex flex-col items-center justify-center gap-1 min-[390px]:gap-1.5 py-1.5 transition-colors active:scale-95 cursor-pointer",
+              isActive
+                ? "text-[#0a0a0a]"
+                : "text-[#737373] hover:text-[#0a0a0a]"
             )
           }
         >
-          <item.icon className="h-5 w-5" />
-          <span className="text-[10px] font-medium">{item.title}</span>
+          {({ isActive }) => (
+            <>
+              <item.icon className="h-5 w-5 min-[390px]:h-[22px] min-[390px]:w-[22px] shrink-0" />
+              <span className={cn("text-[10px] min-[390px]:text-[11px] leading-tight", isActive ? "font-semibold" : "font-medium")}>
+                {item.title}
+              </span>
+            </>
+          )}
         </NavLink>
       ))}
 
-      <button
-        onClick={() => setIsMobileMenuOpen(true)}
+      <NavLink
+        to={ROUTES.PRIVATE.MOTORISTA.MENU}
         className={cn(
-          "flex flex-col items-center justify-center gap-1 pl-2 py-1 transition-colors",
-          isMoreActive ? "text-primary" : "text-slate-400"
+          "flex-1 flex flex-col items-center justify-center gap-1 min-[390px]:gap-1.5 py-1.5 transition-colors active:scale-95 cursor-pointer",
+          isMenuActive
+            ? "text-[#0a0a0a]"
+            : "text-[#737373] hover:text-[#0a0a0a]"
         )}
       >
-        <Menu className="h-5 w-5" />
-        <span className="text-[10px] font-medium">Mais</span>
-      </button>
+        <LayoutGrid className="h-5 w-5 min-[390px]:h-[22px] min-[390px]:w-[22px] shrink-0" />
+        <span className={cn("text-[10px] min-[390px]:text-[11px] leading-tight", isMenuActive ? "font-semibold" : "font-medium")}>
+          Menu
+        </span>
+      </NavLink>
     </nav>
   );
 }
+

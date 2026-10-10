@@ -1,5 +1,4 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Banner } from "@/components/ui/Banner";
 import { isDevEnv } from "@/utils/detectPlatform";
 import {
   Form,
@@ -12,13 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MoneyInput } from "@/components/forms";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -27,10 +20,8 @@ import {
   Hash,
   CalendarIcon,
   Wand2,
-  FileText,
   User,
   Phone,
-  DollarSign,
   CalendarDays,
   Clock,
 } from "lucide-react";
@@ -54,7 +45,8 @@ interface GerarContratoValidadorDialogProps {
   onSuccess?: (
     passageiroId: string,
     bypassed?: boolean,
-    updatedValues?: { valorMensal?: number; diaVencimento?: number }
+    updatedValues?: { valorMensal?: number; diaVencimento?: number },
+    updatedPassageiro?: Passageiro
   ) => void;
 }
 
@@ -77,10 +69,10 @@ export function GerarContratoValidadorDialog({
     setOpenCalendarFim,
     handleFillMock,
     onFormError,
-    isChecking,
     needsNomeResp,
     needsTelefoneResp,
     needsCpfResp,
+    needsParentesco,
     needsResponsavelGroup,
     needsValor,
     needsVencimento,
@@ -101,32 +93,6 @@ export function GerarContratoValidadorDialog({
     safeCloseDialog(onClose);
   };
 
-  if (isOpen && (isChecking || isLoadingPassageiro) && !passageiro) {
-    return (
-      <BaseDialog
-        open={isOpen}
-        onOpenChange={(open) => !open && handleClose()}
-        description="Verificando dados para o contrato..."
-        maxWidth="sm"
-      >
-        <BaseDialog.Header
-          title="Validando contrato"
-          onClose={handleClose}
-        />
-        <BaseDialog.Body>
-          <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1a3a5c]" />
-            <p className="text-xs text-slate-500 font-medium">Carregando informações...</p>
-          </div>
-        </BaseDialog.Body>
-      </BaseDialog>
-    );
-  }
-
-  if (isChecking && isOpen) {
-    return null;
-  }
-
   const firstName = passageiro?.nome ? formatFirstName(passageiro.nome) : "o aluno";
 
   return (
@@ -134,51 +100,43 @@ export function GerarContratoValidadorDialog({
       open={isOpen}
       onOpenChange={(open) => !open && handleClose()}
       maxWidth="md"
-      lockClose
     >
       <BaseDialog.Header
         title="Dados do Contrato"
-        icon={<FileText className="w-5 h-5 opacity-80" />}
+        subtitle={`Informações para emitir o contrato de ${firstName}`}
         onClose={handleClose}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[18px] h-9 w-9 border border-[#e5e5e5] transition-colors"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
 
-      <BaseDialog.Body>
+      <BaseDialog.Body className="p-5 sm:p-6 bg-white overflow-y-auto">
         {isLoadingPassageiro ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-4" />
-            <p className="text-sm">Carregando dados do aluno...</p>
+          <div className="flex flex-col items-center justify-center py-12 text-[#737373] gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-[#0a0a0a]" />
+            <p className="text-xs">Carregando dados do aluno...</p>
           </div>
         ) : (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-              className="space-y-5 pb-2 px-1 pt-1"
+              className="space-y-5"
             >
-              <Banner
-                variant="info"
-                title="Informações essenciais para emissão"
-                description={`Preencha os dados abaixo para gerar o contrato de ${firstName}.`}
-              />
-
               {needsResponsavelGroup && (
-                <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3">
-                  <div className="flex items-center gap-2 pb-1 border-b border-slate-200/60">
-                    <User className="w-4 h-4 text-[#1a3a5c]" />
-                    <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                <div className="space-y-3.5">
+                  <div className="pb-1.5 border-b border-[#e5e5e5]">
+                    <h3 className="text-xs font-semibold text-[#0a0a0a] tracking-tight">
                       Responsável Financeiro
-                    </span>
+                    </h3>
                   </div>
 
                   {needsNomeResp && (
@@ -187,18 +145,18 @@ export function GerarContratoValidadorDialog({
                       name="nome_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome do Responsável <span className="text-red-600">*</span>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            Nome do Responsável <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
+                              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 {...field}
                                 placeholder="Nome completo do responsável"
                                 className={cn(
-                                  "pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors",
+                                  fieldState.error && "border-[#e7000b] focus:border-[#e7000b]"
                                 )}
                               />
                             </div>
@@ -209,106 +167,108 @@ export function GerarContratoValidadorDialog({
                     />
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {needsTelefoneResp && (
-                      <FormField
-                        control={form.control}
-                        name="telefone_responsavel"
-                        render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              WhatsApp <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                <Input
-                                  {...field}
-                                  value={field.value || ""}
-                                  onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                  placeholder="(11) 99999-9999"
-                                  type="tel"
-                                  className={cn(
-                                    "pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
+                  {(needsTelefoneResp || needsCpfResp) && (
+                    <div className={cn("grid gap-3", needsTelefoneResp && needsCpfResp ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+                      {needsTelefoneResp && (
+                        <FormField
+                          control={form.control}
+                          name="telefone_responsavel"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                WhatsApp <span className="text-[#e7000b]">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                  <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                    placeholder="(11) 99999-9999"
+                                    type="tel"
+                                    className={cn(
+                                      "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors",
+                                      fieldState.error && "border-[#e7000b] focus:border-[#e7000b]"
+                                    )}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
 
-                    {needsCpfResp && (
-                      <FormField
-                        control={form.control}
-                        name="cpf_responsavel"
-                        render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              CPF do Responsável <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Hash className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                <Input
-                                  {...field}
-                                  inputMode="numeric"
-                                  placeholder="000.000.000-00"
-                                  value={field.value || ""}
-                                  onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                                  className={cn(
-                                    "pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
+                      {needsCpfResp && (
+                        <FormField
+                          control={form.control}
+                          name="cpf_responsavel"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                CPF do Responsável <span className="text-[#e7000b]">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                  <Input
+                                    {...field}
+                                    inputMode="numeric"
+                                    placeholder="000.000.000-00"
+                                    value={field.value || ""}
+                                    onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                    className={cn(
+                                      "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors",
+                                      fieldState.error && "border-[#e7000b] focus:border-[#e7000b]"
+                                    )}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                  )}
 
-                  <FormField
-                    control={form.control}
-                    name="parentesco_responsavel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Parentesco
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                  {needsParentesco && (
+                    <FormField
+                      control={form.control}
+                      name="parentesco_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            Parentesco <span className="text-[#e7000b]">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm">
-                              <SelectValue placeholder="Selecione o parentesco" />
-                            </SelectTrigger>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                            >
+                              <option value="">Selecionar</option>
+                              {parentescos.map((p) => (
+                                <option key={p.value} value={p.value}>
+                                  {p.label}
+                                </option>
+                              ))}
+                            </NativeSelect>
                           </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
-                            {parentescos.map((p) => (
-                              <SelectItem key={p.value} value={p.value}>
-                                {p.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               )}
 
               {needsFinanceiroGroup && (
-                <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3">
-                  <div className="flex items-center gap-2 pb-1 border-b border-slate-200/60">
-                    <DollarSign className="w-4 h-4 text-[#1a3a5c]" />
-                    <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                      Valores das Parcelas
-                    </span>
+                <div className="space-y-3.5">
+                  <div className="pb-1.5 border-b border-[#e5e5e5]">
+                    <h3 className="text-xs font-semibold text-[#0a0a0a] tracking-tight">
+                      Valores e Vencimento
+                    </h3>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -321,8 +281,8 @@ export function GerarContratoValidadorDialog({
                             field={field}
                             label="Valor da Parcela"
                             required
-                            labelClassName="text-slate-700 font-semibold ml-1"
-                            inputClassName="pl-12 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                            labelClassName="text-xs font-medium text-[#0a0a0a]"
+                            inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors"
                           />
                         )}
                       />
@@ -334,31 +294,24 @@ export function GerarContratoValidadorDialog({
                         name="dia_vencimento"
                         render={({ field, fieldState }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Dia do Vencimento <span className="text-red-600">*</span>
+                            <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                              Dia do Vencimento <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <div className="relative">
-                                  <CalendarDays className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                  <SelectTrigger
-                                    className={cn(
-                                      "pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                  >
-                                    <SelectValue placeholder="Dia" />
-                                  </SelectTrigger>
-                                </div>
-                              </FormControl>
-                              <SelectContent className="max-h-60 overflow-y-auto">
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                error={!!fieldState.error}
+                              >
+                                <option value="">Dia</option>
                                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                  <SelectItem key={day} value={day.toString()}>
+                                  <option key={day} value={day.toString()}>
                                     Dia {day}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -369,12 +322,11 @@ export function GerarContratoValidadorDialog({
               )}
 
               {needsTransporteGroup && (
-                <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3">
-                  <div className="flex items-center gap-2 pb-1 border-b border-slate-200/60">
-                    <CalendarDays className="w-4 h-4 text-[#1a3a5c]" />
-                    <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                <div className="space-y-3.5">
+                  <div className="pb-1.5 border-b border-[#e5e5e5]">
+                    <h3 className="text-xs font-semibold text-[#0a0a0a] tracking-tight">
                       Período do Transporte
-                    </span>
+                    </h3>
                   </div>
 
                   {needsPeriodo && (
@@ -383,158 +335,157 @@ export function GerarContratoValidadorDialog({
                       name="periodo"
                       render={({ field, fieldState }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Turno / Período <span className="text-red-600">*</span>
+                          <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                            Turno / Período <span className="text-[#e7000b]">*</span>
                           </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <div className="relative">
-                                <Clock className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Selecione o turno" />
-                                </SelectTrigger>
-                              </div>
-                            </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              icon={<Clock className="h-4 w-4 text-[#737373]" />}
+                              error={!!fieldState.error}
+                            >
+                              <option value="">Selecionar</option>
                               {periodos.map((p) => (
-                                <SelectItem key={p.value} value={p.value}>
+                                <option key={p.value} value={p.value}>
                                   {p.label}
-                                </SelectItem>
+                                </option>
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="data_inicio_transporte"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Início do Transporte <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <div className="relative group">
-                                  <CalendarIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-10 pr-10 h-11 rounded-xl bg-white border-slate-200 text-left font-normal hover:bg-slate-50 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                      !field.value && "text-muted-foreground",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                  >
-                                    {field.value ? field.value : "dd/mm/aaaa"}
-                                  </Button>
-                                  {field.value && (
-                                    <div
-                                      className="absolute right-3 top-3 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        field.onChange("");
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
+                  {(needsDataInicio || needsDataFim) && (
+                    <div className={cn("grid gap-3", needsDataInicio && needsDataFim ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+                      {needsDataInicio && (
+                        <FormField
+                          control={form.control}
+                          name="data_inicio_transporte"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                Início do Transporte <span className="text-[#e7000b]">*</span>
+                              </FormLabel>
+                              <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <div className="relative group">
+                                      <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                          "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-[#f5f5f5] justify-start focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] transition-colors",
+                                          !field.value && "text-[#737373]",
+                                          fieldState.error && "border-[#e7000b] focus:border-[#e7000b]"
+                                        )}
+                                      >
+                                        {field.value ? field.value : "dd/mm/aaaa"}
+                                      </Button>
+                                      {field.value && (
+                                        <div
+                                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-0.5 rounded-full hover:bg-[#e5e5e5] transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            field.onChange("");
+                                          }}
+                                        >
+                                          <X className="h-3.5 w-3.5" />
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    field.onChange(formatDateToBR(date));
-                                    setOpenCalendarInicio(false);
-                                  } else {
-                                    field.onChange("");
-                                  }
-                                }}
-                                locale={ptBR}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-3 rounded-[20px] border-[#e5e5e5] bg-white shadow-xl" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                                    onSelect={(date) => {
+                                      if (date) {
+                                        field.onChange(formatDateToBR(date));
+                                        setOpenCalendarInicio(false);
+                                      } else {
+                                        field.onChange("");
+                                      }
+                                    }}
+                                    locale={ptBR}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       )}
-                    />
 
-                    <FormField
-                      control={form.control}
-                      name="data_fim_transporte"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Término do Transporte <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <div className="relative group">
-                                  <CalendarIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-10 pr-10 h-11 rounded-xl bg-white border-slate-200 text-left font-normal hover:bg-slate-50 justify-start focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                      !field.value && "text-muted-foreground",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                  >
-                                    {field.value ? field.value : "dd/mm/aaaa"}
-                                  </Button>
-                                  {field.value && (
-                                    <div
-                                      className="absolute right-3 top-3 text-gray-400 hover:text-slate-600 cursor-pointer z-10 flex"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        field.onChange("");
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
+                      {needsDataFim && (
+                        <FormField
+                          control={form.control}
+                          name="data_fim_transporte"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                                Término do Transporte <span className="text-[#e7000b]">*</span>
+                              </FormLabel>
+                              <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <div className="relative group">
+                                      <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                          "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-[#f5f5f5] justify-start focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] transition-colors",
+                                          !field.value && "text-[#737373]",
+                                          fieldState.error && "border-[#e7000b] focus:border-[#e7000b]"
+                                        )}
+                                      >
+                                        {field.value ? field.value : "dd/mm/aaaa"}
+                                      </Button>
+                                      {field.value && (
+                                        <div
+                                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-0.5 rounded-full hover:bg-[#e5e5e5] transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            field.onChange("");
+                                          }}
+                                        >
+                                          <X className="h-3.5 w-3.5" />
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    field.onChange(formatDateToBR(date));
-                                    setOpenCalendarFim(false);
-                                  } else {
-                                    field.onChange("");
-                                  }
-                                }}
-                                locale={ptBR}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-3 rounded-[20px] border-[#e5e5e5] bg-white shadow-xl" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value ? parseLocalDate(convertDateBrToISO(field.value)) : undefined}
+                                    onSelect={(date) => {
+                                      if (date) {
+                                        field.onChange(formatDateToBR(date));
+                                        setOpenCalendarFim(false);
+                                      } else {
+                                        field.onChange("");
+                                      }
+                                    }}
+                                    locale={ptBR}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       )}
-                    />
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
             </form>
@@ -550,7 +501,7 @@ export function GerarContratoValidadorDialog({
           disabled={isSubmitting}
         />
         <BaseDialog.Action
-          label="Gerar Contrato"
+          label="Salvar"
           onClick={form.handleSubmit(handleSubmit, onFormError)}
           isLoading={isSubmitting}
           disabled={isLoadingPassageiro}

@@ -64,3 +64,15 @@ export interface ImportContratoDTO {
   arquivoBase64: string;
   nomeArquivo: string;
 }
+
+export interface ContratoPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ListContratosResponse {
+  data: ContratoListItem[];
+  pagination: ContratoPagination;
+}

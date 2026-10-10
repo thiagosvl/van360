@@ -15,21 +15,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { UserType } from "@/types/enums";
 import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { isValidCpfCnpj } from "@/utils/validators";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { User, Mail, Phone, Lock, Car, FileText, Wand2, Info, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Phone, Lock, Car, FileText, Wand2, Eye, EyeOff } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/client";
+import { safeCloseDialog } from "@/hooks";
+import type { MembroEquipe, VeiculoMembro } from "@/types/equipe";
 
 const monitorSchema = z
   .object({
@@ -61,8 +57,8 @@ type MonitorFormData = z.infer<typeof monitorSchema>;
 interface MonitorFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  editingMembro?: any | null;
-  veiculos: any[];
+  editingMembro?: MembroEquipe | null;
+  veiculos: VeiculoMembro[];
   onSuccess?: () => void;
 }
 
@@ -122,9 +118,10 @@ export function MonitorFormDialog({
     }
   }, [isOpen, editingMembro, veiculos, form]);
 
-  const handleApiError = (err: any, defaultMsg: string) => {
-    const respData = err.response?.data;
-    const errorMsg = (respData?.message || respData?.error || err.message || "").toLowerCase();
+  const handleApiError = (err: unknown, defaultMsg: string) => {
+    const errorResponse = err as { response?: { data?: { field?: string; message?: string; error?: string } }; message?: string };
+    const respData = errorResponse.response?.data;
+    const errorMsg = (respData?.message || respData?.error || errorResponse.message || "").toLowerCase();
 
     const isDuplicateEmail =
       respData?.field === "email" ||
@@ -164,51 +161,59 @@ export function MonitorFormDialog({
     if (isDuplicateEmail) {
       form.setError("email", { message: "E-mail já cadastrado." });
       hasFieldError = true;
-    } else if (isDuplicateCpf) {
+    }
+
+    if (isDuplicateCpf) {
       form.setError("cpf", { message: "CPF/CNPJ já cadastrado." });
       hasFieldError = true;
-    } else if (isDuplicatePhone) {
+    }
+
+    if (isDuplicatePhone) {
       form.setError("telefone", { message: "Telefone já cadastrado." });
       hasFieldError = true;
     }
 
-    if (respData?.field && !hasFieldError) {
-      form.setError(respData.field as any, { message: respData.error || respData.message || "Valor inválido." });
-      hasFieldError = true;
-    }
-
     if (hasFieldError) {
-      toast.error("validacao.formularioComErros");
+      toast.error("Corrija os dados apontados para continuar");
     } else {
-      const msg = respData?.message || respData?.error || err.message || defaultMsg;
-      toast.error(msg);
+      toast.error(respData?.message || respData?.error || defaultMsg);
     }
+  };
+
+  const handleClose = () => {
+    safeCloseDialog(onClose);
   };
 
   const createMutation = useMutation({
     mutationFn: async (values: MonitorFormData) => {
       const payload = {
-        ...values,
-        tipo: UserType.MONITOR,
+        nome: values.nome,
+        apelido: values.apelido,
+        razao_social: values.razao_social,
         cpf: values.cpf.replace(/\D/g, ""),
+        email: values.email,
         telefone: values.telefone.replace(/\D/g, ""),
+        veiculo_id: values.veiculo_id,
+        senha: values.senha,
+        tipo: UserType.MONITOR,
       };
       const response = await apiClient.post("/motoristas-equipe", payload);
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Monitor cadastrado com sucesso!", { description: 'As credenciais de acesso foram enviadas por e-mail.' });
+      toast.success("Monitor cadastrado com sucesso!", { description: "As credenciais de acesso foram enviadas por e-mail." });
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
       if (onSuccess) onSuccess();
-      onClose();
+      handleClose();
     },
-    onError: (err: any) => {
+    onError: (err) => {
       handleApiError(err, "Erro ao cadastrar monitor");
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async (values: MonitorFormData) => {
+      if (!editingMembro) return;
       const payload = {
         nome: values.nome,
         apelido: values.apelido,
@@ -225,9 +230,9 @@ export function MonitorFormDialog({
       toast.success("Monitor atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["motoristas-equipe"] });
       if (onSuccess) onSuccess();
-      onClose();
+      handleClose();
     },
-    onError: (err: any) => {
+    onError: (err) => {
       handleApiError(err, "Erro ao atualizar monitor");
     },
   });
@@ -238,7 +243,7 @@ export function MonitorFormDialog({
     const nome = mockGenerator.name();
     const cpf = mockGenerator.cpf();
     const email = mockGenerator.email(nome);
-    const telefone = '(11) 99999-9999';
+    const telefone = "(11) 88888-8888";
     const veiculo_id = veiculos.length > 0 ? veiculos[0].id : "";
 
     form.reset({
@@ -270,17 +275,17 @@ export function MonitorFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose} lockClose={isSaving} maxWidth="lg">
+    <BaseDialog open={isOpen} onOpenChange={handleClose} lockClose={isSaving} maxWidth="lg">
       <BaseDialog.Header
         title={editingMembro ? "Editar Monitor" : "Novo Monitor"}
-        onClose={onClose}
+        onClose={handleClose}
         hideCloseButton={isSaving}
         leftAction={isDevEnv() && !editingMembro && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-xs"
+            className="h-9 w-9 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#ebebeb] transition-all shadow-xs"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -291,35 +296,30 @@ export function MonitorFormDialog({
 
       <BaseDialog.Body>
         <div className="space-y-4 pb-2">
-          {/* Card explicativo de nivel de acesso do Monitor */}
           <Banner
             variant="info"
             title="Acesso do Monitor"
-            description={
-              <>
-                Esta conta possui acesso restrito às operações do veículo atribuído, de acordo com o nível do perfil.
-              </>
-            }
+            description="Esta conta possui acesso restrito às operações do veículo atribuído, de acordo com o nível do perfil."
+            className="rounded-[18px]"
           />
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 1. Nome Completo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                 <FormField
                   control={form.control}
                   name="nome"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Nome Completo <span className="text-red-600">*</span>
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        Nome Completo <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                             placeholder="Ex: Maria Souza"
                             aria-invalid={!!fieldState.error}
                           />
@@ -330,21 +330,20 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 2. Nome de Exibição / Apelido */}
                 <FormField
                   control={form.control}
                   name="apelido"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Nome de Exibição / Apelido
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        Nome do Transporte / Apelido
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                             placeholder="Ex: Tia Maria"
                             aria-invalid={!!fieldState.error}
                           />
@@ -355,22 +354,21 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 3. CPF ou CNPJ */}
                 <FormField
                   control={form.control}
                   name="cpf"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        CPF ou CNPJ <span className="text-red-600">*</span>
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        CPF ou CNPJ <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FileText className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                             placeholder="000.000.000-00"
                             aria-invalid={!!fieldState.error}
                           />
@@ -381,23 +379,22 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 4. Razão Social (Exibida imediatamente após o CPF/CNPJ quando for CNPJ) */}
                 {isCnpj && (
                   <FormField
                     control={form.control}
                     name="razao_social"
                     render={({ field, fieldState, formState }) => (
                       <FormItem className="animate-in fade-in slide-in-from-top-1 duration-200">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Razão Social <span className="text-red-600">*</span>
+                        <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                          Razão Social <span className="text-[#e7000b]">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                             <Input
                               {...field}
                               placeholder="Digite a razão social da empresa"
-                              className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                              className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                               aria-invalid={
                                 !!fieldState.error ||
                                 (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)
@@ -407,7 +404,7 @@ export function MonitorFormDialog({
                         </FormControl>
                         <FormMessage />
                         {isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0 && !fieldState.error && (
-                          <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">
+                          <p className="text-[0.8rem] font-medium text-[#e7000b] mt-1.5 ml-1">
                             Razão social é obrigatória para CNPJ
                           </p>
                         )}
@@ -416,22 +413,21 @@ export function MonitorFormDialog({
                   />
                 )}
 
-                {/* 5. WhatsApp / Telefone */}
                 <FormField
                   control={form.control}
                   name="telefone"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        WhatsApp <span className="text-red-600">*</span>
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        WhatsApp <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                             placeholder="(11) 99999-9999"
                             aria-invalid={!!fieldState.error}
                           />
@@ -442,23 +438,22 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 6. E-mail */}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        E-mail <span className="text-red-600">*</span>
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        E-mail <span className="text-[#e7000b]">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             type="email"
                             disabled={!!editingMembro}
-                            className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm disabled:opacity-70"
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] disabled:opacity-60"
                             placeholder="maria@email.com"
                             aria-invalid={!!fieldState.error}
                           />
@@ -469,67 +464,62 @@ export function MonitorFormDialog({
                   )}
                 />
 
-                {/* 7. Veículo Atribuído */}
                 <FormField
                   control={form.control}
                   name="veiculo_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold ml-1">
-                        Veículo Atribuído <span className="text-red-600">*</span>
+                      <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                        Veículo Atribuído <span className="text-[#e7000b]">*</span>
                       </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <div className="relative">
-                            <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                            <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                          </div>
-                        </FormControl>
-                        <SelectContent>
-                          {veiculos.map((v: any) => (
-                            <SelectItem key={v.id} value={v.id}>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          icon={<Car className="h-4 w-4 text-[#737373]" />}
+                        >
+                          <option value="">Selecionar</option>
+                          {veiculos.map((v) => (
+                            <option key={v.id} value={v.id}>
                               {v.modelo} ({v.placa})
-                            </SelectItem>
+                            </option>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </NativeSelect>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* 8. Senha Inicial */}
                 {!editingMembro && (
                   <FormField
                     control={form.control}
                     name="senha"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Senha Inicial <span className="text-red-600">*</span>
+                        <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
+                          Senha Inicial <span className="text-[#e7000b]">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                             <Input
                               {...field}
                               type={showSenha ? "text" : "password"}
-                              className="pl-12 pr-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] text-sm"
+                              className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373]"
                               placeholder="••••••••"
                               aria-invalid={!!fieldState.error}
                             />
                             <button
                               type="button"
                               onClick={() => setShowSenha(!showSenha)}
-                              className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
                               tabIndex={-1}
                             >
                               {showSenha ? (
-                                <EyeOff className="w-5 h-5" />
+                                <EyeOff className="w-4 h-4" />
                               ) : (
-                                <Eye className="w-5 h-5" />
+                                <Eye className="w-4 h-4" />
                               )}
                             </button>
                           </div>
@@ -549,7 +539,7 @@ export function MonitorFormDialog({
         <BaseDialog.Action
           label="Cancelar"
           variant="secondary"
-          onClick={onClose}
+          onClick={handleClose}
           disabled={isSaving}
         />
         <BaseDialog.Action

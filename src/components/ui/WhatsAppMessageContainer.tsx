@@ -47,7 +47,7 @@ export function WhatsAppMessageContainer({
   return (
     <div
       className={cn(
-        "w-full max-w-[310px] xl:max-w-[320px] mx-auto sm:mx-0 xl:mx-auto relative rounded-[24px] bg-[#efeae2] p-2.5 min-[360px]:p-3 border border-slate-200/90 shadow-inner overflow-hidden flex flex-col items-start min-h-[350px] xl:min-h-[440px] justify-start",
+        "w-full max-w-[310px] xl:max-w-[320px] mx-auto sm:mx-0 xl:mx-auto relative rounded-[24px] bg-[#efeae2] p-2.5 min-[360px]:p-3 border border-[#e5e5e5] shadow-inner overflow-hidden flex flex-col items-start min-h-[350px] xl:min-h-[440px] justify-start",
         className
       )}
     >
@@ -105,7 +105,7 @@ export function WhatsAppMessageContainer({
       </div>
 
       {footerNote && (
-        <div className="text-[11px] min-[360px]:text-xs text-slate-500 text-center mt-2 min-[360px]:mt-2.5 px-1 min-[360px]:px-2 leading-snug">
+        <div className="text-[11px] min-[360px]:text-xs text-[#737373] text-center mt-2 min-[360px]:mt-2.5 px-1 min-[360px]:px-2 leading-snug">
           {footerNote}
         </div>
       )}

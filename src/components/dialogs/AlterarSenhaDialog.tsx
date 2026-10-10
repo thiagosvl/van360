@@ -10,8 +10,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
+import { safeCloseDialog } from "@/hooks";
 import { apiClient } from "@/services/api/client";
 import { toast } from "@/utils/notifications/toast";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, KeyRound, Lock } from "lucide-react";
 import { useState } from "react";
@@ -40,6 +42,12 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
     defaultValues: { senhaAtual: "", novaSenha: "" },
   });
 
+  const handleClose = () => {
+    if (form.formState.isSubmitting) return;
+    form.reset();
+    safeCloseDialog(onClose);
+  };
+
   const handleSubmit = async (data: FormData) => {
     if (!user?.id) {
       toast.error("erro.operacao", { description: "Não foi possível identificar o usuário logado." });
@@ -59,38 +67,47 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
       await new Promise((res) => setTimeout(res, 1500));
       await apiClient.post("/auth/logout");
       window.location.href = ROUTES.PUBLIC.LOGIN;
-    } catch (err: any) {
-      toast.error("erro.operacao", { description: err.userMessage || err.message || "Ocorreu um erro ao tentar alterar a senha." });
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Ocorreu um erro ao tentar alterar a senha.");
+      toast.error("erro.operacao", { description: message });
     }
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title="Alterar Senha" icon={<KeyRound className="w-5 h-5" />} onClose={onClose} />
+    <BaseDialog open={isOpen} onOpenChange={handleClose} maxWidth="sm">
+      <BaseDialog.Header
+        title="Alterar senha"
+        subtitle="Escolha uma senha forte com no mínimo 6 caracteres."
+        icon={<KeyRound className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a0a0a]" />}
+        onClose={handleClose}
+      />
       <BaseDialog.Body>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 pt-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-1">
             <FormField
               control={form.control}
               name="senhaAtual"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">Senha atual <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                    Senha atual <span className="text-[#e7000b]">*</span>
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         type={showCurrentPassword ? "text" : "password"}
                         placeholder="Digite sua senha atual"
                         {...field}
-                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        className="pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-all focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0 focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
+                        tabIndex={-1}
                       >
-                        {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </FormControl>
@@ -103,22 +120,25 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
               name="novaSenha"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">Nova senha <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                    Nova senha <span className="text-[#e7000b]">*</span>
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                       <Input
                         type={showNewPassword ? "text" : "password"}
                         placeholder="Digite a nova senha"
                         {...field}
-                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        className="pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-all focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0 focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
+                        tabIndex={-1}
                       >
-                        {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </FormControl>
@@ -130,8 +150,17 @@ export default function AlterarSenhaDialog({ isOpen, onClose }: AlterarSenhaDial
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={form.formState.isSubmitting} />
-        <BaseDialog.Action label="Salvar" onClick={form.handleSubmit(handleSubmit)} isLoading={form.formState.isSubmitting} />
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
+          onClick={handleClose}
+          disabled={form.formState.isSubmitting}
+        />
+        <BaseDialog.Action
+          label="Salvar senha"
+          onClick={form.handleSubmit(handleSubmit)}
+          isLoading={form.formState.isSubmitting}
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

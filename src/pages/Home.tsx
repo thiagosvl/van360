@@ -1,4 +1,3 @@
-import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { AcessoRapido } from "@/components/features/home/AcessoRapido";
 import confetti from "canvas-confetti";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
@@ -9,14 +8,13 @@ import { TrialBanner } from "@/components/features/subscription/TrialBanner";
 import { PastDueBanner } from "@/components/features/subscription/PastDueBanner";
 import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEarnCard";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
-import { DemonstracoesWhatsAppCard } from "@/components/features/home/DemonstracoesWhatsAppCard";
 import { AniversariantesWidget } from "@/components/features/home/AniversariantesWidget";
 import { ROUTES } from "@/constants/routes";
 import { STORAGE_KEYS } from "@/constants";
 import { useDashboardViewModel } from "@/hooks";
 import { SubscriptionIdentifer, UserType, AppPermissionStatus, PermissionRescueType } from "@/types/enums";
 import { cn } from "@/lib/utils";
-import { getMesNome, formatFirstName } from "@/utils/formatters";
+import { getMesNome } from "@/utils/formatters";
 import {
   GraduationCap,
   Users,
@@ -73,15 +71,6 @@ const Home = () => {
     localStorage.setItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_HOME, "true");
   };
 
-  const [isDismissedDemonstracoes, setIsDismissedDemonstracoes] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.DISMISS_DEMONSTRACOES_HOME) === "true";
-  });
-
-  const handleDismissDemonstracoes = () => {
-    setIsDismissedDemonstracoes(true);
-    localStorage.setItem(STORAGE_KEYS.DISMISS_DEMONSTRACOES_HOME, "true");
-  };
-
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
 
   useEffect(() => {
@@ -97,7 +86,7 @@ const Home = () => {
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: ["#1a3a5c", "#f59e0b", "#10b981"],
+          colors: ["#0b1a2e", "#2563eb", "#f59e0b", "#10b981"],
           zIndex: 9999
         });
         confetti({
@@ -105,7 +94,7 @@ const Home = () => {
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: ["#1a3a5c", "#f59e0b", "#10b981"],
+          colors: ["#0b1a2e", "#2563eb", "#f59e0b", "#10b981"],
           zIndex: 9999
         });
 
@@ -174,7 +163,7 @@ const Home = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
-        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-8 sm:space-y-9 pb-24">
+        <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-9 pb-24 pt-1 sm:pt-2">
           {showBothDenied && <PermissionRescueBanner type={PermissionRescueType.BOTH} />}
           {showPushDenied && <PermissionRescueBanner type={PermissionRescueType.PUSH} />}
           {showLocationDenied && <PermissionRescueBanner type={PermissionRescueType.LOCATION} />}
@@ -183,24 +172,19 @@ const Home = () => {
           <div className="space-y-3.5 sm:space-y-4">
             {!onboarding.showOnboarding && (
               <div className="px-1 flex items-center justify-between gap-4">
-                <div className="space-y-0.5 flex-1 min-w-0">
-                  <p className="text-xs font-medium text-slate-500 capitalize">
-                    {dateContext}
-                  </p>
-                  <h1 className="font-headline font-bold text-[#1a3a5c] text-lg tracking-tight truncate">
-                    Olá, {profile?.apelido?.trim() || (profile?.nome ? formatFirstName(profile.nome) : null) || "bem-vindo(a)"}!
-                  </h1>
-                </div>
+                <p className="text-xs font-medium text-[#737373] capitalize">
+                  {dateContext}
+                </p>
 
                 {!isSubConta && (
                   <button
                     type="button"
                     onClick={toggleHideValues}
-                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 transition-colors rounded-xl focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
+                    className="p-1.5 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#e5e5e5]/50 transition-colors rounded-[12px] focus:outline-hidden active:scale-95 cursor-pointer shrink-0"
                     title={hideValues ? "Mostrar valores" : "Ocultar valores"}
                     aria-label={hideValues ? "Mostrar valores" : "Ocultar valores"}
                   >
-                    {hideValues ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                    {hideValues ? <EyeOff className="w-4 h-4 text-[#737373]" /> : <Eye className="w-4 h-4 text-[#737373]" />}
                   </button>
                 )}
               </div>
@@ -252,13 +236,6 @@ const Home = () => {
               </section>
             )}
 
-            {!isSubConta && onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
-              <DemonstracoesWhatsAppCard
-                profile={profile}
-                onDismiss={handleDismissDemonstracoes}
-              />
-            )}
-
             {!isSubConta && !onboarding.showOnboarding && (financeiro?.countAtrasos || 0) > 0 && (
               <section className="px-1">
                 <Banner
@@ -297,11 +274,6 @@ const Home = () => {
                         label="Alunos"
                         value={contadores.passageirosAtivos}
                         icon={Users}
-                        onClick={() =>
-                          navigateTo(
-                            `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.ALUNOS}`
-                          )
-                        }
                         loading={isLoading}
                       />
                     )}
@@ -310,7 +282,6 @@ const Home = () => {
                         label="Escolas"
                         value={contadores.escolasAtivas}
                         icon={GraduationCap}
-                        onClick={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SCHOOLS)}
                         loading={isLoading}
                       />
                     )}
@@ -319,34 +290,27 @@ const Home = () => {
               </div>
               {!isSubConta && onboarding.showOnboarding && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
-                  <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-xl shadow-sm border border-slate-200/60 max-w-[280px]">
-                    <p className="text-[12px] font-bold text-slate-700">
+                  <div className="bg-white/95 backdrop-blur-sm px-4 py-3 rounded-[18px] shadow-sm border border-[#e5e5e5] max-w-[280px]">
+                    <p className="text-xs font-semibold text-[#0a0a0a]">
                       Complete os primeiros passos para liberar seu painel financeiro e indicadores.
                     </p>
                   </div>
                 </div>
               )}
             </div>
-
-            {!isSubConta && <SmartAppBanner />}
-
-            {!isSubConta && !onboarding.showOnboarding && !isDismissedQuickReg && (
-              <section className="px-1">
-                <QuickRegistrationLink
-                  profile={profile}
-                  pendingCount={contadores.passageirosSolicitacoes}
-                  onDismiss={handleDismissQuickReg}
-                  className="mb-0"
-                />
-              </section>
-            )}
           </div>
 
-          {!isSubConta && !onboarding.showOnboarding && isTrial && !isDismissedDemonstracoes && (
-            <DemonstracoesWhatsAppCard
-              profile={profile}
-              onDismiss={handleDismissDemonstracoes}
-            />
+          {!isSubConta && <SmartAppBanner />}
+
+          {!isSubConta && !onboarding.showOnboarding && !isDismissedQuickReg && (
+            <section className="px-1">
+              <QuickRegistrationLink
+                profile={profile}
+                pendingCount={contadores.passageirosSolicitacoes}
+                onDismiss={handleDismissQuickReg}
+                className="mb-0"
+              />
+            </section>
           )}
 
 
@@ -358,7 +322,7 @@ const Home = () => {
 
           {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
             <section className="px-1">
-              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+              <h2 className="text-lg font-semibold text-[#0a0a0a] tracking-tight mb-3.5 px-1">
                 Assinatura do Van360
               </h2>
               <TrialBanner
@@ -371,10 +335,9 @@ const Home = () => {
           {/* Aniversariantes */}
           <AniversariantesWidget />
 
-          {/* Indique e Ganhe Banner */}
           {!isSubConta && (
             <section className="px-1">
-              <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+              <h2 className="text-lg font-semibold text-[#0a0a0a] tracking-tight mb-3.5 px-1">
                 Indique e Ganhe
               </h2>
               <ReferAndEarnCard />

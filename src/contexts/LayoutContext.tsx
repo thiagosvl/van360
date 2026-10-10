@@ -10,6 +10,8 @@ import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/t
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 import type { FretamentoDetalhes, FretamentoParticipante } from "@/services/api/fretamento.api";
+import type { WizardModalidade } from "@/hooks/ui/useConfigurarCobrancaWizardViewModel";
+import type { PreviewCobrancaModalidade } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
 import {
   createContext,
   useContext,
@@ -221,7 +223,8 @@ export interface OpenGerarContratoValidadorDialogProps {
   onSuccess: (
     passageiroId: string,
     bypassed?: boolean,
-    updatedValues?: { valorMensal?: number; diaVencimento?: number }
+    updatedValues?: { valorMensal?: number; diaVencimento?: number },
+    updatedPassageiro?: Passageiro
   ) => void;
 }
 
@@ -342,6 +345,31 @@ export interface OpenWhatsAppCobrancaPreviewDialogProps {
   passageiroNome?: string;
   userChavePix?: string | null;
   showPixSetupAction?: boolean;
+  modalidade?: PreviewCobrancaModalidade;
+}
+
+export interface OpenEditarPixDialogProps {
+  onSuccess?: () => void | Promise<void>;
+}
+
+export interface OpenConfigurarCobrancaWizardProps {
+  modalidade: WizardModalidade;
+  aplicar_a_todos?: boolean;
+  onSuccess?: () => void;
+}
+
+export interface DetalhesExcecoesDivergentes {
+  desativado?: number;
+  lembretes?: number;
+  automatica?: number;
+}
+
+export interface OpenConfirmarMudancaModoVanProps {
+  quantidadeExcecoes: number;
+  novoModoLabel: string;
+  detalhesExcecoes?: DetalhesExcecoesDivergentes;
+  onConfirmar: (aplicarATodos: boolean) => Promise<void> | void;
+  onCancel?: () => void;
 }
 
 export interface OpenWhatsAppContratoPreviewDialogProps {
@@ -464,7 +492,11 @@ export interface LayoutContextType {
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
-  openEditarPixDialog: () => void;
+  openEditarPixDialog: (props?: OpenEditarPixDialogProps) => void;
+  openConfigurarCobrancaWizardDialog: (props: OpenConfigurarCobrancaWizardProps) => void;
+  closeConfigurarCobrancaWizardDialog: () => void;
+  openConfirmarMudancaModoVanDialog: (props: OpenConfirmarMudancaModoVanProps) => void;
+  closeConfirmarMudancaModoVanDialog: () => void;
   openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
   openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
   openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;

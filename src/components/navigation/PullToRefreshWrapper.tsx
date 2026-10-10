@@ -131,23 +131,21 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
 
   return (
     <div className="relative min-h-screen">
-      {/* Indicador de Refresh */}
       <motion.div
         className="absolute top-0 left-0 right-0 z-10 flex justify-center items-start pointer-events-none"
         style={{ y: translateY, opacity, scale }}
       >
-        <div className="p-2 bg-white rounded-full shadow-md border border-gray-100 flex items-center justify-center">
+        <div className="p-2 bg-white rounded-full shadow-md border border-[#e5e5e5] flex items-center justify-center">
           <motion.div
             style={{ rotate }}
             animate={isRefreshing ? { rotate: 360 } : {}}
             transition={isRefreshing ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}
           >
-            <Loader2 className={`w-6 h-6 ${isRefreshing ? "text-primary" : "text-gray-400"}`} />
+            <Loader2 className={`w-6 h-6 ${isRefreshing ? "text-primary" : "text-[#737373]"}`} />
           </motion.div>
         </div>
       </motion.div>
 
-      {/* Conteúdo */}
       <motion.div
         style={{ y }}
         className="w-full"

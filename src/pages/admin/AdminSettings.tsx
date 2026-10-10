@@ -119,15 +119,43 @@ const CONFIG_DEFS: ConfigFieldDef[] = [
   },
   {
     chave: ConfigKey.APP_ANDROID_UPDATE_TITLE,
-    label: "Título do Diálogo de Atualização",
-    descricao: "Título exibido no modal de nova versão no aplicativo.",
+    label: "Título da Atualização (Android)",
+    descricao: "Título exibido no modal de nova versão no aplicativo Android.",
     tipo: "text",
     grupo: "Aplicativo Mobile",
   },
   {
     chave: ConfigKey.APP_ANDROID_UPDATE_MESSAGE,
-    label: "Novidades / Mensagem da Atualização",
-    descricao: "Texto com as novidades ou explicação do update exibido no modal.",
+    label: "Mensagem da Atualização (Android)",
+    descricao: "Texto com as novidades ou explicação do update exibido no modal Android.",
+    tipo: "textarea",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_IOS_MIN_VERSION,
+    label: "Versão Mínima do App (iOS)",
+    descricao: "Versão mínima obrigatória na App Store. Usuários abaixo desta versão serão bloqueados até atualizarem.",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_IOS_LATEST_VERSION,
+    label: "Versão Mais Recente (iOS)",
+    descricao: "Versão mais nova aprovada na App Store (exibe aviso opcional de atualização se o app estiver entre a mínima e a mais recente).",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_IOS_UPDATE_TITLE,
+    label: "Título da Atualização (iOS)",
+    descricao: "Título exibido no modal de nova versão no aplicativo iOS.",
+    tipo: "text",
+    grupo: "Aplicativo Mobile",
+  },
+  {
+    chave: ConfigKey.APP_IOS_UPDATE_MESSAGE,
+    label: "Mensagem da Atualização (iOS)",
+    descricao: "Texto com as novidades ou explicação do update exibido no modal iOS.",
     tipo: "textarea",
     grupo: "Aplicativo Mobile",
   },
@@ -271,10 +299,10 @@ export default function AdminSettings() {
 
     if (def.tipo === "boolean") {
       return (
-        <div key={def.chave} className="flex items-center justify-between py-3 border-b border-slate-800/80 last:border-0">
+        <div key={def.chave} className="flex items-center justify-between py-3 border-b border-border last:border-0">
           <div>
-            <p className="text-xs font-bold text-slate-100">{def.label}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
+            <p className="text-xs font-medium text-foreground">{def.label}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{def.descricao}</p>
           </div>
           <div className="flex items-center gap-3">
             <Switch
@@ -287,7 +315,7 @@ export default function AdminSettings() {
                 variant="ghost"
                 onClick={() => handleSave(def.chave)}
                 disabled={savingConfigs.has(def.chave)}
-                className="rounded-lg text-blue-400 hover:bg-blue-500/10 px-2"
+                className="rounded-lg text-primary hover:bg-secondary px-2 h-8"
               >
                 {savingConfigs.has(def.chave) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               </Button>
@@ -301,23 +329,23 @@ export default function AdminSettings() {
       return (
         <div key={def.chave} className="space-y-1.5 text-left">
           <div>
-            <Label className="text-xs font-bold text-slate-200">{def.label}</Label>
-            <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
+            <Label className="text-xs font-medium text-foreground">{def.label}</Label>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{def.descricao}</p>
           </div>
           <div className="flex items-start gap-2">
             <Textarea
               rows={4}
               value={currentVal}
               onChange={(e) => handleChange(def.chave, e.target.value)}
-              className="rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 resize-y"
+              className="rounded-lg bg-background border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary resize-y"
             />
             {isDirty && (
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={() => handleSave(def.chave)}
                 disabled={savingConfigs.has(def.chave)}
-                className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-11 px-3 mt-1"
+                className="rounded-lg text-primary hover:bg-secondary h-9 px-3 mt-1"
               >
                 {savingConfigs.has(def.chave) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               </Button>
@@ -330,8 +358,8 @@ export default function AdminSettings() {
     return (
       <div key={def.chave} className="space-y-1.5 text-left">
         <div>
-          <Label className="text-xs font-bold text-slate-200">{def.label}</Label>
-          <p className="text-[10px] text-slate-400 mt-0.5">{def.descricao}</p>
+          <Label className="text-xs font-medium text-foreground">{def.label}</Label>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{def.descricao}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -340,10 +368,10 @@ export default function AdminSettings() {
               step={def.step || (def.tipo === "number" ? "1" : undefined)}
               value={currentVal}
               onChange={(e) => handleChange(def.chave, e.target.value)}
-              className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 pr-14"
+              className="h-9 rounded-lg bg-background border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary pr-14"
             />
             {def.sufixo && (
-              <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-500 uppercase">
+              <span className="absolute right-3 top-2.5 text-[10px] font-medium text-muted-foreground">
                 {def.sufixo}
               </span>
             )}
@@ -351,10 +379,10 @@ export default function AdminSettings() {
           {isDirty && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => handleSave(def.chave)}
               disabled={savingConfigs.has(def.chave)}
-              className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-11 px-3"
+              className="rounded-lg text-primary hover:bg-secondary h-9 px-3"
             >
               {savingConfigs.has(def.chave) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             </Button>
@@ -367,19 +395,19 @@ export default function AdminSettings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1 text-left">
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-white tracking-tight uppercase">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Configurações
           </h1>
-          <p className="text-sm font-semibold text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Parâmetros globais do ecossistema Van360.
           </p>
         </div>
@@ -387,25 +415,25 @@ export default function AdminSettings() {
           <Button
             onClick={handleSaveAll}
             disabled={isPending}
-            className="rounded-xl h-11 bg-blue-600 text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/30 hover:bg-blue-500 text-white"
+            className="rounded-lg h-9 bg-primary text-primary-foreground text-xs font-medium shadow-xs hover:bg-primary/90"
           >
             {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-1.5" />
             )}
-            Salvar Todas ({totalDirtyCount})
+            Salvar todas ({totalDirtyCount})
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* COLUNA 1 - PLANOS E VALORES */}
-        <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-              <Landmark className="h-4 w-4 text-blue-400" />
-              Planos e Valores
+        <Card className="border border-border shadow-xs rounded-xl overflow-hidden bg-card">
+          <CardHeader className="pb-3 border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Landmark className="h-4 w-4 text-primary" />
+              Planos e valores
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
@@ -414,21 +442,21 @@ export default function AdminSettings() {
               const isDirty = planDirty.has(plan.id);
 
               return (
-                <div key={plan.id} className="space-y-3 pb-5 border-b border-slate-800/80 last:border-0 last:pb-0 text-left">
+                <div key={plan.id} className="space-y-3 pb-5 border-b border-border last:border-0 last:pb-0 text-left">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-200">{plan.nome}</p>
+                    <p className="text-xs font-semibold text-foreground">{plan.nome}</p>
                     {isDirty && (
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => handleSavePlan(plan.id)}
                         disabled={savingPlans.has(plan.id)}
-                        className="rounded-lg text-blue-400 hover:bg-blue-500/10 h-8 px-2"
+                        className="rounded-lg text-primary hover:bg-secondary h-8 px-2.5 text-xs font-medium"
                       >
                         {savingPlans.has(plan.id) ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
                         ) : (
-                          <Save className="h-4 w-4 mr-1" />
+                          <Save className="h-3.5 w-3.5 mr-1" />
                         )}
                         Salvar
                       </Button>
@@ -436,26 +464,26 @@ export default function AdminSettings() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Valor Normal
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Valor normal
                       </Label>
                       <Input
                         type="text"
                         value={vals.valor}
                         onChange={(e) => handlePlanChange(plan.id, "valor", e.target.value)}
-                        className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0 focus:border-blue-500 px-4"
+                        className="h-9 rounded-lg bg-background border-border text-foreground text-sm focus-visible:ring-0 focus:border-primary px-3"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Valor Promocional
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Valor promocional
                       </Label>
                       <Input
                         type="text"
                         value={vals.valor_promocional}
                         placeholder="Sem promoção"
                         onChange={(e) => handlePlanChange(plan.id, "valor_promocional", e.target.value)}
-                        className="h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 px-4"
+                        className="h-9 rounded-lg bg-background border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary px-3"
                       />
                     </div>
                   </div>
@@ -466,8 +494,8 @@ export default function AdminSettings() {
             {configs?.find(c => c.chave === ConfigKey.SAAS_PROMOCAO_ATIVA) && (
               <div className="pt-2 flex items-center justify-between text-left">
                 <div>
-                  <p className="text-xs font-bold text-slate-200">Preço Promocional Ativo</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
+                  <p className="text-xs font-medium text-foreground">Preço promocional ativo</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     Habilita globalmente os preços promocionais configurados acima para novos motoristas.
                   </p>
                 </div>
@@ -479,10 +507,10 @@ export default function AdminSettings() {
                   {dirty.has(ConfigKey.SAAS_PROMOCAO_ATIVA) && (
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => handleSave(ConfigKey.SAAS_PROMOCAO_ATIVA)}
                       disabled={savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA)}
-                      className="rounded-lg text-blue-400 hover:bg-blue-500/10 px-2"
+                      className="rounded-lg text-primary hover:bg-secondary h-8 px-2"
                     >
                       {savingConfigs.has(ConfigKey.SAAS_PROMOCAO_ATIVA) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     </Button>
@@ -491,18 +519,18 @@ export default function AdminSettings() {
               </div>
             )}
 
-            <div className="border-t border-slate-800/80 pt-6 space-y-5">
+            <div className="border-t border-border pt-6 space-y-5">
               {financeiroFields.map(renderConfigField)}
             </div>
           </CardContent>
         </Card>
 
         {/* COLUNA 2 - NOTIFICAÇÕES E INDICAÇÕES */}
-        <div className="space-y-8">
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
-                <Bell className="h-4 w-4 text-blue-400" />
+        <div className="space-y-6">
+          <Card className="border border-border shadow-xs rounded-xl overflow-hidden bg-card">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Bell className="h-4 w-4 text-primary" />
                 Notificações
               </CardTitle>
             </CardHeader>
@@ -511,9 +539,9 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+          <Card className="border border-border shadow-xs rounded-xl overflow-hidden bg-card">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Gift className="h-4 w-4 text-purple-400" />
                 Indicações
               </CardTitle>
@@ -523,11 +551,11 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-headline font-black text-white uppercase tracking-tight">
+          <Card className="border border-border shadow-xs rounded-xl overflow-hidden bg-card">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Smartphone className="h-4 w-4 text-emerald-400" />
-                Aplicativo Mobile (Play Store)
+                Aplicativo Mobile (Play Store & App Store)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 pt-4">

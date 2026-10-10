@@ -54,10 +54,7 @@ const AdminBaseDialogRoot = ({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden rounded-[2rem] shadow-2xl flex flex-col max-h-[calc(100dvh-2.5rem)] gap-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-offset-0 outline-none ring-0 ring-offset-0",
-          isDark
-            ? "bg-[#131b2e] border border-slate-800/80 text-slate-100"
-            : "bg-white border border-slate-200 text-slate-900",
+          "w-[calc(100%-1.25rem)] sm:w-full p-0 overflow-hidden rounded-3xl shadow-2xl flex flex-col max-h-[calc(100dvh-2.5rem)] gap-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-offset-0 outline-none ring-0 ring-offset-0 bg-card border border-border text-foreground",
           maxWidthClass,
           className
         )}
@@ -93,49 +90,24 @@ const AdminBaseDialogHeader = ({
   hideCloseButton = false,
   onClose,
   leftAction,
-  variant = "admin",
 }: AdminBaseDialogHeaderProps) => {
-  const isDark = variant === "admin";
-
   return (
-    <div
-      className={cn(
-        "p-5 sm:p-6 flex items-center justify-between border-b shrink-0 text-left",
-        isDark ? "bg-slate-900/60 border-slate-800/80" : "bg-slate-50 border-slate-200"
-      )}
-    >
+    <div className="p-5 sm:p-6 flex items-center justify-between border-b border-border/50 bg-secondary/20 shrink-0 text-left">
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
         {leftAction ? (
           <div className="shrink-0">{leftAction}</div>
         ) : icon ? (
-          <div
-            className={cn(
-              "h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm",
-              isDark
-                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                : "bg-blue-50 text-blue-600 border-blue-200"
-            )}
-          >
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20 bg-primary/10 text-primary shadow-xs">
             {icon}
           </div>
         ) : null}
         <div className="flex flex-col min-w-0 flex-1">
-          <DialogTitle
-            className={cn(
-              "text-sm sm:text-base font-headline font-black uppercase tracking-tight line-clamp-2 leading-tight",
-              isDark ? "text-white" : "text-slate-900"
-            )}
-          >
+          <DialogTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight line-clamp-2 leading-tight">
             {title}
           </DialogTitle>
 
           {subtitle && (
-            <p
-              className={cn(
-                "text-[10px] font-bold uppercase tracking-wider mt-0.5 truncate",
-                isDark ? "text-slate-400" : "text-slate-500"
-              )}
-            >
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -146,12 +118,7 @@ const AdminBaseDialogHeader = ({
         <button
           type="button"
           onClick={onClose}
-          className={cn(
-            "ml-4 p-2 rounded-xl transition-all active:scale-95 shrink-0",
-            isDark
-              ? "text-slate-400 hover:text-white hover:bg-slate-800/80"
-              : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/80"
-          )}
+          className="ml-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95 shrink-0"
         >
           <X className="w-5 h-5" />
           <span className="sr-only">Fechar</span>
@@ -180,7 +147,7 @@ const AdminBaseDialogBody = ({
     <div
       ref={containerRef}
       className={cn(
-        "p-5 sm:p-6 flex-1 overflow-y-auto min-h-[100px] scrollbar-thin scrollbar-thumb-slate-700/80 scrollbar-track-slate-900/50 [overflow-anchor:none] text-left space-y-4",
+        "p-5 sm:p-6 flex-1 overflow-y-auto min-h-[100px] scrollbar-thin scrollbar-thumb-border scrollbar-track-secondary/20 [overflow-anchor:none] text-left space-y-4",
         className
       )}
     >
@@ -217,7 +184,7 @@ const AdminBaseDialogFooter = ({ children, className }: AdminBaseDialogFooterPro
   return (
     <div
       className={cn(
-        "p-4 sm:p-5 bg-slate-900/40 flex gap-3 border-t border-slate-800/80 shrink-0",
+        "p-4 sm:p-5 bg-card flex gap-3 border-t border-border shrink-0",
         className
       )}
     >
@@ -229,7 +196,7 @@ const AdminBaseDialogFooter = ({ children, className }: AdminBaseDialogFooterPro
 interface AdminBaseDialogActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   onClick?: () => void;
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "destructive";
   isLoading?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -252,11 +219,12 @@ const AdminBaseDialogAction = ({
 }: AdminBaseDialogActionProps) => {
   const isSpinner = isLoading || loading;
   const styles = {
-    primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25",
-    secondary: "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/80",
-    outline: "border border-slate-700 text-slate-300 bg-transparent hover:bg-slate-800",
-    ghost: "bg-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 border-0",
-    danger: "bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/25",
+    primary: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border shadow-xs",
+    outline: "border border-border text-foreground bg-transparent hover:bg-secondary shadow-xs",
+    ghost: "bg-transparent text-muted-foreground hover:text-foreground hover:bg-secondary border-0",
+    danger: "bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-xs",
+    destructive: "bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-xs",
   };
 
   return (
@@ -265,7 +233,7 @@ const AdminBaseDialogAction = ({
       onClick={onClick}
       disabled={disabled || isSpinner}
       className={cn(
-        "flex-1 h-11 rounded-xl font-bold uppercase text-xs tracking-wider transition-all active:scale-95 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
+        "flex-1 h-10 rounded-xl font-semibold text-xs tracking-normal transition-all active:scale-95 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
         styles[variant],
         className
       )}
@@ -285,6 +253,7 @@ const AdminBaseDialogAction = ({
     </Button>
   );
 };
+
 
 export const AdminBaseDialog = Object.assign(AdminBaseDialogRoot, {
   Header: AdminBaseDialogHeader,

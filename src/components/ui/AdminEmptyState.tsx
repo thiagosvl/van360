@@ -7,6 +7,7 @@ interface AdminEmptyStateProps {
   icon: LucideIcon;
   title: string;
   description?: string | ReactNode;
+  action?: ReactNode;
   className?: string;
   iconClassName?: string;
 }
@@ -15,30 +16,33 @@ export function AdminEmptyState({
   icon: Icon,
   title,
   description,
+  action,
   className,
   iconClassName,
 }: AdminEmptyStateProps) {
   return (
     <Card
       className={cn(
-        "border border-dashed border-slate-800/80 bg-[#131b2e]/60 shadow-xl rounded-[2rem] overflow-hidden text-slate-100",
+        "border border-border/80 bg-card/40 shadow-xs rounded-3xl overflow-hidden text-foreground",
         className
       )}
     >
       <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
-        <div className="h-16 w-16 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center mb-4 shadow-inner">
-          <Icon className={cn("h-7 w-7 text-slate-400", iconClassName)} />
+        <div className="h-14 w-14 rounded-2xl bg-secondary/80 border border-border flex items-center justify-center mb-3.5 shadow-xs">
+          <Icon className={cn("h-6 w-6 text-muted-foreground", iconClassName)} />
         </div>
 
-        <h3 className="text-xs font-headline font-black text-slate-200 uppercase tracking-widest mb-1.5">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground tracking-tight mb-1">
           {title}
         </h3>
 
         {description && (
-          <div className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+          <div className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
             {description}
           </div>
         )}
+
+        {action && <div className="mt-4">{action}</div>}
       </CardContent>
     </Card>
   );

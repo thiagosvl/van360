@@ -12,7 +12,6 @@ import { useCobrancasViewModel, useLayout, useProfile, usePassageiros } from "@/
 import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
-import { PixNudgeBanner } from "@/components/features/subscription/PixNudgeBanner";
 import { Banner } from "@/components/ui/Banner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
@@ -99,7 +98,7 @@ export default function Cobrancas() {
     onRegistrarPagamento: (cobranca: Cobranca) => {
       if (cobranca.isProjection && isPassageiroIncompleto(cobranca.passageiro)) {
         openConfirmationDialog({
-          title: "Valor da parcela não configurado",
+          title: "Valor das parcelas não configurado",
           description:
             "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
           confirmText: "Configurar agora",
@@ -151,11 +150,7 @@ export default function Cobrancas() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
-          {!profile?.chave_pix && (
-            <PixNudgeBanner hasPix={false} />
-          )}
-
+        <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
           <DateNavigation
             mes={mesFilter}
             ano={anoFilter}
@@ -167,7 +162,7 @@ export default function Cobrancas() {
               <Banner
                 variant="warning"
                 title={`${alunosSemValor.length} ${alunosSemValor.length === 1 ? "aluno sem o valor da parcela" : "alunos sem o valor da parcela"}`}
-                description="Toque para preencher rapidamente e ativar as cobranças."
+                description="Toque para preencher rapidamente."
                 onClick={() => navigate("/alunos/atualizacao-rapida?semValor=true")}
                 className="cursor-pointer"
               />
@@ -187,31 +182,43 @@ export default function Cobrancas() {
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
-            className="w-full space-y-6"
+            className="w-full space-y-4 sm:space-y-6"
           >
-            <div className="flex flex-col gap-5">
-              <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-                <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0">
+                <TabsList className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-full sm:w-auto grid grid-cols-2 sm:flex">
                   <TabsTrigger
                     value={CobrancaTab.ARECEBER}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    className={cn(
+                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
+                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                    )}
                   >
                     A Receber
                     <span className={cn(
-                      "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                      activeTab === CobrancaTab.ARECEBER ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                      "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
+                      activeTab === CobrancaTab.ARECEBER
+                        ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
+                        : "text-[#737373]"
                     )}>
                       {countAReceber || 0}
                     </span>
                   </TabsTrigger>
                   <TabsTrigger
                     value={CobrancaTab.RECEBIDAS}
-                    className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
+                    className={cn(
+                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
+                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                    )}
                   >
                     Recebidas
                     <span className={cn(
-                      "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                      activeTab === CobrancaTab.RECEBIDAS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                      "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
+                      activeTab === CobrancaTab.RECEBIDAS
+                        ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
+                        : "text-[#737373]"
                     )}>
                       {countRecebidos || 0}
                     </span>
@@ -219,28 +226,25 @@ export default function Cobrancas() {
                 </TabsList>
               </div>
 
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Search className={cn(
-                    "h-4 w-4 transition-colors",
-                    busca ? "text-amber-500" : "text-slate-400 group-focus-within:text-[#1a3a5c]"
-                  )} />
+              <div className="relative group w-full sm:max-w-xs">
+                <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-[#737373] group-focus-within:text-[#0a0a0a] transition-colors" />
                 </div>
                 <Input
                   type="search"
-                  placeholder="Buscar por aluno ou responsável..."
+                  placeholder="Buscar aluno ou responsável..."
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
+                  className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+              <h2 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
                 {activeTab === CobrancaTab.ARECEBER ? "A Receber" : "Recebidas"}
               </h2>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+              <span className="text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                 {currentCount} {statusLabel}
               </span>
             </div>
@@ -301,7 +305,7 @@ export default function Cobrancas() {
         </div>
       </PullToRefreshWrapper>
 
-      {shouldShowTutorial && (
+      {/* {shouldShowTutorial && (
         <VideoCommerce
           screenName="parcelas"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -311,7 +315,7 @@ export default function Cobrancas() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_COBRANCAS_DISMISSED}
         />
-      )}
+      )} */}
     </>
   );
 }

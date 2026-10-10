@@ -1,13 +1,20 @@
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { toast } from "sonner";
+import { toast } from "@/utils/notifications/toast";
 
 export interface ShareContratoData {
   url: string;
   filename: string;
   title: string;
   text?: string;
+}
+
+export interface DownloadContratoData {
+  url?: string;
+  blob?: Blob;
+  filename: string;
+  title?: string;
 }
 
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -44,6 +51,77 @@ const isShareCancelError = (error: unknown): boolean => {
     message.includes("abort")
   );
 };
+
+export async function downloadContratoFile(data: DownloadContratoData): Promise<void> {
+  const { url, blob: initialBlob, filename, title } = data;
+
+  if (!url && !initialBlob) {
+    toast.error("O documento do contrato não está disponível.");
+    return;
+  }
+
+  try {
+    let blob = initialBlob;
+    if (!blob && url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Falha ao carregar arquivo do contrato");
+      }
+      blob = await response.blob();
+    }
+
+    if (!blob) {
+      throw new Error("Documento não encontrado");
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const base64Data = await blobToBase64(blob);
+        const savedFile = await Filesystem.writeFile({
+          path: filename,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+
+        await Share.share({
+          title: title || filename,
+          files: [savedFile.uri],
+          dialogTitle: "Salvar Contrato",
+        });
+        return;
+      } catch (nativeError) {
+        if (isShareCancelError(nativeError)) {
+          return;
+        }
+        throw nativeError;
+      }
+    }
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+    toast.success("Download iniciado com sucesso!");
+  } catch (err) {
+    if (!isShareCancelError(err)) {
+      if (url && !Capacitor.isNativePlatform()) {
+        const fallbackLink = document.createElement("a");
+        fallbackLink.href = url;
+        fallbackLink.download = filename;
+        fallbackLink.target = "_blank";
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        document.body.removeChild(fallbackLink);
+        return;
+      }
+      toast.error("Erro ao realizar download do documento.");
+    }
+  }
+}
 
 export async function shareContratoFile(data: ShareContratoData): Promise<void> {
   const { url, filename, title, text = "" } = data;

@@ -33,8 +33,8 @@ export function ConfigurarRotaItinerario({
 
   return (
     <div id="itinerario-container" className="bg-transparent scroll-mt-24 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between px-1 mb-2">
-        <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+      <div className="flex items-center justify-between px-1 mb-2.5">
+        <h2 className="text-sm font-semibold text-[#0a0a0a]">
           {itinerario.length === 1 ? "1 parada" : `${itinerario.length} paradas`}
         </h2>
         {shouldShowTopButton && (
@@ -42,7 +42,7 @@ export function ConfigurarRotaItinerario({
             type="button"
             size="sm"
             onClick={onOpenModalParadaGeral}
-            className="h-7 px-2.5 rounded-lg bg-[#1a3a5c] hover:bg-[#16314f] text-white font-bold text-xs shadow-2xs flex items-center gap-1 cursor-pointer transition-all active:scale-95 animate-in fade-in duration-200"
+            className="h-8 px-3 rounded-[18px] bg-primary hover:bg-primary-hover text-white font-medium text-xs shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 animate-in fade-in duration-200"
             title="Adicionar Parada no Final"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -52,7 +52,6 @@ export function ConfigurarRotaItinerario({
       </div>
 
       <div className="relative pl-10 sm:pl-11">
-        {/* Renderização das Paradas Intermediárias */}
         {itinerario.map((item, index) => {
           const { desces, subes } = getAlunosEscolaPorPosicao(itinerario, index);
           return (
@@ -73,25 +72,24 @@ export function ConfigurarRotaItinerario({
           );
         })}
 
-        {/* Botão "Adicionar Parada" no Rodapé do Itinerário */}
         <div className="relative w-full my-3.5">
           {itinerario.length > 0 && (
-            <div className="absolute left-[-26px] -top-6 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+            <div className="absolute left-[-26px] -top-6 bottom-1/2 w-[2px] bg-[#e5e5e5] z-0" />
           )}
           <button
             type="button"
             onClick={onOpenModalParadaGeral}
-            className="absolute left-[-39px] top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white hover:bg-slate-100 border-2 border-dashed border-[#1a3a5c]/45 hover:border-[#1a3a5c] text-[#1a3a5c] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
+            className="absolute left-[-39px] top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white hover:bg-[#fafafa] border border-dashed border-[#737373]/60 hover:border-[#0a0a0a] text-[#0a0a0a] flex items-center justify-center shrink-0 shadow-xs z-10 transition-all hover:scale-110 active:scale-95 cursor-pointer"
             title="Adicionar Parada no Final"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[3px]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           </button>
           <Button
             type="button"
             onClick={onOpenModalParadaGeral}
-            className="w-full h-11 bg-white hover:bg-[#1a3a5c]/5 border-2 border-dashed border-[#1a3a5c]/30 hover:border-[#1a3a5c] text-[#1a3a5c] font-extrabold uppercase text-xs tracking-wider rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99]"
+            className="w-full h-11 bg-white hover:bg-[#fafafa] border border-dashed border-[#e5e5e5] hover:border-[#0a0a0a] text-[#0a0a0a] font-medium text-xs rounded-[18px] shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[3px]" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Adicionar Parada</span>
           </Button>
         </div>

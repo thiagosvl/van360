@@ -54,71 +54,71 @@ export function AdminVencimentosTabela() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
-          title="VENCIMENTOS HOJE"
+          title="Vencimentos hoje"
           value={vencimentosHoje}
           subtext={`Dia ${diaAtual} do mês`}
-          cardBorder="border-blue-500/40 shadow-blue-500/10"
-          iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+          cardBorder="border-border/80"
+          iconBg="bg-primary/10 text-primary border-primary/20"
           icon={<Clock className="h-5 w-5" />}
         />
 
         <AdminKpiCard
-          title="BASE COM VENCIMENTO"
+          title="Base com vencimento"
           value={totalPassageiros}
           subtext="Passageiros ativos de motoristas ativos"
-          cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+          cardBorder="border-border/80"
           iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           icon={<Users className="h-5 w-5" />}
         />
 
         <AdminKpiCard
-          title="DIA DE MAIOR VOLUME"
+          title="Dia de maior volume"
           value={diaComPico ? `Dia ${diaComPico.dia}` : "-"}
           subtext={diaComPico ? `${diaComPico.quantidade} passageiros com vencimento` : "Sem dados"}
-          cardBorder="border-amber-500/40 shadow-amber-500/10"
+          cardBorder="border-border/80"
           iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
           icon={<Flame className="h-5 w-5" />}
         />
       </div>
 
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="p-6 pb-4 border-b border-slate-800/80">
+      <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/40">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-400" />
-                <span>DISTRIBUIÇÃO DE VENCIMENTOS DOS PASSAGEIROS POR DIA</span>
+              <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span>Distribuição de vencimentos por dia</span>
               </CardTitle>
-              <p className="text-[11px] font-medium text-slate-400 mt-1">
-                Acompanhamento geral de vencimentos dos alunos ativos de motoristas em atividade operacional
+              <p className="text-xs font-normal text-muted-foreground mt-1">
+                Acompanhamento geral de vencimentos dos alunos ativos de motoristas em atividade
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800/80 px-3.5 py-1.5 rounded-xl">
+              <div className="flex items-center gap-2.5 bg-secondary/60 border border-border px-3 py-1.5 rounded-xl">
                 <Switch
                   id="somenteComVencimento"
                   checked={somenteComVencimento}
                   onCheckedChange={setSomenteComVencimento}
-                  className="data-[state=checked]:bg-blue-600 shrink-0 scale-90"
+                  className="data-[state=checked]:bg-primary shrink-0 scale-90"
                 />
                 <label
                   htmlFor="somenteComVencimento"
-                  className="text-xs font-bold text-slate-300 cursor-pointer select-none whitespace-nowrap"
+                  className="text-xs font-medium text-foreground cursor-pointer select-none whitespace-nowrap"
                 >
                   Ocultar vazios
                 </label>
               </div>
 
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => refetch()}
                 disabled={isLoading}
-                className="h-8 w-8 p-0 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+                className="h-8 w-8 p-0 rounded-xl border border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
                 title="Recarregar dados"
               >
-                <RotateCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin text-blue-400" : ""}`} />
+                <RotateCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin text-primary" : ""}`} />
               </Button>
             </div>
           </div>
@@ -127,8 +127,8 @@ export function AdminVencimentosTabela() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16 space-y-3">
-              <Loader2 className="h-7 w-7 animate-spin text-blue-400" />
-              <p className="text-xs font-bold text-slate-400">Calculando vencimentos dos passageiros...</p>
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <p className="text-xs font-medium text-muted-foreground">Calculando vencimentos dos passageiros...</p>
             </div>
           ) : dias.length === 0 ? (
             <div className="p-6">
@@ -139,108 +139,180 @@ export function AdminVencimentosTabela() {
               />
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800/80 bg-slate-900/50 text-[10px] font-headline font-black text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-6">Dia do Mês</th>
-                    <th className="py-3 px-6 text-center">Vencimentos</th>
-                    <th className="py-3 px-6">Distribuição Visual</th>
-                    <th className="py-3 px-6 text-right">Proporção</th>
-                    <th className="py-3 px-6 text-center w-24">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs">
-                  {dias.map((item) => {
-                    const isPico = diaComPico && diaComPico.quantidade > 0 && item.dia === diaComPico.dia;
+            <div>
+              <div className="hidden sm:block overflow-x-auto [scrollbar-width:thin]">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/30 text-xs font-medium text-muted-foreground">
+                      <th className="py-3 px-6">Dia do Mês</th>
+                      <th className="py-3 px-6 text-center">Vencimentos</th>
+                      <th className="py-3 px-6">Distribuição Visual</th>
+                      <th className="py-3 px-6 text-right">Proporção</th>
+                      <th className="py-3 px-6 text-center w-24">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40 text-xs">
+                    {dias.map((item) => {
+                      const isPico = diaComPico && diaComPico.quantidade > 0 && item.dia === diaComPico.dia;
 
-                    return (
-                      <tr
-                        key={item.dia}
-                        className={`transition-colors ${
-                          item.isHoje
-                            ? "bg-blue-500/10 hover:bg-blue-500/15"
-                            : item.quantidade > 0
-                            ? "hover:bg-slate-900/60"
-                            : "hover:bg-slate-900/30 opacity-70"
-                        }`}
-                      >
-                        <td className="py-3 px-6">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-sm text-white">
-                              Dia {item.dia.toString().padStart(2, "0")}
-                            </span>
-                            {item.isHoje && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500 text-white shadow-sm shadow-blue-500/30">
-                                <Clock className="h-2.5 w-2.5" />
-                                Hoje
+                      return (
+                        <tr
+                          key={item.dia}
+                          className={`transition-colors ${
+                            item.isHoje
+                              ? "bg-primary/5 hover:bg-primary/10"
+                              : item.quantidade > 0
+                              ? "hover:bg-secondary/40"
+                              : "hover:bg-secondary/20 opacity-70"
+                          }`}
+                        >
+                          <td className="py-3 px-6">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-semibold text-sm text-foreground">
+                                Dia {item.dia.toString().padStart(2, "0")}
                               </span>
-                            )}
-                            {isPico && !item.isHoje && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                                <Flame className="h-2.5 w-2.5" />
-                                Pico
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                              {item.isHoje && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+                                  <Clock className="h-2.5 w-2.5" />
+                                  Hoje
+                                </span>
+                              )}
+                              {isPico && !item.isHoje && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                  <Flame className="h-2.5 w-2.5" />
+                                  Pico
+                                </span>
+                              )}
+                            </div>
+                          </td>
 
-                        <td className="py-3 px-6 text-center">
-                          <span
-                            className={`font-mono font-black text-sm ${
-                              item.isHoje
-                                ? "text-blue-400"
-                                : item.quantidade > 0
-                                ? "text-white"
-                                : "text-slate-600"
-                            }`}
-                          >
-                            {item.quantidade}
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-semibold ml-1">
-                            {item.quantidade === 1 ? "aluno" : "alunos"}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-6 min-w-[160px]">
-                          <div className="h-2.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
-                            <div
-                              className={`h-full transition-all duration-700 rounded-full ${
+                          <td className="py-3 px-6 text-center">
+                            <span
+                              className={`font-mono font-bold text-sm ${
                                 item.isHoje
-                                  ? "bg-blue-500 shadow-sm shadow-blue-500/50"
-                                  : isPico
-                                  ? "bg-amber-400 shadow-sm shadow-amber-400/50"
+                                  ? "text-primary"
                                   : item.quantidade > 0
-                                  ? "bg-emerald-500/80"
-                                  : "bg-transparent"
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
                               }`}
-                              style={{ width: `${Math.max(item.percentual, item.quantidade > 0 ? 3 : 0)}%` }}
-                            />
-                          </div>
-                        </td>
+                            >
+                              {item.quantidade}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-normal ml-1">
+                              {item.quantidade === 1 ? "aluno" : "alunos"}
+                            </span>
+                          </td>
 
-                        <td className="py-3 px-6 text-right font-mono font-bold">
-                          <span className={item.quantidade > 0 ? "text-slate-300" : "text-slate-600"}>
-                            {item.percentual}%
+                          <td className="py-3 px-6 min-w-[160px]">
+                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden border border-border/80">
+                              <div
+                                className={`h-full transition-all duration-700 rounded-full ${
+                                  item.isHoje
+                                    ? "bg-primary shadow-xs"
+                                    : isPico
+                                    ? "bg-amber-400"
+                                    : item.quantidade > 0
+                                    ? "bg-emerald-500/80"
+                                    : "bg-transparent"
+                                }`}
+                                style={{ width: `${Math.max(item.percentual, item.quantidade > 0 ? 3 : 0)}%` }}
+                              />
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-6 text-right font-mono font-semibold">
+                            <span className={item.quantidade > 0 ? "text-foreground" : "text-muted-foreground"}>
+                              {item.percentual}%
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-6 text-center">
+                            <Button
+                              variant="tonal"
+                              size="sm"
+                              onClick={() => openAdminVencimentoDetalhesDialog({ dia: item.dia })}
+                              className="h-7 w-7 p-0 rounded-xl"
+                              title={`Ver detalhes do Dia ${item.dia}`}
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="sm:hidden p-3.5 space-y-2.5">
+                {dias.map((item) => {
+                  const isPico = diaComPico && diaComPico.quantidade > 0 && item.dia === diaComPico.dia;
+
+                  return (
+                    <div
+                      key={`mobile-dia-${item.dia}`}
+                      className={`p-3 rounded-2xl border transition-colors space-y-2 text-left ${
+                        item.isHoje
+                          ? "bg-primary/5 border-primary/30"
+                          : item.quantidade > 0
+                          ? "bg-secondary/30 border-border/80"
+                          : "bg-secondary/15 border-border/40 opacity-70"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-semibold text-xs text-foreground">
+                            Dia {item.dia.toString().padStart(2, "0")}
                           </span>
-                        </td>
+                          {item.isHoje && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+                              <Clock className="h-2.5 w-2.5" />
+                              Hoje
+                            </span>
+                          )}
+                          {isPico && !item.isHoje && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                              <Flame className="h-2.5 w-2.5" />
+                              Pico
+                            </span>
+                          )}
+                        </div>
 
-                        <td className="py-3 px-6 text-center">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-semibold text-foreground">
+                            {item.quantidade} <span className="font-normal text-[10px] text-muted-foreground">{item.quantidade === 1 ? "aluno" : "alunos"}</span>
+                          </span>
+                          <span className="text-[10px] font-mono text-muted-foreground">({item.percentual}%)</span>
                           <Button
-                            variant="ghost"
+                            variant="tonal"
                             size="sm"
                             onClick={() => openAdminVencimentoDetalhesDialog({ dia: item.dia })}
-                            className="h-8 w-8 p-0 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all shadow-sm"
+                            className="h-6 w-6 p-0 rounded-lg ml-1"
                             title={`Ver detalhes do Dia ${item.dia}`}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+
+                      <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden border border-border/60">
+                        <div
+                          className={`h-full transition-all duration-700 rounded-full ${
+                            item.isHoje
+                              ? "bg-primary shadow-xs"
+                              : isPico
+                              ? "bg-amber-400"
+                              : item.quantidade > 0
+                              ? "bg-emerald-500/80"
+                              : "bg-transparent"
+                          }`}
+                          style={{ width: `${Math.max(item.percentual, item.quantidade > 0 ? 3 : 0)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardContent>

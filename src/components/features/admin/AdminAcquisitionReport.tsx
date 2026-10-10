@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { useAdminAcquisitionStats } from "@/hooks/api/admin/useAdminUserHooks";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
+import { AdminPeriodFilter, calculateDateRangeForPreset } from "@/components/ui/AdminPeriodFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import {
   Users,
@@ -21,9 +21,7 @@ import {
 } from "lucide-react";
 import { CANAL_AQUISICAO_CONFIG } from "@/utils/acquisition-channel.utils";
 import { CanalAquisicao, AtribuicaoCategoria } from "@/types/enums";
-
-type PeriodPreset = "7d" | "15d" | "30d" | "mes_atual" | "mes_anterior" | "tudo" | "custom";
-
+import { toStartOfDayISO, toEndOfDayISO } from "@/utils/dateUtils";
 const CATEGORIA_COLORS: Record<AtribuicaoCategoria, string> = {
   [AtribuicaoCategoria.META_ADS]: "#E1306C",
   [AtribuicaoCategoria.GOOGLE_ADS]: "#F59E0B",
@@ -45,12 +43,12 @@ function CustomChartTooltip({ active, payload }: { active?: boolean; payload?: A
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#0f172a] text-slate-100 p-3 rounded-xl border border-slate-700 shadow-2xl text-xs space-y-1 text-left">
-        <p className="font-bold flex items-center gap-2 text-white">
+      <div className="bg-card text-foreground p-3 rounded-2xl border border-border shadow-xl text-xs space-y-1 text-left">
+        <p className="font-semibold flex items-center gap-2 text-foreground">
           <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: data.color }} />
           {data.name}
         </p>
-        <p className="text-slate-200 font-semibold">
+        <p className="text-muted-foreground font-normal">
           {data.quantidade} lead{data.quantidade !== 1 ? "s" : ""} ({data.porcentagem}%)
         </p>
       </div>
@@ -60,51 +58,11 @@ function CustomChartTooltip({ active, payload }: { active?: boolean; payload?: A
 }
 
 export function AdminAcquisitionReport() {
-  const [preset, setPreset] = useState<PeriodPreset>("30d");
-  const [customInicio, setCustomInicio] = useState("");
-  const [customFim, setCustomFim] = useState("");
-
-  const dates = useMemo(() => {
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const toYMD = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
-    if (preset === "7d") {
-      const start = new Date(now);
-      start.setDate(now.getDate() - 7);
-      return { data_inicio: `${toYMD(start)}T00:00:00`, data_fim: `${toYMD(now)}T23:59:59` };
-    }
-
-    if (preset === "15d") {
-      const start = new Date(now);
-      start.setDate(now.getDate() - 15);
-      return { data_inicio: `${toYMD(start)}T00:00:00`, data_fim: `${toYMD(now)}T23:59:59` };
-    }
-
-    if (preset === "30d") {
-      const start = new Date(now);
-      start.setDate(now.getDate() - 30);
-      return { data_inicio: `${toYMD(start)}T00:00:00`, data_fim: `${toYMD(now)}T23:59:59` };
-    }
-
-    if (preset === "mes_atual") {
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      return { data_inicio: `${toYMD(start)}T00:00:00`, data_fim: `${toYMD(now)}T23:59:59` };
-    }
-
-    if (preset === "mes_anterior") {
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0);
-      return { data_inicio: `${toYMD(start)}T00:00:00`, data_fim: `${toYMD(end)}T23:59:59` };
-    }
-
-    if (preset === "custom" && customInicio) {
-      const fim = customFim ? `${customFim}T23:59:59` : undefined;
-      return { data_inicio: `${customInicio}T00:00:00`, data_fim: fim };
-    }
-
-    return { data_inicio: undefined, data_fim: undefined };
-  }, [preset, customInicio, customFim]);
+  const initialRange = calculateDateRangeForPreset("30d");
+  const [dates, setDates] = useState<{ data_inicio?: string; data_fim?: string }>({
+    data_inicio: initialRange.dataInicio ? toStartOfDayISO(initialRange.dataInicio) : undefined,
+    data_fim: initialRange.dataFim ? toEndOfDayISO(initialRange.dataFim) : undefined,
+  });
 
   const { data, isLoading, isFetching, refetch } = useAdminAcquisitionStats(dates);
 
@@ -152,96 +110,29 @@ export function AdminAcquisitionReport() {
 
   return (
     <div className="space-y-6 text-left">
-      <div className="bg-[#131b2e] border border-slate-800/80 p-4 sm:p-5 rounded-[1.5rem] shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-card border border-border p-4 sm:p-5 rounded-3xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-sm font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-blue-400" />
-            <span>Período de Análise</span>
+          <h2 className="text-sm font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            <span>Período de análise</span>
           </h2>
-          <p className="text-[11px] font-medium text-slate-400 mt-0.5">
-            Filtre os leads e a conversão de anúncios por data de cadastro
+          <p className="text-[11px] font-normal text-muted-foreground mt-0.5">
+            Filtre os leads e a conversão de canais por período de cadastro
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex bg-slate-900/90 border border-slate-800 p-1 rounded-xl gap-1 overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => setPreset("7d")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "7d"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              7 Dias
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("15d")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "15d"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              15 Dias
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("30d")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "30d"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              30 Dias
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("mes_atual")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "mes_atual"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              Este Mês
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("mes_anterior")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "mes_anterior"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              Mês Anterior
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("tudo")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "tudo"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              Histórico Completo
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("custom")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                preset === "custom"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              Personalizado
-            </button>
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <div className="w-full sm:w-auto">
+            <AdminPeriodFilter
+              defaultPreset="30d"
+              className="h-9 rounded-xl bg-secondary/60 border-input text-xs sm:w-auto"
+              onChange={(start, end) => {
+                setDates({
+                  data_inicio: start ? toStartOfDayISO(start) : undefined,
+                  data_fim: end ? toEndOfDayISO(end) : undefined,
+                });
+              }}
+            />
           </div>
 
           <Button
@@ -250,97 +141,74 @@ export function AdminAcquisitionReport() {
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-9 px-3 border-slate-800 bg-slate-900 text-slate-300 hover:text-white rounded-xl shadow shrink-0 font-headline font-bold text-xs flex items-center gap-1.5"
+            className="h-9 px-3 border-border bg-card text-foreground hover:bg-secondary rounded-xl shadow-xs shrink-0 font-medium text-xs flex items-center gap-1.5"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-primary" : ""}`} />
             <span>Atualizar</span>
           </Button>
         </div>
       </div>
 
-      {preset === "custom" && (
-        <div className="bg-[#131b2e] border border-slate-800/80 p-4 rounded-[1.25rem] flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">De:</span>
-            <Input
-              type="date"
-              value={customInicio}
-              onChange={(e) => setCustomInicio(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-white text-xs h-9 rounded-xl w-40"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">Até:</span>
-            <Input
-              type="date"
-              value={customFim}
-              onChange={(e) => setCustomFim(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-white text-xs h-9 rounded-xl w-40"
-            />
-          </div>
-        </div>
-      )}
-
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center min-h-[350px] space-y-3 bg-[#131b2e] border border-slate-800/80 rounded-[2rem]">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="text-xs font-bold text-slate-400">Carregando dados de aquisição do período...</p>
+        <div className="flex flex-col items-center justify-center min-h-[350px] space-y-3 bg-card border border-border rounded-3xl">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-xs font-medium text-muted-foreground">Carregando dados de aquisição do período...</p>
         </div>
       ) : !data || data.resumo.total_leads === 0 ? (
-        <div className="bg-[#131b2e] border border-slate-800/80 rounded-[2rem] p-12 text-center space-y-2">
-          <Layers className="h-10 w-10 text-slate-600 mx-auto" />
-          <h3 className="text-sm font-bold text-white">Nenhum cadastro encontrado no período selecionado</h3>
-          <p className="text-xs text-slate-400">Tente ampliar o intervalo de datas acima para visualizar as origens dos leads.</p>
+        <div className="bg-card border border-border rounded-3xl p-12 text-center space-y-2">
+          <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
+          <h3 className="text-sm font-semibold text-foreground">Nenhum cadastro encontrado no período selecionado</h3>
+          <p className="text-xs text-muted-foreground">Tente ampliar o intervalo de datas acima para visualizar as origens dos leads.</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
-              title="LEADS NO PERÍODO"
+              title="Leads no período"
               value={data.resumo.total_leads}
               subtext="Novos motoristas cadastrados"
-              cardBorder="border-blue-500/40 shadow-blue-500/10"
-              iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+              cardBorder="border-border/80"
+              iconBg="bg-primary/10 text-primary border-primary/20"
               icon={<UserPlus className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="EM TESTE (TRIAL)"
+              title="Em teste (trial)"
               value={data.resumo.em_trial}
               subtext="Período gratuito de 15 dias"
-              cardBorder="border-purple-500/40 shadow-purple-500/10"
+              cardBorder="border-border/80"
               iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
               icon={<Clock className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="PAGANTES (CONVERTIDOS)"
+              title="Pagantes convertidos"
               value={data.resumo.ativos_pagantes}
               subtext={`Taxa de conversão: ${data.resumo.taxa_conversao}%`}
-              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
+              cardBorder="border-border/80"
               iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               icon={<ShieldCheck className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="LEADS COM ALUNOS"
+              title="Leads com alunos"
               value={data.resumo.com_alunos_cadastrados}
-              subtext={`${data.resumo.total_leads > 0 ? Math.round((data.resumo.com_alunos_cadastrados / data.resumo.total_leads) * 100) : 0}% ativaram a carteirinha`}
-              cardBorder="border-amber-500/40 shadow-amber-500/10"
+              subtext={`${data.resumo.total_leads > 0 ? Math.round((data.resumo.com_alunos_cadastrados / data.resumo.total_leads) * 100) : 0}% cadastraram alunos`}
+              cardBorder="border-border/80"
               iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
               icon={<Users className="h-5 w-5" />}
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
-                  <span>CANAIS & ORIGEM DO TRÁFEGO</span>
-                  <span className="text-[10px] font-mono font-bold text-slate-400">{data.resumo.total_leads} LEADS</span>
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+              <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+                <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between">
+                  <span>Canais e origem do tráfego</span>
+                  <span className="text-xs font-mono font-normal text-muted-foreground">{data.resumo.total_leads} leads</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-6">
+              <CardContent className="p-5 sm:p-6 pt-4 space-y-6">
                 <div className="relative w-full h-[220px] flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -354,35 +222,35 @@ export function AdminAcquisitionReport() {
                         dataKey="quantidade"
                       >
                         {canaisChartData.map((entry, index) => (
-                          <Cell key={`cell-canal-${index}`} fill={entry.color} stroke="#131b2e" strokeWidth={2} />
+                          <Cell key={`cell-canal-${index}`} fill={entry.color} stroke="hsl(var(--card))" strokeWidth={2} />
                         ))}
                       </Pie>
                       <RechartsTooltip content={<CustomChartTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-headline font-black text-white">{data.resumo.total_leads}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">LEADS</span>
+                    <span className="text-2xl font-headline font-semibold text-foreground">{data.resumo.total_leads}</span>
+                    <span className="text-xs font-normal text-muted-foreground">Leads</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-3 border-t border-slate-800/80">
+                <div className="space-y-2 pt-3 border-t border-border/40">
                   {data.canais.map((item) => (
                     <div
                       key={item.origem}
-                      className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 flex items-center justify-between gap-3 text-xs"
+                      className="p-3 rounded-2xl bg-secondary/40 border border-border flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span
-                          className="w-3 h-3 rounded-full shrink-0"
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: CATEGORIA_COLORS[item.categoria] || "#64748B" }}
                         />
-                        <span className="font-bold text-white truncate">{item.origem}</span>
+                        <span className="font-medium text-foreground truncate">{item.origem}</span>
                       </div>
-                      <div className="flex items-center gap-4 shrink-0 font-mono">
-                        <span className="text-slate-400 font-semibold">{item.quantidade} leads ({item.porcentagem}%)</span>
+                      <div className="flex items-center gap-3 shrink-0 font-mono">
+                        <span className="text-muted-foreground font-normal">{item.quantidade} leads ({item.porcentagem}%)</span>
                         {item.ativos_pagantes > 0 && (
-                          <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                          <span className="text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
                             {item.ativos_pagantes} pago ({item.taxa_conversao}%)
                           </span>
                         )}
@@ -393,14 +261,14 @@ export function AdminAcquisitionReport() {
               </CardContent>
             </Card>
 
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
-                  <span>DISPOSITIVOS DE CADASTRO</span>
-                  <Smartphone className="h-4 w-4 text-blue-400" />
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+              <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+                <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between">
+                  <span>Dispositivos de cadastro</span>
+                  <Smartphone className="h-4 w-4 text-primary" />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-2 space-y-6">
+              <CardContent className="p-5 sm:p-6 pt-4 space-y-6">
                 <div className="relative w-full h-[220px] flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -414,32 +282,32 @@ export function AdminAcquisitionReport() {
                         dataKey="quantidade"
                       >
                         {dispositivosChartData.map((entry, index) => (
-                          <Cell key={`cell-disp-${index}`} fill={entry.color} stroke="#131b2e" strokeWidth={2} />
+                          <Cell key={`cell-disp-${index}`} fill={entry.color} stroke="hsl(var(--card))" strokeWidth={2} />
                         ))}
                       </Pie>
                       <RechartsTooltip content={<CustomChartTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-headline font-black text-white">{data.resumo.total_leads}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">APARELHOS</span>
+                    <span className="text-2xl font-headline font-semibold text-foreground">{data.resumo.total_leads}</span>
+                    <span className="text-xs font-normal text-muted-foreground">Aparelhos</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-3 border-t border-slate-800/80">
+                <div className="space-y-2 pt-3 border-t border-border/40">
                   {data.dispositivos.map((item, idx) => {
                     const colors = ["#007AFF", "#34A853", "#8B5CF6", "#F59E0B", "#EC4899"];
                     const color = colors[idx % colors.length];
                     return (
                       <div
                         key={item.dispositivo}
-                        className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 flex items-center justify-between gap-3 text-xs"
+                        className="p-3 rounded-2xl bg-secondary/40 border border-border flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                          <span className="font-bold text-white truncate">{item.label}</span>
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                          <span className="font-medium text-foreground truncate">{item.label}</span>
                         </div>
-                        <span className="font-mono text-slate-300 font-bold shrink-0">
+                        <span className="font-mono text-muted-foreground shrink-0">
                           {item.quantidade} ({item.porcentagem}%)
                         </span>
                       </div>
@@ -451,23 +319,23 @@ export function AdminAcquisitionReport() {
           </div>
 
           {data.campanhas.length > 0 && (
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="p-6 pb-3 border-b border-slate-800/60">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+              <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+                <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-emerald-400" />
-                    <span>PERFORMANCE DE CAMPANHAS & CRIATIVOS (TRÁFEGO PAGO)</span>
+                    <span>Performance de campanhas e criativos</span>
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-slate-400">
-                    {data.campanhas.length} VARIAÇÕES RASTREADAS
+                  <span className="text-xs font-mono font-normal text-muted-foreground">
+                    {data.campanhas.length} variações
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-4">
-                <div className="overflow-x-auto">
+              <CardContent className="p-5 sm:p-6 pt-4">
+                <div className="hidden md:block overflow-x-auto [scrollbar-width:thin]">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      <tr className="border-b border-border text-[11px] font-medium text-muted-foreground">
                         <th className="pb-3">Campanha / Canal</th>
                         <th className="pb-3">Criativo (Content)</th>
                         <th className="pb-3 hidden md:table-cell">Conjunto (Term)</th>
@@ -481,17 +349,17 @@ export function AdminAcquisitionReport() {
                       {data.campanhas.map((camp, idx) => (
                         <tr
                           key={`${camp.nome}-${idx}`}
-                          className="border-b border-slate-800/40 hover:bg-slate-900/50 transition-colors"
+                          className="border-b border-border/40 hover:bg-secondary/40 transition-colors"
                         >
-                          <td className="py-3 font-bold text-white">
+                          <td className="py-3 font-semibold text-foreground">
                             <div className="space-y-0.5">
                               <span>{camp.nome}</span>
-                              <span className="block text-[10px] font-normal text-slate-400">{camp.origem}</span>
+                              <span className="block text-[10px] font-normal text-muted-foreground">{camp.origem}</span>
                             </div>
                           </td>
-                          <td className="py-3 font-medium text-slate-300">
+                          <td className="py-3 font-medium text-foreground">
                             {camp.criativo ? (
-                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono text-[11px]">
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono text-[11px]">
                                 <Tag className="h-3 w-3" />
                                 <span>{camp.criativo}</span>
                               </span>
@@ -499,24 +367,24 @@ export function AdminAcquisitionReport() {
                               "—"
                             )}
                           </td>
-                          <td className="py-3 font-mono text-slate-400 hidden md:table-cell">
+                          <td className="py-3 font-mono text-muted-foreground hidden md:table-cell">
                             {camp.conjunto || "—"}
                           </td>
-                          <td className="py-3 text-center font-mono font-bold text-white">
+                          <td className="py-3 text-center font-mono font-semibold text-foreground">
                             {camp.quantidade}
                           </td>
-                          <td className="py-3 text-center font-mono text-purple-300">
+                          <td className="py-3 text-center font-mono text-purple-400">
                             {camp.em_trial}
                           </td>
-                          <td className="py-3 text-right font-mono font-bold text-emerald-400">
+                          <td className="py-3 text-right font-mono font-semibold text-emerald-400">
                             {camp.ativos_pagantes}
                           </td>
-                          <td className="py-3 text-right font-mono font-bold">
+                          <td className="py-3 text-right font-mono font-semibold">
                             <span
                               className={`px-2 py-0.5 rounded-md ${
                                 camp.taxa_conversao > 0
                                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                  : "text-slate-400"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {camp.taxa_conversao}%
@@ -527,30 +395,84 @@ export function AdminAcquisitionReport() {
                     </tbody>
                   </table>
                 </div>
+
+                <div className="md:hidden space-y-3">
+                  {data.campanhas.map((camp, idx) => (
+                    <div
+                      key={`mobile-${camp.nome}-${idx}`}
+                      className="p-3.5 rounded-2xl bg-secondary/30 border border-border/80 space-y-2.5 text-xs text-left"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-foreground text-xs">{camp.nome}</p>
+                          <span className="text-[10px] text-muted-foreground">{camp.origem}</span>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold shrink-0 ${
+                            camp.taxa_conversao > 0
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "text-muted-foreground bg-secondary"
+                          }`}
+                        >
+                          {camp.taxa_conversao}% conv.
+                        </span>
+                      </div>
+
+                      {camp.criativo && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono text-[10px]">
+                            <Tag className="h-3 w-3" />
+                            <span>{camp.criativo}</span>
+                          </span>
+                          {camp.conjunto && (
+                            <span className="text-[10px] text-muted-foreground font-mono">
+                              ({camp.conjunto})
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/40 text-center font-mono">
+                        <div className="p-2 rounded-xl bg-secondary/50">
+                          <span className="text-[10px] text-muted-foreground block font-sans">Cadastros</span>
+                          <span className="font-bold text-foreground text-xs">{camp.quantidade}</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                          <span className="text-[10px] text-purple-400 block font-sans">Trial</span>
+                          <span className="font-bold text-purple-300 text-xs">{camp.em_trial}</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <span className="text-[10px] text-emerald-400 block font-sans">Pagantes</span>
+                          <span className="font-bold text-emerald-300 text-xs">{camp.ativos_pagantes}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
 
           {canaisAutodeclaradosList.length > 0 && (
-            <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
-                  <span>CANAL AUTODECLARADO PELOS MOTORISTAS (PESQUISA DE 3 DIAS)</span>
-                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card">
+              <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+                <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between">
+                  <span>Canal autodeclarado pelos motoristas</span>
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-3">
+              <CardContent className="p-5 sm:p-6 pt-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {canaisAutodeclaradosList.map((c) => (
                     <div
                       key={c.key}
-                      className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 flex items-center justify-between text-xs"
+                      className="p-3 rounded-2xl bg-secondary/40 border border-border flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                        <span className="font-bold text-slate-200">{c.name}</span>
+                        <span className="font-medium text-foreground">{c.name}</span>
                       </div>
-                      <span className="font-mono font-bold text-slate-400">
+                      <span className="font-mono font-semibold text-muted-foreground">
                         {c.quantidade} ({c.porcentagem}%)
                       </span>
                     </div>

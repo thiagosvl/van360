@@ -4,11 +4,10 @@ import { useActiveRouteViewModel } from "@/hooks/ui/useActiveRouteViewModel";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { RouteTimelineSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { AlertOctagon } from "lucide-react";
+import { AlertOctagon, ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ActiveRouteHistoryView } from "@/components/features/active-route/ActiveRouteHistoryView";
-
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 
@@ -38,15 +37,15 @@ export default function RouteDetailsPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 min-h-[400px]">
-        <AlertOctagon className="w-12 h-12 text-red-500" />
-        <h3 className="text-base font-bold text-[#1a3a5c] font-headline">Erro ao Carregar Corrida</h3>
-        <p className="text-xs text-slate-400 font-semibold max-w-[260px]">
+      <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 min-h-[400px] bg-white border border-[#e5e5e5] rounded-[24px] shadow-xs max-w-md mx-auto my-8">
+        <AlertOctagon className="w-12 h-12 text-[#e7000b]" />
+        <h3 className="text-base font-bold text-[#0a0a0a]">Erro ao Carregar Corrida</h3>
+        <p className="text-xs text-[#737373] font-normal max-w-[260px]">
           Não conseguimos obter as informações desta execução no histórico no momento.
         </p>
         <Button
           onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
-          className="bg-[#1a3a5c] hover:bg-[#16314f] text-white rounded-lg font-bold text-xs"
+          className="bg-primary hover:bg-primary-hover text-white rounded-[18px] font-medium text-xs h-10 px-5 border-none shadow-xs"
         >
           Voltar para Rotas
         </Button>
@@ -59,7 +58,19 @@ export default function RouteDetailsPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { }}>
-      <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
+      <div className="min-h-screen bg-transparent max-w-2xl mx-auto space-y-4 sm:space-y-5 pb-24 pt-1 sm:pt-2">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-white gap-1.5 -ml-2 font-medium text-xs h-8 sm:h-9 rounded-[18px] border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar</span>
+          </Button>
+        </div>
+
         {isLoading && !execucao ? (
           <RouteTimelineSkeleton count={4} />
         ) : (

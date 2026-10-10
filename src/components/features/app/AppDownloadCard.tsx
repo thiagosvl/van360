@@ -26,16 +26,16 @@ export const AppDownloadCard: React.FC<AppDownloadCardProps> = ({ className }) =
     <section className="px-1">
       <div
         className={cn(
-          "bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden relative p-5 sm:p-6 text-center flex flex-col items-center transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+          "bg-white rounded-[24px] shadow-xs border border-[#e5e5e5] overflow-hidden relative p-5 sm:p-6 text-center flex flex-col items-center transition-all duration-300 animate-in fade-in slide-in-from-top-2",
           className
         )}
       >
-        <h3 className="font-bold text-[#1a3a5c] text-[16px] sm:text-[17px] tracking-tight">
+        <h3 className="font-bold text-foreground text-[16px] sm:text-[17px] tracking-tight">
           Baixe o nosso App
         </h3>
 
-        <p className="text-xs text-slate-500 font-normal mt-1 max-w-md leading-relaxed">
-          O aplicativo é leve e te envia notificações sobre a sua van. Você também pode acessar pelo computador ou tablet.
+        <p className="text-xs text-muted-foreground font-normal mt-1 max-w-md leading-relaxed">
+          O aplicativo é leve e te envia notificações sobre a sua van. Acesse também pelo computador ou tablet.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">

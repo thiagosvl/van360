@@ -47,17 +47,17 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
         <button
           type="button"
           onClick={handleAssinarContrato}
-          className="w-full bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl p-4 shadow-sm transition-all active:scale-[0.98] flex items-center justify-between gap-3 text-left border border-amber-400/30 cursor-pointer"
+          className="w-full bg-primary hover:bg-primary-hover text-white rounded-[24px] p-4 shadow-sm transition-all active:scale-[0.99] flex items-center justify-between gap-3 text-left border border-primary/20 cursor-pointer"
         >
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-[18px] bg-white/20 flex items-center justify-center shrink-0">
               <FileSignature className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="block font-bold text-sm sm:text-[15px] leading-tight text-white truncate">
+              <span className="block font-semibold text-sm sm:text-[15px] leading-tight text-white truncate">
                 Assinar Contrato
               </span>
-              <span className="text-[11px] sm:text-xs text-amber-100 font-medium block truncate mt-0.5">
+              <span className="text-[11px] sm:text-xs text-white/80 font-normal block truncate mt-0.5">
                 Pendente de assinatura online
               </span>
             </div>
@@ -68,23 +68,23 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
 
       <section className="space-y-3">
         <div className="px-0.5">
-          <h2 className="text-[15px] sm:text-base font-bold text-[#1a3a5c]">
+          <h2 className="text-[15px] sm:text-base font-semibold text-[#0a0a0a]">
             Acesso Rápido
           </h2>
-          <p className="text-[12px] text-slate-400 mt-0.5">
+          <p className="text-xs text-[#737373] mt-0.5">
             Navegue pelos serviços e informações do aluno.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 border-slate-100">
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-[#e5e5e5]">
             <button
               type="button"
               onClick={() => handleTabClick("parcelas")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-r border-b border-[#e5e5e5]"
             >
-              <Receipt className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+              <Receipt className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
+              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
                 Parcelas
               </span>
             </button>
@@ -97,14 +97,14 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
                 }
               }}
               disabled={!temRotas}
-              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-slate-100 ${
+              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-[#e5e5e5] ${
                 temRotas
-                  ? "hover:bg-slate-50/80 active:bg-slate-100 cursor-pointer"
+                  ? "hover:bg-[#fafafa] active:bg-[#f5f5f5] cursor-pointer"
                   : "opacity-40 cursor-not-allowed"
               }`}
             >
-              <CalendarOff className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+              <CalendarOff className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
+              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
                 Ausências
               </span>
             </button>
@@ -112,10 +112,10 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             <button
               type="button"
               onClick={() => handleTabClick("responsaveis")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-r border-b border-[#e5e5e5]"
             >
-              <Users className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+              <Users className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
+              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
                 Responsáveis
               </span>
             </button>
@@ -124,14 +124,14 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
               type="button"
               onClick={() => temContrato && handleTabClick("contrato")}
               disabled={!temContrato}
-              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-slate-100 ${
+              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-[#e5e5e5] ${
                 temContrato
-                  ? "hover:bg-slate-50/80 active:bg-slate-100 cursor-pointer"
+                  ? "hover:bg-[#fafafa] active:bg-[#f5f5f5] cursor-pointer"
                   : "opacity-40 cursor-not-allowed"
               }`}
             >
-              <FileText className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+              <FileText className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
+              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
                 Contrato
               </span>
             </button>
@@ -139,10 +139,10 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             <button
               type="button"
               onClick={() => handleTabClick("dados-pessoais")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-slate-50/80 active:bg-slate-100 transition-colors group cursor-pointer border-r border-b border-slate-100"
+              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-b border-[#e5e5e5]"
             >
-              <User className="w-6 h-6 text-[#1a3a5c] mb-2 group-hover:scale-110 transition-transform stroke-[1.75]" />
-              <span className="text-[12px] sm:text-[13px] font-semibold text-[#1a3a5c] leading-tight">
+              <User className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
+              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
                 Dados Pessoais
               </span>
             </button>

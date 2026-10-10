@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PerfilTabSkeleton } from "@/components/skeletons";
 import { Banner } from "@/components/ui/Banner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -22,7 +23,7 @@ import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Loader2, Mail, Trash2, User } from "lucide-react";
+import { Calendar, Image as ImageIcon, Loader2, Mail, Trash2, User } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -240,37 +241,27 @@ export const PerfilTab = React.memo(function PerfilTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-64 w-full rounded-2xl" />
-      </div>
-    );
+    return <PerfilTabSkeleton />;
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-xs space-y-6">
-      {/* Titulo do Card */}
-      <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-        <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200">
-          <User className="w-5 h-5" />
-        </div>
-        <div>
-          <h2 className="text-base font-bold text-[#1a3a5c]">
-            Dados Cadastrais
-          </h2>
-        </div>
-      </div>
-
+    <div className="space-y-5 sm:space-y-6">
       {!isSubConta && profile?.id && (
-        <div className="space-y-3 pb-6 border-b border-slate-100">
-          <div>
-            <h3 className="text-sm font-bold text-[#1a3a5c]">
-              Logotipo da Van / Empresa
-            </h3>
-            <p className="text-xs text-slate-500">
-              Personalize os contratos e recibos gerados com a marca do seu transporte escolar.
-            </p>
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5">
+          <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a0a0a]" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+                Logotipo
+              </h2>
+              <p className="text-xs text-[#737373] mt-0.5">
+                Personalize os contratos e recibos gerados com a marca do seu transporte escolar.
+              </p>
+            </div>
           </div>
+
           <LogoUpload
             userId={profile.id}
             currentLogoUrl={profile.logo_url}
@@ -282,276 +273,295 @@ export const PerfilTab = React.memo(function PerfilTab() {
         </div>
       )}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-5">
-          {/* 1. Campos: CPF ou CNPJ e E-mail */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="cpfcnpj"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    CPF ou CNPJ <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        inputMode="numeric"
-                        maxLength={18}
-                        onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                        placeholder="000.000.000-00"
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                        aria-invalid={!!fieldState.error}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    E-mail <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        type="email"
-                        maxLength={255}
-                        placeholder="seu.email@exemplo.com"
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                        aria-invalid={!!fieldState.error}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {hasCpfCnpjChanged && (
-              <div className="sm:col-span-2">
-                <Banner
-                  variant="warning"
-                  description={
-                    <strong className="font-semibold text-amber-950">
-                      Ao alterar o documento, utilize o novo {tipoDocumento} para fazer login no futuro.
-                    </strong>
-                  }
-                />
-              </div>
-            )}
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <User className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a0a0a]" />
           </div>
+          <div>
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+              Dados Cadastrais
+            </h2>
+            <p className="text-xs text-[#737373] mt-0.5">
+              Gerencie suas informações pessoais e de contato
+            </p>
+          </div>
+        </div>
 
-          {/* 2. Razao Social e CPF do Responsável (Exibido apenas se for CNPJ, posicionado abaixo do CNPJ e antes do Nome) */}
-          {isCnpj && (
-            <>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="razao_social"
-                render={({ field, fieldState, formState }) => (
+                name="cpfcnpj"
+                render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      Razão Social <span className="text-red-600">*</span>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      CPF ou CNPJ <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
-                          placeholder="Digite a razão social"
                           {...field}
-                          value={field.value || ""}
-                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                          aria-invalid={
-                            !!fieldState.error ||
-                            ((!field.value || field.value.trim() === "") &&
-                              Object.keys(formState.errors).length > 0)
-                          }
+                          value={field.value ?? ""}
+                          inputMode="numeric"
+                          maxLength={18}
+                          onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                          placeholder="000.000.000-00"
+                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                          aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
                     <FormMessage />
-                    {(!field.value || field.value.trim() === "") &&
-                      Object.keys(formState.errors).length > 0 &&
-                      !fieldState.error && (
-                        <p className="text-[0.8rem] font-medium text-red-500 mt-1.5 ml-1">
-                          Razão social é obrigatória para CNPJ
-                        </p>
-                      )}
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
-                name="cpf_responsavel"
+                name="email"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      E-mail <span className="text-[#e7000b]">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          type="email"
+                          maxLength={255}
+                          placeholder="seu.email@exemplo.com"
+                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {hasCpfCnpjChanged && (
+                <div className="sm:col-span-2">
+                  <Banner
+                    variant="warning"
+                    description={`Ao alterar o documento, utilize o novo ${tipoDocumento} para fazer login no futuro.`}
+                  />
+                </div>
+              )}
+            </div>
+
+            {isCnpj && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="razao_social"
+                  render={({ field, fieldState, formState }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        Razão Social <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                          <Input
+                            placeholder="Digite a razão social"
+                            {...field}
+                            value={field.value || ""}
+                            className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                            aria-invalid={
+                              !!fieldState.error ||
+                              ((!field.value || field.value.trim() === "") &&
+                                Object.keys(formState.errors).length > 0)
+                            }
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                      {(!field.value || field.value.trim() === "") &&
+                        Object.keys(formState.errors).length > 0 &&
+                        !fieldState.error && (
+                          <p className="text-[0.8rem] font-medium text-[#e7000b] mt-1.5 ml-1">
+                            Razão social é obrigatória para CNPJ
+                          </p>
+                        )}
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cpf_responsavel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        CPF do Responsável / Titular <span className="text-[#737373] font-normal text-xs">(opcional)</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                          <Input
+                            placeholder="000.000.000-00"
+                            {...field}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
+                            maxLength={14}
+                            className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-[0.75rem] text-[#737373] ml-1">
+                        Utilizado para identificação do titular em pagamentos e cartões pessoais.
+                      </p>
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold ml-1">
-                      CPF do Responsável / Titular <span className="text-slate-400 font-normal text-xs">(opcional)</span>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      Nome completo <span className="text-[#e7000b]">*</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                         <Input
-                          placeholder="000.000.000-00"
+                          placeholder="Digite seu nome completo"
                           {...field}
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                          maxLength={14}
-                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
                         />
                       </div>
                     </FormControl>
                     <FormMessage />
-                    <p className="text-[0.75rem] text-slate-500 ml-1">
-                      Utilizado para identificação do titular em pagamentos e cartões pessoais.
-                    </p>
                   </FormItem>
                 )}
               />
-            </>
-          )}
+              <FormField
+                control={form.control}
+                name="apelido"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      Nome do Transporte / Apelido
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                        <Input
+                          placeholder="Ex: Tio Thiago"
+                          {...field}
+                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          {/* 3. Nome Completo e Apelido */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="nome"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome completo <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        placeholder="Digite seu nome completo"
-                        {...field}
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="apelido"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Nome do Transporte / Apelido
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        placeholder="Ex: Tio Thiago"
-                        {...field}
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="telefone"
+                render={({ field }) => (
+                  <PhoneInput
+                    field={field}
+                    label="Telefone / WhatsApp"
+                    placeholder="(00) 00000-0000"
+                    required
+                    labelClassName="text-xs font-medium text-[#0a0a0a]"
+                    inputClassName="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                  />
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="data_nascimento"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                      Data de nascimento <span className="text-[#e7000b]">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                        <Input
+                          {...field}
+                          inputMode="numeric"
+                          maxLength={10}
+                          onChange={(e) => field.onChange(maskDate(e.target.value))}
+                          placeholder="dd/mm/aaaa"
+                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373] pl-10 transition-colors"
+                          aria-invalid={!!fieldState.error}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          {/* 4. Telefone / WhatsApp e Data de Nascimento */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="telefone"
-              render={({ field }) => (
-                <PhoneInput
-                  field={field}
-                  label="Telefone / WhatsApp"
-                  placeholder="(00) 00000-0000"
-                  required
-                  labelClassName="text-slate-700 font-semibold ml-1"
-                  inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                />
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="data_nascimento"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 font-semibold ml-1">
-                    Data de nascimento <span className="text-red-600">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        {...field}
-                        inputMode="numeric"
-                        maxLength={10}
-                        onChange={(e) => field.onChange(maskDate(e.target.value))}
-                        placeholder="dd/mm/aaaa"
-                        className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                        aria-invalid={!!fieldState.error}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="flex justify-end pt-3 border-t border-slate-100">
-            <button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-              className="h-11 px-6 bg-[#1a3a5c] text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-            >
-              {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  Salvar Alterações
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </Form>
+            <div className="flex justify-end pt-4 border-t border-[#e5e5e5]">
+              <button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="h-11 px-6 bg-primary text-primary-foreground text-xs sm:text-sm font-medium rounded-[18px] hover:bg-primary-hover transition-all shadow-xs active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto cursor-pointer"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    Salvar Alterações
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </Form>
+      </div>
 
       {!isSubConta && (
-        <div className="mt-8 pt-6 border-t border-slate-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-rose-50/30 border border-rose-100">
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-rose-950">Excluir conta</h4>
-              <p className="text-xs text-rose-800/80 leading-relaxed max-w-md">
-                Ao excluir sua conta, todos os seus dados cadastrais, rotas, alunos e registros serão permanentemente apagados.
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5">
+          <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a0a0a]" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+                Excluir Conta
+              </h2>
+              <p className="text-xs text-[#737373] mt-0.5">
+                Encerramento definitivo do seu cadastro e dados associados.
               </p>
             </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+            <p className="text-xs text-[#737373] leading-relaxed max-w-lg">
+              Ao excluir sua conta, todos os seus dados cadastrais, rotas, alunos e registros serão permanentemente apagados.
+            </p>
             <button
               type="button"
               onClick={openExcluirContaDialog}
-              className="px-4 py-2.5 rounded-lg text-xs font-bold text-rose-700 bg-white border border-rose-200 hover:bg-rose-100/60 hover:text-rose-800 transition-colors shrink-0 shadow-xs flex items-center justify-center gap-2"
+              className="h-11 px-5 rounded-[18px] text-xs sm:text-sm font-medium text-[#e7000b] bg-white border border-[#e7000b]/20 hover:bg-[#e7000b]/10 hover:border-[#e7000b]/30 transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer shadow-xs w-full sm:w-auto"
             >
-              <Trash2 className="w-4 h-4 text-rose-600" />
-              Excluir minha conta
+              <Trash2 className="w-4 h-4 text-[#e7000b]" />
+              Excluir conta
             </button>
           </div>
         </div>

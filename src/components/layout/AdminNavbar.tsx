@@ -37,16 +37,16 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0d1424]/80 backdrop-blur-xl border-b border-slate-800/80 transition-all duration-500 px-4 sm:px-6 pt-[calc(1rem+var(--safe-area-top))] pb-4 flex items-center justify-between gap-3 sm:gap-6">
+    <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-xl border-b border-border transition-all duration-300 px-4 sm:px-6 pt-[calc(0.75rem+var(--safe-area-top))] pb-3 flex items-center justify-between gap-3 sm:gap-6">
       <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={onMenuToggle}
-          className="lg:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-300"
+          className="lg:hidden p-2 rounded-2xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
         >
           <Menu className="h-5 w-5" />
         </button>
         {pageTitle && (
-          <h1 className="hidden sm:block text-base sm:text-base md:text-xl font-bold text-slate-100 tracking-tight truncate">
+          <h1 className="hidden sm:block text-base sm:text-lg font-headline font-semibold text-foreground tracking-tight truncate">
             {pageTitle}
           </h1>
         )}
@@ -59,28 +59,28 @@ export function AdminNavbar({ onMenuToggle }: AdminNavbarProps) {
       <div className="flex items-center gap-3 shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="rounded-2xl p-1 pr-3 gap-3 border border-transparent hover:bg-slate-800/80 hover:border-slate-700 data-[state=open]:bg-slate-800 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-600/30">
+            <Button variant="ghost" className="rounded-2xl p-1 pr-3 gap-2.5 border border-border/50 hover:bg-secondary data-[state=open]:bg-secondary transition-all">
+              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs shadow-xs">
                 {user?.nome?.charAt(0).toUpperCase() || 'A'}
               </div>
               <div className="flex flex-col items-start hidden sm:flex">
-                <span className="text-[11px] font-black uppercase text-slate-100 tracking-tight">{user?.nome?.split(' ')[0] || 'Admin'}</span>
-                <span className="text-[9px] font-bold text-slate-400 leading-none">Administrador</span>
+                <span className="text-xs font-semibold text-foreground leading-tight">{user?.nome?.split(' ')[0] || 'Admin'}</span>
+                <span className="text-[10px] font-normal text-muted-foreground leading-tight">Administrador</span>
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-[#131b2e] border-slate-800 shadow-2xl text-slate-100">
-            <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase text-slate-400 tracking-wider">Conta Admin</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-slate-800" />
+          <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-2xl bg-card border-border shadow-lg text-card-foreground">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Conta Admin</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
-              className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-slate-200 hover:text-white focus:bg-slate-800/80 focus:text-white cursor-pointer"
+              className="rounded-xl px-2.5 py-2 flex items-center gap-2 text-sm font-medium hover:bg-secondary focus:bg-secondary cursor-pointer"
               onClick={openAlterarSenhaDialog}
             >
-              <KeyRound className="h-4 w-4 text-slate-400" /> Trocar Senha
+              <KeyRound className="h-4 w-4 text-muted-foreground" /> Trocar Senha
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-slate-800" />
+            <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
-              className="rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer"
+              className="rounded-xl px-2.5 py-2 flex items-center gap-2 text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" /> Sair

@@ -1,12 +1,29 @@
-import { FileCheck2, Clock, FileX2, Plus, ExternalLink, Wand2, CheckCircle2, UploadCloud, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  FileCheck2,
+  Clock,
+  Plus,
+  Eye,
+  Wand2,
+  CheckCircle2,
+  UploadCloud,
+  Trash2,
+  FileSignature,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Passageiro } from "@/types/passageiro";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { obterStatusConfiguracaoContrato, StatusConfiguracaoContrato } from "@/utils/domain";
+import {
+  obterStatusConfiguracaoContrato,
+  StatusConfiguracaoContrato,
+  obterUrlDocumentoContrato,
+} from "@/utils/domain";
+import { openBrowserLink } from "@/utils/browser";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 
 interface CarteirinhaContratoProps {
@@ -26,10 +43,11 @@ export const CarteirinhaContrato = ({
   onEnviarWhatsApp,
   onEditClick,
 }: CarteirinhaContratoProps) => {
+  const navigate = useNavigate();
   const { can } = usePermissions();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { openContractSetupDialog, openImportarContratoDialog } = useLayout();
+  const { openImportarContratoDialog } = useLayout();
 
   const canManage = can("contratos.gerenciar");
 
@@ -43,167 +61,223 @@ export const CarteirinhaContrato = ({
 
   const handleNoContractClick = () => {
     if (!isContratoConfigurado || !isContratoAtivo) {
-      openContractSetupDialog({
-        forceOpen: true,
-        onSuccess: (usarContratos) => {
-          if (usarContratos) {
-            onContractAction();
-          }
-        },
-      });
+      const returnUrl = encodeURIComponent(
+        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id)}?tab=contrato`
+      );
+      navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${returnUrl}`);
       return;
     }
-
     onContractAction();
   };
 
-  const getContratoConfig = (status?: ContratoStatus) => {
-    if (status === ContratoStatus.ASSINADO) {
-      const isImportado = passageiro.contrato_provider === ContratoProvider.IMPORTADO;
-      return {
-        title: isImportado ? "Contrato Importado" : "Contrato Assinado",
-        desc: isImportado
-          ? "Documento assinado em papel/PDF anexado à carteirinha do aluno"
-          : "Documento oficial assinado eletronicamente",
-        color: "bg-slate-50/80 border-slate-100/80 hover:bg-slate-100/50 hover:border-slate-200/80",
-        iconColor: isImportado
-          ? "text-blue-600 bg-blue-100/50 border border-blue-200/20 shadow-xs"
-          : "text-emerald-600 bg-emerald-100/50 border border-emerald-200/20 shadow-xs",
-        icon: FileCheck2,
-        actionLabel: "Ver Contrato",
-        actionColor: "bg-white border border-[#1a3a5c] text-[#1a3a5c] hover:bg-slate-50 shadow-xs shadow-[#1a3a5c]/5",
-        actionIcon: ExternalLink,
-        onClick: onContractAction,
-      };
-    }
+  const status = passageiro.status_contrato;
+  const isAssinado = status === ContratoStatus.ASSINADO;
+  const isPendente = status === ContratoStatus.PENDENTE;
+  const isImportado = passageiro.contrato_provider === ContratoProvider.IMPORTADO;
+  const hasContract = isAssinado || isPendente;
 
-    if (status === ContratoStatus.PENDENTE) {
-      return {
-        title: "Assinatura Pendente",
-        desc: "Aguardando assinatura do responsável",
-        color: "bg-amber-50/40 border-amber-100/80 hover:bg-amber-50 hover:border-amber-200/50",
-        iconColor: "text-amber-600 bg-amber-100/50 border border-amber-200/20 shadow-xs",
-        icon: Clock,
-        actionLabel: "Reenviar Contrato",
-        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
-        actionIcon: WhatsAppIcon,
-        onClick: () => onEnviarWhatsApp?.(passageiro),
-      };
-    }
+  const urlContrato = obterUrlDocumentoContrato(passageiro);
+  const tokenAcesso = passageiro.token_acesso;
+  const linkAssinatura = tokenAcesso
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/assinar/${tokenAcesso}`
+    : null;
 
-    if (!isContratoConfigurado) {
-      return {
-        title: "Não possui contrato",
-        desc: "Configure sua assinatura e modelo para começar a gerar contratos.",
-        color: "bg-slate-50/80 border-slate-100/80",
-        iconColor: "text-[#1a3a5c] bg-blue-100/50 border border-blue-200/30 shadow-xs",
-        icon: FileX2,
-        actionLabel: "Configurar & Gerar",
-        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
-        actionIcon: Wand2,
-        onClick: handleNoContractClick,
-      };
-    }
+  const urlParaVisualizar = urlContrato || linkAssinatura;
 
-    if (!isContratoAtivo) {
-      return {
-        title: "Não possui contrato",
-        desc: "O uso de contratos está desativado na sua conta.",
-        color: "bg-slate-50/80 border-slate-100/80",
-        iconColor: "text-slate-500 bg-slate-100 border border-slate-200/50 shadow-xs",
-        icon: FileX2,
-        actionLabel: "Reativar & Gerar",
-        actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
-        actionIcon: CheckCircle2,
-        onClick: handleNoContractClick,
-      };
+  const handleVisualizar = () => {
+    if (urlParaVisualizar) {
+      openBrowserLink(urlParaVisualizar);
+    } else {
+      onContractAction();
     }
-
-    return {
-      title: "Não possui contrato",
-      desc: "Gere o contrato para assinatura do responsável.",
-      color: "bg-slate-50/80 border-slate-100/80",
-      iconColor: "text-[#1a3a5c] bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 shadow-xs",
-      icon: FileX2,
-      actionLabel: "Gerar Contrato",
-      actionColor: "bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-xs shadow-[#1a3a5c]/10",
-      actionIcon: Plus,
-      onClick: handleNoContractClick,
-    };
   };
 
-  const contratoConfig = getContratoConfig(passageiro.status_contrato);
-  const hasContract =
-    passageiro.status_contrato === ContratoStatus.ASSINADO ||
-    passageiro.status_contrato === ContratoStatus.PENDENTE;
+  const renderBadge = () => {
+    if (isImportado) {
+      return (
+        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium border bg-sky-500/[0.08] text-sky-700 border-sky-500/20">
+          Importado
+        </span>
+      );
+    }
+
+    if (isAssinado) {
+      return (
+        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium border bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20">
+          Assinado
+        </span>
+      );
+    }
+
+    if (isPendente) {
+      return (
+        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium border bg-amber-500/[0.08] text-amber-700 border-amber-500/20">
+          Pendente
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium border bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]">
+        Sem Contrato
+      </span>
+    );
+  };
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between text-left">
-        <h3 className="text-base font-bold text-[#16314f]">Contrato</h3>
+    <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 flex flex-col gap-4 transform-gpu will-change-transform">
+      <div className="flex items-center justify-between text-left min-h-[32px] gap-2">
+        <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Contrato</h3>
+        {renderBadge()}
       </div>
 
-      <div
-        className={cn(
-          "rounded-2xl border p-4 transition-all flex flex-col gap-3 group/contrato shrink-0",
-          contratoConfig.color
-        )}
-      >
-        <div className="flex items-start gap-3 w-full overflow-hidden">
-          <div
-            className={cn(
-              "w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl flex items-center justify-center shrink-0 shadow-xs border border-black/5",
-              contratoConfig.iconColor
+      <div className="bg-[#fafafa] rounded-[18px] sm:rounded-[20px] p-4 sm:p-5 border border-[#e5e5e5] flex flex-col gap-4 text-left w-full min-w-0">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-[14px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 shadow-xs">
+            {isAssinado ? (
+              <FileCheck2 className="h-5 w-5 text-emerald-600 shrink-0" />
+            ) : isPendente ? (
+              <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+            ) : !isContratoConfigurado ? (
+              <Wand2 className="h-5 w-5 text-[#0a0a0a] shrink-0" />
+            ) : !isContratoAtivo ? (
+              <CheckCircle2 className="h-5 w-5 text-[#737373] shrink-0" />
+            ) : (
+              <FileSignature className="h-5 w-5 text-[#0a0a0a] shrink-0" />
             )}
-          >
-            <contratoConfig.icon className="h-5 w-5 shrink-0" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-[#1a3a5c] mt-0.5 leading-snug break-words">
-              {contratoConfig.title}
+            <span className="block text-sm font-semibold text-[#0a0a0a] leading-snug">
+              {isImportado
+                ? "Contrato assinado em PDF"
+                : isAssinado
+                  ? "Contrato digital assinado"
+                  : isPendente
+                    ? "Aguardando assinatura"
+                    : !isContratoConfigurado
+                      ? "Contratos não configurados"
+                      : !isContratoAtivo
+                        ? "Uso de contratos desativado"
+                        : "Aluno sem contrato"}
             </span>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5 break-words font-medium">
-              {contratoConfig.desc}
+            <p className="text-xs text-[#737373] leading-relaxed mt-0.5 font-normal">
+              {isImportado
+                ? "Documento assinado anexado à carteirinha do aluno."
+                : isAssinado
+                  ? "Documento oficial assinado eletronicamente com validade jurídica."
+                  : isPendente
+                    ? "Minuta gerada. O responsável precisa assinar digitalmente pelo celular."
+                    : !isContratoConfigurado
+                      ? "Configure modelo e assinatura para começar a emitir contratos."
+                      : !isContratoAtivo
+                        ? "O módulo de contratos está pausado nas suas preferências."
+                        : "Emita um contrato digital para formalizar a prestação de serviços com o responsável."}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
-          <button
-            type="button"
-            onClick={contratoConfig.onClick}
-            className={cn(
-              "flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-lg text-[13px] font-bold transition-all duration-200 shadow-xs hover:shadow active:scale-[0.99] shrink-0 cursor-pointer",
-              contratoConfig.actionColor
-            )}
-          >
-            <contratoConfig.actionIcon className="h-3.5 w-3.5 shrink-0" />
-            <span>{contratoConfig.actionLabel}</span>
-          </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full pt-3 border-t border-[#e5e5e5]">
+          {isPendente && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleVisualizar}
+                className="h-10 sm:h-11 px-4 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.99] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] hover:border-[#737373]/50 text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+              >
+                <Eye className="w-4 h-4 text-[#0a0a0a]" />
+                <span>Ver Contrato Gerado</span>
+              </Button>
 
-          {!hasContract && (
-            <button
-              type="button"
-              onClick={() => openImportarContratoDialog({ passageiroId: passageiro.id, passageiro })}
-              className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-slate-700 bg-white border border-slate-200/80 hover:bg-slate-50 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
-            >
-              <UploadCloud className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              <span>Importar Contrato Assinado (PDF)</span>
-            </button>
+              {onEnviarWhatsApp && (
+                <Button
+                  type="button"
+                  onClick={() => onEnviarWhatsApp(passageiro)}
+                  className="h-10 sm:h-11 px-4 rounded-[18px] bg-[#2563eb] hover:bg-blue-700 active:scale-[0.99] text-white text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+                >
+                  <WhatsAppIcon className="w-4 h-4" />
+                  <span>Reenviar no WhatsApp</span>
+                </Button>
+              )}
+            </>
           )}
 
-          {hasContract && onDeleteContrato && (
-            <button
-              type="button"
-              onClick={onDeleteContrato}
-              className="flex items-center justify-center gap-1.5 w-full py-2 px-4 rounded-lg text-[12px] font-bold text-red-600 bg-red-50/40 hover:bg-red-50 border border-red-100 transition-all duration-200 shadow-xs active:scale-[0.99] shrink-0 cursor-pointer"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-red-500 shrink-0" />
-              <span>Excluir Contrato</span>
-            </button>
+          {isAssinado && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleVisualizar}
+                className="h-10 sm:h-11 px-4 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.99] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] hover:border-[#737373]/50 text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+              >
+                <Eye className="w-4 h-4 text-[#0a0a0a]" />
+                <span>Ver Contrato Assinado</span>
+              </Button>
+
+              {onEnviarWhatsApp && (
+                <Button
+                  type="button"
+                  onClick={() => onEnviarWhatsApp(passageiro)}
+                  className="h-10 sm:h-11 px-4 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.99] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+                >
+                  <WhatsAppIcon className="w-4 h-4" />
+                  <span>Enviar no WhatsApp</span>
+                </Button>
+              )}
+            </>
+          )}
+
+          {!hasContract && (
+            <>
+              <Button
+                type="button"
+                onClick={handleNoContractClick}
+                className="h-10 sm:h-11 px-4 rounded-[18px] bg-primary hover:bg-primary/90 active:scale-[0.99] text-white text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+              >
+                {!isContratoConfigurado ? (
+                  <>
+                    <Wand2 className="w-4 h-4" />
+                    <span>Configurar & Gerar</span>
+                  </>
+                ) : !isContratoAtivo ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Reativar & Gerar</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>Gerar Contrato</span>
+                  </>
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => openImportarContratoDialog({ passageiroId: passageiro.id, passageiro })}
+                className="h-10 sm:h-11 px-4 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.99] text-[#0a0a0a] border border-[#e5e5e5] text-xs sm:text-sm font-semibold gap-2 transition-all shadow-xs shrink-0 cursor-pointer flex-1 justify-center"
+              >
+                <UploadCloud className="w-4 h-4 text-[#737373]" />
+                <span>Importar Contrato (PDF)</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
+
+      {hasContract && onDeleteContrato && (
+        <div className="flex items-center justify-end px-1">
+          <button
+            type="button"
+            onClick={onDeleteContrato}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#e7000b] hover:text-[#c4000a] transition-colors py-1 cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Excluir Contrato</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

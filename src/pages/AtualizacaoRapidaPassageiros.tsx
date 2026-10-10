@@ -85,49 +85,47 @@ export default function AtualizacaoRapidaPassageiros() {
   };
 
   return (
-    <div className={cn("min-h-screen bg-surface max-w-6xl mx-auto space-y-3 sm:space-y-4 pb-28 sm:pb-32 px-2 sm:px-6 pt-2 sm:pt-4", isSaving && "pointer-events-none select-none")}>
+    <div className={cn("w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-28 sm:pb-32 pt-1 sm:pt-2", isSaving && "pointer-events-none select-none")}>
       <div className="flex items-center justify-between gap-3">
         <Button
           variant="outline"
           size="sm"
           onClick={handleBack}
-          className="h-8 px-3 rounded-xl border-slate-200 text-[#1a3a5c] hover:bg-slate-100 font-bold text-xs flex items-center gap-1.5 shadow-2xs"
+          className="h-9 px-3.5 rounded-[18px] border-[#e5e5e5] bg-white text-[#0a0a0a] hover:bg-[#fafafa] font-medium text-xs flex items-center gap-1.5 shadow-none"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 text-[#737373]" />
           <span>Voltar</span>
         </Button>
 
-        <span className="text-[11px] sm:text-xs text-slate-500 font-medium">
+        <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
           {isLoading
             ? "Carregando..."
-            : `Exibindo ${passageiros.length} de ${totalOriginal} alunos`}
+            : `${passageiros.length} DE ${totalOriginal} ${totalOriginal === 1 ? "ALUNO" : "ALUNOS"}`}
         </span>
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="relative flex-grow group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none">
               <Search
                 className={cn(
                   "h-4 w-4 transition-colors",
-                  searchTerm
-                    ? "text-amber-500"
-                    : "text-gray-400 group-focus-within:text-[#1a3a5c]"
+                  searchTerm ? "text-[#0a0a0a]" : "text-[#737373]"
                 )}
               />
             </div>
             <Input
               type="search"
-              placeholder="Pesquisar..."
+              placeholder="Buscar por nome do aluno..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-gray-100/50 h-12 md:h-14 pl-11 pr-10 rounded-2xl shadow-sm font-medium text-sm md:text-base text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
+              className="w-full bg-white border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] h-10 sm:h-11 pl-10 pr-10 rounded-[18px] text-sm font-normal text-[#0a0a0a] placeholder:text-[#737373] shadow-none transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -138,14 +136,14 @@ export default function AtualizacaoRapidaPassageiros() {
             variant="outline"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className={cn(
-              "bg-white border-slate-100 text-[#1a3a5c] font-bold text-xs md:text-sm gap-1.5 md:gap-2 h-12 md:h-14 rounded-2xl px-3.5 md:px-5 shadow-sm hover:bg-gray-50 shrink-0 sm:hidden",
-              hasActiveDropdownFilters && "bg-[#1a3a5c] text-white hover:bg-[#1a3a5c]/90 border-transparent shadow-none"
+              "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-xs gap-1.5 h-10 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 sm:hidden",
+              hasActiveDropdownFilters && "border-[#0a0a0a]"
             )}
           >
-            <Filter className={cn("h-4 w-4", hasActiveDropdownFilters && "text-amber-400")} />
+            <Filter className={cn("h-4 w-4", hasActiveDropdownFilters ? "text-[#0a0a0a]" : "text-[#737373]")} />
             <span>Filtros</span>
             {activeDropdownCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-white text-[#1a3a5c] text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
                 {activeDropdownCount}
               </span>
             )}
@@ -158,8 +156,7 @@ export default function AtualizacaoRapidaPassageiros() {
             placeholder="Todos Veículos"
             value={selectedVeiculo}
             onValueChange={setSelectedVeiculo}
-            icon={<Car className="w-3.5 h-3.5 shrink-0" />}
-            triggerClassName="bg-white border-slate-100 shadow-sm"
+            icon={<Car className="w-4 h-4 shrink-0" />}
             options={[
               { label: "Todos Veículos", value: FilterDefaults.TODOS },
               ...(veiculos?.map((v) => ({ label: `${v.modelo} - ${v.placa}`, value: v.id })) || []),
@@ -171,8 +168,7 @@ export default function AtualizacaoRapidaPassageiros() {
             placeholder="Todas Escolas"
             value={selectedEscola}
             onValueChange={setSelectedEscola}
-            icon={<School className="w-3.5 h-3.5 shrink-0" />}
-            triggerClassName="bg-white border-slate-100 shadow-sm"
+            icon={<School className="w-4 h-4 shrink-0" />}
             options={[
               { label: "Todas Escolas", value: FilterDefaults.TODAS },
               ...(escolas?.map((e) => ({ label: e.nome, value: e.id })) || []),
@@ -184,8 +180,7 @@ export default function AtualizacaoRapidaPassageiros() {
             placeholder="Todos Períodos"
             value={selectedPeriodo}
             onValueChange={setSelectedPeriodo}
-            icon={<Clock className="w-3.5 h-3.5 shrink-0" />}
-            triggerClassName="bg-white border-slate-100 shadow-sm"
+            icon={<Clock className="w-4 h-4 shrink-0" />}
             options={[
               { label: "Todos Períodos", value: FilterDefaults.TODOS },
               ...(periodos?.map((p) => ({ label: p.label, value: p.value })) || []),
@@ -199,16 +194,16 @@ export default function AtualizacaoRapidaPassageiros() {
               type="button"
               onClick={() => setApenasSemValor(!apenasSemValor)}
               className={cn(
-                "h-7 px-3 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0",
+                "h-8 px-3 rounded-[18px] text-xs font-medium transition-all flex items-center gap-1.5 border shrink-0",
                 apenasSemValor
-                  ? "bg-amber-500 text-white border-amber-500 shadow-2xs"
-                  : "bg-amber-50/80 text-amber-800 border-amber-200/80 hover:bg-amber-100/80"
+                  ? "bg-amber-500/10 text-amber-800 border-amber-300"
+                  : "bg-white text-[#737373] border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#fafafa]"
               )}
             >
               <span>Sem valor definido</span>
               <span className={cn(
-                "px-1.5 py-0.2 rounded-full text-[10px] font-extrabold",
-                apenasSemValor ? "bg-amber-600 text-white" : "bg-amber-200 text-amber-900"
+                "px-1.5 py-0.5 rounded-[18px] text-[10px] font-semibold",
+                apenasSemValor ? "bg-amber-200 text-amber-900" : "bg-[#f5f5f5] text-[#737373]"
               )}>
                 {totalSemValor}
               </span>
@@ -222,9 +217,9 @@ export default function AtualizacaoRapidaPassageiros() {
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="h-6 px-2 text-[11px] font-bold text-slate-500 hover:text-slate-800"
+              className="h-7 px-2.5 rounded-[18px] text-xs font-medium text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
             >
-              <RotateCcw className="w-3 h-3 mr-1" />
+              <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-[#737373]" />
               Limpar Filtros
             </Button>
           )}

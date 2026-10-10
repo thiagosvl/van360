@@ -135,7 +135,7 @@ export const AcessoRapido = ({
       },
       {
         id: AcessoRapidoItemKey.ASSINATURA,
-        label: "Assinatura do App",
+        label: "Assinatura",
         icon: Rocket,
         to: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
         show: can(PERMISSIONS.ASSINATURA_GERENCIAR),
@@ -151,67 +151,49 @@ export const AcessoRapido = ({
 
   return (
     <section className="px-1">
-      <div className="mb-4">
-        <h2 className="text-[17px] sm:text-lg font-bold text-[#1a3a5c]">
+      <div className="mb-3.5 px-0.5">
+        <h2 className="text-lg font-semibold text-[#0a0a0a] tracking-tight">
           Acesso Rápido
         </h2>
-        <p className="text-[12px] sm:text-[13px] text-slate-400 mt-0.5">
-          Ações mais comuns e navegação no app.
+        <p className="text-xs text-[#737373] mt-0.5">
+          Ações mais comuns e navegação no app
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-slate-100">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-3 sm:p-5 lg:p-6 shadow-xs">
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-1.5 sm:gap-2.5">
           {items.map((item) => {
             const Icon = item.icon;
-            const itemContent = (
+            const content = (
               <>
-                {item.isAction ? (
-                  <div className="w-9 h-9 rounded-xl bg-blue-100/70 text-[#1a3a5c] flex items-center justify-center mb-1.5 group-hover:scale-110 group-hover:bg-blue-100 transition-all">
-                    <Icon className="w-5 h-5 stroke-[2]" />
-                  </div>
-                ) : (
-                  <div className="w-9 h-9 flex items-center justify-center mb-1.5">
-                    <Icon className="w-6 h-6 text-slate-600 group-hover:text-[#1a3a5c] group-hover:scale-110 transition-all stroke-[1.75]" />
-                  </div>
-                )}
-                <span
+                <div
                   className={
                     item.isAction
-                      ? "text-[12px] sm:text-[13px] font-bold text-[#1a3a5c] leading-tight"
-                      : "text-[12px] sm:text-[13px] font-medium text-slate-700 group-hover:text-[#1a3a5c] transition-colors leading-tight"
+                      ? "w-11 h-11 min-[360px]:w-12 min-[360px]:h-12 min-[390px]:w-13 min-[390px]:h-13 rounded-[14px] min-[360px]:rounded-[16px] min-[390px]:rounded-[18px] bg-blue-50 text-blue-600 border border-blue-100/80 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors flex items-center justify-center shrink-0 shadow-2xs"
+                      : "w-11 h-11 min-[360px]:w-12 min-[360px]:h-12 min-[390px]:w-13 min-[390px]:h-13 rounded-[14px] min-[360px]:rounded-[16px] min-[390px]:rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center shrink-0"
                   }
                 >
+                  <Icon className="w-5 h-5 min-[390px]:w-5.5 min-[390px]:h-5.5 stroke-[1.75]" />
+                </div>
+                <span className="text-[10px] min-[360px]:text-[11px] min-[390px]:text-xs font-medium text-[#171717] group-hover:text-primary transition-colors leading-tight line-clamp-2 text-center w-full px-0.5 min-h-[26px] min-[360px]:min-h-[28px] min-[390px]:min-h-[30px] flex items-center justify-center">
                   {item.label}
                 </span>
               </>
             );
 
-            const itemClassName = `flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group cursor-pointer border-r border-b border-slate-100 ${item.isAction
-              ? "bg-[#f4f8fd] hover:bg-[#eaf2fc] active:bg-[#dfeaf8]"
-              : "bg-white hover:bg-slate-50/80 active:bg-slate-100"
-              }`;
+            const className = "flex flex-col items-center justify-center p-1 min-[360px]:p-1.5 min-[390px]:p-2 rounded-[18px] text-center gap-1.5 min-[360px]:gap-2 transition-all hover:bg-[#f5f5f5] active:scale-95 group cursor-pointer w-full";
 
             if (item.to) {
               return (
-                <Link
-                  key={item.id}
-                  to={item.to}
-                  className={itemClassName}
-                >
-                  {itemContent}
+                <Link key={item.id} to={item.to} className={className}>
+                  {content}
                 </Link>
               );
             }
 
             return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={item.onClick}
-                className={itemClassName}
-              >
-                {itemContent}
+              <button key={item.id} type="button" onClick={item.onClick} className={className}>
+                {content}
               </button>
             );
           })}

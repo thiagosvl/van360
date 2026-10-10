@@ -5,7 +5,7 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 import { ROUTES } from "@/constants/routes";
 import { RouteExecutionStatus } from "@/types/route";
-import { formatDateTime } from "@/utils/formatters";
+import { formatDateTime, formatarDuracao } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
 interface RotasHistoricoListProps {
@@ -23,7 +23,6 @@ export function RotasHistoricoList({
   isFetching = false,
   hasMore = false,
   onLoadMore,
-  totalCount
 }: RotasHistoricoListProps) {
   const navigate = useNavigate();
 
@@ -56,48 +55,45 @@ export function RotasHistoricoList({
                   : `${ROUTES.PRIVATE.MOTORISTA.ROUTE_DETAILS.replace(":id", exec.id)}`
               );
             }}
-            className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50 relative px-4 text-left cursor-pointer group"
+            className="bg-white p-3.5 sm:p-5 rounded-[24px] border border-[#e5e5e5] shadow-xs flex items-center gap-2.5 sm:gap-3.5 active:scale-[0.99] transition-all duration-200 text-left cursor-pointer group hover:border-[#d4d4d4] min-w-0"
           >
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div
                 className={cn(
-                  "h-10 w-10 rounded-full flex items-center justify-center transition-all shadow-2xs",
+                  "h-10 w-10 sm:h-11 sm:w-11 rounded-[18px] flex items-center justify-center transition-colors shrink-0",
                   exec.status === RouteExecutionStatus.INICIADA
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-emerald-500 text-white shadow-xs"
                     : exec.status === RouteExecutionStatus.CONCLUIDA
-                      ? "bg-emerald-50 border border-emerald-200/80 text-emerald-700"
-                      : "bg-rose-50 border border-rose-100 text-rose-600"
+                      ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+                      : "bg-[#e7000b]/10 text-[#e7000b] border border-[#e7000b]/20"
                 )}
               >
                 {exec.status === RouteExecutionStatus.INICIADA ? (
-                  <Route className="w-4 h-4 text-white stroke-[2.5]" />
+                  <Route className="w-5 h-5 text-white" />
                 ) : exec.status === RouteExecutionStatus.CONCLUIDA ? (
-                  <Check className="w-4 h-4 text-emerald-700 stroke-[2.5]" />
+                  <Check className="w-5 h-5 text-emerald-700 stroke-[2.5]" />
                 ) : (
-                  <X className="w-4 h-4 text-rose-500 stroke-[2.5]" />
+                  <X className="w-5 h-5 text-[#e7000b] stroke-[2.5]" />
                 )}
               </div>
             </div>
 
-            <div className="flex-grow min-w-0 pr-2 space-y-0.5">
-              <p className="font-headline font-bold text-[#1a3a5c] text-sm leading-snug transition-colors break-words">
+            <div className="flex-1 min-w-0 pr-1 space-y-1">
+              <p className="font-semibold text-[#0a0a0a] text-sm sm:text-base leading-snug break-words">
                 {exec.rota?.nome || "Rota Removida"}
               </p>
 
-              <div className="text-[10px] text-slate-400 font-medium leading-tight flex flex-wrap items-center gap-1.5">
+              <div className="text-xs text-[#737373] font-normal leading-tight flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-slate-400" />
+                  <Calendar className="w-3.5 h-3.5 text-[#737373]" />
                   {formatDateTime(exec.iniciada_em)}
                 </span>
                 {exec.finalizada_em && (
                   <>
-                    <span className="text-slate-300">•</span>
+                    <span className="text-[#e5e5e5]">•</span>
                     <span className="inline-flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      {Math.round(
-                        (new Date(exec.finalizada_em).getTime() - new Date(exec.iniciada_em).getTime()) / 60000
-                      )}{" "}
-                      min
+                      <Clock className="w-3.5 h-3.5 text-[#737373]" />
+                      {formatarDuracao(exec.iniciada_em, exec.finalizada_em)}
                     </span>
                   </>
                 )}
@@ -105,16 +101,20 @@ export function RotasHistoricoList({
 
               <div className="pt-0.5">
                 {exec.status === RouteExecutionStatus.INICIADA ? (
-                  <span className="inline-block bg-[#1a3a5c]/10 text-[#1a3a5c] border border-[#1a3a5c]/20 rounded-md text-[9px] font-bold px-1.5 py-0.5 leading-none uppercase">
-                    EM ANDAMENTO
+                  <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-[18px] text-[11px] font-medium px-2.5 py-0.5 leading-none">
+                    <span className="relative flex h-1.5 w-1.5 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                    </span>
+                    <span>Em andamento</span>
                   </span>
                 ) : exec.status === RouteExecutionStatus.CONCLUIDA ? (
-                  <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-md text-[9px] font-bold px-1.5 py-0.5 leading-none uppercase">
-                    CONCLUÍDA
+                  <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-[18px] text-[11px] font-medium px-2.5 py-0.5 leading-none">
+                    Concluída
                   </span>
                 ) : (
-                  <span className="inline-block bg-rose-50 text-rose-600 border border-rose-100 rounded-md text-[9px] font-bold px-1.5 py-0.5 leading-none uppercase">
-                    CANCELADA
+                  <span className="inline-flex items-center gap-1.5 bg-red-50 text-[#e7000b] border border-red-200/60 rounded-[18px] text-[11px] font-medium px-2.5 py-0.5 leading-none">
+                    Cancelada
                   </span>
                 )}
               </div>
@@ -130,9 +130,9 @@ export function RotasHistoricoList({
             variant="outline"
             disabled={isFetching}
             onClick={onLoadMore}
-            className="h-11 px-6 rounded-2xl text-xs font-bold text-[#1a3a5c] border-slate-200 bg-white hover:bg-slate-50 shadow-2xs flex items-center gap-2 active:scale-95 transition-all cursor-pointer"
+            className="h-10 px-5 rounded-[18px] text-xs font-medium text-[#0a0a0a] border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] shadow-xs flex items-center gap-2 active:scale-95 transition-all cursor-pointer"
           >
-            {isFetching && <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />}
+            {isFetching && <Loader2 className="w-4 h-4 animate-spin text-[#0a0a0a]" />}
             <span>{isFetching ? "Buscando..." : "Ver mais"}</span>
           </Button>
         </div>
