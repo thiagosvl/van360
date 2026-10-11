@@ -26,12 +26,8 @@ import {
   CreditCard,
   Clock,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import type { ActionItem } from "@/types/actions";
 import type { FretamentoItemCalculado } from "@/hooks/business/useFretamentoCalculations";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 
@@ -295,42 +291,33 @@ export default function Fretamentos() {
                       )}
                     </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-[18px] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] shrink-0"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-[18px] border-[#e5e5e5] p-1.5">
-                        {!isPasseio && !item.isQuitado && (
-                          <DropdownMenuItem
-                            onClick={() => handleOpenRegistrarPagamento(item)}
-                            className="rounded-[10px] text-xs font-medium cursor-pointer"
-                          >
-                            <CreditCard className="h-3.5 w-3.5 mr-2 text-[#737373]" />
-                            Registrar Pagamento
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleOpenEditar(item)}
-                          className="rounded-[10px] text-xs font-medium cursor-pointer"
-                        >
-                          <Edit className="h-3.5 w-3.5 mr-2 text-[#737373]" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleConfirmarExclusao(item)}
-                          className="rounded-[10px] text-xs font-medium text-[#e7000b] focus:text-[#e7000b] cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <ActionsDropdown
+                      title={item.titulo}
+                      description={item.destino}
+                      actions={[
+                        ...(!isPasseio && !item.isQuitado
+                          ? [
+                              {
+                                label: "Registrar Pagamento",
+                                icon: <CreditCard className="h-4 w-4" />,
+                                onClick: () => handleOpenRegistrarPagamento(item),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Editar",
+                          icon: <Edit className="h-4 w-4" />,
+                          onClick: () => handleOpenEditar(item),
+                        },
+                        {
+                          label: "Excluir",
+                          icon: <Trash2 className="h-4 w-4" />,
+                          variant: "destructive" as const,
+                          isDestructive: true,
+                          onClick: () => handleConfirmarExclusao(item),
+                        },
+                      ]}
+                    />
                   </div>
 
                   <div>

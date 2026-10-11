@@ -31,12 +31,7 @@ import {
   Pencil,
   Search,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { toast } from "sonner";
 import type { FretamentoParticipante } from "@/services/api/fretamento.api";
 
@@ -436,42 +431,33 @@ export default function PasseioDetalhes() {
                       </Button>
                     )}
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-[18px] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-[18px] border-[#e5e5e5] p-1.5">
-                        <DropdownMenuItem
-                          onClick={() => handleOpenRegistrarPagamento(p)}
-                          className="rounded-[10px] text-xs font-medium cursor-pointer"
-                        >
-                          <DollarSign className="h-3.5 w-3.5 mr-2 text-[#737373]" />
-                          {isPago ? "Editar Pagamento" : "Informar Pagamento / Sinal"}
-                        </DropdownMenuItem>
-                        {(isPago || isParcial) && (
-                          <DropdownMenuItem
-                            onClick={() => handleMarcarComoPendente(p)}
-                            className="rounded-[10px] text-xs font-medium cursor-pointer"
-                          >
-                            <RotateCcw className="h-3.5 w-3.5 mr-2 text-[#737373]" />
-                            Marcar como Pendente
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleConfirmarRemocao(p)}
-                          className="rounded-[10px] text-xs font-medium text-[#e7000b] focus:text-[#e7000b] cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
-                          Remover do Passeio
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <ActionsDropdown
+                      title={p.nome}
+                      description={p.passageiro_id ? "Aluno vinculado" : "Participante avulso"}
+                      actions={[
+                        {
+                          label: isPago ? "Editar Pagamento" : "Informar Pagamento / Sinal",
+                          icon: <DollarSign className="h-4 w-4" />,
+                          onClick: () => handleOpenRegistrarPagamento(p),
+                        },
+                        ...((isPago || isParcial)
+                          ? [
+                              {
+                                label: "Marcar como Pendente",
+                                icon: <RotateCcw className="h-4 w-4" />,
+                                onClick: () => handleMarcarComoPendente(p),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Remover do Passeio",
+                          icon: <Trash2 className="h-4 w-4" />,
+                          variant: "destructive" as const,
+                          isDestructive: true,
+                          onClick: () => handleConfirmarRemocao(p),
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
               );

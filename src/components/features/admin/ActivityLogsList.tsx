@@ -117,20 +117,19 @@ export function ActivityLogsList({
                   </div>
                 )}
                 <div className="space-y-1 min-w-0 flex-1">
-                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 break-words">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5 flex-wrap break-words leading-tight">
                     {!hideUserColumn && (latestLog.usuario_id || latestLog.usuarios?.id) ? (
                       <Link
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${latestLog.usuario_id || latestLog.usuarios?.id}`}
-                        className="hover:text-primary hover:underline transition-colors truncate"
+                        className="hover:text-primary hover:underline transition-colors"
                       >
                         {latestUserName}
                       </Link>
                     ) : (
-                      <span className="truncate">{latestUserName}</span>
+                      <span>{latestUserName}</span>
                     )}
                     {latestFullName && (
-                      <span className="text-[11px] font-normal text-muted-foreground shrink-0">
+                      <span className="text-[11px] font-normal text-muted-foreground">
                         ({latestFullName})
                       </span>
                     )}
@@ -140,24 +139,24 @@ export function ActivityLogsList({
                   </p>
                 </div>
               </div>
-              <div className="p-2 bg-primary/10 text-primary rounded-lg border border-primary/20 shrink-0">
+              <div className="hidden sm:flex p-2 bg-primary/10 text-primary rounded-lg border border-primary/20 shrink-0">
                 <FileText className="h-4 w-4" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2.5 border-t border-primary/15 gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium font-mono">
-                <Clock className="h-3.5 w-3.5 text-primary" />
+            <div className="flex items-center justify-between pt-2.5 border-t border-border/60 gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-background border border-border text-foreground text-xs font-medium font-mono shadow-xs">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 {formatRelativeTime(latestLog.created_at)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedLog(latestLog)}
-                className="h-8 px-3 rounded-lg flex items-center gap-1.5 shrink-0 bg-background border-border text-foreground hover:bg-secondary"
+                className="h-8 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 shrink-0 bg-background border-border text-foreground hover:bg-secondary hover:text-foreground"
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium hidden sm:inline">Inspecionar</span>
+                <span className="text-xs font-medium hidden sm:inline">Detalhes</span>
               </Button>
             </div>
           </div>
@@ -205,34 +204,23 @@ export function ActivityLogsList({
                 )}
 
                 <div className="space-y-1 md:space-y-0.5 min-w-0 flex-1 text-left">
-                  <div className="flex items-center justify-between gap-2 md:block">
-                    <h5 className="text-xs font-semibold text-foreground break-words md:truncate leading-tight flex items-center gap-1.5 flex-wrap">
-                      {!hideUserColumn && userId ? (
-                        <Link
-                          to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
-                          className="hover:text-primary hover:underline transition-colors"
-                        >
-                          {displayName}
-                        </Link>
-                      ) : (
-                        <span>{displayName}</span>
-                      )}
-                      {fullName && (
-                        <span className="text-[10px] font-normal text-muted-foreground">
-                          ({fullName})
-                        </span>
-                      )}
-                    </h5>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedLog(log)}
-                      className="md:hidden h-7 px-2 text-primary hover:bg-primary/10 rounded-lg"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  <h5 className="text-xs font-semibold text-foreground break-words md:truncate leading-tight flex items-center gap-1.5 flex-wrap">
+                    {!hideUserColumn && userId ? (
+                      <Link
+                        to={`${ROUTES.PRIVATE.ADMIN.USERS}/${userId}`}
+                        className="hover:text-primary hover:underline transition-colors"
+                      >
+                        {displayName}
+                      </Link>
+                    ) : (
+                      <span>{displayName}</span>
+                    )}
+                    {fullName && (
+                      <span className="text-[10px] font-normal text-muted-foreground">
+                        ({fullName})
+                      </span>
+                    )}
+                  </h5>
 
                   <p className="text-xs text-muted-foreground line-clamp-2 md:truncate leading-normal">
                     {formatActivityDescription(log.descricao)}
@@ -240,19 +228,20 @@ export function ActivityLogsList({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between md:justify-end gap-2 shrink-0">
-                <span className="md:hidden text-[10px] font-mono text-muted-foreground">
+              <div className="flex items-center justify-between md:justify-end pt-2.5 md:pt-0 border-t border-border/40 md:border-t-0 gap-2 shrink-0">
+                <span className="md:hidden inline-flex items-center gap-1.5 text-[11px] font-medium font-mono text-muted-foreground bg-background px-2.5 py-1 rounded-lg border border-border shrink-0">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                   {formatRelativeTime(log.created_at)}
                 </span>
 
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => setSelectedLog(log)}
-                  className="hidden md:inline-flex h-8 px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg text-xs gap-1.5 font-medium"
+                  className="h-8 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 shrink-0 bg-background border-border text-foreground hover:bg-secondary hover:text-foreground"
                 >
                   <Eye className="h-3.5 w-3.5" />
-                  <span>Detalhes</span>
+                  <span className="text-xs font-medium hidden sm:inline">Detalhes</span>
                 </Button>
               </div>
             </div>

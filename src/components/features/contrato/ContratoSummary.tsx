@@ -49,15 +49,15 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
       : "Emitido em";
 
   return (
-    <div className="flex flex-col p-4 sm:p-5 bg-[#fafafa] rounded-[22px] border border-[#e5e5e5] text-left w-full min-w-0 overflow-hidden shadow-2xs">
-      <div className="flex justify-between items-center mb-2.5 w-full min-w-0 gap-2">
-        <span className="text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em] shrink-0">
+    <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
+      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] shrink-0">
           Contrato do Aluno
         </span>
 
         <span
           className={cn(
-            "px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium tracking-tight shrink-0 border transition-colors",
+            "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
             isAssinado
               ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
               : isImportado
@@ -71,11 +71,9 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
         </span>
       </div>
 
-      <div className="flex items-start gap-2 w-full min-w-0">
-        <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight leading-snug line-clamp-2 break-words w-full min-w-0">
-          {formatShortName(nomePassageiro, true)}
-        </h2>
-      </div>
+      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
+        {formatShortName(nomePassageiro, true)}
+      </h2>
 
       {nomeResponsavel ? (
         <p
@@ -93,7 +91,7 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
       ) : null}
 
       {isSemContrato && isMissingResponsible && (
-        <div className="mt-3">
+        <div className="mt-2.5">
           <Banner
             variant="warning"
             title="Cadastro incompleto"
@@ -102,12 +100,12 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-[#e5e5e5] w-full min-w-0 gap-2">
+      <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
         <div className="flex flex-col gap-1 min-w-0">
           {(isAssinado || isPendente || isImportado) && (
             <div className="flex items-center gap-1.5 min-w-0">
               <Calendar className="h-3.5 w-3.5 text-[#737373] shrink-0" />
-              <span className="text-[11px] font-medium text-[#737373] tracking-tight truncate">
+              <span className="text-xs font-medium text-[#737373] tracking-tight truncate">
                 {dataLabel} {formatMonthYearToBR(dataExibicao)}
               </span>
             </div>
@@ -116,10 +114,10 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
         {valor && (
           <div className="flex items-baseline shrink-0">
-            <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-none">
+            <span className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight leading-none">
               {formatCurrency(valor)}
             </span>
-            <span className="text-[11px] font-medium text-[#737373] ml-1">/mês</span>
+            <span className="text-xs font-medium text-[#737373] ml-1">/mês</span>
           </div>
         )}
       </div>

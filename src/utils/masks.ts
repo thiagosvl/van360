@@ -114,30 +114,66 @@ export const dateMask = (value?: string | null): string => {
     .replace(/(\d{2})(\d)/, "$1/$2");
 };
 
-export const timeMask = (value?: string | null): string => {
+export const timeMask = (value?: string | null, prevVal?: string): string => {
   if (!value) return "";
-  const raw = value.replace(/\D/g, "");
-  let formatted = "";
 
-  for (let i = 0; i < raw.length && formatted.length < 5; i++) {
-    const char = raw[i];
-    if (formatted.length === 0) {
-      if (char <= "2") formatted += char;
-    } else if (formatted.length === 1) {
-      if (formatted[0] === "2") {
-        if (char <= "3") formatted += char;
-      } else {
-        formatted += char;
+  if (prevVal && value.length < prevVal.length) {
+    if (prevVal.endsWith(":") && !value.endsWith(":")) {
+      return value.slice(0, -1);
+    }
+    return value;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.includes(":") || trimmed.toLowerCase().includes("h")) {
+    const parts = trimmed.toLowerCase().split(/[:h]/);
+    const h = parts[0]?.replace(/\D/g, "");
+    const m = parts[1]?.replace(/\D/g, "");
+    if (h) {
+      const hNum = Math.min(parseInt(h, 10), 23);
+      const cleanH = String(isNaN(hNum) ? 0 : hNum).padStart(2, "0");
+      if (m !== undefined && m !== "") {
+        const mDigits = m.slice(0, 2);
+        const mNum = Math.min(parseInt(mDigits, 10), 59);
+        const cleanM = String(isNaN(mNum) ? 0 : mNum).padStart(mDigits.length, "0");
+        return `${cleanH}:${cleanM}`;
       }
-    } else if (formatted.length === 2) {
-      if (char <= "5") formatted += `:${char}`;
-    } else if (formatted.length === 3) {
-      if (char <= "5") formatted += char;
-    } else if (formatted.length === 4) {
-      formatted += char;
+      return `${cleanH}:`;
     }
   }
 
-  return formatted;
+  const raw = value.replace(/\D/g, "").slice(0, 4);
+  if (!raw) return "";
+
+  if (raw.length === 1) {
+    if (raw > "2") {
+      return `0${raw}:`;
+    }
+    return raw;
+  }
+
+  let h1 = raw[0];
+  let h2 = raw[1];
+  const hour = parseInt(h1 + h2, 10);
+  if (hour > 23) {
+    h1 = "2";
+    h2 = "3";
+  }
+
+  if (raw.length === 2) {
+    return `${h1}${h2}:`;
+  }
+
+  let m1 = raw[2];
+  if (m1 > "5") {
+    m1 = "5";
+  }
+
+  if (raw.length === 3) {
+    return `${h1}${h2}:${m1}`;
+  }
+
+  const m2 = raw[3];
+  return `${h1}${h2}:${m1}${m2}`;
 };
 

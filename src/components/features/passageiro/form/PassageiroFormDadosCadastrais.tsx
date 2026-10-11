@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/TimeInput";
 import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { Usuario } from "@/types/usuario";
@@ -21,7 +22,7 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
 import { getAnoLetivoOptions } from "@/utils/domain/anoLetivo";
 import { dateMask } from "@/utils/masks";
-import { AlertTriangle, Car, Clock, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, CalendarDays, X } from "lucide-react";
+import { AlertTriangle, Car, Compass, DoorClosed, School, Sun, User, UserCheck, CalendarIcon, CalendarDays, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { ptBR } from "date-fns/locale";
@@ -580,37 +581,17 @@ export function PassageiroFormDadosCadastrais({
                   Horário de Entrada
                 </FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                    <Input
-                      type="time"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        if (form.getValues("horario_saida")) {
-                          form.trigger("horario_saida");
-                        }
-                      }}
-                      className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
-                      aria-invalid={!!fieldState.error}
-                    />
-                    {field.value && (
-                      <div
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          field.onChange("");
-                          if (form.getValues("horario_saida")) {
-                            form.trigger("horario_saida");
-                          }
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
+                  <TimeInput
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      if (form.getValues("horario_saida")) {
+                        form.trigger("horario_saida");
+                      }
+                    }}
+                    error={!!fieldState.error}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -626,29 +607,12 @@ export function PassageiroFormDadosCadastrais({
                   Horário de Saída
                 </FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                    <Input
-                      type="time"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
-                      aria-invalid={!!fieldState.error}
-                    />
-                    {field.value && (
-                      <div
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          field.onChange("");
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
+                  <TimeInput
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(val) => field.onChange(val)}
+                    error={!!fieldState.error}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

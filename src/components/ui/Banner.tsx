@@ -44,7 +44,7 @@ const VARIANT_CONFIG: Record<
     description: "text-muted-foreground",
     chevron: "text-primary/70 group-hover:text-primary",
     defaultIcon: <Info className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary shrink-0" />,
-    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    actionButton: "bg-white dark:bg-card text-[#0a0a0a] dark:text-foreground border border-[#e5e5e5] dark:border-border hover:bg-[#fafafa] dark:hover:bg-accent/80 shadow-xs",
     dismissButton: "text-primary/60 hover:text-primary hover:bg-primary/10",
   },
   warning: {
@@ -53,7 +53,7 @@ const VARIANT_CONFIG: Record<
     description: "text-muted-foreground",
     chevron: "text-amber-600/70 group-hover:text-amber-600",
     defaultIcon: <AlertTriangle className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-amber-500 shrink-0" />,
-    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    actionButton: "bg-white dark:bg-card text-[#0a0a0a] dark:text-foreground border border-[#e5e5e5] dark:border-border hover:bg-[#fafafa] dark:hover:bg-accent/80 shadow-xs",
     dismissButton: "text-amber-600/60 hover:text-amber-700 hover:bg-amber-500/15",
   },
   neutral: {
@@ -62,7 +62,7 @@ const VARIANT_CONFIG: Record<
     description: "text-muted-foreground",
     chevron: "text-muted-foreground group-hover:text-foreground",
     defaultIcon: <Info className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-muted-foreground shrink-0" />,
-    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    actionButton: "bg-white dark:bg-card text-[#0a0a0a] dark:text-foreground border border-[#e5e5e5] dark:border-border hover:bg-[#fafafa] dark:hover:bg-accent/80 shadow-xs",
     dismissButton: "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5",
   },
   success: {
@@ -71,7 +71,7 @@ const VARIANT_CONFIG: Record<
     description: "text-muted-foreground",
     chevron: "text-emerald-600/70 group-hover:text-emerald-600",
     defaultIcon: <CheckCircle2 className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-500 shrink-0" />,
-    actionButton: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs",
+    actionButton: "bg-white dark:bg-card text-[#0a0a0a] dark:text-foreground border border-[#e5e5e5] dark:border-border hover:bg-[#fafafa] dark:hover:bg-accent/80 shadow-xs",
     dismissButton: "text-emerald-600/60 hover:text-emerald-700 hover:bg-emerald-500/15",
   },
   danger: {
@@ -80,7 +80,7 @@ const VARIANT_CONFIG: Record<
     description: "text-muted-foreground",
     chevron: "text-destructive/70 group-hover:text-destructive",
     defaultIcon: <AlertCircle className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-destructive shrink-0" />,
-    actionButton: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-2xs",
+    actionButton: "bg-white dark:bg-card text-destructive border border-destructive/25 hover:bg-destructive/10 shadow-xs",
     dismissButton: "text-destructive/60 hover:text-destructive hover:bg-destructive/15",
   },
 };
@@ -137,7 +137,7 @@ export function Banner({
           onClick={action.onClick}
           disabled={action.disabled || action.isLoading}
           className={cn(
-            "h-7 px-3 text-xs font-medium rounded-[10px] transition-all shrink-0 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed self-center",
+            "w-full sm:w-auto h-9 sm:h-8 px-4 sm:px-3.5 text-xs font-medium rounded-[18px] transition-all shrink-0 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed self-stretch sm:self-center mt-0.5 sm:mt-0",
             config.actionButton,
             action.className
           )}
@@ -176,9 +176,9 @@ export function Banner({
   );
 
   const containerClasses = cn(
-    "relative py-2.5 px-3.5 sm:py-2.5 sm:px-4 rounded-[12px] border transition-all text-xs sm:text-[13px]",
+    "relative p-3.5 sm:py-3 sm:px-4 rounded-[18px] border transition-all text-xs sm:text-[13px]",
     action
-      ? "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3"
+      ? "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
       : "flex flex-row items-start justify-between gap-2.5 sm:gap-3",
     isClickable && "cursor-pointer group text-left w-full active:scale-[0.99]",
     config.container,

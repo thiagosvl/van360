@@ -7,8 +7,8 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { UserType } from "@/types/enums";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { MotoristaAuxiliarFormDialog } from "@/components/dialogs/MotoristaAuxiliarFormDialog";
@@ -21,20 +21,15 @@ import { EquipeToolbar } from "@/components/features/equipe/EquipeToolbar";
 import { EquipeList } from "@/components/features/equipe/EquipeList";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-  CheckCircle2,
-  KeyRound,
   UserCheck,
   Users2,
   Eye,
   EyeOff,
-  Trash2,
   Lock,
-  ShieldCheck,
   Search,
 } from "lucide-react";
 import { toast } from "@/utils/notifications/toast";
 import { apiClient } from "@/services/api/client";
-import { cn } from "@/lib/utils";
 import type { MembroEquipe, VeiculoMembro } from "@/types/equipe";
 
 export default function MinhaEquipe() {
@@ -86,16 +81,6 @@ export default function MinhaEquipe() {
   const monitores = useMemo(
     () => membros.filter((m) => m.tipo === UserType.MONITOR),
     [membros]
-  );
-
-  const totalMotoristasAtivos = useMemo(
-    () => motoristasAuxiliares.filter((m) => m.ativo !== false).length,
-    [motoristasAuxiliares]
-  );
-
-  const totalMonitoresAtivos = useMemo(
-    () => monitores.filter((m) => m.ativo !== false).length,
-    [monitores]
   );
 
   const filtrarMembros = (lista: MembroEquipe[]) => {
@@ -187,97 +172,6 @@ export default function MinhaEquipe() {
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
       <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
-        <div className="-mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible touch-pan-x">
-          <div className="flex items-stretch gap-2.5 sm:gap-3 w-max sm:w-full sm:grid sm:grid-cols-3">
-            <div className="p-3.5 sm:p-5 rounded-[20px] sm:rounded-[24px] bg-white border border-[#e5e5e5] text-left group shadow-[0_1px_3px_rgba(0,0,0,0.05)] w-[175px] min-w-[175px] shrink-0 sm:w-auto sm:shrink sm:min-w-0 overflow-hidden">
-              <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                <span 
-                  className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
-                  title="Equipe Total"
-                >
-                  Equipe Total
-                </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] sm:rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] group-hover:text-[#0a0a0a] transition-colors shrink-0">
-                  <Users2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </div>
-              </div>
-              <div className="flex items-baseline justify-between gap-2 min-w-0">
-                {isLoading ? (
-                  <Skeleton className="h-7 sm:h-8 w-12 sm:w-16 rounded-[10px] bg-[#f5f5f5]" />
-                ) : (
-                  <span className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight leading-none truncate">
-                    {membros.length}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => isGestor && setActiveTab("motoristas")}
-              className={cn(
-                "p-3.5 sm:p-5 rounded-[20px] sm:rounded-[24px] bg-white border text-left group shadow-[0_1px_3px_rgba(0,0,0,0.05)] w-[175px] min-w-[175px] shrink-0 sm:w-auto sm:shrink sm:min-w-0 transition-all cursor-pointer overflow-hidden",
-                activeTab === "motoristas"
-                  ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
-                  : "border-[#e5e5e5] hover:border-[#737373]/50"
-              )}
-            >
-              <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                <span 
-                  className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
-                  title="Motoristas Ativos"
-                >
-                  Motoristas Ativos
-                </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] sm:rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] group-hover:text-[#0a0a0a] transition-colors shrink-0">
-                  <UserCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </div>
-              </div>
-              <div className="flex items-baseline justify-between gap-2 min-w-0">
-                {isLoading ? (
-                  <Skeleton className="h-7 sm:h-8 w-12 sm:w-16 rounded-[10px] bg-[#f5f5f5]" />
-                ) : (
-                  <span className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight leading-none truncate">
-                    {totalMotoristasAtivos}
-                  </span>
-                )}
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("monitores")}
-              className={cn(
-                "p-3.5 sm:p-5 rounded-[20px] sm:rounded-[24px] bg-white border text-left group shadow-[0_1px_3px_rgba(0,0,0,0.05)] w-[175px] min-w-[175px] shrink-0 sm:w-auto sm:shrink sm:min-w-0 transition-all cursor-pointer overflow-hidden",
-                activeTab === "monitores"
-                  ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
-                  : "border-[#e5e5e5] hover:border-[#737373]/50"
-              )}
-            >
-              <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                <span 
-                  className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
-                  title="Monitores Ativos"
-                >
-                  Monitores Ativos
-                </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] sm:rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] group-hover:text-[#0a0a0a] transition-colors shrink-0">
-                  <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </div>
-              </div>
-              <div className="flex items-baseline justify-between gap-2 min-w-0">
-                {isLoading ? (
-                  <Skeleton className="h-7 sm:h-8 w-12 sm:w-16 rounded-[10px] bg-[#f5f5f5]" />
-                ) : (
-                  <span className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight leading-none truncate">
-                    {totalMonitoresAtivos}
-                  </span>
-                )}
-              </div>
-            </button>
-          </div>
-        </div>
-
         <Tabs
           value={activeTab}
           onValueChange={(val) => {
@@ -286,33 +180,25 @@ export default function MinhaEquipe() {
           }}
           className="w-full space-y-4 sm:space-y-6"
         >
-          <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full">
-            <TabsList className={cn(
-              "grid w-full min-h-[40px] sm:min-h-[42px] bg-transparent p-0 gap-1 border-0",
-              isGestor ? "grid-cols-2" : "grid-cols-1"
-            )}>
-              {isGestor && (
-                <TabsTrigger
-                  value="motoristas"
-                  className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex items-center justify-center"
-                >
-                  Motoristas
-                  <span className="ml-2 px-1.5 py-0.5 rounded-[18px] text-[10px] font-semibold bg-[#e5e5e5]/80 text-[#0a0a0a]">
-                    {motoristasAuxiliares.length}
-                  </span>
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="monitores"
-                className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex items-center justify-center"
-              >
-                Monitores
-                <span className="ml-2 px-1.5 py-0.5 rounded-[18px] text-[10px] font-semibold bg-[#e5e5e5]/80 text-[#0a0a0a]">
-                  {monitores.length}
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <AppTabNav
+            activeTab={activeTab}
+            items={[
+              ...(isGestor
+                ? [
+                    {
+                      value: "motoristas",
+                      label: "Motoristas",
+                      badge: motoristasAuxiliares.length,
+                    },
+                  ]
+                : []),
+              {
+                value: "monitores",
+                label: "Monitores",
+                badge: monitores.length,
+              },
+            ]}
+          />
 
           {isGestor && (
             <TabsContent value="motoristas" className="space-y-4 mt-0 focus-visible:outline-none">
@@ -336,15 +222,15 @@ export default function MinhaEquipe() {
                 <div className="space-y-4">
                   <Banner
                     variant="info"
-                    title="Como funciona a conta de motorista"
-                    description="Ela concede acesso restrito ao aplicativo para operar os veículos atribuídos, sem acesso aos dados da gestão principal da empresa."
+                    title="Dê acesso a outro motorista com segurança"
+                    description="Ele acessa apenas a lista de alunos e rotas para fazer a chamada no dia a dia. Seu financeiro e contratos não ficam disponíveis."
                     className="rounded-[18px]"
                   />
 
                   <UnifiedEmptyState
                     icon={UserCheck}
                     title="Nenhum motorista cadastrado"
-                    description="Adicione motoristas à sua equipe para operar os veículos da frota."
+                    description="Adicione motoristas para te apoiar nas viagens e chamadas do dia a dia."
                     action={{
                       label: "Cadastrar Motorista",
                       onClick: () => {
@@ -405,15 +291,15 @@ export default function MinhaEquipe() {
               <div className="space-y-4">
                 <Banner
                   variant="info"
-                  title="Como funciona a conta de monitor"
-                  description="Ela concede acesso operacional restrito às atividades dos veículos atribuídos, conforme as permissões estabelecidas."
+                  title="Dê acesso ao seu monitor com segurança"
+                  description="Ele acessa apenas a lista de alunos e rotas para fazer a chamada no dia a dia. Seu financeiro e contratos não ficam disponíveis."
                   className="rounded-[18px]"
                 />
 
                 <UnifiedEmptyState
                   icon={Users2}
                   title="Nenhum monitor cadastrado"
-                  description="Adicione monitores à sua equipe para acompanhar as paradas da rota."
+                  description="Adicione monitores para te apoiar no cuidado com os alunos e na lista de chamada."
                   action={{
                     label: "Cadastrar Monitor",
                     onClick: () => {

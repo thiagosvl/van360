@@ -48,7 +48,7 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
       renderHeader={renderHeader}
     >
       <div className={cn(
-        "bg-white p-3.5 pr-8 rounded-[20px] border border-[#e5e5e5] shadow-xs flex items-center justify-between gap-3 active:scale-[0.99] transition-all",
+        "bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-xs flex items-center justify-between gap-3 active:scale-[0.99] transition-all",
         !veiculo.ativo && "opacity-60 bg-[#fafafa]/80"
       )}>
         <div className="flex items-center gap-3 min-w-0 flex-1">

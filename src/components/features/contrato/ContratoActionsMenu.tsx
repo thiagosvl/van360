@@ -10,6 +10,7 @@ interface ContratoActionsMenuProps {
   status?: string;
   isDesativado?: boolean;
   usarContratos?: boolean;
+  isContratoConfigurado?: boolean;
   onVerPassageiro: (id: string) => void;
   onEnviarWhatsApp?: () => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;

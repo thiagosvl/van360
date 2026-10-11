@@ -10,7 +10,8 @@ import {
   SaidasSkeleton,
   VisaoGeralSkeleton,
 } from "@/components/skeletons/RelatoriosSkeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Bus } from "lucide-react";
 import { useRelatoriosViewModel } from "@/hooks/ui/useRelatoriosViewModel";
@@ -80,34 +81,27 @@ export default function Relatorios() {
           onValueChange={setActiveTab}
           className="w-full space-y-4 sm:space-y-6"
         >
-          <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x">
-            <TabsList className="flex w-full min-h-[38px] sm:min-h-[42px] bg-transparent p-0 gap-1 border-0 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4">
-              <TabsTrigger
-                value={RelatorioTab.VISAO_GERAL}
-                className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex-1 justify-center"
-              >
-                Visão Geral
-              </TabsTrigger>
-              <TabsTrigger
-                value={RelatorioTab.ENTRADAS}
-                className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex-1 justify-center"
-              >
-                Entradas
-              </TabsTrigger>
-              <TabsTrigger
-                value={RelatorioTab.SAIDAS}
-                className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex-1 justify-center"
-              >
-                Saídas
-              </TabsTrigger>
-              <TabsTrigger
-                value={RelatorioTab.OPERACIONAL}
-                className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 flex-1 justify-center"
-              >
-                Operacional
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <AppTabNav
+            activeTab={activeTab}
+            items={[
+              {
+                value: RelatorioTab.VISAO_GERAL,
+                label: "Visão Geral",
+              },
+              {
+                value: RelatorioTab.ENTRADAS,
+                label: "Entradas",
+              },
+              {
+                value: RelatorioTab.SAIDAS,
+                label: "Saídas",
+              },
+              {
+                value: RelatorioTab.OPERACIONAL,
+                label: "Operacional",
+              },
+            ]}
+          />
 
           <TabsContent value={RelatorioTab.VISAO_GERAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0 transform-gpu will-change-transform">
             {isLoading ? <VisaoGeralSkeleton /> : <RelatoriosVisaoGeral dados={dados.visaoGeral} />}

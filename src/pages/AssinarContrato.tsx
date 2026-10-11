@@ -11,12 +11,16 @@ import {
   PenTool,
   AlertCircle,
   FileText,
+  Plus,
+  Minus,
+  ExternalLink,
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useState } from "react";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -25,6 +29,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
+  const [currentScale, setCurrentScale] = useState(1);
 
   const {
     contrato,
@@ -38,31 +43,6 @@ export default function AssinarContrato() {
     onDocumentLoadSuccess,
     isSigning
   } = useAssinarContratoViewModel({ token });
-
-  useEffect(() => {
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    const originalViewport = viewportMeta?.getAttribute("content");
-
-    if (viewportMeta) {
-      viewportMeta.setAttribute(
-        "content",
-        "viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes"
-      );
-    }
-
-    const originalBodyTouchAction = document.body.style.touchAction;
-    const originalHtmlTouchAction = document.documentElement.style.touchAction;
-    document.body.style.touchAction = "manipulation";
-    document.documentElement.style.touchAction = "manipulation";
-
-    return () => {
-      if (viewportMeta && originalViewport) {
-        viewportMeta.setAttribute("content", originalViewport);
-      }
-      document.body.style.touchAction = originalBodyTouchAction;
-      document.documentElement.style.touchAction = originalHtmlTouchAction;
-    };
-  }, []);
 
   if (isLoading) {
     return <InitialLoading />;
@@ -146,43 +126,101 @@ export default function AssinarContrato() {
           </div>
         </div>
 
-        <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => openBrowserLink(window.location.href)}
+            className="text-white/80 hover:text-white hover:bg-white/10 h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+            title="Abrir no navegador"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Navegador</span>
+          </Button>
+
           <img
             src="/assets/logo-van360.webp"
             alt="Van360"
-            className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
+            className="h-6 sm:h-8 w-auto filter brightness-0 invert opacity-90"
           />
         </div>
       </header>
 
       <main className="flex-1 overflow-auto bg-[#f5f5f5] pb-32 scroll-smooth block touch-auto">
-        <div className="min-w-full py-6 sm:py-10 flex flex-col items-center">
-          <Document
-            file={contrato.minuta_url}
-            onLoadSuccess={onDocumentLoadSuccess}
-            className="flex flex-col items-center px-4"
-            loading={
-              <div className="flex flex-col items-center justify-center p-20 gap-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Carregando</span>
+        <TransformWrapper
+          initialScale={1}
+          minScale={1}
+          maxScale={4}
+          centerOnInit={true}
+          wheel={{ disabled: currentScale <= 1, step: 0.1 }}
+          pinch={{ step: 5 }}
+          doubleClick={{ mode: "toggle", step: 1 }}
+          panning={{ disabled: currentScale <= 1, velocityDisabled: false }}
+          onTransform={(_, state) => setCurrentScale(state.scale)}
+        >
+          {({ zoomIn, zoomOut, resetTransform, state }) => (
+            <>
+              <div className="fixed top-16 sm:top-20 right-4 z-30 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full shadow-md border border-[#e5e5e5]">
+                <button
+                  type="button"
+                  onClick={() => zoomOut()}
+                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-700 active:scale-95 transition-transform cursor-pointer"
+                  aria-label="Diminuir zoom"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => resetTransform()}
+                  className="px-1 text-[11px] font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                  aria-label="Restaurar zoom"
+                >
+                  {Math.round((state.scale || 1) * 100)}%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => zoomIn()}
+                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-700 active:scale-95 transition-transform cursor-pointer"
+                  aria-label="Aumentar zoom"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
               </div>
-            }
-          >
-            {Array.from(new Array(numPages), (_, index) => (
-              <div
-                key={`page_${index + 1}`}
-                className="mb-8 last:mb-0 shadow-sm bg-white border border-[#e5e5e5] rounded-[14px] overflow-hidden"
+
+              <TransformComponent
+                wrapperClass="!w-full !min-h-full"
+                contentClass="!w-full min-w-full flex flex-col items-center py-6 sm:py-10"
               >
-                <Page
-                  pageNumber={index + 1}
-                  width={Math.min(window.innerWidth - 32, 850)}
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                />
-              </div>
-            ))}
-          </Document>
-        </div>
+                <Document
+                  file={contrato.minuta_url}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  className="flex flex-col items-center px-4"
+                  loading={
+                    <div className="flex flex-col items-center justify-center p-20 gap-4">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Carregando</span>
+                    </div>
+                  }
+                >
+                  {Array.from(new Array(numPages), (_, index) => (
+                    <div
+                      key={`page_${index + 1}`}
+                      className="mb-8 last:mb-0 shadow-sm bg-white border border-[#e5e5e5] rounded-[14px] overflow-hidden"
+                    >
+                      <Page
+                        pageNumber={index + 1}
+                        width={Math.min(window.innerWidth - 32, 850)}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={true}
+                      />
+                    </div>
+                  ))}
+                </Document>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
       </main>
 
       <div className="fixed bottom-6 left-0 right-0 px-4 sm:px-6 z-50 pointer-events-none w-full flex justify-center">

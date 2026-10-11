@@ -54,7 +54,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
       className="bg-transparent"
       renderHeader={renderHeader}
     >
-      <div className="bg-white p-3.5 pr-10 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start gap-3 active:scale-[0.99] transition-all">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start gap-3 active:scale-[0.99] transition-all">
         <div className="flex-shrink-0 w-9 h-9 rounded-[10px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center mt-0.5 text-[#0a0a0a]">
           <span className="font-semibold text-xs leading-none">
             {gastoDia}

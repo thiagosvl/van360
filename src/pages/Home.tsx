@@ -163,7 +163,7 @@ const Home = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
-        <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-9 pb-24 pt-1 sm:pt-2">
+        <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-9 pb-24 sm:pt-2">
           {showBothDenied && <PermissionRescueBanner type={PermissionRescueType.BOTH} />}
           {showPushDenied && <PermissionRescueBanner type={PermissionRescueType.PUSH} />}
           {showLocationDenied && <PermissionRescueBanner type={PermissionRescueType.LOCATION} />}

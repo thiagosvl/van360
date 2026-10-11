@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Banner } from "@/components/ui/Banner";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
 import {
@@ -296,13 +295,6 @@ export function MonitorFormDialog({
 
       <BaseDialog.Body>
         <div className="space-y-4 pb-2">
-          <Banner
-            variant="info"
-            title="Acesso do Monitor"
-            description="Esta conta possui acesso restrito às operações do veículo atribuído, de acordo com o nível do perfil."
-            className="rounded-[18px]"
-          />
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">

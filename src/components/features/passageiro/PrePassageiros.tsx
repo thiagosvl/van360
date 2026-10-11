@@ -365,7 +365,7 @@ export default function PrePassageiros({
                       </span>
                     </div>
 
-                    <div className="flex-grow min-w-0 pr-10">
+                    <div className="flex-grow min-w-0 pr-2">
                       <div className="flex items-center gap-1.5">
                         <p className="font-semibold text-[#0a0a0a] text-sm truncate leading-tight">
                           {formatShortName(prePassageiro.nome, true)}

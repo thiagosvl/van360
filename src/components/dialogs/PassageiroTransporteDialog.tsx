@@ -9,6 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/TimeInput";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -525,27 +526,11 @@ export function PassageiroTransporteDialog({
                         Horário de Entrada
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Clock className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
-                          <Input
-                            type="time"
-                            {...field}
-                            value={field.value || ""}
-                            className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
-                          />
-                          {field.value && (
-                            <div
-                              className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                field.onChange("");
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </div>
-                          )}
-                        </div>
+                        <TimeInput
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(val) => field.onChange(val)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -561,27 +546,11 @@ export function PassageiroTransporteDialog({
                         Horário de Saída
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Clock className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
-                          <Input
-                            type="time"
-                            {...field}
-                            value={field.value || ""}
-                            className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none"
-                          />
-                          {field.value && (
-                            <div
-                              className="absolute right-3 top-2.5 sm:top-3 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                field.onChange("");
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </div>
-                          )}
-                        </div>
+                        <TimeInput
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(val) => field.onChange(val)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

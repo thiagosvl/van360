@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[18px] text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[18px] text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:select-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs active:scale-[0.98]",
-        tonal: "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/15 shadow-2xs active:scale-[0.98]",
-        soft: "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/15 shadow-2xs active:scale-[0.98]",
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs active:scale-[0.98] aria-disabled:hover:bg-primary aria-disabled:hover:text-primary-foreground aria-disabled:active:scale-100",
+        tonal: "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/15 shadow-2xs active:scale-[0.98] aria-disabled:hover:bg-primary/10 aria-disabled:hover:text-primary aria-disabled:active:bg-primary/10 aria-disabled:active:text-primary aria-disabled:active:scale-100",
+        soft: "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/15 shadow-2xs active:scale-[0.98] aria-disabled:hover:bg-primary/10 aria-disabled:hover:text-primary aria-disabled:active:bg-primary/10 aria-disabled:active:text-primary aria-disabled:active:scale-100",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs active:scale-[0.98]",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs active:scale-[0.98] aria-disabled:hover:bg-destructive aria-disabled:hover:text-destructive-foreground aria-disabled:active:scale-100",
         outline:
-          "border border-border bg-background text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 shadow-xs active:scale-[0.98]",
+          "border border-border bg-background text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 shadow-xs active:scale-[0.98] aria-disabled:hover:border-border aria-disabled:hover:bg-background aria-disabled:hover:text-foreground aria-disabled:active:scale-100",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98]",
-        ghost: "hover:bg-secondary text-muted-foreground hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98] aria-disabled:hover:bg-secondary aria-disabled:hover:text-secondary-foreground aria-disabled:active:scale-100",
+        ghost: "hover:bg-secondary text-muted-foreground hover:text-foreground aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground aria-disabled:active:scale-100",
+        link: "text-primary underline-offset-4 hover:underline aria-disabled:hover:no-underline aria-disabled:active:scale-100",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -100,20 +100,30 @@ const CarteirinhaTopCard = ({
     !phoneNumbersOnly ||
     phoneNumbersOnly.length < 10;
 
+  const hasResponsavel = Boolean(
+    passageiro.responsavel_principal?.nome ||
+    passageiro.responsavel_principal?.id ||
+    (passageiro.responsaveis && passageiro.responsaveis.length > 0)
+  );
+
   const { financeiro } = useMotoristaFinanceiroApi();
   const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
   const modoEfetivo = passageiro.modo_cobranca || modoVan;
+  const isModoComLembreteOuAuto =
+    modoEfetivo === ModoCobrancaEnum.AUTOMATICA ||
+    modoEfetivo === ModoCobrancaEnum.LEMBRETES;
   const temLembretesHabilitados =
     !passageiro.isento &&
-    modoEfetivo !== ModoCobrancaEnum.DESATIVADO;
-  const recebeAvisos =
-    !!passageiro.ativo &&
-    temLembretesHabilitados &&
-    passageiro.enviar_notificacoes !== false;
+    isModoComLembreteOuAuto;
+
   const mostrarIconeAvisos =
     !isSubConta &&
-    !passageiro.isento &&
-    (modoVan !== ModoCobrancaEnum.DESATIVADO || recebeAvisos);
+    temLembretesHabilitados &&
+    hasResponsavel;
+
+  const recebeAvisos =
+    !!passageiro.ativo &&
+    passageiro.enviar_notificacoes !== false;
 
   return (
     <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-8 shadow-sm border border-white/10 overflow-visible">
@@ -356,12 +366,7 @@ export const CarteirinhaDadosPessoais = ({
   } = useLayout();
   const { financeiro } = useMotoristaFinanceiroApi();
   const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
-  const labelModoVan =
-    modoVan === ModoCobrancaEnum.AUTOMATICA
-      ? "Automática Pix"
-      : modoVan === ModoCobrancaEnum.LEMBRETES
-        ? "Apenas Lembretes"
-        : "Desativado";
+
   const { can } = usePermissions();
   const canManage = can("passageiros.gerenciar");
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar") || can("passageiros.gerenciar");
@@ -448,19 +453,17 @@ export const CarteirinhaDadosPessoais = ({
                 value={fimCobrancaTexto}
               />
             </div>
-            {!passageiro.isento && (
+            {!passageiro.isento && Boolean(passageiro.modo_cobranca) && (
               <div className="pt-2.5 border-t border-[#e5e5e5]">
                 <InfoField
                   icon={<Sparkles className="h-3.5 w-3.5" />}
                   label="Modelo de cobrança"
                   value={
                     passageiro.modo_cobranca === ModoCobrancaEnum.AUTOMATICA
-                      ? "Automática Pix (Individual)"
+                      ? "Cobrança Automática Pix (Individual)"
                       : passageiro.modo_cobranca === ModoCobrancaEnum.LEMBRETES
-                        ? "Apenas Lembretes (Individual)"
-                        : passageiro.modo_cobranca === ModoCobrancaEnum.DESATIVADO
-                          ? "Desativado (Individual)"
-                          : `Padrão da Van (${labelModoVan})`
+                        ? "Lembretes Automáticos no WhatsApp (Individual)"
+                        : "Desativado (Individual)"
                   }
                 />
               </div>

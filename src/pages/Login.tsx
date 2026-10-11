@@ -312,7 +312,7 @@ export default function Login() {
                   </p>
                 </div>
 
-                <div className="w-full space-y-3">
+                <div className="w-full space-y-2.5">
                   <button
                     type="button"
                     onClick={() => handleSelectProfile("motorista")}
@@ -332,6 +332,15 @@ export default function Login() {
                       <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563eb] transition-colors" />
                     </div>
                   </button>
+
+                  <div className="relative flex items-center justify-center py-0.5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-[#e5e5e5]" />
+                    </div>
+                    <span className="relative bg-white px-3 text-xs text-[#737373] font-medium select-none">
+                      ou
+                    </span>
+                  </div>
 
                   <button
                     type="button"

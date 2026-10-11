@@ -259,7 +259,7 @@ export function RepasseLogsList({
                               size="sm"
                               disabled={isRetrying}
                               onClick={() => onRetry(item.id)}
-                              className="h-7 px-2 bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30 text-xs rounded-xl gap-1"
+                              className="h-7 px-2 bg-destructive/10 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30 text-xs rounded-xl gap-1"
                               title="Retentar liquidação do repasse"
                             >
                               {isRetrying ? (
@@ -358,7 +358,7 @@ export function RepasseLogsList({
                         size="sm"
                         disabled={isRetrying}
                         onClick={() => onRetry(item.id)}
-                        className="h-8 px-3 bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30 text-xs rounded-xl gap-1.5"
+                        className="h-8 px-3 bg-destructive/10 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30 text-xs rounded-xl gap-1.5"
                       >
                         {isRetrying ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -83,7 +83,7 @@ const Contratos = () => {
             <Banner
               variant="info"
               title="Configure seu modelo de contrato"
-              description="Ajuste suas cláusulas, multas e assinatura para começar a emitir contratos para os responsáveis dos alunos."
+              description="Ajuste suas cláusulas, multas e assinatura para começar a gerar contratos para os responsáveis dos alunos."
               action={{
                 label: "Ajustar Contrato",
                 onClick: handleOpenContractSetup,
@@ -94,9 +94,9 @@ const Contratos = () => {
 
           {!isContratoAtivo && isContratoConfigurado && (
             <Banner
-              variant="neutral"
+              variant="warning"
               title="Uso de Contratos Desativado"
-              description="Reative para voltar a emitir contratos para seus alunos."
+              description="Reative para voltar a gerar contratos para seus alunos."
               action={{
                 label: "Reativar Contratos",
                 onClick: () => handleToggleContracts(true),
@@ -119,7 +119,7 @@ const Contratos = () => {
                 )}
               >
                 <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                  <span 
+                  <span
                     className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
                     title="Sem Contrato"
                   >
@@ -155,7 +155,7 @@ const Contratos = () => {
                 )}
               >
                 <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                  <span 
+                  <span
                     className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
                     title="Pendentes"
                   >
@@ -191,7 +191,7 @@ const Contratos = () => {
                 )}
               >
                 <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2 min-w-0">
-                  <span 
+                  <span
                     className="text-[11px] sm:text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em] truncate min-w-0 flex-1"
                     title="Assinados"
                   >
@@ -271,6 +271,7 @@ const Contratos = () => {
                   activeTab={ContratoTab.SEM_CONTRATO}
                   busca={debouncedSearch}
                   isDesativado={!isContratoAtivo}
+                  isContratoConfigurado={isContratoConfigurado}
                   isDownloading={isDownloading}
                   {...actions}
                 />
@@ -283,6 +284,7 @@ const Contratos = () => {
                   activeTab={ContratoTab.PENDENTES}
                   busca={debouncedSearch}
                   isDesativado={!isContratoAtivo}
+                  isContratoConfigurado={isContratoConfigurado}
                   isDownloading={isDownloading}
                   {...actions}
                 />
@@ -295,6 +297,7 @@ const Contratos = () => {
                   activeTab={ContratoTab.ASSINADOS}
                   busca={debouncedSearch}
                   isDesativado={!isContratoAtivo}
+                  isContratoConfigurado={isContratoConfigurado}
                   isDownloading={isDownloading}
                   {...actions}
                 />

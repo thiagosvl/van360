@@ -42,14 +42,14 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
   const anoFormatado = cobranca.ano ? String(cobranca.ano).slice(-2) : "--";
 
   return (
-    <div className="flex flex-col p-4 sm:p-5 bg-[#fafafa] rounded-[22px] border border-[#e5e5e5] shadow-2xs transition-all text-left w-full min-w-0 overflow-hidden">
-      <div className="flex justify-between items-center mb-2 w-full min-w-0 gap-2">
-        <p className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em] leading-none truncate min-w-0">
+    <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
+      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none truncate min-w-0">
           PARCELA DE {mesAbreviado}/{anoFormatado}
-        </p>
+        </span>
 
         <div className={cn(
-          "px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider shrink-0",
+          "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0",
           isRepasseEmProcessamento ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse" :
             isCancelada ? "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]" :
               isParcial ? "bg-amber-50 text-amber-700 border border-amber-200/60" :
@@ -61,51 +61,40 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
         </div>
       </div>
 
-      <div className="flex items-start gap-2 mt-0.5 w-full min-w-0">
-        <h1 className="text-base sm:text-lg font-semibold text-[#0a0a0a] leading-snug line-clamp-3 break-words w-full min-w-0">
-          {formatShortName(cobranca.passageiro?.nome, true)}
-        </h1>
-      </div>
+      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
+        {formatShortName(cobranca.passageiro?.nome, true)}
+      </h2>
 
       {cobranca.passageiro?.responsavel_principal?.nome && (
         <p className={cn(
-          "text-xs font-normal text-[#737373] mt-1 leading-snug w-full min-w-0",
+          "text-xs font-normal text-[#737373] mt-0.5 leading-snug w-full min-w-0",
           formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-2 break-words"
         )}>
           {formatNomeResponsavelExibicao(cobranca.passageiro.responsavel_principal.nome, formatoNomeResponsavel)}
         </p>
       )}
 
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#e5e5e5] w-full min-w-0 gap-2">
-        <div className="flex flex-col gap-1 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Calendar className={cn("h-4 w-4 shrink-0", isAtrasado ? "text-[#e7000b]" : "text-[#737373]")} />
-            <span
-              className={cn(
-                "text-xs uppercase tracking-wide truncate",
-                isAtrasado
-                  ? "text-[#e7000b] font-semibold"
-                  : "text-[#737373] font-medium"
-              )}
-            >
-              {isCancelada
-                ? `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`
-                : isAtrasado
-                  ? formatDiasAtraso(cobranca.data_vencimento)
-                  : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
-            </span>
-          </div>
+      <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Calendar className="h-3.5 w-3.5 shrink-0 text-[#737373]" />
+          <span className="text-xs font-normal text-[#737373] truncate">
+            {isCancelada
+              ? `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`
+              : isAtrasado
+                ? formatDiasAtraso(cobranca.data_vencimento)
+                : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
+          </span>
         </div>
 
         <div className="flex flex-col items-end shrink-0">
-          <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-none">
+          <span className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight leading-none">
             {formatCurrency(getCobrancaValorExibicao(cobranca))}
           </span>
         </div>
       </div>
 
       {isMotorista && cobranca.observacao?.trim() && (
-        <div className="mt-3 pt-2.5 border-t border-[#e5e5e5] flex items-start gap-2 bg-[#f5f5f5] rounded-[16px] p-3 border border-[#e5e5e5]">
+        <div className="mt-2.5 p-2.5 rounded-[14px] bg-[#f5f5f5]/80 border border-[#e5e5e5]/60 flex items-start gap-2">
           <MessageSquare className="h-3.5 w-3.5 text-[#737373] mt-0.5 shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-medium uppercase tracking-[0.05em] text-[#737373] leading-none mb-1">
@@ -123,7 +112,7 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
           variant="info"
           title="Repasse em andamento"
           description="Pagamento recebido. O repasse está sendo enviado para sua conta bancária via Pix."
-          className="mt-3"
+          className="mt-2.5"
         />
       )}
     </div>

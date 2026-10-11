@@ -3,6 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { MoneyInput, FormEnderecoFields } from "@/components/forms";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/TimeInput";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -20,7 +21,6 @@ import { Passageiro } from "@/types/passageiro";
 import { Button } from "@/components/ui/button";
 import {
   Car,
-  Clock,
   Compass,
   Contact,
   DollarSign,
@@ -798,30 +798,13 @@ export function RevisarSolicitacaoDialog({
                             Horário de Entrada
                           </FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                              <Input
-                                type="time"
-                                {...field}
-                                value={field.value || ""}
-                                className={cn(
-                                  "pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
-                                  fieldState.error && "border-[#e7000b]"
-                                )}
-                              />
-                              {field.value && (
-                                <div
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    field.onChange("");
-                                  }}
-                                >
-                                  <X className="h-4 w-4" />
-                                </div>
-                              )}
-                            </div>
+                            <TimeInput
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(val) => field.onChange(val)}
+                              className="bg-white"
+                              error={!!fieldState.error}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -837,30 +820,13 @@ export function RevisarSolicitacaoDialog({
                             Horário de Saída
                           </FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                              <Input
-                                type="time"
-                                {...field}
-                                value={field.value || ""}
-                                className={cn(
-                                  "pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
-                                  fieldState.error && "border-[#e7000b]"
-                                )}
-                              />
-                              {field.value && (
-                                <div
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    field.onChange("");
-                                  }}
-                                >
-                                  <X className="h-4 w-4" />
-                                </div>
-                              )}
-                            </div>
+                            <TimeInput
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(val) => field.onChange(val)}
+                              className="bg-white"
+                              error={!!fieldState.error}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

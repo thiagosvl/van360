@@ -193,7 +193,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
     if (totalDivergentes > 0) {
       const modoLabels: Record<ModoCobranca, string> = {
         [MODO_COBRANCA.DESATIVADO]: "Desativado (manual)",
-        [MODO_COBRANCA.LEMBRETES]: "Apenas lembretes no WhatsApp",
+        [MODO_COBRANCA.LEMBRETES]: "Lembretes Automáticos no WhatsApp",
         [MODO_COBRANCA.AUTOMATICA]: "Cobrança & Baixa Automática",
       };
 
@@ -365,7 +365,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                       <Bell className="w-4 h-4" />
                     </div>
                     <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">
-                      Apenas lembretes no WhatsApp
+                      Lembretes Automáticos no WhatsApp
                     </h4>
                   </div>
 
@@ -385,7 +385,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </div>
 
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Avisos antes e no vencimento. Baixa manual por você.
+                  Avisos antes e no vencimento com sua chave Pix. Recebimento direto e baixa manual por você.
                 </p>
               </div>
             </button>

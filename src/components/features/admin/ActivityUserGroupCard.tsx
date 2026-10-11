@@ -172,19 +172,18 @@ export function ActivityUserGroupCard({
                 </p>
               </div>
               <Button
-                variant="outline"
                 size="sm"
                 onClick={() => onInspectLog(latestLog)}
-                className="h-7 px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md shadow-xs flex items-center gap-1 shrink-0 text-xs font-medium border-transparent"
+                className="h-7 px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground rounded-md shadow-xs flex items-center gap-1 shrink-0 text-xs font-medium border-transparent"
               >
                 <Eye className="h-3 w-3" />
                 <span className="hidden sm:inline">Inspecionar</span>
               </Button>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-primary/15 text-[11px] font-mono text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-3 w-3 text-primary" />
+            <div className="flex items-center justify-between pt-2 border-t border-border/60 text-[11px] font-mono text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-md border border-border text-foreground font-medium">
+                <Clock className="h-3 w-3 text-muted-foreground" />
                 {formatRelativeTime(latestLog.created_at)}
               </span>
               <span className="text-[10px] text-muted-foreground font-sans font-medium">

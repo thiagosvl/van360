@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { ContratoListItem } from "@/types/contract";
 import { Passageiro } from "@/types/passageiro";
 import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
+import { toast } from "@/utils/notifications/toast";
 
 interface UseContratoActionsProps {
   item: ContratoListItem;
@@ -23,6 +24,7 @@ interface UseContratoActionsProps {
   status?: string;
   isDesativado?: boolean;
   usarContratos?: boolean;
+  isContratoConfigurado?: boolean;
   onVerPassageiro: (id: string) => void;
   onEnviarWhatsApp?: () => void;
   onCompartilharWhatsApp?: (item: ContratoListItem) => void;
@@ -42,6 +44,7 @@ export function useContratoActions({
   status: rawStatus,
   isDesativado = false,
   usarContratos = true,
+  isContratoConfigurado = false,
   onVerPassageiro,
   onEnviarWhatsApp,
   onCompartilharWhatsApp,
@@ -70,6 +73,11 @@ export function useContratoActions({
 
     const isFeatureDisabled = !!(isDesativado || (usarContratos === false));
 
+    const getMensagemBloqueio = () =>
+      !isContratoConfigurado
+        ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
+        : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos.";
+
     const list: ActionItem[] = [];
 
     if (!hasContract) {
@@ -78,9 +86,14 @@ export function useContratoActions({
           label: 'Completar e Gerar Contrato',
           icon: <User className="h-4 w-4" />,
           onClick: () => {
+            if (isFeatureDisabled) {
+              toast.info(getMensagemBloqueio());
+              return;
+            }
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
             onCompletarCadastro?.(passId, item);
           },
+          disabled: isFeatureDisabled,
           swipeColor: 'bg-[#0a0a0a]',
           hasSeparatorAfter: false
         });
@@ -89,7 +102,10 @@ export function useContratoActions({
           label: 'Gerar Contrato',
           icon: <FileText className="h-4 w-4" />,
           onClick: () => {
-            if (isFeatureDisabled) return;
+            if (isFeatureDisabled) {
+              toast.info(getMensagemBloqueio());
+              return;
+            }
             const passId = (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
             onGerarContrato(passId, item);
           },
@@ -105,10 +121,19 @@ export function useContratoActions({
         label: 'Importar Contrato Assinado',
         icon: <UploadCloud className="h-4 w-4" />,
         onClick: () => {
+          if (isFeatureDisabled) {
+            toast.info(
+              !isContratoConfigurado
+                ? "Configure seu modelo de contrato antes de importar contratos."
+                : "O uso de contratos está desativado. Reative nas opções para voltar a importar contratos."
+            );
+            return;
+          }
           const passId = item.passageiro?.id || (tipo === 'passageiro' ? item.id : item.passageiro_id) || item.id;
           const passData = item.passageiro || (tipo === 'passageiro' ? (item as unknown as Passageiro) : undefined);
           onImportarContrato(passId, passData);
         },
+        disabled: isFeatureDisabled,
         swipeColor: 'bg-[#0a0a0a]',
         hasSeparatorAfter: true
       });
@@ -193,5 +218,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, rawStatus, isDesativado, usarContratos, onVerPassageiro, onEnviarWhatsApp, onCompartilharWhatsApp, onDownload, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
+  }, [item, tipo, rawStatus, isDesativado, usarContratos, isContratoConfigurado, onVerPassageiro, onEnviarWhatsApp, onCompartilharWhatsApp, onDownload, onExcluir, onSubstituir, onGerarContrato, onImportarContrato, onVisualizarFinal, isMobile]);
 }

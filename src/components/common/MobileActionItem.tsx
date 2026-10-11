@@ -56,7 +56,7 @@ export function MobileActionItem({
   renderHeader,
   onClickItem,
   hideTriggerOnDesktop,
-  showTrigger = true,
+  showTrigger = false,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 

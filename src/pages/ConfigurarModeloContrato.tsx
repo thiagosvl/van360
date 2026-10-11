@@ -4,6 +4,8 @@ import { LogoUpload } from "@/components/forms/LogoUpload";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ContractSection, DEFAULT_SECOES_CONTRATO } from "@/constants/defaults";
@@ -92,13 +94,18 @@ export default function ConfigurarModeloContrato() {
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get("returnTo");
   const queryClient = useQueryClient();
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
   const { profile, refreshProfile } = useProfile();
   const [isLocallyActive, setIsLocallyActive] = useState(false);
   const [activeTab, setActiveTab] = useState<SetupTab>("clauses");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const previewMutation = usePreviewContrato();
+
+  useEffect(() => {
+    setPageTitle("Modelo de Contrato");
+    return () => setPageTitle("");
+  }, [setPageTitle]);
 
   const [multaAtraso, setMultaAtraso] = useState<{ valor: number; tipo: ContractMultaTipo }>({
     valor: 10,
@@ -223,7 +230,7 @@ export default function ConfigurarModeloContrato() {
   );
 
   const showSaveButton = !isContractActive || isDirty;
-  const saveButtonText = !isContractActive ? "Salvar e Ativar Modelo" : "Salvar Alterações";
+  const saveButtonText = !isContractActive ? "Salvar" : "Salvar Alterações";
 
   const captureSignature = () => {
     if (sigPad.current && !sigPad.current.isEmpty()) {
@@ -553,7 +560,7 @@ export default function ConfigurarModeloContrato() {
       refreshProfile();
 
       if (!wasActive) {
-        toast.success("Modelo de contrato ativado com sucesso! Agora você já pode emitir contratos.");
+        toast.success("Modelo de contrato ativado com sucesso! Agora você já pode gerar contratos.");
       } else {
         toast.success("Modelo de contrato salvo com sucesso!");
       }
@@ -570,27 +577,61 @@ export default function ConfigurarModeloContrato() {
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-32 pt-1 sm:pt-2">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(returnTo || ROUTES.PRIVATE.MOTORISTA.CONTRACTS)}
-            className="h-10 w-10 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shrink-0 shadow-xs cursor-pointer"
-            title={returnTo ? "Voltar" : "Voltar para Contratos"}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+      <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 px-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(returnTo || ROUTES.PRIVATE.MOTORISTA.CONTRACTS)}
+          className="order-1 h-10 w-10 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shrink-0 shadow-xs cursor-pointer"
+          title={returnTo ? "Voltar" : "Voltar para Contratos"}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
 
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">
-              Modelo de Contrato
-            </h1>
-            <p className="text-xs sm:text-sm text-[#737373] mt-0.5 font-normal">
-              Diretrizes de multas, cláusulas jurídicas e assinatura da sua operação.
-            </p>
-          </div>
+        <div className="order-3 md:order-2 w-full md:w-auto md:mr-auto">
+          <Tabs
+            value={activeTab}
+            onValueChange={(val) => setActiveTab(val as SetupTab)}
+            className="w-full"
+          >
+            <AppTabNav
+              activeTab={activeTab}
+              items={[
+                {
+                  value: "clauses",
+                  icon: <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />,
+                  label: (
+                    <>
+                      <span className="hidden sm:inline">Cláusulas & Termos</span>
+                      <span className="sm:hidden text-[11px]">Cláusulas</span>
+                    </>
+                  ),
+                  badge: secoes.length,
+                },
+                {
+                  value: "fees",
+                  icon: <Percent className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />,
+                  label: (
+                    <>
+                      <span className="hidden sm:inline">Multas & Juros</span>
+                      <span className="sm:hidden text-[11px]">Multas</span>
+                    </>
+                  ),
+                },
+                {
+                  value: "identity",
+                  icon: <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />,
+                  label: (
+                    <>
+                      <span className="hidden sm:inline">Assinatura & Logotipo</span>
+                      <span className="sm:hidden text-[11px]">Assinatura</span>
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </Tabs>
         </div>
 
         <Button
@@ -598,70 +639,17 @@ export default function ConfigurarModeloContrato() {
           variant="outline"
           onClick={handleOpenPreviewPdf}
           disabled={previewMutation.isPending}
-          className="w-full sm:w-auto h-10 px-4 rounded-[18px] border-[#e5e5e5] hover:border-[#737373]/50 bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs font-medium gap-2 shadow-2xs cursor-pointer shrink-0"
+          className="order-2 md:order-3 h-10 px-3.5 sm:px-4 rounded-[18px] border-[#e5e5e5] hover:border-[#737373]/50 bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs font-medium gap-2 shadow-2xs cursor-pointer shrink-0"
         >
           {previewMutation.isPending ? (
             <Loader2 className="w-4 h-4 animate-spin text-[#737373]" />
           ) : (
             <Eye className="w-4 h-4 text-[#0a0a0a]" />
           )}
-          <span>Visualizar Minuta em PDF</span>
-        </Button>
-      </div>
-
-      <div className="bg-[#f5f5f5] p-1 rounded-[20px] sm:rounded-[22px] border border-[#e5e5e5] w-full grid grid-cols-3 gap-1">
-        <button
-          type="button"
-          onClick={() => setActiveTab("clauses")}
-          className={cn(
-            "flex items-center justify-center gap-1 sm:gap-2 py-2 px-1 sm:px-4 rounded-[16px] sm:rounded-[18px] text-xs sm:text-sm font-medium transition-all cursor-pointer text-center",
-            activeTab === "clauses"
-              ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-              : "text-[#737373] hover:text-[#0a0a0a]"
-          )}
-        >
-          <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-          <span className="hidden sm:inline">Cláusulas & Termos</span>
-          <span className="sm:hidden text-[11px]">Cláusulas</span>
-          <span className={cn(
-            "text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full border hidden min-[360px]:inline-flex",
-            activeTab === "clauses"
-              ? "bg-[#f5f5f5] text-[#0a0a0a] border-[#e5e5e5]"
-              : "bg-white text-[#737373] border-[#e5e5e5]"
-          )}>
-            {secoes.length}
+          <span>
+            Ver Modelo de Contrato
           </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("fees")}
-          className={cn(
-            "flex items-center justify-center gap-1 sm:gap-2 py-2 px-1 sm:px-4 rounded-[16px] sm:rounded-[18px] text-xs sm:text-sm font-medium transition-all cursor-pointer text-center",
-            activeTab === "fees"
-              ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-              : "text-[#737373] hover:text-[#0a0a0a]"
-          )}
-        >
-          <Percent className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-          <span className="hidden sm:inline">Multas & Juros</span>
-          <span className="sm:hidden text-[11px]">Multas</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("identity")}
-          className={cn(
-            "flex items-center justify-center gap-1 sm:gap-2 py-2 px-1 sm:px-4 rounded-[16px] sm:rounded-[18px] text-xs sm:text-sm font-medium transition-all cursor-pointer text-center",
-            activeTab === "identity"
-              ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-              : "text-[#737373] hover:text-[#0a0a0a]"
-          )}
-        >
-          <PenTool className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-          <span className="hidden sm:inline">Identidade & Assinatura</span>
-          <span className="sm:hidden text-[11px]">Assinatura</span>
-        </button>
+        </Button>
       </div>
 
       {activeTab === "clauses" && (
@@ -979,31 +967,8 @@ export default function ConfigurarModeloContrato() {
       )}
 
       {activeTab === "identity" && (
-        <div className="space-y-5">
-          {profile && (
-            <div className="p-5 sm:p-6 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs space-y-3">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] uppercase tracking-wider">
-                  Logotipo
-                </h4>
-                <p className="text-xs text-[#737373] mt-0.5 font-normal">
-                  Exibido com destaque no cabeçalho timbrado dos contratos e minutas emitidos para os responsáveis.
-                </p>
-              </div>
-              <LogoUpload
-                userId={profile.id}
-                currentLogoUrl={logoTemp !== null ? logoTemp : (profile.logo_url || null)}
-                variant="contract"
-                onLogoChange={async (newLogoUrl) => {
-                  setLogoTemp(newLogoUrl);
-                  await usuarioApi.atualizarUsuario(profile.id, { logo_url: newLogoUrl });
-                  await refreshProfile();
-                }}
-              />
-            </div>
-          )}
-
-          <div id="assinatura-digital-card" className="p-5 sm:p-6 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs space-y-4 scroll-mt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+          <div id="assinatura-digital-card" className="order-1 p-5 sm:p-6 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs flex flex-col justify-between space-y-4 scroll-mt-24 h-full">
             <div>
               <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] uppercase tracking-wider">
                 Assinatura Digital <span className="text-[#e7000b]">*</span>
@@ -1021,6 +986,32 @@ export default function ConfigurarModeloContrato() {
               }}
             />
           </div>
+
+          {profile && (
+            <div className="order-2 p-5 sm:p-6 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs flex flex-col justify-between space-y-4 h-full">
+              <div>
+                <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] uppercase tracking-wider">
+                  Logotipo
+                </h4>
+                <p className="text-xs text-[#737373] mt-0.5 font-normal">
+                  Exibido com destaque no cabeçalho timbrado dos contratos.
+                </p>
+              </div>
+
+              <div className="flex-1 flex flex-col justify-end">
+                <LogoUpload
+                  userId={profile.id}
+                  currentLogoUrl={logoTemp !== null ? logoTemp : (profile.logo_url || null)}
+                  variant="contract"
+                  onLogoChange={async (newLogoUrl) => {
+                    setLogoTemp(newLogoUrl);
+                    await usuarioApi.atualizarUsuario(profile.id, { logo_url: newLogoUrl });
+                    await refreshProfile();
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

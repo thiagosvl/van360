@@ -60,8 +60,9 @@ interface CarteirinhaCobrancasProps {
 }
 
 import { Banner } from "@/components/ui/Banner";
-import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
+import { CobrancaStatus, ModoCobrancaEnum, PassageiroFormModes } from "@/types/enums";
 import { useCallback, useMemo } from "react";
+import { useMotoristaFinanceiroUi } from "@/hooks/ui/useMotoristaFinanceiroUi";
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
@@ -83,7 +84,12 @@ export const CarteirinhaCobrancas = ({
   const currentYear = now.getFullYear();
   const selectedYear = Number(yearFilter) || currentYear;
 
-  const { openAnnualReceiptDialog, openPassageiroFormDialog, openPassageiroFinanceiroDialog } = useLayout();
+  const {
+    openAnnualReceiptDialog,
+    openPassageiroFormDialog,
+    openPassageiroFinanceiroDialog,
+    openResponsavelFormDialog,
+  } = useLayout();
   const { can } = usePermissions();
   const canManageFinancials = can("passageiros.gerenciar") || can("cobrancas.gerenciar");
   const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
@@ -209,6 +215,39 @@ export const CarteirinhaCobrancas = ({
   const hasRetroactiveMonths = availableRetroMonths.length > 0;
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const showAjusteBanner = !passageiro.isento && isIncomplete;
+
+  const { modoCobranca: vanModoCobranca } = useMotoristaFinanceiroUi();
+  const modoCobrancaEfetivo = passageiro.modo_cobranca || vanModoCobranca;
+  const isModoComLembreteOuAuto =
+    modoCobrancaEfetivo === ModoCobrancaEnum.AUTOMATICA ||
+    modoCobrancaEfetivo === ModoCobrancaEnum.LEMBRETES;
+
+  const hasResponsavel = Boolean(
+    passageiro.responsavel_principal?.nome ||
+    passageiro.responsavel_principal?.id ||
+    (passageiro.responsaveis && passageiro.responsaveis.length > 0)
+  );
+
+  const showResponsavelBanner =
+    !showAjusteBanner &&
+    !passageiro.isento &&
+    !hasResponsavel &&
+    isModoComLembreteOuAuto;
+
+  const responsavelBannerInfo = useMemo(() => {
+    if (modoCobrancaEfetivo === ModoCobrancaEnum.AUTOMATICA) {
+      return {
+        title: "Cadastre o responsável para a cobrança automática",
+        description:
+          "A cobrança automática está ativa, mas este aluno ainda não possui responsável cadastrado para receber as cobranças.",
+      };
+    }
+    return {
+      title: "Cadastre o responsável para envio de lembretes",
+      description:
+        "Os lembretes automáticos no WhatsApp estão ativos, mas este aluno ainda não possui responsável cadastrado.",
+    };
+  }, [modoCobrancaEfetivo]);
 
 
   const emptyStateInfo = useMemo(() => {
@@ -377,9 +416,26 @@ export const CarteirinhaCobrancas = ({
                 passageiro,
                 onSuccess: onActionSuccess,
               }),
-            className: "h-9 px-4 text-xs font-semibold shrink-0",
           }}
-          className="p-3 sm:p-3.5 mb-4"
+          className="mb-4"
+        />
+      )}
+
+      {showResponsavelBanner && (
+        <Banner
+          variant="warning"
+          title={responsavelBannerInfo.title}
+          description={responsavelBannerInfo.description}
+          action={{
+            label: "Cadastrar responsável",
+            onClick: () =>
+              openResponsavelFormDialog({
+                passageiroId: passageiro.id,
+                editingResponsavel: null,
+                onSuccess: onActionSuccess,
+              }),
+          }}
+          className="mb-4"
         />
       )}
 
@@ -601,7 +657,7 @@ const CobrancaItemPassageiro = forwardRef<
                   <Clock className="h-4 w-4" />}
           </div>
 
-          <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
+          <div className="flex-grow min-w-0 pr-20 sm:pr-4">
             <div className="flex items-center gap-1.5 min-w-0">
               <p className="font-bold text-[#0a0a0a] text-sm truncate leading-tight">
                 {getMesNome(cobranca.mes)}
@@ -626,7 +682,7 @@ const CobrancaItemPassageiro = forwardRef<
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-3.5 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
             <div className="flex flex-col items-center sm:items-end gap-1">
               <p className="font-bold text-[#0a0a0a] text-[13px] sm:text-sm leading-none tabular-nums mb-0.5 text-center sm:text-right">
                 {valorExibicao > 0

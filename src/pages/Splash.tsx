@@ -121,7 +121,7 @@ export default function Splash() {
               </p>
             </div>
 
-            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
+            <div className="w-full space-y-2.5 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
               <button
                 type="button"
                 onClick={handleSelectMotorista}
@@ -144,6 +144,15 @@ export default function Splash() {
                   <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
+
+              <div className="relative flex items-center justify-center py-0.5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#e5e5e5]" />
+                </div>
+                <span className="relative bg-[#f9f8fd] px-3 text-xs text-[#737373] font-medium select-none">
+                  ou
+                </span>
+              </div>
 
               <button
                 type="button"
@@ -187,27 +196,7 @@ export default function Splash() {
               </p>
             </div>
 
-            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
-              <button
-                type="button"
-                onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
-              >
-                <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
-                    <LogIn className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
-                      Já tenho uma conta
-                    </span>
-                  </div>
-                </div>
-                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-[#737373]" />
-                </div>
-              </button>
-
+            <div className="w-full space-y-2.5 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
@@ -221,9 +210,35 @@ export default function Splash() {
                     <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Criar conta grátis
                     </span>
-                    <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
-                      Cadastrar minha van em 1 minuto
-                    </p>
+                  </div>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
+                </div>
+              </button>
+
+              <div className="relative flex items-center justify-center py-0.5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#e5e5e5]" />
+                </div>
+                <span className="relative bg-[#f9f8fd] px-3 text-xs text-[#737373] font-medium select-none">
+                  ou
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: true } })}
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
+                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
+                    <LogIn className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
+                      Já tenho uma conta
+                    </span>
                   </div>
                 </div>
                 <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">

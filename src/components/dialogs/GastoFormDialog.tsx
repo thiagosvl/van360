@@ -117,7 +117,7 @@ export default function GastoFormDialog({
 
   const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
-  const defaultVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || (veiculos.length === 1 ? veiculos[0].id : "");
+  const defaultVeiculoId = isSubConta && profile?.veiculo_id ? profile.veiculo_id : "";
 
   const isActionLoading = createGasto.isPending || updateGasto.isPending || createCategoriaMutation.isPending;
 
@@ -168,13 +168,13 @@ export default function GastoFormDialog({
   }, [isOpen, gastoToEdit, form, defaultVeiculoId]);
 
   useEffect(() => {
-    if (isOpen && defaultVeiculoId && defaultVeiculoId !== "none") {
+    if (isOpen && isSubConta && defaultVeiculoId) {
       const currentVal = form.getValues("veiculo_id");
-      if (!currentVal || currentVal === "none") {
+      if (!currentVal) {
         form.setValue("veiculo_id", defaultVeiculoId);
       }
     }
-  }, [isOpen, defaultVeiculoId, form]);
+  }, [isOpen, isSubConta, defaultVeiculoId, form]);
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -589,7 +589,7 @@ export default function GastoFormDialog({
                         icon={<Bus className="h-4 w-4 text-[#737373]" />}
                       >
                         <option value="">
-                          {isLoadingVeiculos ? "Carregando veículos..." : "Não especificar"}
+                          {isLoadingVeiculos ? "Carregando veículos..." : "Não vincular (Gasto geral)"}
                         </option>
                         {veiculos.map((v) => (
                           <option key={v.id} value={v.id}>

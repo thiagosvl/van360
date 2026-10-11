@@ -5,7 +5,8 @@ import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -162,7 +163,7 @@ function ShowcaseFaqItem({ question, answer }: ShowcaseFaq) {
         />
       </button>
       {isOpen && (
-        <div className="pb-3.5 text-xs text-muted-foreground leading-relaxed animate-in fade-in duration-200">
+        <div className="pb-3.5 text-xs sm:text-sm text-muted-foreground leading-relaxed animate-in fade-in duration-200">
           {answer}
         </div>
       )}
@@ -774,30 +775,19 @@ export function SubscriptionPlansShowcase({
         onValueChange={(val) => setSelectedPeriod(val as SubscriptionIdentifer)}
         className="w-full space-y-4 sm:space-y-6"
       >
-        <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0">
-          <TabsList className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-full grid grid-cols-2">
-            <TabsTrigger
-              value={SubscriptionIdentifer.MONTHLY}
-              className={cn(
-                "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap min-h-[38px] sm:min-h-[42px] flex items-center justify-center",
-                "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-              )}
-            >
-              Plano Mensal
-            </TabsTrigger>
-            <TabsTrigger
-              value={SubscriptionIdentifer.YEARLY}
-              className={cn(
-                "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap min-h-[38px] sm:min-h-[42px] flex items-center justify-center",
-                "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-              )}
-            >
-              Plano Anual
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <AppTabNav
+          activeTab={selectedPeriod}
+          items={[
+            {
+              value: SubscriptionIdentifer.MONTHLY,
+              label: "Plano Mensal",
+            },
+            {
+              value: SubscriptionIdentifer.YEARLY,
+              label: "Plano Anual",
+            },
+          ]}
+        />
       </Tabs>
 
       <div>

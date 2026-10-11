@@ -146,28 +146,23 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-4 sm:py-4.5 text-left group cursor-pointer"
+        className="w-full flex items-center justify-between py-3.5 sm:py-4 text-left group cursor-pointer"
       >
-        <span className="text-sm sm:text-[15px] font-semibold text-[#0a0a0a] group-hover:text-[#0a0a0a] transition-colors leading-snug pr-4">
+        <span className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug pr-4">
           {question}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-[#737373] transition-transform duration-300 shrink-0",
-            isOpen && "rotate-180 text-[#0a0a0a]"
+            "h-4 w-4 text-muted-foreground transition-transform duration-300 shrink-0",
+            isOpen && "rotate-180 text-primary"
           )}
         />
       </button>
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-in-out",
-          isOpen ? "max-h-96 pb-4" : "max-h-0"
-        )}
-      >
-        <p className="text-xs sm:text-sm text-[#737373] leading-relaxed bg-[#fafafa] p-3.5 sm:p-4 rounded-[14px] border border-[#e5e5e5]">
+      {isOpen && (
+        <div className="pb-3.5 text-xs sm:text-sm text-muted-foreground leading-relaxed animate-in fade-in duration-200">
           {answer}
-        </p>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

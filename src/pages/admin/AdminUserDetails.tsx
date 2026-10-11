@@ -298,7 +298,7 @@ export default function AdminUserDetails() {
       setPreviewPdfUrl(result.url);
     } catch (error) {
       setIsPreviewPdfOpen(false);
-      console.error("Erro ao gerar prévia da minuta", error);
+      console.error("Erro ao gerar prévia do contrato", error);
     }
   };
 
@@ -1466,7 +1466,7 @@ export default function AdminUserDetails() {
                           ) : (
                             <FileText className="h-3.5 w-3.5 text-primary" />
                           )}
-                          <span>Ver minuta do contrato</span>
+                          <span>Ver Modelo de Contrato</span>
                         </Button>
                       )}
 
@@ -3022,7 +3022,7 @@ export default function AdminUserDetails() {
         isLoading={previewContrato.isPending}
         onClose={() => safeCloseDialog(() => setIsPreviewPdfOpen(false))}
         pdfUrl={previewPdfUrl}
-        title={`Minuta do Contrato — ${data.user.nome}`}
+        title={`Contrato — ${data.user.nome}`}
         fileName={`minuta_contrato_${data.user.nome.toLowerCase().replace(/[^a-z0-9]/g, "_")}.pdf`}
         showDownload={true}
         variant="admin"

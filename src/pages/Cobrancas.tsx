@@ -4,10 +4,10 @@ import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { CobrancasPagination } from "@/components/features/cobranca/CobrancasPagination";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel, useLayout, useProfile, usePassageiros } from "@/hooks";
 import { CobrancaTab } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
@@ -185,46 +185,21 @@ export default function Cobrancas() {
             className="w-full space-y-4 sm:space-y-6"
           >
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-              <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0">
-                <TabsList className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-full sm:w-auto grid grid-cols-2 sm:flex">
-                  <TabsTrigger
-                    value={CobrancaTab.ARECEBER}
-                    className={cn(
-                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
-                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                    )}
-                  >
-                    A Receber
-                    <span className={cn(
-                      "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
-                      activeTab === CobrancaTab.ARECEBER
-                        ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
-                        : "text-[#737373]"
-                    )}>
-                      {countAReceber || 0}
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value={CobrancaTab.RECEBIDAS}
-                    className={cn(
-                      "rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap",
-                      "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                      "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                    )}
-                  >
-                    Recebidas
-                    <span className={cn(
-                      "ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors",
-                      activeTab === CobrancaTab.RECEBIDAS
-                        ? "bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]"
-                        : "text-[#737373]"
-                    )}>
-                      {countRecebidos || 0}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+              <AppTabNav
+                activeTab={activeTab}
+                items={[
+                  {
+                    value: CobrancaTab.ARECEBER,
+                    label: "A Receber",
+                    badge: countAReceber || 0,
+                  },
+                  {
+                    value: CobrancaTab.RECEBIDAS,
+                    label: "Recebidas",
+                    badge: countRecebidos || 0,
+                  },
+                ]}
+              />
 
               <div className="relative group w-full sm:max-w-xs">
                 <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none">

@@ -22,6 +22,7 @@ import { memo } from "react";
 import { ContratoListItem } from "@/types/contract";
 import { Passageiro } from "@/types/passageiro";
 import { isResponsavelIncompleto, obterUrlDocumentoContrato } from "@/utils/domain";
+import { toast } from "@/utils/notifications/toast";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 import { ContratoSummary } from "./ContratoSummary";
 
@@ -41,6 +42,7 @@ interface ContratosListProps {
   activeTab: ContratoTab;
   busca: string;
   isDesativado?: boolean;
+  isContratoConfigurado?: boolean;
   isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
   onEnviarWhatsApp: (item: ContratoListItem) => void;
@@ -60,6 +62,7 @@ interface ContratoMobileCardProps {
   index: number;
   activeTab: ContratoTab;
   isDesativado?: boolean;
+  isContratoConfigurado?: boolean;
   isDownloading?: string | null;
   onVerPassageiro: (id: string) => void;
   onEnviarWhatsApp: (item: ContratoListItem) => void;
@@ -78,6 +81,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   item,
   index,
   isDesativado,
+  isContratoConfigurado,
   isDownloading,
   onVerPassageiro,
   onEnviarWhatsApp,
@@ -96,6 +100,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     tipo: item.tipo,
     status: item.status as ContratoStatus,
     isDesativado,
+    isContratoConfigurado,
     onVerPassageiro,
     onEnviarWhatsApp: () => onEnviarWhatsApp(item),
     onCompartilharWhatsApp,
@@ -197,9 +202,17 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (isDesativado) {
+                      toast.info(
+                        !isContratoConfigurado
+                          ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
+                          : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
+                      );
+                      return;
+                    }
                     onCompletarCadastro?.(passId, item);
                   }}
-                  disabled={isDesativado}
+                  aria-disabled={isDesativado}
                 >
                   <User className="w-3.5 h-3.5" />
                   <span>Completar Cadastro</span>
@@ -211,9 +224,17 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (isDesativado) {
+                      toast.info(
+                        !isContratoConfigurado
+                          ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
+                          : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
+                      );
+                      return;
+                    }
                     onGerarContrato(passId, item);
                   }}
-                  disabled={isDesativado}
+                  aria-disabled={isDesativado}
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Gerar Contrato</span>
@@ -270,6 +291,7 @@ export const ContratosList = memo(function ContratosList({
   activeTab,
   busca,
   isDesativado,
+  isContratoConfigurado,
   isDownloading,
   ...actions
 }: ContratosListProps) {
@@ -332,6 +354,7 @@ export const ContratosList = memo(function ContratosList({
           index={index}
           activeTab={activeTab}
           isDesativado={isDesativado}
+          isContratoConfigurado={isContratoConfigurado}
           isDownloading={isDownloading}
           {...actions}
         />
@@ -445,9 +468,20 @@ export const ContratosList = memo(function ContratosList({
                             type="button"
                             variant="tonal"
                             size="sm"
-                            onClick={() => actions.onCompletarCadastro?.(passId, item)}
-                            disabled={isDesativado}
-                            title="Completar dados e gerar contrato"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isDesativado) {
+                                toast.info(
+                                  !isContratoConfigurado
+                                    ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
+                                    : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
+                                );
+                                return;
+                              }
+                              actions.onCompletarCadastro?.(passId, item);
+                            }}
+                            aria-disabled={isDesativado}
+                            title={isDesativado ? "Contratos desativados ou não configurados" : "Completar dados e gerar contrato"}
                           >
                             <User className="w-3.5 h-3.5" />
                             <span>Completar</span>
@@ -457,9 +491,20 @@ export const ContratosList = memo(function ContratosList({
                             type="button"
                             variant="tonal"
                             size="sm"
-                            onClick={() => actions.onGerarContrato?.(passId, item)}
-                            disabled={isDesativado}
-                            title="Gerar contrato"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isDesativado) {
+                                toast.info(
+                                  !isContratoConfigurado
+                                    ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
+                                    : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
+                                );
+                                return;
+                              }
+                              actions.onGerarContrato?.(passId, item);
+                            }}
+                            aria-disabled={isDesativado}
+                            title={isDesativado ? "Contratos desativados ou não configurados" : "Gerar contrato"}
                           >
                             <FileText className="w-3.5 h-3.5" />
                             <span>Gerar Contrato</span>
@@ -506,6 +551,7 @@ export const ContratosList = memo(function ContratosList({
                         tipo={item.tipo}
                         status={item.status}
                         isDesativado={isDesativado}
+                        isContratoConfigurado={isContratoConfigurado}
                         {...actions}
                         onEnviarWhatsApp={() => actions.onEnviarWhatsApp(item)}
                       />

@@ -1,66 +1,86 @@
-# Plano de Implementação - Assistente Guiado de Configuração de Cobrança (Setup Wizard)
+# Plano de Implementação: Padronização do Componente Unificado de Abas (`AppTabNav`)
 
-Este plano descreve a arquitetura, estrutura de etapas e implementação do assistente guiado (`ConfigurarCobrancaWizardDialog`) para ativação de **"Apenas Lembretes"** e **"Cobrança & Baixa Automática"**, substituindo atritos de formulários soltos por uma experiência passo a passo fluida, didática e focada no mobile e desktop.
+## 1. Visão Geral e Objetivo
+Padronizar todas as ocorrências de abas de navegação (tabs) do motorista (`Passageiros`, `Carteirinha`, `Cobrancas` / Parcelas, `Contratos`, `MinhaEquipe`, `Assinatura`, `Rotas`, `Relatorios`, `Aniversariantes`, etc.) através da criação e adoção de um componente comum, reutilizável e fortemente tipado: **`<AppTabNav />`**.
 
----
-
-## 1. Premissas e Deduções de Arquitetura e Negócio (Obrigatório)
-
-1. **Iniciação do Wizard:**
-   - Ao clicar nos cards seletores na página `Conta -> tab=cobrancas`:
-     - Se o motorista selecionar **"Apenas Lembretes"**: abre o assistente em modo `LEMBRETES` (2 etapas).
-     - Se o motorista selecionar **"Cobrança & Baixa Automática"**: verifica whitelist (se fora da whitelist, mantém toast informativo com suporte). Se elegível, abre o assistente em modo `AUTOMATICA` (3 etapas).
-     - Se o motorista selecionar **"Desativado"**: desativa diretamente na página com confirmação rápida (sem necessidade de wizard).
-   - Se o motorista já estiver em um modo e quiser alterar detalhes, ele pode continuar usando os cards na tela normalmente, e terá também a opção de abrir o assistente guiado clicando em *"Assistente de configuração"*.
-
-2. **Fluxo Modo "Apenas Lembretes" (2 Etapas):**
-   - **Etapa 1: Chave Pix (Opcional):**
-     - O motorista escolhe o Tipo de Chave (CPF, CNPJ, E-mail, Telefone, Chave Aleatória) e digita o valor.
-     - Botão Secundário: *"Pular e enviar sem Pix"* -> Avança para Etapa 2 sem cadastrar Pix.
-     - Botão Primário: *"Avançar com Pix"* -> Se preenchido, valida o formato Pix e avança para a Etapa 2.
-   - **Etapa 2: Réguas de Notificação no WhatsApp:**
-     - Configurações dos 3 avisos: antecedência (com stepper de 1 a 5 dias), no dia do vencimento, 3 dias após.
-     - Botão para abrir prévia de demonstração do WhatsApp.
-     - Botão Primário: *"Concluir e Ativar Lembretes"*.
-
-3. **Fluxo Modo "Cobrança & Baixa Automática" (3 Etapas):**
-   - **Etapa 1: Chave Pix para Repasse (Obrigatória):**
-     - Explica que é a conta onde os repasses automáticos do Pix dinâmico cairão.
-     - Campos obrigatórios e estritamente validados.
-     - Botão Primário: *"Avançar"*.
-   - **Etapa 2: Taxa e Comprovantes:**
-     - Apresentação da taxa de liquidação (ex: R$ 1,49).
-     - Switch de repasse da taxa aos responsáveis (com card comparativo simulado).
-     - Switch de envio automático de recibo no WhatsApp.
-     - Botões: *"Voltar"* / *"Avançar"*.
-   - **Etapa 3: Réguas de Envio e Demonstração:**
-     - Réguas de envio no WhatsApp com link/QR Code Pix.
-     - Botão de demonstração da cobrança com QR Code Pix.
-     - Botões: *"Voltar"* / *"Ativar Cobrança Automática"*.
-
-4. **Persistência dos Dados:**
-   - Os dados são consolidados e salvos no backend (`updateConfiguracoes` e `updateFinanceiro`) ao concluir a última etapa, garantindo atomicidade na experiência do usuário. Caso o usuário feche o wizard no meio, nada é alterado indevidamente.
+O modelo de referência oficial e canônico é a **tela de Alunos** (`src/pages/Passageiros.tsx`).
 
 ---
 
-## 2. Componentes e Estrutura de Arquivos
+## 2. Decisões de Arquitetura e Negócio (Premissas e Deduções Obrigatórias)
 
-1. **ViewModel (`src/hooks/ui/useConfigurarCobrancaWizardViewModel.ts`):**
-   - Hook da camada UI responsável pelo estado da etapa atual, validação das etapas, formulário de chave Pix, switches e chamada aos hooks de transporte (`useConfiguracoes` e `useMotoristaFinanceiroApi`).
-2. **Dialog (`src/components/dialogs/ConfigurarCobrancaWizardDialog.tsx`):**
-   - Utiliza `BaseDialog` com `showSteps`, `currentStep`, `totalSteps`, cabeçalho semântico e rodapé com botões de navegação.
-3. **Registro no Contexto (`LayoutContext.tsx` e `LayoutProvider.tsx`):**
-   - `openConfigurarCobrancaWizardDialog(props: OpenConfigurarCobrancaWizardProps)`
-   - `closeConfigurarCobrancaWizardDialog()`
-4. **Integração na Página (`PagamentosTab.tsx`):**
-   - Conectar o clique dos seletores para abrir o wizard correspondente.
-   - Manter a tela principal sincronizada e limpa.
+### 2.1 Dedução de Comportamento Mobile (Scroll Lateral vs Grid 50%)
+- **2 Abas (ou menos):**
+  - **Comportamento Mobile:** Renderiza como `grid grid-cols-2` (ou `grid-cols-1`), ocupando `w-full` uniformemente, sem corte lateral e sem necessidade de rolagem horizontal (ex: Alunos, Cobranças/Parcelas, Equipe, Rotas, Assinatura).
+  - **Comportamento Desktop (`sm:`):** Transiciona para `sm:flex sm:w-auto` contido em `w-fit`.
+- **Mais de 2 Abas:**
+  - **Comportamento Mobile:** Permite rolagem horizontal suave (`overflow-x-auto`, `w-max flex`, `touch-pan-x`, `no-scrollbar`), evitando que palavras quebrem ou fiquem ilegíveis em telas compactas (como 320px no print da Carteirinha).
+  - **Auto-scroll para a Aba Ativa:** O componente inclui um listener/scroll automático que centraliza a aba selecionada no viewport horizontal ao alternar ou montar a tela.
+
+### 2.2 Estrutura Visual Canônica (Fiel à Tela de Alunos)
+- **Container externo:**
+  `bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0`
+- **TabsList:**
+  `bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0`
+- **TabsTrigger:**
+  `rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5`
+  - Estado ativo: `data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs`
+  - Estado inativo: `data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50`
+- **Badge / Quantidade / Contador:**
+  `ml-2 px-2 py-0.5 rounded-[18px] text-[11px] font-medium transition-colors`
+  - Ativo: `bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]`
+  - Inativo: `text-[#737373]`
+  - Suporte a loading via skeleton (`w-5 h-4 rounded-[12px] bg-[#e5e5e5]`).
+- **Ícones Opcionais:**
+  Suporte nativo via `icon?: React.ReactNode` para telas que usam ícones (como Carteirinha e Aniversariantes).
 
 ---
 
-## 3. Checklist de Verificação
-- [ ] Compilação limpa com `tsc --noEmit`.
-- [ ] Zero comentários explicativos no código.
-- [ ] Baseado em `BaseDialog` e gerenciado via `LayoutContext`.
-- [ ] Fechamento sempre encapsulado com `safeCloseDialog`.
-- [ ] Padrão de cores e tokens do `design.md` (zero preto nos ícones/badges).
+## 3. Mapeamento de Telas e Ocorrências
+
+| Tela / Arquivo | Quantidade de Abas | Presença de Contadores | Mobile: Scroll Lateral? | Ícones? |
+| :--- | :---: | :---: | :---: | :---: |
+| **Passageiros** (`src/pages/Passageiros.tsx`) | 2 (Alunos / Solicitações) | Sim (`countPassageiros`, `countPrePassageiros`) | Não (`grid grid-cols-2`) | Não |
+| **Cobrancas** (`src/pages/Cobrancas.tsx`) | 2 (A Receber / Recebidas) | Sim (`countAReceber`, `countRecebidos`) | Não (`grid grid-cols-2`) | Não |
+| **PassageiroCarteirinha** (`src/pages/PassageiroCarteirinha.tsx`) | 5 (Parcelas / Dados / Resp. / Contrato / Ausências) | Não | Sim (`w-max flex` com auto-scroll) | Sim |
+| **ContratosToolbar** (`src/components/features/contrato/ContratosToolbar.tsx`) | 3 (Sem Contrato / Pendentes / Assinados) | Sim (`countSemContrato`, etc. com skeleton) | Sim (`w-max flex`) | Não |
+| **MinhaEquipe** (`src/pages/MinhaEquipe.tsx`) | 2 (Motoristas / Monitores) | Sim (`motoristasAuxiliares.length`, etc.) | Não (`grid grid-cols-2`) | Não |
+| **SubscriptionPlansShowcase** (`src/components/features/subscription/SubscriptionPlansShowcase.tsx`) | 2 (Plano Mensal / Plano Anual) | Não | Não (`grid grid-cols-2`) | Não |
+| **RotasToolbar** (`src/components/features/rotas/RotasToolbar.tsx`) | 2 (Minhas Rotas / Histórico) | Sim (`countMinhasRotas`, `countHistorico`) | Não (`grid grid-cols-2`) | Não |
+| **Relatorios** (`src/pages/Relatorios.tsx`) | 4 (Visão Geral / Entradas / Saídas / Operacional) | Não | Sim (`w-max flex` / `grid-cols-4` desktop) | Não |
+| **Aniversariantes** (`src/pages/Aniversariantes.tsx`) | 2 (Por Van / Por Escola) | Não | Não (`grid grid-cols-2`) | Sim |
+| **ConfigurarModeloContrato** (`src/pages/ConfigurarModeloContrato.tsx`) | 3 (Cláusulas / Multas / Identidade) | Sim (`secoes.length`) | Sim (`w-max flex` ou grid adaptável) | Sim |
+| **CarteirinhaResponsaveis** (`src/components/features/passageiro/carteirinha/CarteirinhaResponsaveis.tsx`) | N (lista dinâmica) | Não | Sim (`w-max flex`) | Não |
+| **ResponsavelCarteirinhaBase** (`src/pages/ResponsavelCarteirinhaBase.tsx`) | 6 (Geral / Parcelas / Ausências / ...) | Não | Sim (`w-max flex`) | Não |
+
+---
+
+## 4. Plano de Execução Passo a Passo
+
+### Passo 1: Criação do Componente Central `<AppTabNav />`
+- Criar `src/components/ui/AppTabNav.tsx`.
+- Definir tipagem genérica `AppTabItem<T extends string = string>` com `value`, `label`, `badge`, `badgeLoading`, `icon`, `disabled`, `title`.
+- Lógica de layout:
+  - `"auto"`: Se `items.length <= 2` -> `grid grid-cols-2 sm:flex` (sem scroll lateral no mobile). Se `items.length > 2` -> `w-max sm:w-auto flex` (com scroll lateral).
+  - `"scroll"`: Força scroll lateral mobile.
+  - `"fixed"`: Força `grid grid-cols-N`.
+- Implementar ref e scroll centralizador automático para a aba ativa no mobile.
+
+### Passo 2: Refatoração das Telas Principais do Motorista
+1. `src/pages/Passageiros.tsx`: Utilizar `<AppTabNav>` com as abas Alunos e Solicitações.
+2. `src/pages/Cobrancas.tsx`: Utilizar `<AppTabNav>` com as abas A Receber e Recebidas.
+3. `src/pages/PassageiroCarteirinha.tsx`: Substituir o bloco de abas mobile pelo `<AppTabNav>`, preservando ícones e a lista de abas permitidas.
+4. `src/components/features/contrato/ContratosToolbar.tsx`: Substituir pelo `<AppTabNav>` com badges e skeletons.
+5. `src/pages/MinhaEquipe.tsx`: Substituir pelo `<AppTabNav>`.
+6. `src/components/features/subscription/SubscriptionPlansShowcase.tsx`: Substituir pelo `<AppTabNav>`.
+
+### Passo 3: Refatoração das Demais Ocorrências
+1. `src/components/features/rotas/RotasToolbar.tsx`
+2. `src/pages/Relatorios.tsx`
+3. `src/pages/Aniversariantes.tsx`
+4. `src/pages/ConfigurarModeloContrato.tsx`
+5. `src/components/features/passageiro/carteirinha/CarteirinhaResponsaveis.tsx`
+6. `src/pages/ResponsavelCarteirinhaBase.tsx`
+
+### Passo 4: Verificação de Tipagem e Build
+- Executar checagem de tipos com `npx tsc --noEmit` para garantir zero erros de tipagem e integridade plena.

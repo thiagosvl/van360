@@ -166,12 +166,12 @@ export const CarteirinhaContrato = ({
                 : isAssinado
                   ? "Documento oficial assinado eletronicamente com validade jurídica."
                   : isPendente
-                    ? "Minuta gerada. O responsável precisa assinar digitalmente pelo celular."
+                    ? "Contrato gerado. O responsável precisa assinar digitalmente pelo celular."
                     : !isContratoConfigurado
-                      ? "Configure modelo e assinatura para começar a emitir contratos."
+                      ? "Configure modelo e assinatura para começar a gerar contratos."
                       : !isContratoAtivo
                         ? "O módulo de contratos está pausado nas suas preferências."
-                        : "Emita um contrato digital para formalizar a prestação de serviços com o responsável."}
+                        : "Gere um contrato digital para formalizar a prestação de serviços com o responsável."}
             </p>
           </div>
         </div>

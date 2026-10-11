@@ -163,7 +163,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
           {vencDia}
         </div>
 
-        <div className="flex-grow min-w-0 pr-[92px] sm:pr-24">
+        <div className="flex-grow min-w-0 pr-20 sm:pr-24">
           <div className="flex items-center gap-1 min-w-0">
             <p className="font-semibold text-sm text-[#0a0a0a] truncate leading-tight">
               {shortName}
@@ -182,7 +182,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-center sm:items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
+        <div className="flex flex-col items-center sm:items-end gap-1 flex-shrink-0 absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2">
           <p className="font-bold text-[#0a0a0a] text-[13px] sm:text-sm leading-none tabular-nums mb-0.5 text-center sm:text-right">
             {getCobrancaValorExibicao(cobranca) > 0
               ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {

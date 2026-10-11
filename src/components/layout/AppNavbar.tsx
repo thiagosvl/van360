@@ -10,6 +10,7 @@ import {
   Compass,
   ChevronRight,
   LayoutGrid,
+  FileText,
   X,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -47,6 +48,12 @@ export function AppNavbar({ role }: { role: "motorista" }) {
       title: location.pathname === ROUTES.PRIVATE.MOTORISTA.CHARTERS ? "Fretamentos" : "Detalhes do Passeio",
       href: location.pathname,
       icon: Compass,
+    };
+  } else if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP) {
+    currentPage = {
+      title: "Modelo de Contrato",
+      href: location.pathname,
+      icon: FileText,
     };
   }
   if (!currentPage && location.pathname === ROUTES.PRIVATE.MOTORISTA.ACCOUNT) {

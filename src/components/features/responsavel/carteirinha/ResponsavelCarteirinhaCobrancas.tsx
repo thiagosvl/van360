@@ -254,7 +254,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                     )}
                   </div>
 
-                  <div className="flex-grow min-w-0 pr-[88px] sm:pr-4">
+                  <div className="flex-grow min-w-0 pr-20 sm:pr-4">
                     <p className="font-bold text-[#0a0a0a] text-sm truncate leading-tight">
                       {nomeMes}
                       {item.ano && item.ano !== currentYear ? `/${item.ano}` : ""}
@@ -272,7 +272,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-8 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 sm:static absolute right-3.5 sm:right-auto top-1/2 -translate-y-1/2 sm:translate-y-0">
                     <div className="flex flex-col items-center sm:items-end gap-1">
                       <p className="font-bold text-[#0a0a0a] text-[13px] leading-none mb-0.5 text-center sm:text-right">
                         {valorNum.toLocaleString("pt-BR", {

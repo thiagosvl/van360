@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/utils/notifications/toast";
 import { useLogoStorage } from "@/hooks/api/useLogoStorage";
 import { usuarioApi } from "@/services/api/usuario.api";
+import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 
 export interface ProfileAvatarUploadRef {
@@ -37,6 +38,7 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
   ) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { uploadLogo, isUploading } = useLogoStorage();
+    const { openImageFullscreen } = useLayout();
     const [isUpdating, setIsUpdating] = useState(false);
 
     const isBusy = isLoading || isUploading || isUpdating;
@@ -44,6 +46,20 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
     const handleOpenPicker = () => {
       if (isBusy || !canEdit) return;
       fileInputRef.current?.click();
+    };
+
+    const handleAvatarClick = () => {
+      if (isBusy) return;
+      if (logoUrl) {
+        openImageFullscreen({
+          imageUrl: logoUrl,
+          alt: displayName || "Logotipo",
+        });
+        return;
+      }
+      if (canEdit) {
+        handleOpenPicker();
+      }
     };
 
     useImperativeHandle(ref, () => ({
@@ -94,15 +110,16 @@ export const ProfileAvatarUpload = forwardRef<ProfileAvatarUploadRef, ProfileAva
 
         <button
           type="button"
-          onClick={handleOpenPicker}
-          disabled={!canEdit || isBusy}
-          aria-label={logoUrl ? "Alterar logotipo da van" : "Adicionar logotipo da van"}
-          title={canEdit ? (logoUrl ? "Clique para alterar o logotipo" : "Clique para adicionar o logotipo") : undefined}
+          onClick={handleAvatarClick}
+          disabled={isBusy || (!logoUrl && !canEdit)}
+          aria-label={logoUrl ? "Visualizar logotipo da van" : canEdit ? "Adicionar logotipo da van" : displayName}
+          title={logoUrl ? "Clique para visualizar em tela cheia" : canEdit ? "Clique para adicionar o logotipo" : undefined}
           className={cn(
             "h-16 w-16 sm:h-18 sm:w-18 rounded-full border border-[#e5e5e5] text-[#0a0a0a] flex items-center justify-center font-semibold text-xl sm:text-2xl shadow-none overflow-hidden transition-all relative",
             logoUrl ? "bg-white" : "bg-[#f5f5f5]",
-            canEdit && !isBusy && "cursor-pointer group hover:ring-2 hover:ring-[#0a0a0a]/10 hover:border-[#0a0a0a]/40 active:scale-95",
-            (!canEdit || isBusy) && "cursor-default"
+            (Boolean(logoUrl) || (canEdit && !isBusy)) && "cursor-pointer group hover:ring-2 hover:ring-[#0a0a0a]/10 hover:border-[#0a0a0a]/40 active:scale-95",
+            (!logoUrl && !canEdit) && "cursor-default",
+            isBusy && "cursor-default opacity-80"
           )}
         >
           {logoUrl ? (

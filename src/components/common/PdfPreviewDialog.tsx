@@ -379,7 +379,7 @@ export function PdfPreviewDialog({
         {showDownload && !isLoading && pdfUrl && (
           <BaseDialog.Action
             label={isDownloading ? "Baixando..." : "Baixar PDF"}
-            variant="primary"
+            variant="secondary"
             icon={isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             onClick={handleDownload}
             disabled={isDownloading}

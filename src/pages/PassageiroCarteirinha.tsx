@@ -30,6 +30,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppTabNav, AppTabItem } from "@/components/ui/AppTabNav";
 import { CalendarClock, FileText, User, Users, Wallet } from "lucide-react";
 
 import { useLayout } from "@/contexts/LayoutContext";
@@ -124,8 +125,6 @@ export default function PassageiroCarteirinha() {
     }
   }, [urlTab, validTabs]);
 
-  const tabListRef = useRef<HTMLDivElement>(null);
-
   const handleTabChange = (val: string) => {
     setActiveTabState(val);
     setSearchParams((prev) => {
@@ -134,20 +133,6 @@ export default function PassageiroCarteirinha() {
       return updated;
     });
   };
-
-  useEffect(() => {
-    if (activeTab) {
-      const timer = setTimeout(() => {
-        const container = tabListRef.current?.parentElement;
-        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`) as HTMLElement | null;
-        if (container && activeEl) {
-          const left = activeEl.offsetLeft - (container.clientWidth / 2) + (activeEl.clientWidth / 2);
-          container.scrollTo({ left, behavior: "smooth" });
-        }
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab]);
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -220,6 +205,42 @@ export default function PassageiroCarteirinha() {
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
+
+  const mobileTabItems = useMemo<AppTabItem[]>(() => {
+    const items: AppTabItem[] = [];
+    if (canViewFinancials) {
+      items.push({
+        value: "parcelas",
+        label: "Parcelas",
+        icon: <Wallet className="w-3.5 h-3.5" />,
+      });
+    }
+    items.push(
+      {
+        value: "dados-pessoais",
+        label: "Dados Pessoais",
+        icon: <User className="w-3.5 h-3.5" />,
+      },
+      {
+        value: "responsaveis",
+        label: "Responsáveis",
+        icon: <Users className="w-3.5 h-3.5" />,
+      }
+    );
+    if (canManageContracts) {
+      items.push({
+        value: "contrato",
+        label: "Contrato",
+        icon: <FileText className="w-3.5 h-3.5" />,
+      });
+    }
+    items.push({
+      value: "ausencias",
+      label: "Ausências",
+      icon: <CalendarClock className="w-3.5 h-3.5" />,
+    });
+    return items;
+  }, [canViewFinancials, canManageContracts]);
 
   const loading =
     isSessionLoading ||
@@ -673,6 +694,10 @@ export default function PassageiroCarteirinha() {
           cobranca.passageiro?.responsavel_principal?.nome,
         generoPassageiro: passageiro.genero || cobranca.passageiro?.genero,
       }),
+    onActionSuccess: () => {
+      refetchPassageiro();
+      refetchCobrancas();
+    },
   };
 
   const infoProps = {
@@ -891,72 +916,10 @@ export default function PassageiroCarteirinha() {
               </Suspense>
 
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full pt-3 sm:pt-4">
-                <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x">
-                  <TabsList
-                    ref={tabListRef}
-                    className="bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1 border-0 w-max sm:w-auto"
-                  >
-                    {canViewFinancials && (
-                      <TabsTrigger
-                        value="parcelas"
-                        className={cn(
-                          "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
-                          "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                          "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                        )}
-                      >
-                        <Wallet className="w-3.5 h-3.5 shrink-0 text-inherit" />
-                        <span>Parcelas</span>
-                      </TabsTrigger>
-                    )}
-                    <TabsTrigger
-                      value="dados-pessoais"
-                      className={cn(
-                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
-                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                      )}
-                    >
-                      <User className="w-3.5 h-3.5 shrink-0 text-inherit" />
-                      <span>Dados Pessoais</span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="responsaveis"
-                      className={cn(
-                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
-                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                      )}
-                    >
-                      <Users className="w-3.5 h-3.5 shrink-0 text-inherit" />
-                      <span>Responsáveis</span>
-                    </TabsTrigger>
-                    {canManageContracts && (
-                      <TabsTrigger
-                        value="contrato"
-                        className={cn(
-                          "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
-                          "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                          "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                        )}
-                      >
-                        <FileText className="w-3.5 h-3.5 shrink-0 text-inherit" />
-                        <span>Contrato</span>
-                      </TabsTrigger>
-                    )}
-                    <TabsTrigger
-                      value="ausencias"
-                      className={cn(
-                        "rounded-[18px] min-h-[38px] sm:min-h-[42px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2",
-                        "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                        "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                      )}
-                    >
-                      <CalendarClock className="w-3.5 h-3.5 shrink-0 text-inherit" />
-                      <span>Ausências</span>
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
+                <AppTabNav
+                  activeTab={activeTab}
+                  items={mobileTabItems}
+                />
 
                 {renderTabContents("mt-4")}
               </Tabs>
