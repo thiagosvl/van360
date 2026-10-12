@@ -18,6 +18,7 @@ import {
   formatDateToBR,
   formatMonthYearToBR,
   formatFirstName,
+  cleanSala,
 } from "@/utils/formatters";
 import { moneyMask } from "@/utils/masks";
 import { isCadastroPassageiroIncompleto } from "@/utils/domain";
@@ -511,7 +512,7 @@ export const CarteirinhaDadosPessoais = ({
             <InfoField
               icon={<DoorClosed className="h-3.5 w-3.5" />}
               label="Sala"
-              value={passageiro.sala}
+              value={cleanSala(passageiro.sala) || null}
             />
             <InfoField
               icon={<User className="h-3.5 w-3.5" />}

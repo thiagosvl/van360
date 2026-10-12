@@ -452,7 +452,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                      Nome do Transporte / Apelido
+                      Nome do Transporte (opcional)
                     </FormLabel>
                     <FormControl>
                       <div className="relative">

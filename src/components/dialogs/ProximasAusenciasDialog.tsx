@@ -8,7 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
 import { RotaMultiSelect } from "@/components/ui/RotaMultiSelect";
 import { PeriodoAusenciaCampos } from "@/components/ui/PeriodoAusenciaCampos";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav, AppTabItem } from "@/components/ui/AppTabNav";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useProximasAusencias, useRoutes, useBuscarAlunos, useRegistrarAusenciaMutation, AusenciaFuturaItem } from "@/hooks/api/useRoutes";
@@ -16,7 +17,7 @@ import { routeApi } from "@/services/api/route.api";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useAppPreferences } from "@/hooks/business/useAppPreferences";
-import { parseLocalDate, getShortWeekDayBR } from "@/utils/dateUtils";
+import { parseLocalDate, getShortWeekDayBR, getNowBR, toPersistenceString } from "@/utils/dateUtils";
 import { formatShortName, getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
 import { Calendar, CalendarCheck2, Bus, User, UserPlus, ChevronDown, Loader2, Search, X, Check } from "lucide-react";
@@ -54,6 +55,8 @@ interface RotaGroupInDia {
 interface DiaGroupItem {
   dataStr: string;
   dataLabel: string;
+  isHoje: boolean;
+  isAmanha: boolean;
   rotas: RotaGroupInDia[];
   totalAlunos: number;
 }
@@ -61,6 +64,8 @@ interface DiaGroupItem {
 interface DiaGroupInRota {
   dataStr: string;
   dataLabel: string;
+  isHoje: boolean;
+  isAmanha: boolean;
   alunos: AlunoAusenciaNode[];
 }
 
@@ -71,12 +76,27 @@ interface RotaGroupItem {
   totalAlunos: number;
 }
 
-function formatarDataAusencia(dataStr: string): string {
+function formatarDataAusencia(dataStr: string): { label: string; isHoje: boolean; isAmanha: boolean } {
   const d = parseLocalDate(dataStr);
+  const dataItemStr = toPersistenceString(d);
+
+  const now = getNowBR();
+  const todayStr = toPersistenceString(now);
+  if (dataItemStr === todayStr) {
+    return { label: "Hoje", isHoje: true, isAmanha: false };
+  }
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = toPersistenceString(tomorrow);
+  if (dataItemStr === tomorrowStr) {
+    return { label: "Amanhã", isHoje: false, isAmanha: true };
+  }
+
   const diaSemana = getShortWeekDayBR(d);
   const dia = d.getDate().toString().padStart(2, "0");
   const mes = (d.getMonth() + 1).toString().padStart(2, "0");
-  return `${diaSemana}, ${dia}/${mes}`;
+  return { label: `${diaSemana}, ${dia}/${mes}`, isHoje: false, isAmanha: false };
 }
 
 export function ProximasAusenciasDialog({
@@ -87,6 +107,14 @@ export function ProximasAusenciasDialog({
 }: ProximasAusenciasDialogProps) {
   const [activeTab, setActiveTab] = useState<TabMode>("dia");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
+  const tabItems = useMemo<AppTabItem<TabMode>[]>(
+    () => [
+      { value: "dia", label: "Por Dia" },
+      { value: "rota", label: "Por Rota" },
+    ],
+    []
+  );
 
   const { user } = useSession();
   const { donoContaId } = useProfile(user?.id);
@@ -325,9 +353,12 @@ export function ProximasAusenciasDialog({
           });
         });
 
+        const infoData = formatarDataAusencia(dataStr);
         resultado.push({
           dataStr,
-          dataLabel: formatarDataAusencia(dataStr),
+          dataLabel: infoData.label,
+          isHoje: infoData.isHoje,
+          isAmanha: infoData.isAmanha,
           rotas,
           totalAlunos: totalNoDia,
         });
@@ -359,9 +390,12 @@ export function ProximasAusenciasDialog({
         .sort(([dataA], [dataB]) => dataA.localeCompare(dataB))
         .forEach(([dataStr, alunos]) => {
           totalNaRota += alunos.length;
+          const infoData = formatarDataAusencia(dataStr);
           dias.push({
             dataStr,
-            dataLabel: formatarDataAusencia(dataStr),
+            dataLabel: infoData.label,
+            isHoje: infoData.isHoje,
+            isAmanha: infoData.isAmanha,
             alunos,
           });
         });
@@ -379,8 +413,6 @@ export function ProximasAusenciasDialog({
   }, [parsedItems]);
 
   const renderAlunoCard = (aluno: AlunoAusenciaNode) => {
-    const respName = aluno.responsavelNome ? formatNomeResponsavelExibicao(aluno.responsavelNome, formatoNomeResponsavel) : null;
-
     return (
       <div
         key={aluno.id}
@@ -393,26 +425,19 @@ export function ProximasAusenciasDialog({
         </Avatar>
 
         <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate">
-              {formatShortName(aluno.nome, true)}
-            </span>
-            {aluno.turma && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] shrink-0">
-                {aluno.turma}
-              </span>
-            )}
-          </div>
+          <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
+            {formatShortName(aluno.nome, true)}
+          </span>
 
-          {(respName || aluno.escolaNome) && (
-            <div className="flex items-center gap-1.5 text-[11px] text-[#737373] font-normal truncate mt-0.5">
-              {respName && (
-                <>
-                  <span className="truncate text-[#737373]">
-                    {respName}
-                  </span>
-                  {aluno.escolaNome && <span className="text-[#d4d4d4]">•</span>}
-                </>
+          {(aluno.turma || aluno.escolaNome) && (
+            <div className="flex items-center gap-1.5 text-[11px] text-[#737373] font-normal truncate mt-1">
+              {aluno.turma && (
+                <span className="truncate text-[#737373]">
+                  {aluno.turma}
+                </span>
+              )}
+              {aluno.turma && aluno.escolaNome && (
+                <span className="text-[#d4d4d4]">•</span>
               )}
               {aluno.escolaNome && (
                 <span className="truncate text-[#737373]">
@@ -667,30 +692,14 @@ export function ProximasAusenciasDialog({
             onValueChange={(val) => setActiveTab(val as TabMode)}
             className="w-full"
           >
-            <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5]">
-              <TabsList className="grid grid-cols-2 w-full min-h-[38px] sm:min-h-[42px] bg-transparent p-0 gap-1 mt-0 border-0">
-                <TabsTrigger
-                  value="dia"
-                  className={cn(
-                    "w-full rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
-                    "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                    "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                  )}
-                >
-                  Por Dia
-                </TabsTrigger>
-                <TabsTrigger
-                  value="rota"
-                  className={cn(
-                    "w-full rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer justify-center whitespace-nowrap",
-                    "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
-                    "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
-                  )}
-                >
-                  Por Rota
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            <AppTabNav
+              items={tabItems}
+              activeTab={activeTab}
+              layout="fill"
+              className="w-full"
+              listClassName="w-full grid grid-cols-2"
+              triggerClassName="w-full"
+            />
           </Tabs>
         )}
 
@@ -728,8 +737,18 @@ export function ProximasAusenciasDialog({
               {treePorDia.map((grupoDia) => (
                 <div key={grupoDia.dataStr} className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#0a0a0a] shrink-0" />
-                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    <span className={cn(
+                      "w-2 h-2 rounded-full shrink-0",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "bg-primary"
+                        : "bg-[#0a0a0a]"
+                    )} />
+                    <span className={cn(
+                      "text-xs sm:text-sm",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "font-bold text-primary"
+                        : "font-semibold text-[#0a0a0a]"
+                    )}>
                       {grupoDia.dataLabel}
                     </span>
                   </div>
@@ -746,9 +765,19 @@ export function ProximasAusenciasDialog({
                 <div key={grupoDia.dataStr} className="space-y-2.5">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                      <Calendar className="w-3.5 h-3.5" />
+                      <Calendar className={cn(
+                        "w-3.5 h-3.5",
+                        grupoDia.isHoje || grupoDia.isAmanha
+                          ? "text-primary"
+                          : "text-[#0a0a0a]"
+                      )} />
                     </div>
-                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    <span className={cn(
+                      "text-xs sm:text-sm",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "font-bold text-primary"
+                        : "font-semibold text-[#0a0a0a]"
+                    )}>
                       {grupoDia.dataLabel}
                     </span>
                   </div>
@@ -787,8 +816,19 @@ export function ProximasAusenciasDialog({
                     {grupoRota.dias.map((dia) => (
                       <div key={dia.dataStr} className="space-y-1.5">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] text-[11px] font-medium">
-                          <Calendar className="w-3.5 h-3.5 text-[#0a0a0a]" />
-                          <span>{dia.dataLabel}</span>
+                          <Calendar className={cn(
+                            "w-3.5 h-3.5",
+                            dia.isHoje || dia.isAmanha
+                              ? "text-primary"
+                              : "text-[#0a0a0a]"
+                          )} />
+                          <span className={cn(
+                            dia.isHoje || dia.isAmanha
+                              ? "font-bold text-primary"
+                              : "text-[#0a0a0a]"
+                          )}>
+                            {dia.dataLabel}
+                          </span>
                         </div>
 
                         <div className="space-y-1.5 pl-2">

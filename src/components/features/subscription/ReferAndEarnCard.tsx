@@ -22,8 +22,8 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
     return (
       <div className={cn("bg-white rounded-[24px] p-5 sm:p-6 shadow-xs border border-[#e5e5e5] relative w-full space-y-4", className)}>
         <div className="flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-[14px] bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0 mb-3 text-primary">
-            <Gift className="w-5 h-5 text-primary" strokeWidth={1.5} />
+          <div className="w-12 h-12 rounded-[14px] bg-amber-100 border border-amber-200/80 flex items-center justify-center shrink-0 mb-3 text-amber-600">
+            <Gift className="w-5 h-5 text-amber-600" strokeWidth={1.5} />
           </div>
           <h3 className="text-lg font-semibold text-[#0a0a0a] leading-tight tracking-tight font-headline">
             Ganhe {bonusDaysPerReferral} dias grátis
@@ -44,7 +44,7 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
           </div>
           <div className="border border-[#e5e5e5] rounded-[16px] py-2.5 px-3 flex flex-col items-center justify-center bg-[#fafafa]">
             <span className="text-[11px] font-medium text-[#737373] mb-0.5 uppercase tracking-wider">Dias Ganhos</span>
-            <span className="text-xl font-semibold text-[#0a0a0a]">{totalBonusDays}</span>
+            <span className="text-xl font-semibold text-amber-600">{totalBonusDays}</span>
           </div>
         </div>
 
@@ -61,8 +61,8 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
         <div className="lg:col-span-7 flex flex-col justify-between items-center sm:items-start text-center sm:text-left h-full">
           <div className="w-full">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 mb-2">
-              <div className="w-12 h-12 rounded-[14px] bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0 text-primary">
-                <Gift className="w-5 h-5 text-primary" strokeWidth={1.5} />
+              <div className="w-12 h-12 rounded-[14px] bg-amber-100 border border-amber-200/80 flex items-center justify-center shrink-0 text-amber-600">
+                <Gift className="w-5 h-5 text-amber-600" strokeWidth={1.5} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
@@ -90,7 +90,7 @@ export function ReferAndEarnCard({ layout = "auto", className }: ReferAndEarnCar
             </div>
             <div className="border border-[#e5e5e5] rounded-[16px] py-2.5 px-3.5 flex flex-col items-center sm:items-start justify-center bg-[#fafafa]">
               <span className="text-[11px] font-medium text-[#737373] mb-0.5 uppercase tracking-wider">Dias Ganhos</span>
-              <span className="text-xl font-semibold text-[#0a0a0a]">{totalBonusDays}</span>
+              <span className="text-xl font-semibold text-amber-600">{totalBonusDays}</span>
             </div>
           </div>
         </div>

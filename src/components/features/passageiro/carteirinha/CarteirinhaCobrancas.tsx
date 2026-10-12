@@ -394,10 +394,12 @@ export const CarteirinhaCobrancas = ({
           {hasRetroactiveMonths && (
             <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
-              className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold text-xs h-8 px-3.5 rounded-[18px] shadow-xs transition-all active:scale-95 shrink-0 gap-1.5"
+              className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer shrink-0"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3 text-[#737373]" />
               <span>Registrar Parcela</span>
             </Button>
           )}

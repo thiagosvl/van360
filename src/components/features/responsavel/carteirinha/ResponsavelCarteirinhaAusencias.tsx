@@ -12,12 +12,12 @@ import { safeCloseDialog } from "@/hooks";
 import { toast } from "sonner";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { STORAGE_KEYS } from "@/constants";
+import { cn } from "@/lib/utils";
 
 interface GrupoAusenciaResponsavel {
   dataStr: string;
   dateObj: Date;
-  formattedDate: string;
-  dayOfWeek: string;
+  dataLabel: string;
   isHoje: boolean;
   isAmanha: boolean;
   ausencias: ResponsavelAusenciaItem[];
@@ -86,13 +86,27 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
     const grupos: GrupoAusenciaResponsavel[] = [];
     for (const [dataStr, items] of map.entries()) {
       const dateObj = parseISO(dataStr);
+      const isHoje = dataStr === todayYMD;
+      const isAmanha = dataStr === tomorrowYMD;
+
+      let dataLabel: string;
+      if (isHoje) {
+        dataLabel = "Hoje";
+      } else if (isAmanha) {
+        dataLabel = "Amanhã";
+      } else {
+        const diaSemana = format(dateObj, "EEE", { locale: ptBR });
+        const diaSemanaCap = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1).replace(".", "");
+        const diaMes = format(dateObj, "dd/MM");
+        dataLabel = `${diaSemanaCap}, ${diaMes}`;
+      }
+
       grupos.push({
         dataStr,
         dateObj,
-        formattedDate: format(dateObj, "dd/MM/yyyy"),
-        dayOfWeek: format(dateObj, "EEEE", { locale: ptBR }),
-        isHoje: dataStr === todayYMD,
-        isAmanha: dataStr === tomorrowYMD,
+        dataLabel,
+        isHoje,
+        isAmanha,
         ausencias: items,
       });
     }
@@ -176,23 +190,24 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
               className="space-y-2 pb-3.5 border-b border-[#e5e5e5]/60 last:border-b-0 last:pb-0"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <Calendar className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                <span className="text-xs font-semibold text-[#0a0a0a]">
-                  {grupo.formattedDate}
+                <Calendar
+                  className={cn(
+                    "w-3.5 h-3.5 shrink-0",
+                    grupo.isHoje || grupo.isAmanha
+                      ? "text-primary"
+                      : "text-[#737373]"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-xs leading-none",
+                    grupo.isHoje || grupo.isAmanha
+                      ? "font-bold text-primary"
+                      : "font-semibold text-[#0a0a0a]"
+                  )}
+                >
+                  {grupo.dataLabel}
                 </span>
-                <span className="text-[11px] font-normal capitalize text-[#737373]">
-                  • {grupo.dayOfWeek}
-                </span>
-                {grupo.isHoje && (
-                  <span className="px-2 py-0.5 rounded-[12px] text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                    Hoje
-                  </span>
-                )}
-                {grupo.isAmanha && (
-                  <span className="px-2 py-0.5 rounded-[12px] text-[10px] font-medium bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]">
-                    Amanhã
-                  </span>
-                )}
               </div>
 
               <div className="flex flex-wrap gap-2 pt-0.5">

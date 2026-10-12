@@ -328,7 +328,7 @@ export function MotoristaAuxiliarFormDialog({
                   render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
-                        Nome do Transporte / Apelido
+                        Apelido (opcional)
                       </FormLabel>
                       <FormControl>
                         <div className="relative">

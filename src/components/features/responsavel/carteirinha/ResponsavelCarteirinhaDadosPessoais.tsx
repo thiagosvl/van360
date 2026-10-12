@@ -7,6 +7,7 @@ import {
   formatModalidade,
   formatarEnderecoCompleto,
   formatFirstName,
+  cleanSala,
 } from "@/utils/formatters";
 import {
   Calendar,
@@ -90,9 +91,7 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
   const referenciaEmbarque = respPrincipal?.referencia || carteirinha.referencia || null;
   const primeiroNomeResp = formatFirstName(respPrincipal?.nome);
 
-  const salaLimpa = carteirinha.sala
-    ? carteirinha.sala.replace(/^sala\s*/i, "").trim()
-    : null;
+  const salaLimpa = cleanSala(carteirinha.sala) || null;
 
   const handleCopyEndereco = () => {
     if (!enderecoFormatado) return;

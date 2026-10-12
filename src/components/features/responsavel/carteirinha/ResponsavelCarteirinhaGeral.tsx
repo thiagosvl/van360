@@ -7,6 +7,9 @@ import { openBrowserLink } from "@/utils/browser";
 import { TrackingCard } from "@/components/features/tracking/TrackingCard";
 import { cn } from "@/lib/utils";
 
+import { ContratoStatus } from "@/types/enums";
+import { safeCloseDialog } from "@/hooks";
+
 interface ResponsavelCarteirinhaGeralProps {
   carteirinha: ResponsavelCarteirinhaData;
   onRefresh?: () => void;
@@ -21,7 +24,7 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
   const { token } = useResponsavelAuth();
   const [ausenciaDialogOpen, setAusenciaDialogOpen] = useState(false);
 
-  const contratoPendente = carteirinha.contrato && carteirinha.contrato.status === "pendente_assinatura";
+  const contratoPendente = carteirinha.contrato?.status === ContratoStatus.PENDENTE;
   const temRotas = (carteirinha.rotas || []).length > 0;
   const temContrato = Boolean(carteirinha.contrato);
 
@@ -52,10 +55,10 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             </div>
             <div className="min-w-0">
               <span className="block font-semibold text-sm sm:text-base text-[#0a0a0a] leading-tight truncate">
-                Contrato Aguardando Assinatura
+                Assinatura Pendente
               </span>
-              <span className="text-xs text-[#737373] mt-0.5 block truncate">
-                O contrato de transporte escolar está pronto para assinatura online.
+              <span className="text-xs text-[#737373] mt-0.5 block">
+                O contrato de transporte escolar está pronto para assinatura.
               </span>
             </div>
           </div>
@@ -65,7 +68,6 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
             className="h-10 px-4 rounded-[18px] bg-primary hover:bg-[#1d4ed8] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] cursor-pointer shrink-0"
           >
             <span>Assinar Agora</span>
-            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -96,11 +98,20 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
 
           <button
             type="button"
-            onClick={() => {
-              if (temRotas) {
-                setAusenciaDialogOpen(true);
-              }
-            }}
+            onClick={() => handleTabClick("dados-pessoais")}
+            className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
+          >
+            <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
+              <User className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
+              Dados Pessoais
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabClick("ausencias")}
             disabled={!temRotas}
             title={!temRotas ? "Aluno não possui rota atribuída" : undefined}
             className={cn(
@@ -123,19 +134,6 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
               temRotas ? "text-[#171717] group-hover:text-primary" : "text-[#737373]"
             )}>
               Ausências
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleTabClick("responsaveis")}
-            className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
-          >
-            <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
-              <Users className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
-            </div>
-            <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
-              Responsáveis
             </span>
           </button>
 
@@ -169,14 +167,14 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
 
           <button
             type="button"
-            onClick={() => handleTabClick("dados-pessoais")}
+            onClick={() => handleTabClick("responsaveis")}
             className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
           >
             <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
-              <User className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+              <Users className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
             </div>
             <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
-              Dados Pessoais
+              Responsáveis
             </span>
           </button>
         </div>
@@ -185,7 +183,13 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
       {temRotas && (
         <ResponsavelNotificarAusenciaDialog
           open={ausenciaDialogOpen}
-          onOpenChange={setAusenciaDialogOpen}
+          onOpenChange={(val) => {
+            if (!val) {
+              safeCloseDialog(() => setAusenciaDialogOpen(false));
+            } else {
+              setAusenciaDialogOpen(true);
+            }
+          }}
           passageiroId={carteirinha.id}
           passageiroNome={carteirinha.nome}
           rotas={carteirinha.rotas || []}

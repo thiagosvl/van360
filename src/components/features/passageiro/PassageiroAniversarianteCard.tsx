@@ -87,15 +87,12 @@ export function PassageiroAniversarianteCard({
         className={cn(
           "inline-flex items-center justify-center rounded-[18px] px-2.5 py-1 shrink-0 text-[11px] font-semibold tracking-tight transition-all",
           isToday
-            ? "bg-primary text-primary-foreground shadow-xs gap-1"
+            ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
             : "bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] font-medium"
         )}
       >
         {isToday ? (
-          <>
-            <Cake className="w-3 h-3 text-white" />
-            <span>Hoje!</span>
-          </>
+          <span>Hoje!</span>
         ) : (
           <span>
             {getShortWeekDayBR(

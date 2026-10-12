@@ -31,10 +31,7 @@ const calcularTotalDiasUteis = (inicioStr: string, fimStr: string): number => {
   let count = 0;
   const current = new Date(start);
   while (current <= end) {
-    const day = current.getDay();
-    if (day !== 0 && day !== 6) {
-      count++;
-    }
+    count++;
     current.setDate(current.getDate() + 1);
   }
   return count;
@@ -156,10 +153,7 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
               <Calendar
                 mode="single"
                 selected={startDateObj}
-                disabled={[
-                  { before: minStartDate },
-                  (date: Date) => date.getDay() === 0 || date.getDay() === 6,
-                ]}
+                disabled={[{ before: minStartDate }]}
                 fromDate={minStartDate}
                 onSelect={handleSelectInicio}
                 locale={ptBR}
@@ -204,10 +198,7 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
                   <Calendar
                     mode="single"
                     selected={startDateObj}
-                    disabled={[
-                      { before: minStartDate },
-                      (date: Date) => date.getDay() === 0 || date.getDay() === 6,
-                    ]}
+                    disabled={[{ before: minStartDate }]}
                     fromDate={minStartDate}
                     onSelect={handleSelectInicio}
                     locale={ptBR}
@@ -250,10 +241,7 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
                   <Calendar
                     mode="single"
                     selected={endDateObj}
-                    disabled={[
-                      { before: startDateObj || minStartDate },
-                      (date: Date) => date.getDay() === 0 || date.getDay() === 6,
-                    ]}
+                    disabled={[{ before: startDateObj || minStartDate }]}
                     fromDate={startDateObj || minStartDate}
                     onSelect={handleSelectFim}
                     locale={ptBR}
@@ -272,8 +260,7 @@ export const PeriodoAusenciaCampos: React.FC<PeriodoAusenciaCamposProps> = ({
           {diasUteis > 1 && (
             <div className="px-1 text-xs text-[#737373] font-normal flex items-center gap-1.5">
               <span>Período de</span>
-              <span className="font-semibold text-[#0a0a0a]">{diasUteis} dias úteis</span>
-              <span>(fins de semana desconsiderados)</span>
+              <span className="font-semibold text-[#0a0a0a]">{diasUteis} dias</span>
             </div>
           )}
         </div>

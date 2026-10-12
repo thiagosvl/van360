@@ -114,11 +114,10 @@ export default function Register() {
                                 inputMode="numeric"
                                 placeholder="Digite seu CPF ou CNPJ"
                                 onChange={(e) => field.onChange(cpfCnpjMask(e.target.value))}
-                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                  fieldState.error
+                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                     ? "border-[#e7000b] focus:border-[#e7000b]"
                                     : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                }`}
+                                  }`}
                               />
                             </div>
                           </FormControl>
@@ -143,11 +142,10 @@ export default function Register() {
                                   placeholder="Digite a razão social"
                                   {...field}
                                   value={field.value || ""}
-                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                    fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error || (isCnpj && (!field.value || field.value.trim() === "") && Object.keys(formState.errors).length > 0)
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
                                       : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                  }`}
+                                    }`}
                                 />
                               </div>
                             </FormControl>
@@ -175,11 +173,10 @@ export default function Register() {
                                 <Input
                                   placeholder="Digite seu nome completo"
                                   {...field}
-                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                    fieldState.error
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
                                       : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                  }`}
+                                    }`}
                                 />
                               </div>
                             </FormControl>
@@ -194,7 +191,7 @@ export default function Register() {
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                              Nome do Transporte / Apelido
+                              Nome do Transporte (opcional)
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -202,11 +199,10 @@ export default function Register() {
                                 <Input
                                   placeholder="Ex: Tio Thiago"
                                   {...field}
-                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                    fieldState.error
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
                                       : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                  }`}
+                                    }`}
                                 />
                               </div>
                             </FormControl>
@@ -235,11 +231,10 @@ export default function Register() {
                                   placeholder="(11) 99999-9999"
                                   maxLength={15}
                                   onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                    fieldState.error
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
                                       : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                  }`}
+                                    }`}
                                 />
                               </div>
                             </FormControl>
@@ -262,11 +257,10 @@ export default function Register() {
                                 <Input
                                   placeholder="seu@email.com"
                                   {...field}
-                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                    fieldState.error
+                                  className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
                                       : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                  }`}
+                                    }`}
                                 />
                               </div>
                             </FormControl>
@@ -293,11 +287,10 @@ export default function Register() {
                                 maxLength={10}
                                 onChange={(e) => field.onChange(dateMask(e.target.value))}
                                 placeholder="dd/mm/aaaa"
-                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                  fieldState.error
+                                className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                     ? "border-[#e7000b] focus:border-[#e7000b]"
                                     : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                }`}
+                                  }`}
                               />
                             </div>
                           </FormControl>
@@ -321,11 +314,10 @@ export default function Register() {
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Mínimo 6 caracteres"
                                 {...field}
-                                className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                  fieldState.error
+                                className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                     ? "border-[#e7000b] focus:border-[#e7000b]"
                                     : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                }`}
+                                  }`}
                               />
                               <button
                                 type="button"
@@ -382,11 +374,10 @@ export default function Register() {
                                       placeholder="(11) 99999-9999"
                                       maxLength={15}
                                       onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                      className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
-                                        fieldState.error
+                                      className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                           ? "border-[#e7000b] focus:border-[#e7000b]"
                                           : "border-[#e5e5e5] focus:border-[#2563eb]"
-                                      }`}
+                                        }`}
                                     />
                                     <button
                                       type="button"

@@ -1594,7 +1594,7 @@ export default function AdminUserDetails() {
                                   render={({ field }) => (
                                     <FormItem className="space-y-1.5">
                                       <FormLabel className="text-xs font-medium text-foreground">
-                                        Nome do transporte / apelido
+                                        Nome do transporte (opcional)
                                       </FormLabel>
                                       <FormControl>
                                         <Input

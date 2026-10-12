@@ -101,3 +101,14 @@ export const getStudentPreposition = (
 
   return "do(a)";
 };
+
+export const cleanSala = (sala?: string | null): string => {
+  if (!sala || !sala.trim()) return "";
+  return sala.trim().replace(/^(sala\s*)+/i, "").trim();
+};
+
+export const formatSala = (sala?: string | null): string => {
+  const cleaned = cleanSala(sala);
+  return cleaned ? `Sala ${cleaned}` : "";
+};
+

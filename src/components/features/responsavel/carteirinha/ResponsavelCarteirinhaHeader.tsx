@@ -2,27 +2,20 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { User } from "lucide-react";
 import { ResponsavelCarteirinhaData } from "@/types/responsavel";
-import { formatModalidade, formatPeriodo } from "@/utils/formatters";
+import { formatModalidade, formatPeriodo, formatSala } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
 interface ResponsavelCarteirinhaHeaderProps {
   carteirinha: ResponsavelCarteirinhaData;
 }
 
-const formatSalaExibicao = (sala?: string | null) => {
-  if (!sala || !sala.trim()) return "";
-  const trimmed = sala.trim();
-  return /^sala\s*/i.test(trimmed) ? trimmed : `Sala ${trimmed}`;
-};
-
 export const ResponsavelCarteirinhaHeader: React.FC<ResponsavelCarteirinhaHeaderProps> = ({ carteirinha }) => {
-  const temCobrancasVencidas = carteirinha.cobrancas?.some((c) => c.status === "vencido") ?? false;
 
   const subtituloPartes: string[] = [];
   if (carteirinha.escola_nome) subtituloPartes.push(carteirinha.escola_nome);
   if (carteirinha.turma) subtituloPartes.push(carteirinha.turma);
   if (carteirinha.sala) {
-    const salaFormatada = formatSalaExibicao(carteirinha.sala);
+    const salaFormatada = formatSala(carteirinha.sala);
     if (salaFormatada) subtituloPartes.push(salaFormatada);
   }
   const subtituloEscola = subtituloPartes.join(" • ");
@@ -62,16 +55,10 @@ export const ResponsavelCarteirinhaHeader: React.FC<ResponsavelCarteirinhaHeader
             {carteirinha.ativo ? "Ativo" : "Inativo"}
           </Badge>
 
-          {carteirinha.isento ? (
+          {carteirinha.isento && (
             <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs text-sky-950 bg-sky-200">
               Isento
             </Badge>
-          ) : (
-            temCobrancasVencidas && (
-              <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs bg-rose-500 text-white animate-pulse">
-                Possui Débitos
-              </Badge>
-            )
           )}
 
           {carteirinha.periodo && (

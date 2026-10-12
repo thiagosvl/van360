@@ -14,6 +14,7 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatarTelefoneExibicao,
   formatShortName,
+  formatSala,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
@@ -88,7 +89,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
               {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-[#737373] opacity-40">•</span>}
               {passageiro.turma && <span>{passageiro.turma}</span>}
               {(passageiro.periodo || passageiro.turma) && passageiro.sala && <span className="text-[8px] text-[#737373] opacity-40">•</span>}
-              {passageiro.sala && <span>Sala {passageiro.sala}</span>}
+              {passageiro.sala && <span>{formatSala(passageiro.sala)}</span>}
             </p>
           )}
         </div>
@@ -226,7 +227,7 @@ export function PassageirosList({
                           {passageiro.periodo && passageiro.turma && <span className="text-[8px] text-[#737373] opacity-40">•</span>}
                           {passageiro.turma && <span>{passageiro.turma}</span>}
                           {(passageiro.periodo || passageiro.turma) && passageiro.sala && <span className="text-[8px] text-[#737373] opacity-40">•</span>}
-                          {passageiro.sala && <span>Sala {passageiro.sala}</span>}
+                          {passageiro.sala && <span>{formatSala(passageiro.sala)}</span>}
                         </p>
                       )}
                     </div>

@@ -85,16 +85,16 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
       icon: <Receipt className="w-3.5 h-3.5" />,
     },
     {
+      value: "dados-pessoais",
+      label: "Dados Pessoais",
+      icon: <User className="w-3.5 h-3.5" />,
+    },
+    {
       value: "ausencias",
       label: "Ausências",
       icon: <CalendarOff className="w-3.5 h-3.5" />,
       disabled: (carteirinha?.rotas || []).length === 0,
       title: (carteirinha?.rotas || []).length === 0 ? "Aluno não possui rota atribuída" : undefined,
-    },
-    {
-      value: "responsaveis",
-      label: "Responsáveis",
-      icon: <Users className="w-3.5 h-3.5" />,
     },
     {
       value: "contrato",
@@ -104,9 +104,9 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
       title: !carteirinha?.contrato ? "Aluno não possui contrato" : undefined,
     },
     {
-      value: "dados-pessoais",
-      label: "Dados Pessoais",
-      icon: <User className="w-3.5 h-3.5" />,
+      value: "responsaveis",
+      label: "Responsáveis",
+      icon: <Users className="w-3.5 h-3.5" />,
     },
   ], [carteirinha]);
 
@@ -184,7 +184,6 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             />
           ) : (
             <>
-              {/* Header do Aluno */}
               <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -199,24 +198,24 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
                   <ResponsavelCarteirinhaGeral carteirinha={carteirinha} onRefresh={refetch} onSelectTab={setActiveTab} />
                 </TabsContent>
 
-                <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5">
-                  <ResponsavelCarteirinhaDadosPessoais carteirinha={carteirinha} />
-                </TabsContent>
-
                 <TabsContent value="parcelas" className="mt-5 outline-none space-y-5">
                   <ResponsavelCarteirinhaCobrancas carteirinha={carteirinha} />
+                </TabsContent>
+
+                <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaDadosPessoais carteirinha={carteirinha} />
                 </TabsContent>
 
                 <TabsContent value="ausencias" className="mt-5 outline-none space-y-5">
                   <ResponsavelCarteirinhaAusencias carteirinha={carteirinha} onRefresh={refetch} />
                 </TabsContent>
 
-                <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5">
-                  <ResponsavelCarteirinhaResponsaveis carteirinha={carteirinha} onRefresh={refetch} />
-                </TabsContent>
-
                 <TabsContent value="contrato" className="mt-5 outline-none space-y-5">
                   <ResponsavelCarteirinhaContrato carteirinha={carteirinha} />
+                </TabsContent>
+
+                <TabsContent value="responsaveis" className="mt-5 outline-none space-y-5">
+                  <ResponsavelCarteirinhaResponsaveis carteirinha={carteirinha} onRefresh={refetch} />
                 </TabsContent>
               </Tabs>
             </>

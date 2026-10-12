@@ -14,7 +14,7 @@ export const ResponsavelCarteirinhaContrato: React.FC<ResponsavelCarteirinhaCont
   const status = contrato?.status;
 
   const isAssinado = status === ContratoStatus.ASSINADO;
-  const isPendente = status === ContratoStatus.PENDENTE || (!!contrato && !status);
+  const isPendente = status === ContratoStatus.PENDENTE;
   const hasContract = Boolean(contrato && (isAssinado || isPendente));
 
   const pdfUrl =

@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useImperativeHandle, forwardRef, useState, use
 import SignatureCanvas from "react-signature-canvas";
 import { Check, Edit3, PenLine, Redo2, RotateCcw, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 export interface SignaturePadRef {
   clear: () => void;
@@ -282,16 +283,18 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
                 <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 text-[#2563eb] flex items-center justify-center shadow-2xs">
                   <PenLine className="w-4 h-4" />
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="tonal"
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleStartEditing();
                   }}
-                  className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-[18px] shadow-xs active:scale-95 transition-all cursor-pointer"
+                  className=""
                 >
                   Toque para assinar
-                </button>
+                </Button>
               </div>
             </div>
           )}

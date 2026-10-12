@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitialLoading } from "@/components/auth/InitialLoading";
+import { Banner } from "@/components/ui/Banner";
 import { useAssinarContratoViewModel, safeCloseDialog } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
@@ -11,12 +12,15 @@ import {
   PenTool,
   AlertCircle,
   FileText,
+  Download,
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { downloadContratoFile } from "@/utils/domain/contrato/shareContrato";
+import { gerarNomeArquivoContrato } from "@/utils/domain/contrato/contratoUtils";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -25,6 +29,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const {
     contrato,
@@ -98,34 +103,35 @@ export default function AssinarContrato() {
   };
   const nomeCondutorExibicao = getDriverDisplayName(condutorInfo);
 
-  if (contrato.status === ContratoStatus.ASSINADO) {
-    return (
-      <div className="min-h-screen bg-[#f5f5f5] flex flex-col items-center justify-center p-4 font-sans">
-        <Card className="w-full max-w-lg border border-[#e5e5e5] shadow-xs bg-white rounded-[24px] overflow-hidden">
-          <CardHeader className="text-center pb-2 pt-10 px-8">
-            <div className="mx-auto bg-emerald-50 w-16 h-16 rounded-[18px] flex items-center justify-center mb-6">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-[#0a0a0a] tracking-tight leading-tight">
-              Contrato Assinado!
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-8 p-8 pt-2">
-            <p className="text-[#737373] leading-relaxed text-sm font-medium">
-              Tudo pronto! O documento foi assinado digitalmente e já possui validade jurídica.
-            </p>
+  const isAssinado = contrato.status === ContratoStatus.ASSINADO;
+  const pdfUrl = isAssinado
+    ? (contrato.contrato_final_url || contrato.contrato_url || contrato.minuta_url)
+    : contrato.minuta_url;
 
-            <Button
-              onClick={() => openBrowserLink(contrato.contrato_final_url || contrato.contrato_url)}
-              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] h-12 rounded-[18px] font-bold text-sm shadow-xs transition-all active:scale-[0.99] text-white flex items-center justify-center cursor-pointer"
-            >
-              Ver Contrato <span className="hidden sm:inline ml-1">Assinado</span>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const nomeAluno =
+    (dadosContrato.nomeAluno as string | undefined) ||
+    (dadosContrato.nomePassageiro as string | undefined) ||
+    "";
+  const anoLetivo =
+    (dadosContrato.anoLetivo as string | number | undefined) ||
+    new Date().getFullYear();
+  const nomeArquivoContrato = gerarNomeArquivoContrato(nomeAluno, anoLetivo);
+
+  const handleBaixarContrato = async () => {
+    const urlDownload = contrato.contrato_final_url || contrato.contrato_url || contrato.minuta_url;
+    if (!urlDownload || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      await downloadContratoFile({
+        url: urlDownload,
+        filename: nomeArquivoContrato,
+        title: `Contrato Assinado - ${nomeAluno || "Van360"}`,
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col h-screen overflow-hidden font-sans">
@@ -157,8 +163,18 @@ export default function AssinarContrato() {
 
       <main className="flex-1 overflow-auto bg-[#f5f5f5] pb-32 scroll-smooth block touch-auto">
         <div className="min-w-full py-6 sm:py-10 flex flex-col items-center">
+          {isAssinado && (
+            <div className="w-full max-w-[850px] px-4 mb-6">
+              <Banner
+                variant="success"
+                title="Contrato Assinado"
+                description="Este documento foi assinado digitalmente e já possui validade jurídica."
+              />
+            </div>
+          )}
+
           <Document
-            file={contrato.minuta_url}
+            file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             className="flex flex-col items-center px-4"
             loading={
@@ -187,19 +203,34 @@ export default function AssinarContrato() {
 
       <div className="fixed bottom-6 left-0 right-0 px-4 sm:px-6 z-50 pointer-events-none w-full flex justify-center">
         <div className="pointer-events-auto flex justify-center">
-          <Button
-            onClick={() => setModalAberto(true)}
-            disabled={contrato.status !== ContratoStatus.PENDENTE}
-            className={cn(
-              "h-12 sm:h-14 px-6 sm:px-8 rounded-[18px] shadow-lg flex items-center gap-2.5 font-sans font-bold text-sm sm:text-base transition-all active:scale-[0.99] border-0",
-              contrato.status === ContratoStatus.PENDENTE
-                ? "bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs cursor-pointer"
-                : "bg-[#e5e5e5] text-[#737373] cursor-not-allowed shadow-none"
-            )}
-          >
-            <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />
-            Assinar contrato
-          </Button>
+          {isAssinado ? (
+            <Button
+              onClick={handleBaixarContrato}
+              disabled={isDownloading}
+              className="h-12 sm:h-14 px-6 sm:px-8 rounded-[18px] shadow-lg flex items-center gap-2.5 font-sans font-bold text-sm sm:text-base bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs cursor-pointer border-0 transition-all active:scale-[0.99]"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
+              Baixar Contrato Assinado
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setModalAberto(true)}
+              disabled={contrato.status !== ContratoStatus.PENDENTE}
+              className={cn(
+                "h-12 sm:h-14 px-6 sm:px-8 rounded-[18px] shadow-lg flex items-center gap-2.5 font-sans font-bold text-sm sm:text-base transition-all active:scale-[0.99] border-0",
+                contrato.status === ContratoStatus.PENDENTE
+                  ? "bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xs cursor-pointer"
+                  : "bg-[#e5e5e5] text-[#737373] cursor-not-allowed shadow-none"
+              )}
+            >
+              <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />
+              Assinar contrato
+            </Button>
+          )}
         </div>
       </div>
 

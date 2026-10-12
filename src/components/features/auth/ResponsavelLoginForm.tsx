@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { phoneMask } from "@/utils/masks";
 import { ArrowLeft, Eye, EyeOff, Lock, Phone } from "lucide-react";
 import { Banner } from "@/components/ui/Banner";
+import { safeCloseDialog } from "@/hooks";
 import { ResponsavelRecuperarPinDialog } from "./ResponsavelRecuperarPinDialog";
 import { useResponsavelLoginForm } from "@/hooks/form/useResponsavelLoginForm";
 
@@ -234,7 +235,13 @@ export const ResponsavelLoginForm: React.FC = () => {
 
       <ResponsavelRecuperarPinDialog
         open={isRecuperarOpen}
-        onOpenChange={setIsRecuperarOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            safeCloseDialog(() => setIsRecuperarOpen(false));
+          } else {
+            setIsRecuperarOpen(true);
+          }
+        }}
         initialPhone={telefoneFormatted}
       />
     </div>
