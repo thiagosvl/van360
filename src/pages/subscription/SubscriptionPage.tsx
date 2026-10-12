@@ -20,6 +20,7 @@ import {
   Trash2,
   CreditCard,
   History,
+  Smartphone,
 } from "lucide-react";
 import { SubscriptionInvoiceCard } from "@/components/features/subscription/SubscriptionInvoiceCard";
 import { SubscriptionInvoicesDialog } from "@/components/features/subscription/SubscriptionInvoicesDialog";
@@ -33,6 +34,7 @@ import {
 import {
   SubscriptionInvoiceStatus,
   SubscriptionIdentifer,
+  SubscriptionStatus,
   CheckoutPaymentMethod,
 } from "@/types/enums";
 import { useLayout } from "@/hooks";
@@ -44,6 +46,15 @@ import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { parseLocalDate } from "@/utils/dateUtils";
 import { isNativeIos } from "@/utils/detectPlatform";
 import { openBrowserLink } from "@/utils/browser";
+import { getWhatsAppUrl } from "@/constants";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
+import {
+  purchaseIosProduct,
+  restoreIosPurchases,
+  getActiveIosProductId,
+  IAP_PRODUCTS,
+  IapCapacityTier,
+} from "@/services/native/iapRevenueCat.service";
 
 export default function SubscriptionPage() {
   const { can } = usePermissions();
@@ -81,16 +92,20 @@ export default function SubscriptionPage() {
   } = useSubscriptionBilling(user?.id);
 
   const { referral } = useSubscriptionReferral(user?.id);
+  const { data: usuarioResumo } = useUsuarioResumo(user?.id);
+  const activeStudentsCount = usuarioResumo?.contadores?.passageiros?.ativos ?? 0;
+
   const {
     setPageTitle,
   } = useLayout();
-
 
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showUpgradeShowcase, setShowUpgradeShowcase] = useState(false);
+  const [isUpgradingIos, setIsUpgradingIos] = useState(false);
+  const [upgradeForcedPeriod, setUpgradeForcedPeriod] = useState<SubscriptionIdentifer | undefined>();
 
   const cancelSubscription = useCancelSubscription();
 
@@ -112,13 +127,54 @@ export default function SubscriptionPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleSubscribe = (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
+  const handleSubscribe = async (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
     if (isNativeIos()) {
+      const isMonthlyAppleActive =
+        subscription?.status === SubscriptionStatus.ACTIVE &&
+        subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY &&
+        subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP;
+
+      if (isMonthlyAppleActive && (forcedPeriod === SubscriptionIdentifer.YEARLY || !forcedPeriod)) {
+        if (activeStudentsCount > 250) {
+          openBrowserLink(
+            getWhatsAppUrl(
+              "Olá! Sou assinante do Van360 e gostaria de fazer upgrade para o plano anual corporativo (acima de 250 alunos)."
+            )
+          );
+          return;
+        }
+
+        setIsUpgradingIos(true);
+        try {
+          const currentProductId = await getActiveIosProductId();
+          const isCurrentTier250 =
+            currentProductId === IAP_PRODUCTS.MENSAL_250 ||
+            currentProductId === IAP_PRODUCTS.ANUAL_250 ||
+            activeStudentsCount > 110;
+
+          const productId = isCurrentTier250 ? IAP_PRODUCTS.ANUAL_250 : IAP_PRODUCTS.ANUAL_110;
+          const result = await purchaseIosProduct(productId);
+          if (result.success) {
+            toast.success("Assinatura Anual confirmada com sucesso pela App Store!");
+            setShowUpgradeShowcase(false);
+            await handleRefresh();
+          } else if (!result.userCancelled) {
+            toast.error(result.errorMessage || "Não foi possível concluir a troca de plano.");
+          }
+        } catch {
+          toast.error("Erro inesperado ao conectar com a App Store.");
+        } finally {
+          setIsUpgradingIos(false);
+        }
+        return;
+      }
+
+      setUpgradeForcedPeriod(forcedPeriod);
       setShowUpgradeShowcase(true);
       setTimeout(() => {
         const showcaseEl = document.getElementById("subscription-plans-showcase");
         if (showcaseEl) {
-          showcaseEl.scrollIntoView({ behavior: "smooth" });
+          showcaseEl.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 50);
       return;
@@ -153,6 +209,25 @@ export default function SubscriptionPage() {
   if (!can("assinatura.gerenciar")) {
     return <AccessRestrictedState moduleName="Assinatura" />;
   }
+
+  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
+
+  const handleRestoreIosPurchases = async () => {
+    setIsRestoringPurchases(true);
+    try {
+      const res = await restoreIosPurchases();
+      if (res.hasActiveSubscription) {
+        toast.success("Assinatura restaurada com sucesso!");
+        await handleRefresh();
+      } else {
+        toast.info("Nenhuma assinatura ativa encontrada para este Apple ID.");
+      }
+    } catch {
+      toast.error("Erro ao conectar com a App Store.");
+    } finally {
+      setIsRestoringPurchases(false);
+    }
+  };
 
   const handleCancelSubscription = () => {
     if (subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP) {
@@ -250,6 +325,7 @@ export default function SubscriptionPage() {
               isPastDue={isPastDue}
               referral={referral}
               onSubscribe={handleSubscribe}
+              isLoadingUpgrade={isUpgradingIos}
             />
           </section>
         )}
@@ -267,6 +343,8 @@ export default function SubscriptionPage() {
               isExpired={isExpired}
               isCanceled={isCanceled}
               onSelectPlan={handleSubscribe}
+              activeStudentsCount={activeStudentsCount}
+              initialPeriod={upgradeForcedPeriod}
             />
           </section>
         )}
@@ -284,6 +362,8 @@ export default function SubscriptionPage() {
               isExpired={isExpired}
               isCanceled={isCanceled}
               onSelectPlan={handleSubscribe}
+              activeStudentsCount={activeStudentsCount}
+              initialPeriod={upgradeForcedPeriod}
               pendingInvoicesSlot={(() => {
                 if (isNativeIos()) return null;
                 const pendingInvoices = (invoices || [])
@@ -404,6 +484,22 @@ export default function SubscriptionPage() {
                       const hasMore = totalCount > 3;
 
                       if (displayedInvoices.length === 0) {
+                        if (subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP) {
+                          return (
+                            <div className="py-6 text-center space-y-3 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs">
+                              <div className="w-10 h-10 bg-[#f5f5f5] rounded-[14px] flex items-center justify-center mx-auto border border-[#e5e5e5]">
+                                <Smartphone className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div className="space-y-1 max-w-sm mx-auto px-4">
+                                <p className="text-xs font-semibold text-foreground">Gerenciado pela Apple</p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  Os recibos e comprovantes fiscais das suas assinaturas são enviados diretamente para o email do seu ID Apple.
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+
                         return (
                           <div className="py-6 text-center space-y-3 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs">
                             <div className="w-10 h-10 bg-[#f5f5f5] rounded-[14px] flex items-center justify-center mx-auto border border-[#e5e5e5]">
@@ -443,11 +539,34 @@ export default function SubscriptionPage() {
                   </div>
                 </section>
 
-                {paymentMethods && paymentMethods.length > 0 && (
+                {subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP ? (
                   <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
-                      Métodos de Pagamento
+                      Método de Pagamento
                     </h2>
+                    <div className="overflow-hidden rounded-[20px] border border-[#e5e5e5] bg-white p-4 sm:p-5 shadow-xs flex items-center gap-3.5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#f5f5f5]">
+                        <Smartphone className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-semibold text-foreground">Apple ID (In-App Purchase)</p>
+                          <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wider text-primary">
+                            Ativo
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Cobranças gerenciadas diretamente na sua conta da App Store.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                ) : (
+                  paymentMethods && paymentMethods.length > 0 && (
+                    <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                      <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
+                        Métodos de Pagamento
+                      </h2>
 
                     <div className="space-y-3">
                       {paymentMethods.map((method) => {
@@ -556,8 +675,19 @@ export default function SubscriptionPage() {
           </>
         )}
 
-        {isActive && !!subscription?.data_vencimento && (
-          <div className="flex justify-center pt-10">
+        <div className="flex flex-col items-center gap-3 pt-10">
+          {isNativeIos() && (
+            <button
+              type="button"
+              disabled={isRestoringPurchases}
+              onClick={handleRestoreIosPurchases}
+              className="text-[11px] font-medium text-[#737373] hover:text-[#0a0a0a] underline underline-offset-4 decoration-[#e5e5e5] hover:decoration-[#737373] transition-colors cursor-pointer"
+            >
+              {isRestoringPurchases ? "Restaurando compras..." : "Restaurar compras da App Store"}
+            </button>
+          )}
+
+          {isActive && !!subscription?.data_vencimento && (
             <button
               type="button"
               onClick={handleCancelSubscription}
@@ -565,8 +695,8 @@ export default function SubscriptionPage() {
             >
               Cancelar assinatura
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         <SubscriptionInvoicesDialog
           open={isHistoryDialogOpen}

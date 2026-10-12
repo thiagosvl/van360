@@ -16,6 +16,7 @@ interface SubscriptionHeroCardProps {
   isPastDue: boolean;
   referral: ReferralData | null;
   onSubscribe: (planId?: string, identifier?: SubscriptionIdentifer) => void;
+  isLoadingUpgrade?: boolean;
 }
 
 interface ActionLabelParams {
@@ -74,6 +75,7 @@ export function SubscriptionHeroCard({
   isPastDue,
   referral,
   onSubscribe,
+  isLoadingUpgrade = false,
 }: SubscriptionHeroCardProps) {
   const actionLabel = getSubscriptionHeroActionLabel({
     isCanceled,
@@ -295,10 +297,11 @@ export function SubscriptionHeroCard({
         <div className="relative z-10 shrink-0">
           <Button
             variant="outline"
+            disabled={isLoadingUpgrade}
             className="border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] px-5 h-10 rounded-[18px] font-medium text-sm shadow-xs transition-all active:scale-[0.98] w-full md:w-auto cursor-pointer"
             onClick={() => onSubscribe(undefined, SubscriptionIdentifer.YEARLY)}
           >
-            {actionLabel}
+            {isLoadingUpgrade ? "Processando..." : actionLabel}
           </Button>
         </div>
       )}

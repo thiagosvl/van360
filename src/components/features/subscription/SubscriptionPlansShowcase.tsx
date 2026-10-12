@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SaaSPlan, Subscription, ReferralData, SubscriptionPricingSummary } from "@/types/subscription";
-import { SubscriptionIdentifer } from "@/types/enums";
+import { SubscriptionIdentifer, SubscriptionStatus } from "@/types/enums";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
@@ -46,6 +46,8 @@ interface SubscriptionPlansShowcaseProps {
   isCanceled?: boolean;
   onSelectPlan: (planId?: string, identifier?: SubscriptionIdentifer) => void;
   pendingInvoicesSlot?: React.ReactNode;
+  activeStudentsCount?: number;
+  initialPeriod?: SubscriptionIdentifer;
 }
 
 interface Testimonial {
@@ -183,15 +185,43 @@ export function SubscriptionPlansShowcase({
   isCanceled = false,
   onSelectPlan,
   pendingInvoicesSlot,
+  activeStudentsCount = 0,
+  initialPeriod,
 }: SubscriptionPlansShowcaseProps) {
   const isIos = isNativeIos();
   const queryClient = useQueryClient();
-  const [selectedPeriod, setSelectedPeriod] = useState<SubscriptionIdentifer>(SubscriptionIdentifer.MONTHLY);
-  const [selectedCapacity, setSelectedCapacity] = useState<IapCapacityTier>(IapCapacityTier.TIER_110);
+
+  const minCapacityTier = activeStudentsCount > 250
+    ? IapCapacityTier.TIER_PLUS_250
+    : activeStudentsCount > 110
+      ? IapCapacityTier.TIER_250
+      : IapCapacityTier.TIER_110;
+
+  const defaultPeriod = initialPeriod ?? (
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY
+      ? SubscriptionIdentifer.YEARLY
+      : SubscriptionIdentifer.MONTHLY
+  );
+
+  const [selectedPeriod, setSelectedPeriod] = useState<SubscriptionIdentifer>(defaultPeriod);
+  const [selectedCapacity, setSelectedCapacity] = useState<IapCapacityTier>(() => minCapacityTier);
   const [isPurchasingIap, setIsPurchasingIap] = useState(false);
   const [isRestoringIap, setIsRestoringIap] = useState(false);
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
   const [activeTestimonialIdx, setActiveTestimonialIdx] = useState(0);
+
+  useEffect(() => {
+    if (initialPeriod) {
+      setSelectedPeriod(initialPeriod);
+    }
+  }, [initialPeriod]);
+
+  useEffect(() => {
+    if (selectedCapacity < minCapacityTier) {
+      setSelectedCapacity(minCapacityTier);
+    }
+  }, [minCapacityTier, selectedCapacity]);
 
   const monthlyPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.MONTHLY);
   const annualPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.YEARLY);
@@ -338,6 +368,14 @@ export function SubscriptionPlansShowcase({
     setTouchStartX(null);
   };
 
+  const isCurrentMonthly =
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY;
+
+  const isCurrentAnnual =
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.YEARLY;
+
   const renderMonthlyCard = () => (
     <div className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs hover:border-[#737373] transition-all flex flex-col justify-between h-full">
       <div>
@@ -348,31 +386,44 @@ export function SubscriptionPlansShowcase({
 
         {isIos && (
           <div className="mt-3.5 pt-3.5 border-t border-[#e5e5e5] space-y-1.5">
-            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
-              Quantidade de alunos:
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
+                Quantidade de alunos:
+              </span>
+              {activeStudentsCount > 0 && (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {activeStudentsCount} {activeStudentsCount === 1 ? "aluno ativo" : "alunos ativos"}
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-1 p-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
               <button
                 type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_110}
                 onClick={() => setSelectedCapacity(IapCapacityTier.TIER_110)}
                 className={cn(
                   "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
                   selectedCapacity === IapCapacityTier.TIER_110
                     ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-                    : "text-[#737373] hover:text-[#0a0a0a]"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_110 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
                 )}
+                title={minCapacityTier > IapCapacityTier.TIER_110 ? "Você possui mais de 110 alunos ativos" : undefined}
               >
                 Até 110
               </button>
               <button
                 type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_250}
                 onClick={() => setSelectedCapacity(IapCapacityTier.TIER_250)}
                 className={cn(
                   "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
                   selectedCapacity === IapCapacityTier.TIER_250
                     ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-                    : "text-[#737373] hover:text-[#0a0a0a]"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_250 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
                 )}
+                title={minCapacityTier > IapCapacityTier.TIER_250 ? "Você possui mais de 250 alunos ativos" : undefined}
               >
                 Até 250
               </button>
@@ -389,6 +440,11 @@ export function SubscriptionPlansShowcase({
                 250 ou mais
               </button>
             </div>
+            {minCapacityTier > IapCapacityTier.TIER_110 && (
+              <p className="text-[10px] text-amber-700 font-medium pt-0.5 text-left">
+                Faixa definida pela sua quantidade de alunos ativos ({activeStudentsCount}).
+              </p>
+            )}
           </div>
         )}
 
@@ -451,6 +507,15 @@ export function SubscriptionPlansShowcase({
             >
               <WhatsAppIcon className="w-4 h-4 text-white" />
               <span>Falar no WhatsApp</span>
+            </Button>
+          ) : isCurrentMonthly ? (
+            <Button
+              type="button"
+              disabled
+              variant="outline"
+              className="w-full min-h-[46px] rounded-[18px] border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] font-semibold text-sm cursor-not-allowed"
+            >
+              <span>Seu Plano Atual</span>
             </Button>
           ) : (
             <Button
@@ -539,31 +604,44 @@ export function SubscriptionPlansShowcase({
 
         {isIos && (
           <div className="mt-3.5 pt-3.5 border-t border-[#e5e5e5] space-y-1.5">
-            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
-              Quantidade de alunos:
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
+                Quantidade de alunos:
+              </span>
+              {activeStudentsCount > 0 && (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {activeStudentsCount} {activeStudentsCount === 1 ? "aluno ativo" : "alunos ativos"}
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-1 p-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
               <button
                 type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_110}
                 onClick={() => setSelectedCapacity(IapCapacityTier.TIER_110)}
                 className={cn(
                   "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
                   selectedCapacity === IapCapacityTier.TIER_110
                     ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-                    : "text-[#737373] hover:text-[#0a0a0a]"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_110 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
                 )}
+                title={minCapacityTier > IapCapacityTier.TIER_110 ? "Você possui mais de 110 alunos ativos" : undefined}
               >
                 Até 110
               </button>
               <button
                 type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_250}
                 onClick={() => setSelectedCapacity(IapCapacityTier.TIER_250)}
                 className={cn(
                   "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
                   selectedCapacity === IapCapacityTier.TIER_250
                     ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
-                    : "text-[#737373] hover:text-[#0a0a0a]"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_250 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
                 )}
+                title={minCapacityTier > IapCapacityTier.TIER_250 ? "Você possui mais de 250 alunos ativos" : undefined}
               >
                 Até 250
               </button>
@@ -580,6 +658,11 @@ export function SubscriptionPlansShowcase({
                 250 ou mais
               </button>
             </div>
+            {minCapacityTier > IapCapacityTier.TIER_110 && (
+              <p className="text-[10px] text-amber-700 font-medium pt-0.5 text-left">
+                Faixa definida pela sua quantidade de alunos ativos ({activeStudentsCount}).
+              </p>
+            )}
           </div>
         )}
 
@@ -639,6 +722,15 @@ export function SubscriptionPlansShowcase({
               <WhatsAppIcon className="w-4 h-4 text-white" />
               <span>Falar no WhatsApp</span>
             </Button>
+          ) : isCurrentAnnual ? (
+            <Button
+              type="button"
+              disabled
+              variant="outline"
+              className="w-full min-h-[46px] rounded-[18px] border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] font-semibold text-sm cursor-not-allowed"
+            >
+              <span>Seu Plano Atual</span>
+            </Button>
           ) : (
             <Button
               type="button"
@@ -655,7 +747,13 @@ export function SubscriptionPlansShowcase({
               }}
               className="w-full min-h-[46px] rounded-[18px] bg-primary hover:bg-primary-hover text-white font-semibold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>{isPurchasingIap ? "Processando..." : "Assinar Plano Anual"}</span>
+              <span>
+                {isPurchasingIap
+                  ? "Processando..."
+                  : isCurrentMonthly
+                    ? "Migrar para Plano Anual"
+                    : "Assinar Plano Anual"}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           )}

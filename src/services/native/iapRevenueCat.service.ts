@@ -207,3 +207,22 @@ export async function restoreIosPurchases(): Promise<RestorePurchasesResult> {
     };
   }
 }
+
+export async function getActiveIosProductId(): Promise<string | null> {
+  if (!isNativeIos() && Capacitor.getPlatform() !== "ios") {
+    return null;
+  }
+
+  try {
+    if (!isInitialized) {
+      await initializeRevenueCat();
+    }
+
+    const { customerInfo } = await Purchases.getCustomerInfo();
+    const entitlement = customerInfo?.entitlements.active[IAP_ENTITLEMENT_ID];
+    return entitlement?.productIdentifier || null;
+  } catch (err) {
+    console.error("[RevenueCat] Erro ao obter produto ativo:", err);
+    return null;
+  }
+}
