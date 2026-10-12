@@ -238,7 +238,7 @@ export default function ComplementarPagamentoDialog({
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        className="h-4 w-4 rounded-md border-[#e5e5e5] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]"
+                        className="h-4 w-4 rounded-md border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                     </FormControl>
                     <div className="flex-1 space-y-1 leading-none">

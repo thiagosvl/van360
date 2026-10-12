@@ -103,10 +103,11 @@ export interface OpenPassageiroTransporteProps {
 }
 
 export interface OpenGastoFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (gasto?: Gasto, keepOpen?: boolean) => void;
   gastoToEdit?: Gasto | null;
-  veiculos?: { id: string; placa: string }[];
+  veiculos?: { id: string; placa: string; modelo?: string | null }[];
   usuarioId?: string;
+  allowBatchCreation?: boolean;
 }
 
 export interface OpenEscolaFormProps {

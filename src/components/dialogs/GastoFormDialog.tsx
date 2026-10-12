@@ -2,7 +2,7 @@ import { MoneyInput } from "@/components/forms";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Form,
   FormControl,
@@ -11,11 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -29,6 +25,7 @@ import {
   safeCloseDialog,
   useAppRating,
 } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { GastoEscopoAcao, GastoTipoCalculoParcela } from "@/types/enums";
@@ -82,10 +79,9 @@ interface GastoFormDialogProps {
   gastoToEdit?: Gasto | null;
   veiculos: { id: string; placa: string; modelo?: string | null }[];
   usuarioId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (gasto?: Gasto, keepOpen?: boolean) => void;
+  allowBatchCreation?: boolean;
 }
-
-import { usePermissions } from "@/hooks/business/usePermissions";
 
 export default function GastoFormDialog({
   isOpen,
@@ -94,13 +90,14 @@ export default function GastoFormDialog({
   veiculos: veiculosProp,
   usuarioId: usuarioIdProp,
   onSuccess,
+  allowBatchCreation = false,
 }: GastoFormDialogProps) {
   const { can, isSubConta } = usePermissions();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const usuarioId = usuarioIdProp || profile?.id || "";
 
-  const [openCalendar, setOpenCalendar] = useState(false);
+  const [keepOpen, setKeepOpen] = useState(false);
   const createGasto = useCreateGasto();
   const updateGasto = useUpdateGasto();
   const { trackGastoRegistrado } = useAppRating();
@@ -154,18 +151,22 @@ export default function GastoFormDialog({
           escopo: undefined,
         });
       } else {
-        form.reset({
-          valor: "",
-          data: undefined,
-          categoria: "",
-          descricao: "",
-          veiculo_id: defaultVeiculoId || "",
-          parcelado: false,
-          parcelas: 2,
-          tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
-          escopo: undefined,
-        });
+        if (!keepOpen) {
+          form.reset({
+            valor: "",
+            data: undefined,
+            categoria: "",
+            descricao: "",
+            veiculo_id: defaultVeiculoId || "",
+            parcelado: false,
+            parcelas: 2,
+            tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
+            escopo: undefined,
+          });
+        }
       }
+    } else {
+      setKeepOpen(false);
     }
   }, [isOpen, gastoToEdit, form, defaultVeiculoId]);
 
@@ -191,11 +192,6 @@ export default function GastoFormDialog({
       return;
     }
 
-    const successCallback = () => {
-      handleClose();
-      if (onSuccess) onSuccess();
-    };
-
     const formattedData = {
       ...data,
       valor: moneyToNumber(data.valor),
@@ -209,15 +205,41 @@ export default function GastoFormDialog({
     if (gastoToEdit) {
       updateGasto.mutate(
         { id: gastoToEdit.id, data: formattedData, escopo: data.escopo },
-        { onSuccess: successCallback }
+        {
+          onSuccess: (gastoSalvo) => {
+            handleClose();
+            if (onSuccess) onSuccess(gastoSalvo);
+          },
+        }
       );
     } else {
       createGasto.mutate(
         { usuarioId, data: formattedData },
         {
-          onSuccess: () => {
-            successCallback();
+          onSuccess: (gastoSalvo) => {
+            if (onSuccess) onSuccess(gastoSalvo, keepOpen);
             void trackGastoRegistrado();
+
+            if (keepOpen) {
+              form.reset({
+                valor: "",
+                data: undefined,
+                categoria: "",
+                descricao: "",
+                veiculo_id: defaultVeiculoId || "",
+                parcelado: false,
+                parcelas: 2,
+                tipo_calculo_parcela: GastoTipoCalculoParcela.TOTAL,
+                escopo: undefined,
+              });
+
+              setTimeout(() => {
+                form.setFocus("valor");
+                setKeepOpen(false);
+              }, 100);
+            } else {
+              handleClose();
+            }
           },
         }
       );
@@ -530,47 +552,13 @@ export default function GastoFormDialog({
                     <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                       Data <span className="text-[#e7000b]">*</span>
                     </FormLabel>
-                    <Popover
-                      open={openCalendar}
-                      onOpenChange={setOpenCalendar}
-                    >
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <div className="relative">
-                            <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none z-10" />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-10 pr-3.5 h-10 sm:h-11 text-sm rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-[#0a0a0a] focus:bg-white focus:border-[#0a0a0a] hover:bg-[#fafafa] justify-between font-normal transition-all shadow-none",
-                                !field.value && "text-[#737373]",
-                                fieldState.error && "border-[#e7000b]"
-                              )}
-                              aria-invalid={!!fieldState.error}
-                            >
-                              <span className={cn("truncate", !field.value && "text-[#737373]")}>
-                                {field.value ? format(field.value, "dd/MM/yyyy") : "Selecione a data"}
-                              </span>
-                              <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#737373]" />
-                            </Button>
-                          </div>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 rounded-[24px] border border-[#e5e5e5] bg-white shadow-lg">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              field.onChange(date);
-                              setOpenCalendar(false);
-                            }
-                          }}
-                          initialFocus
-                          locale={ptBR}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={!!fieldState.error}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -738,6 +726,25 @@ export default function GastoFormDialog({
                 </FormItem>
               )}
             />
+
+            {allowBatchCreation && !gastoToEdit && (
+              <div className="flex items-center gap-3 p-3.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
+                <Checkbox
+                  id="keepOpen"
+                  checked={keepOpen}
+                  onCheckedChange={(checked) =>
+                    setKeepOpen(checked as boolean)
+                  }
+                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
+                <label
+                  htmlFor="keepOpen"
+                  className="flex-1 cursor-pointer font-medium text-[#0a0a0a] m-0 text-xs sm:text-sm"
+                >
+                  Cadastrar outro em seguida
+                </label>
+              </div>
+            )}
           </form>
         </Form>
       </BaseDialog.Body>

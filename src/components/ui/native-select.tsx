@@ -13,6 +13,7 @@ export interface NativeSelectProps
 export const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProps>(
   ({ className, wrapperClassName, icon, children, disabled, error, variant = "default", ...props }, ref) => {
     const hasCustomPr = typeof className === "string" && /\bpr-\S+/.test(className);
+    const isPlaceholder = !props.value || props.value === "";
 
     return (
       <div className={cn("relative w-full", wrapperClassName)}>
@@ -26,7 +27,9 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProp
           disabled={disabled}
           className={cn(
             "w-full appearance-none transition-all duration-200 cursor-pointer",
-            "h-10 sm:h-11 text-sm font-normal text-[#0a0a0a]",
+            "h-10 sm:h-11 text-sm font-normal",
+            isPlaceholder ? "text-[#737373]" : "text-[#0a0a0a]",
+            "[&>option]:text-[#0a0a0a] [&>option[value='']]:text-[#737373]",
             variant === "white"
               ? "bg-white hover:bg-white focus:bg-white shadow-xs hover:border-[#737373]/60"
               : "bg-[#f5f5f5] hover:bg-white focus:bg-white",

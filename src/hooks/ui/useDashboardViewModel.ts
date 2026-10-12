@@ -160,6 +160,7 @@ export function useDashboardViewModel() {
 
   const handleOpenGastoDialog = useCallback(() => {
     openGastoFormDialog({
+      allowBatchCreation: true,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       },

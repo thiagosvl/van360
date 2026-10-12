@@ -1224,15 +1224,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               setGastoFormDialogState((prev) => ({ ...prev, open: false })),
             )
           }
-          onSuccess={() => {
-            safeCloseDialog(() =>
-              setGastoFormDialogState((prev) => ({ ...prev, open: false }))
-            );
-            gastoFormDialogState.props?.onSuccess?.();
+          onSuccess={(gasto, keepOpen) => {
+            if (!keepOpen) {
+              safeCloseDialog(() =>
+                setGastoFormDialogState((prev) => ({ ...prev, open: false }))
+              );
+            }
+            gastoFormDialogState.props?.onSuccess?.(gasto, keepOpen);
           }}
           gastoToEdit={gastoFormDialogState.props?.gastoToEdit}
           veiculos={gastoFormDialogState.props?.veiculos || []}
           usuarioId={gastoFormDialogState.props?.usuarioId || profile?.id}
+          allowBatchCreation={gastoFormDialogState.props?.allowBatchCreation}
         />
       )}
 

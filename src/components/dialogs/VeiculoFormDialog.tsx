@@ -344,7 +344,7 @@ export default function VeiculoFormDialog({
                   onCheckedChange={(checked) =>
                     setKeepOpen(checked as boolean)
                   }
-                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]"
+                  className="h-4 w-4 rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <label
                   htmlFor="keepOpen"
