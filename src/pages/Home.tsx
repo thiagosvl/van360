@@ -38,7 +38,7 @@ import { PermissionRescueBanner } from "@/components/common/PermissionRescueBann
 
 const Home = () => {
   const { isSubConta } = usePermissions();
-  const { pushStatus, locationStatus, requestPushPermission, requestLocationPermission } = useAppPermissions();
+  const { pushStatus, requestPushPermission } = useAppPermissions();
   const { hideValues, toggleHideValues, formatPrivateNumber } = usePrivacy();
   const {
     profile,
@@ -137,36 +137,22 @@ const Home = () => {
       if (pushStatus === AppPermissionStatus.PROMPT) {
         await requestPushPermission();
       }
-      if ((profile as any)?.rastreamento_ativo !== false && locationStatus === AppPermissionStatus.PROMPT) {
-        await requestLocationPermission();
-      }
     };
 
     checkAndRequest();
-  }, [isLoading, profile, pushStatus, locationStatus, requestPushPermission, requestLocationPermission]);
+  }, [isLoading, profile, pushStatus, requestPushPermission]);
 
   if (isLoading) {
     return <HomeSkeleton />;
   }
 
-  const isTrackingAllowed = (profile as any)?.rastreamento_ativo !== false;
-  const showBothDenied =
-    pushStatus === AppPermissionStatus.DENIED &&
-    locationStatus === AppPermissionStatus.DENIED &&
-    isTrackingAllowed;
-  const showPushDenied = pushStatus === AppPermissionStatus.DENIED && !showBothDenied;
-  const showLocationDenied =
-    locationStatus === AppPermissionStatus.DENIED &&
-    isTrackingAllowed &&
-    !showBothDenied;
+  const showPushDenied = pushStatus === AppPermissionStatus.DENIED;
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
         <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-9 pb-24 sm:pt-2">
-          {showBothDenied && <PermissionRescueBanner type={PermissionRescueType.BOTH} />}
           {showPushDenied && <PermissionRescueBanner type={PermissionRescueType.PUSH} />}
-          {showLocationDenied && <PermissionRescueBanner type={PermissionRescueType.LOCATION} />}
 
           {/* Bloco Superior: Header, Alertas e KPIs Financeiros */}
           <div className="space-y-3.5 sm:space-y-4">

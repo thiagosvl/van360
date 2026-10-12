@@ -6,6 +6,7 @@ import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { useConfiguracoes } from "@/hooks";
 import { Capacitor } from "@capacitor/core";
 import { AppPermissionStatus } from "@/types/enums";
+import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 
 export interface ConfirmStartRouteDialogProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export function ConfirmStartRouteDialog({
     onConfirm(notificarPais);
   };
 
-  const isGpsDenied = Capacitor.isNativePlatform() && locationStatus === AppPermissionStatus.DENIED;
+  const isGpsDenied = ENABLE_LIVE_TRACKING && Capacitor.isNativePlatform() && locationStatus === AppPermissionStatus.DENIED;
 
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="md">
