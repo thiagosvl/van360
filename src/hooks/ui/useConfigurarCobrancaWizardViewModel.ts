@@ -19,6 +19,7 @@ export const WIZARD_MODALIDADE = {
 export type WizardModalidade = (typeof WIZARD_MODALIDADE)[keyof typeof WIZARD_MODALIDADE];
 
 export const WIZARD_STEP = {
+  BENEFICIOS: "BENEFICIOS",
   PIX: "PIX",
   TAXAS: "TAXAS",
   AVISOS: "AVISOS",
@@ -44,7 +45,9 @@ export function useConfigurarCobrancaWizardViewModel({
   const { configuracoes, updateConfiguracoes } = useConfiguracoes();
   const { financeiro, updateFinanceiro } = useMotoristaFinanceiroApi();
 
-  const [step, setStep] = useState<WizardStep>(WIZARD_STEP.PIX);
+  const [step, setStep] = useState<WizardStep>(() =>
+    modalidade === WIZARD_MODALIDADE.AUTOMATICA ? WIZARD_STEP.BENEFICIOS : WIZARD_STEP.PIX
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [chavePixTouched, setChavePixTouched] = useState(false);
 
@@ -81,12 +84,18 @@ export function useConfigurarCobrancaWizardViewModel({
   const taxaEfetiva = financeiro?.taxa_efetiva ?? 2.9;
   const taxaFormatada = formatCurrency(taxaEfetiva);
 
-  const totalSteps = modalidade === WIZARD_MODALIDADE.AUTOMATICA ? 3 : 2;
+  const totalSteps = modalidade === WIZARD_MODALIDADE.AUTOMATICA ? 4 : 2;
 
   const currentStepNumber = (() => {
+    if (modalidade === WIZARD_MODALIDADE.AUTOMATICA) {
+      if (step === WIZARD_STEP.BENEFICIOS) return 1;
+      if (step === WIZARD_STEP.PIX) return 2;
+      if (step === WIZARD_STEP.TAXAS) return 3;
+      if (step === WIZARD_STEP.AVISOS) return 4;
+      return 1;
+    }
     if (step === WIZARD_STEP.PIX) return 1;
-    if (step === WIZARD_STEP.TAXAS) return 2;
-    if (step === WIZARD_STEP.AVISOS) return modalidade === WIZARD_MODALIDADE.AUTOMATICA ? 3 : 2;
+    if (step === WIZARD_STEP.AVISOS) return 2;
     return 1;
   })();
 
@@ -180,6 +189,8 @@ export function useConfigurarCobrancaWizardViewModel({
       setStep(modalidade === WIZARD_MODALIDADE.AUTOMATICA ? WIZARD_STEP.TAXAS : WIZARD_STEP.PIX);
     } else if (step === WIZARD_STEP.TAXAS) {
       setStep(WIZARD_STEP.PIX);
+    } else if (step === WIZARD_STEP.PIX && modalidade === WIZARD_MODALIDADE.AUTOMATICA) {
+      setStep(WIZARD_STEP.BENEFICIOS);
     }
   };
 
@@ -191,6 +202,11 @@ export function useConfigurarCobrancaWizardViewModel({
   };
 
   const handleNext = async () => {
+    if (step === WIZARD_STEP.BENEFICIOS) {
+      setStep(WIZARD_STEP.PIX);
+      return;
+    }
+
     if (step === WIZARD_STEP.PIX) {
       setChavePixTouched(true);
       if (!isPixValido) {

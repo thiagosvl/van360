@@ -30,13 +30,27 @@ export function PassageiroExternalSuccess({
           </div>
         </div>
 
-        <h2 className="text-2xl font-headline font-bold text-foreground mb-3 tracking-tight">
+        <h2 className="text-2xl font-headline font-bold text-foreground mb-2 tracking-tight">
           Cadastro Enviado!
         </h2>
 
-        {showAppDownload ? (
-          <>
-            <p className="text-muted-foreground mb-6 leading-relaxed text-sm font-medium">
+        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base font-medium mb-6">
+          Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
+        </p>
+
+        <div className="space-y-4">
+          <Button
+            variant="tonal"
+            onClick={onNewCadastro}
+            className="w-full h-11 rounded-[18px] font-semibold transition-all active:scale-[0.98]"
+          >
+            Fazer novo cadastro
+          </Button>
+        </div>
+
+        {showAppDownload && (
+          <div className="mt-6 pt-6 border-t border-[#e5e5e5]">
+            <p className="text-muted-foreground mb-4 leading-relaxed text-xs sm:text-sm font-medium">
               Baixe o aplicativo para acompanhar a{" "}
               <strong className="text-foreground font-semibold">
                 carteirinha do aluno
@@ -44,7 +58,7 @@ export function PassageiroExternalSuccess({
               e a rotina escolar:
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               {isEligibleAndroid && (
                 <a
                   href={PLAY_STORE_URL}
@@ -56,7 +70,7 @@ export function PassageiroExternalSuccess({
                   <img
                     src={PLAY_STORE_BADGE_URL}
                     alt="Disponível no Google Play"
-                    className="h-10 sm:h-11 w-auto object-contain"
+                    className="h-9 sm:h-10 w-auto object-contain"
                   />
                 </a>
               )}
@@ -72,29 +86,17 @@ export function PassageiroExternalSuccess({
                   <img
                     src={APP_STORE_BADGE_URL}
                     alt="Baixar na App Store"
-                    className="h-10 sm:h-11 w-auto object-contain"
+                    className="h-9 sm:h-10 w-auto object-contain"
                   />
                 </a>
               )}
             </div>
-          </>
-        ) : (
-          <p className="text-muted-foreground mb-8 leading-relaxed text-base font-medium">
-            Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
-          </p>
+          </div>
         )}
 
-        <div className="pt-2 space-y-4">
-          <Button
-            onClick={onNewCadastro}
-            className="w-full h-12 rounded-[18px] bg-primary hover:bg-primary-hover text-white font-bold shadow-xs transition-all active:scale-[0.98]"
-          >
-            Fazer novo cadastro
-          </Button>
-          <p className="text-xs text-muted-foreground font-medium italic">
-            Você já pode fechar esta janela com segurança.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground font-medium italic mt-6">
+          Você já pode fechar esta janela com segurança.
+        </p>
       </div>
     </div>
   );

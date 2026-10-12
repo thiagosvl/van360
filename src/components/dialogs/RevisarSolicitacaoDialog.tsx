@@ -196,8 +196,8 @@ export function RevisarSolicitacaoDialog({
               </div>
 
               <div className="rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] bg-[#fafafa] p-4 sm:p-5 space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#0a0a0a]">
-                  <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373]">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-white flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                     <DollarSign className="w-4 h-4" />
                   </div>
                   Parcelas
@@ -238,6 +238,7 @@ export function RevisarSolicitacaoDialog({
                             field={field}
                             label="Valor da Parcela"
                             required
+                            inputClassName="bg-white"
                           />
                         )}
                       />
@@ -256,6 +257,7 @@ export function RevisarSolicitacaoDialog({
                                 onChange={field.onChange}
                                 icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
                                 error={!!fieldState.error}
+                                className="bg-white"
                               >
                                 <option value="">Selecionar</option>
                                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
@@ -291,6 +293,7 @@ export function RevisarSolicitacaoDialog({
                                     }}
                                     icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
                                     error={!!fieldState.error}
+                                    className="bg-white"
                                   >
                                     <option value="">Mês</option>
                                     {monthOptions.map((m) => (
@@ -327,6 +330,7 @@ export function RevisarSolicitacaoDialog({
                                       }
                                       form.trigger("mes_fim_cobranca");
                                     }}
+                                    className="bg-white"
                                   >
                                     {anoInicioOptions.map((y) => (
                                       <option key={y} value={y}>
@@ -358,6 +362,7 @@ export function RevisarSolicitacaoDialog({
                                     onChange={field.onChange}
                                     icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
                                     error={!!fieldState.error}
+                                    className="bg-white"
                                   >
                                     <option value="">Mês</option>
                                     {monthOptions.map((m) => (
@@ -388,6 +393,7 @@ export function RevisarSolicitacaoDialog({
                                       field.onChange(e.target.value);
                                       form.trigger("mes_fim_cobranca");
                                     }}
+                                    className="bg-white"
                                   >
                                     {anoFimOptions.map((y) => (
                                       <option key={y} value={y}>
@@ -415,8 +421,8 @@ export function RevisarSolicitacaoDialog({
               </div>
 
               <div className="rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] bg-[#fafafa] p-4 sm:p-5 space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#0a0a0a]">
-                  <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373]">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-white flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                     <Car className="w-4 h-4" />
                   </div>
                   Veículo e Escola
@@ -523,10 +529,7 @@ export function RevisarSolicitacaoDialog({
                 >
                   <div className="space-y-0.5">
                     <div className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
-                      O que o pai preencheu
-                    </div>
-                    <div className="text-xs text-[#737373] font-normal">
-                      Aluno, Turno, Responsável e Endereço para conferência
+                      O que o responsável preencheu
                     </div>
                   </div>
                   <ChevronDown
@@ -538,10 +541,10 @@ export function RevisarSolicitacaoDialog({
                 </button>
               </CollapsibleTrigger>
 
-              <CollapsibleContent className="px-4 sm:px-5 pb-5 pt-1 space-y-5 border-t border-[#e5e5e5]">
+              <CollapsibleContent className="px-4 sm:px-5 pb-6 pt-1 space-y-8 border-t border-[#e5e5e5]">
                 <div className="space-y-4 pt-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#0a0a0a]">
-                    <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373]">
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                       <User className="w-4 h-4" />
                     </div>
                     Identificação do Aluno
@@ -912,11 +915,9 @@ export function RevisarSolicitacaoDialog({
                   </div>
                 </div>
 
-                <hr className="border-[#e5e5e5]" />
-
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#0a0a0a]">
-                    <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373]">
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                       <Contact className="w-4 h-4" />
                     </div>
                     Responsável Financeiro
@@ -1065,17 +1066,15 @@ export function RevisarSolicitacaoDialog({
                   </div>
                 </div>
 
-                <hr className="border-[#e5e5e5]" />
-
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#0a0a0a]">
-                    <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373]">
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                       <MapPin className="w-4 h-4" />
                     </div>
                     Endereço Principal
                   </div>
 
-                  <FormEnderecoFields required={false} />
+                  <FormEnderecoFields required={false} inputClassName="bg-white" />
                 </div>
               </CollapsibleContent>
             </Collapsible>

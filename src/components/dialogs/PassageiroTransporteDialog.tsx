@@ -310,14 +310,16 @@ export function PassageiroTransporteDialog({
         />
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
-                <Car className="w-4 h-4 text-[#0a0a0a]" />
-                <h4 className="text-sm font-semibold text-[#0a0a0a]">Veículo e Modalidade</h4>
+              <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                  <Car className="w-4 h-4" />
+                </div>
+                Veículo e Modalidade
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <FormField
                   control={form.control}
                   name="veiculo_id"
@@ -389,12 +391,14 @@ export function PassageiroTransporteDialog({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
-                <Clock className="w-4 h-4 text-[#0a0a0a]" />
-                <h4 className="text-sm font-semibold text-[#0a0a0a]">Período e Horários</h4>
+              <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                  <Clock className="w-4 h-4" />
+                </div>
+                Período e Horários
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <FormField
                   control={form.control}
                   name="data_inicio_transporte"
@@ -516,7 +520,7 @@ export function PassageiroTransporteDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <FormField
                   control={form.control}
                   name="horario_entrada"
@@ -560,9 +564,11 @@ export function PassageiroTransporteDialog({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-1 border-b border-[#e5e5e5]">
-                <MapPin className="w-4 h-4 text-[#0a0a0a]" />
-                <h4 className="text-sm font-semibold text-[#0a0a0a]">Endereço Principal</h4>
+              <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                Endereço Principal
               </div>
 
               {!hasExistingResponsible && (
@@ -570,7 +576,7 @@ export function PassageiroTransporteDialog({
                   <p className="text-xs text-[#737373] font-medium">
                     Informe quem é o responsável para vincular este endereço:
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <FormField
                       control={form.control}
                       name="nome_responsavel"

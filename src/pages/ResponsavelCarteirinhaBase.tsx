@@ -2,10 +2,19 @@ import { toast } from "sonner";
 import { ResponsavelDadosComplementaresDialog } from "@/components/dialogs/ResponsavelDadosComplementaresDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { CarteirinhaSkeleton } from "@/components/skeletons/CarteirinhaSkeleton";
-import { ArrowLeftRight, LogOut } from "lucide-react";
+import { ArrowLeftRight, CalendarOff, FileText, LayoutDashboard, LogOut, MoreVertical, Receipt, User, Users } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabNav, AppTabItem } from "@/components/ui/AppTabNav";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useResponsavelCarteirinhaViewModel } from "@/hooks/ui/useResponsavelCarteirinhaViewModel";
 import { ROUTES } from "@/constants/routes";
 
@@ -64,28 +73,42 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     }
   }, [pushStatus, requestPushPermission]);
 
-  const tabListRef = React.useRef<HTMLDivElement>(null);
-
-  const handleTabChange = (val: string) => {
-    setActiveTab(val);
-    setTimeout(() => {
-      const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      }
-    }, 50);
-  };
-
-  React.useEffect(() => {
-    if (activeTab) {
-      setTimeout(() => {
-        const activeEl = tabListRef.current?.querySelector(`[data-state="active"]`);
-        if (activeEl) {
-          activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-        }
-      }, 100);
-    }
-  }, [activeTab]);
+  const tabItems = React.useMemo<AppTabItem[]>(() => [
+    {
+      value: "geral",
+      label: "Geral",
+      icon: <LayoutDashboard className="w-3.5 h-3.5" />,
+    },
+    {
+      value: "parcelas",
+      label: "Parcelas",
+      icon: <Receipt className="w-3.5 h-3.5" />,
+    },
+    {
+      value: "ausencias",
+      label: "Ausências",
+      icon: <CalendarOff className="w-3.5 h-3.5" />,
+      disabled: (carteirinha?.rotas || []).length === 0,
+      title: (carteirinha?.rotas || []).length === 0 ? "Aluno não possui rota atribuída" : undefined,
+    },
+    {
+      value: "responsaveis",
+      label: "Responsáveis",
+      icon: <Users className="w-3.5 h-3.5" />,
+    },
+    {
+      value: "contrato",
+      label: "Contrato",
+      icon: <FileText className="w-3.5 h-3.5" />,
+      disabled: !carteirinha?.contrato,
+      title: !carteirinha?.contrato ? "Aluno não possui contrato" : undefined,
+    },
+    {
+      value: "dados-pessoais",
+      label: "Dados Pessoais",
+      icon: <User className="w-3.5 h-3.5" />,
+    },
+  ], [carteirinha]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a] flex flex-col">
@@ -100,26 +123,45 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            {passageiros.length > 1 && (
-              <button
-                type="button"
-                onClick={handleSwitchPassageiro}
-                className="flex items-center gap-1.5 rounded-[18px] border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary hover:bg-primary hover:text-white transition-all cursor-pointer"
-              >
-                <ArrowLeftRight className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Trocar Aluno</span>
-              </button>
-            )}
+          <h1 className="text-sm sm:text-base font-bold text-[#0a0a0a] tracking-tight">
+            Carteirinha Digital
+          </h1>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] px-3.5 py-1.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-all cursor-pointer"
-            >
-              <LogOut className="h-3.5 w-3.5 text-[#737373]" />
-              <span>Sair</span>
-            </button>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-full bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                  title="Menu de opções"
+                >
+                  <MoreVertical className="h-4.5 w-4.5 text-[#0a0a0a]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-[18px] p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+                {passageiros.length > 1 && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={handleSwitchPassageiro}
+                      className="rounded-[12px] py-2.5 px-3 text-xs font-medium cursor-pointer text-[#0a0a0a] flex items-center gap-2.5 focus:bg-[#f5f5f5]"
+                    >
+                      <ArrowLeftRight className="h-4 w-4 text-[#737373]" />
+                      <span>Trocar de Aluno</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="rounded-[12px] py-2.5 px-3 text-xs font-medium cursor-pointer text-[#e7000b] focus:text-[#e7000b] focus:bg-rose-50 flex items-center gap-2.5"
+                >
+                  <LogOut className="h-4 w-4 text-[#e7000b]" />
+                  <span>Sair da Conta</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -145,54 +187,16 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
               {/* Header do Aluno */}
               <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="overflow-x-auto no-scrollbar bg-[#f5f5f5] border border-[#e5e5e5] p-1 rounded-[22px]">
-                  <TabsList ref={tabListRef} className="flex min-w-full w-max md:w-full md:grid md:grid-cols-6 min-h-[38px] sm:min-h-[42px] bg-transparent p-0 gap-1 text-xs sm:text-sm">
-                    <TabsTrigger
-                      value="geral"
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Geral
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="parcelas"
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Parcelas
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="ausencias"
-                      disabled={(carteirinha.rotas || []).length === 0}
-                      title={(carteirinha.rotas || []).length === 0 ? "Aluno não possui rota atribuída" : undefined}
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Ausências
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="responsaveis"
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Responsáveis
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="contrato"
-                      disabled={!carteirinha.contrato}
-                      title={!carteirinha.contrato ? "Aluno não possui contrato" : undefined}
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Contrato
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="dados-pessoais"
-                      className="rounded-[18px] px-4 py-2 font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer text-center flex items-center justify-center whitespace-nowrap"
-                    >
-                      Dados Pessoais
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <AppTabNav
+                  items={tabItems}
+                  activeTab={activeTab}
+                  layout="auto"
+                  autoScrollToActive
+                />
 
                 <TabsContent value="geral" className="mt-5 outline-none space-y-5">
-                  <ResponsavelCarteirinhaGeral carteirinha={carteirinha} onRefresh={refetch} onSelectTab={handleTabChange} />
+                  <ResponsavelCarteirinhaGeral carteirinha={carteirinha} onRefresh={refetch} onSelectTab={setActiveTab} />
                 </TabsContent>
 
                 <TabsContent value="dados-pessoais" className="mt-5 outline-none space-y-5">

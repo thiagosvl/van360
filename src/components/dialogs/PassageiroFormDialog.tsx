@@ -241,7 +241,7 @@ export default function PassengerFormDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-              className="space-y-6 pb-6"
+              className="space-y-8 pb-6"
             >
               <section>
                 <PassageiroFormDadosCadastrais
@@ -252,21 +252,15 @@ export default function PassengerFormDialog({
                 />
               </section>
 
-              <hr className="border-[#e5e5e5]" />
-
               <section>
                 <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
               </section>
-
-              <hr className="border-[#e5e5e5]" />
 
               <section>
                 <PassageiroFormFinanceiro
                   editingPassageiro={editingPassageiro}
                 />
               </section>
-
-              <hr className="border-[#e5e5e5]" />
 
               <section>
                 <PassageiroFormEndereco />

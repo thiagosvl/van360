@@ -14,9 +14,15 @@ interface FormEnderecoFieldsProps {
   required?: boolean;
   isExternal?: boolean;
   namePrefix?: string;
+  inputClassName?: string;
 }
 
-export function FormEnderecoFields({ required = false, isExternal = false, namePrefix = "" }: FormEnderecoFieldsProps) {
+export function FormEnderecoFields({
+  required = false,
+  isExternal = false,
+  namePrefix = "",
+  inputClassName,
+}: FormEnderecoFieldsProps) {
   const form = useFormContext();
   const [isCepLoading, setIsCepLoading] = useState(false);
 
@@ -88,37 +94,40 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
         control={form.control}
         name={`${namePrefix}cep`}
         render={({ field, fieldState }) => (
-          <CepInput
-            field={field}
-            required={required}
-            label="CEP"
-            className="col-span-2 sm:col-span-2"
-            labelClassName="text-[#0a0a0a] font-medium text-xs"
-            inputClassName=""
-            onLoadingChange={setIsCepLoading}
-            isExternal={isExternal}
-            namePrefix={namePrefix}
-            error={!!fieldState.error}
-          />
-        )}
-      />
+            <CepInput
+              field={field}
+              required={required}
+              label="CEP"
+              className="col-span-2 sm:col-span-2"
+              labelClassName="text-[#0a0a0a] font-medium text-xs"
+              inputClassName={inputClassName || ""}
+              onLoadingChange={setIsCepLoading}
+              isExternal={isExternal}
+              namePrefix={namePrefix}
+              error={!!fieldState.error}
+            />
+          )}
+        />
 
-      <FormField
-        control={form.control}
-        name={`${namePrefix}logradouro`}
-        render={({ field, fieldState }) => (
-          <FormItem className="col-span-2 sm:col-span-4 relative space-y-1.5">
-            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Logradouro {required && <span className="text-[#e7000b]">*</span>}
-            </FormLabel>
-            <FormControl>
-              <div className="relative">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                <Input
-                  {...field}
-                  autoComplete="off"
-                  placeholder="Ex: Rua Comendador"
-                  className="pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+        <FormField
+          control={form.control}
+          name={`${namePrefix}logradouro`}
+          render={({ field, fieldState }) => (
+            <FormItem className="col-span-2 sm:col-span-4 relative space-y-1.5">
+              <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                Logradouro {required && <span className="text-[#e7000b]">*</span>}
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                  <Input
+                    {...field}
+                    autoComplete="off"
+                    placeholder="Ex: Rua Comendador"
+                    className={cn(
+                      "pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                      inputClassName
+                    )}
                   aria-invalid={!!fieldState.error}
                   disabled={isCepLoading}
                   onChange={(e) => {
@@ -193,7 +202,10 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                 <Input
                   {...field}
                   placeholder="Nº"
-                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  className={cn(
+                    "px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                    inputClassName
+                  )}
                   aria-invalid={!!fieldState.error}
                 />
               </div>
@@ -217,7 +229,10 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                   {...field}
                   value={field.value || ""}
                   placeholder="Ex: Apto 101"
-                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  className={cn(
+                    "px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                    inputClassName
+                  )}
                   aria-invalid={!!fieldState.error}
                   disabled={isCepLoading}
                 />
@@ -241,7 +256,10 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                 <Input
                   {...field}
                   placeholder="Ex: Centro"
-                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  className={cn(
+                    "px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                    inputClassName
+                  )}
                   aria-invalid={!!fieldState.error}
                   disabled={isCepLoading}
                 />
@@ -265,7 +283,10 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                 <Input
                   {...field}
                   placeholder="Ex: São Paulo"
-                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  className={cn(
+                    "px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                    inputClassName
+                  )}
                   aria-invalid={!!fieldState.error}
                   disabled={isCepLoading}
                 />
@@ -291,6 +312,7 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                 disabled={isCepLoading}
                 error={!!fieldState.error}
                 icon={<MapPin className="h-4 w-4" />}
+                className={inputClassName}
               >
                 <option value="" disabled hidden>UF</option>
                 {ESTADOS_BRASILEIROS.map((estado) => (
@@ -319,7 +341,10 @@ export function FormEnderecoFields({ required = false, isExternal = false, nameP
                   {...field}
                   value={field.value || ""}
                   placeholder="Ex: Próximo ao mercado..."
-                  className="px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                  className={cn(
+                    "px-3.5 sm:px-4 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                    inputClassName
+                  )}
                   aria-invalid={!!fieldState.error}
                 />
               </div>

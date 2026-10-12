@@ -76,13 +76,13 @@ function LoginPlatformSuggestion() {
             href={PLAY_STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
+            className="inline-flex items-center hover:-translate-y-0.5 active:scale-95 transition-transform"
             aria-label="Baixar Van360 na Play Store"
           >
             <img
               src={PLAY_STORE_BADGE_URL}
               alt="Disponível no Google Play"
-              className="h-10 sm:h-12 w-auto object-contain"
+              className="h-9 sm:h-10 w-auto object-contain"
             />
           </a>
         )}
@@ -91,13 +91,13 @@ function LoginPlatformSuggestion() {
             href={APP_STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center hover:-translate-y-0.5 transition-transform"
+            className="inline-flex items-center hover:-translate-y-0.5 active:scale-95 transition-transform"
             aria-label="Baixar Van360 na App Store"
           >
             <img
               src={APP_STORE_BADGE_URL}
               alt="Baixar na App Store"
-              className="h-10 sm:h-12 w-auto object-contain"
+              className="h-9 sm:h-10 w-auto object-contain"
             />
           </a>
         )}

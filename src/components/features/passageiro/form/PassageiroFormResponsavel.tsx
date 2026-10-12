@@ -36,9 +36,9 @@ export function PassageiroFormResponsavel({
 
   return (
     <div className="space-y-8">
-      <div id="section-responsavel-financeiro" className="space-y-5">
-        <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-5">
-          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+      <div id="section-responsavel-financeiro" className="space-y-4">
+        <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
             <Contact className="w-4 h-4" />
           </div>
           Responsável Financeiro
@@ -207,11 +207,9 @@ export function PassageiroFormResponsavel({
         </div>
       </div>
 
-      {!isExternal && <hr className="border-[#e5e5e5]" />}
-
-      <div id="section-endereco-principal" className="space-y-5">
-        <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-5">
-          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+      <div id="section-endereco-principal" className="space-y-4">
+        <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+          <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
             <MapPin className="w-4 h-4" />
           </div>
           Endereço Principal

@@ -5,6 +5,7 @@ import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { FileSignature, CalendarOff, ArrowRight, User, Receipt, Users, FileText, ChevronRight } from "lucide-react";
 import { openBrowserLink } from "@/utils/browser";
 import { TrackingCard } from "@/components/features/tracking/TrackingCard";
+import { cn } from "@/lib/utils";
 
 interface ResponsavelCarteirinhaGeralProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -44,31 +45,34 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
       />
 
       {contratoPendente && (
-        <button
-          type="button"
-          onClick={handleAssinarContrato}
-          className="w-full bg-primary hover:bg-primary-hover text-white rounded-[24px] p-4 shadow-sm transition-all active:scale-[0.99] flex items-center justify-between gap-3 text-left border border-primary/20 cursor-pointer"
-        >
+        <div className="bg-white rounded-[24px] border border-amber-500/30 bg-gradient-to-r from-amber-500/[0.06] to-transparent p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-[18px] bg-white/20 flex items-center justify-center shrink-0">
-              <FileSignature className="w-5 h-5 text-white" />
+            <div className="w-11 h-11 rounded-[16px] bg-amber-500/15 border border-amber-500/25 flex items-center justify-center shrink-0 text-amber-700">
+              <FileSignature className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <span className="block font-semibold text-sm sm:text-[15px] leading-tight text-white truncate">
-                Assinar Contrato
+              <span className="block font-semibold text-sm sm:text-base text-[#0a0a0a] leading-tight truncate">
+                Contrato Aguardando Assinatura
               </span>
-              <span className="text-[11px] sm:text-xs text-white/80 font-normal block truncate mt-0.5">
-                Pendente de assinatura online
+              <span className="text-xs text-[#737373] mt-0.5 block truncate">
+                O contrato de transporte escolar está pronto para assinatura online.
               </span>
             </div>
           </div>
-          <ArrowRight className="w-5 h-5 text-white/90 shrink-0" />
-        </button>
+          <button
+            type="button"
+            onClick={handleAssinarContrato}
+            className="h-10 px-4 rounded-[18px] bg-primary hover:bg-[#1d4ed8] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] cursor-pointer shrink-0"
+          >
+            <span>Assinar Agora</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
       <section className="space-y-3">
         <div className="px-0.5">
-          <h2 className="text-[15px] sm:text-base font-semibold text-[#0a0a0a]">
+          <h2 className="text-[15px] sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
             Acesso Rápido
           </h2>
           <p className="text-xs text-[#737373] mt-0.5">
@@ -76,77 +80,105 @@ export const ResponsavelCarteirinhaGeral: React.FC<ResponsavelCarteirinhaGeralPr
           </p>
         </div>
 
-        <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-[#e5e5e5]">
-            <button
-              type="button"
-              onClick={() => handleTabClick("parcelas")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-r border-b border-[#e5e5e5]"
-            >
-              <Receipt className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
-              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
-                Parcelas
-              </span>
-            </button>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 min-[360px]:gap-2.5 min-[390px]:gap-3 pt-1">
+          <button
+            type="button"
+            onClick={() => handleTabClick("parcelas")}
+            className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
+          >
+            <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
+              <Receipt className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
+              Parcelas
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                if (temRotas) {
-                  setAusenciaDialogOpen(true);
-                }
-              }}
-              disabled={!temRotas}
-              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-[#e5e5e5] ${
-                temRotas
-                  ? "hover:bg-[#fafafa] active:bg-[#f5f5f5] cursor-pointer"
-                  : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <CalendarOff className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
-              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
-                Ausências
-              </span>
-            </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (temRotas) {
+                setAusenciaDialogOpen(true);
+              }
+            }}
+            disabled={!temRotas}
+            title={!temRotas ? "Aluno não possui rota atribuída" : undefined}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs transition-all group w-full aspect-square text-center gap-1.5 relative",
+              temRotas
+                ? "hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] cursor-pointer hover:bg-[#fafafa]"
+                : "opacity-40 cursor-not-allowed"
+            )}
+          >
+            <div className={cn(
+              "w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] flex items-center justify-center shrink-0 transition-transform duration-200 relative",
+              temRotas
+                ? "bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105"
+                : "bg-[#f5f5f5] text-[#737373]"
+            )}>
+              <CalendarOff className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className={cn(
+              "text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors",
+              temRotas ? "text-[#171717] group-hover:text-primary" : "text-[#737373]"
+            )}>
+              Ausências
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => handleTabClick("responsaveis")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-r border-b border-[#e5e5e5]"
-            >
-              <Users className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
-              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
-                Responsáveis
-              </span>
-            </button>
+          <button
+            type="button"
+            onClick={() => handleTabClick("responsaveis")}
+            className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
+          >
+            <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
+              <Users className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
+              Responsáveis
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => temContrato && handleTabClick("contrato")}
-              disabled={!temContrato}
-              className={`flex flex-col items-center justify-center p-4 sm:p-5 text-center transition-colors group border-r border-b border-[#e5e5e5] ${
-                temContrato
-                  ? "hover:bg-[#fafafa] active:bg-[#f5f5f5] cursor-pointer"
-                  : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <FileText className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
-              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
-                Contrato
-              </span>
-            </button>
+          <button
+            type="button"
+            onClick={() => temContrato && handleTabClick("contrato")}
+            disabled={!temContrato}
+            title={!temContrato ? "Aluno não possui contrato" : undefined}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs transition-all group w-full aspect-square text-center gap-1.5 relative",
+              temContrato
+                ? "hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] cursor-pointer hover:bg-[#fafafa]"
+                : "opacity-40 cursor-not-allowed"
+            )}
+          >
+            <div className={cn(
+              "w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] flex items-center justify-center shrink-0 transition-transform duration-200 relative",
+              temContrato
+                ? "bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105"
+                : "bg-[#f5f5f5] text-[#737373]"
+            )}>
+              <FileText className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className={cn(
+              "text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors",
+              temContrato ? "text-[#171717] group-hover:text-primary" : "text-[#737373]"
+            )}>
+              Contrato
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => handleTabClick("dados-pessoais")}
-              className="flex flex-col items-center justify-center p-4 sm:p-5 text-center hover:bg-[#fafafa] active:bg-[#f5f5f5] transition-colors group cursor-pointer border-b border-[#e5e5e5]"
-            >
-              <User className="w-6 h-6 text-[#0a0a0a] mb-2 group-hover:text-primary group-hover:scale-105 transition-all stroke-[1.75]" />
-              <span className="text-xs sm:text-[13px] font-medium text-[#0a0a0a] group-hover:text-primary leading-tight transition-colors">
-                Dados Pessoais
-              </span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleTabClick("dados-pessoais")}
+            className="flex flex-col items-center justify-center p-2 min-[360px]:p-2.5 rounded-[18px] min-[360px]:rounded-[20px] bg-white border border-[#e5e5e5] shadow-2xs hover:shadow-xs hover:border-[#d4d4d4] active:scale-[0.97] transition-all group cursor-pointer w-full aspect-square text-center gap-1.5 relative hover:bg-[#fafafa]"
+          >
+            <div className="w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 rounded-[12px] min-[360px]:rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 relative">
+              <User className="w-[18px] h-[18px] min-[360px]:w-5 min-[360px]:h-5 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] min-[360px]:text-xs font-medium leading-[1.2] text-center w-full px-0.5 line-clamp-2 transition-colors text-[#171717] group-hover:text-primary">
+              Dados Pessoais
+            </span>
+          </button>
         </div>
       </section>
 

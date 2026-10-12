@@ -435,7 +435,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </div>
 
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Pix com baixa automática e repasse. Taxa de {taxaFormatada}/parcela.
+                  Baixa automática na hora e repasse via Pix. Taxa de {taxaFormatada} por parcela paga.
                 </p>
               </div>
             </button>

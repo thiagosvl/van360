@@ -5,6 +5,7 @@ import { ResponsavelPassageiro } from "@/types/responsavel";
 import { formatShortName } from "@/utils/formatters/name";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { Bus, ChevronRight, LogOut, User } from "lucide-react";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -85,6 +86,12 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
                   </div>
                 ))}
               </div>
+            ) : passageiros.length === 0 ? (
+              <UnifiedEmptyState
+                icon={User}
+                title="Nenhum aluno encontrado"
+                description="Não localizamos carteirinhas de alunos atreladas a este telefone."
+              />
             ) : (
               <div className="grid gap-3 min-w-0">
                 {passageiros.map((p) => (
@@ -109,7 +116,9 @@ export const ResponsavelSelecionarPassageiro: React.FC = () => {
                       </div>
                     </div>
 
-                    <ChevronRight className="h-5 w-5 text-[#737373] group-hover:text-primary transition-colors shrink-0 ml-2" />
+                    <div className="h-8 w-8 rounded-[12px] bg-[#f5f5f5] group-hover:bg-primary/10 text-[#737373] group-hover:text-primary flex items-center justify-center transition-colors shrink-0 ml-2">
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
                   </button>
                 ))}
               </div>

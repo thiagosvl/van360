@@ -47,8 +47,8 @@ export function PassageiroFormFinanceiro({
 
   return (
     <div id="section-parcelas" className="space-y-6">
-      <div className="flex items-center gap-3 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-6">
-        <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] flex-shrink-0">
+      <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+        <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
           <DollarSign className="w-4 h-4" />
         </div>
         Parcelas

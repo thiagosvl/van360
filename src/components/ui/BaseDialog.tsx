@@ -252,7 +252,7 @@ const BaseDialogAction = ({
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(
-        "flex-1 h-11 rounded-[18px] font-medium text-xs sm:text-sm transition-all active:scale-95",
+        "flex-1 h-11 rounded-[18px] font-semibold text-xs sm:text-sm transition-all active:scale-95",
         styles[variant],
         className
       )}

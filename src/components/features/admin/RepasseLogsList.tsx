@@ -18,6 +18,7 @@ import {
   DollarSign,
   User,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { AdminRepasseItem, RepasseFiltersState, StatusRepasse } from "@/types/admin-repasse";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,9 @@ import { toast } from "sonner";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { formatDateTimeToBR, formatRelativeTime } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
+import { useAdminDeleteRepasse } from "@/hooks/api/admin/useAdminRepasseHooks";
 import { phoneMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -101,8 +105,23 @@ export function RepasseLogsList({
   isRetryingId,
   showPeriodFilter,
 }: RepasseLogsListProps) {
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const deleteRepasseMutation = useAdminDeleteRepasse();
   const [selectedRepasse, setSelectedRepasse] = useState<AdminRepasseItem | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  const handleDeleteRepasse = (item: AdminRepasseItem) => {
+    openConfirmationDialog({
+      title: "Excluir registro de repasse?",
+      description: `Deseja realmente excluir este registro de repasse no valor de ${formatCurrency(item.valor_bruto)}? Esta ação removerá o registro da plataforma e é irreversível.`,
+      confirmText: "Sim, Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        await deleteRepasseMutation.mutateAsync(item.id);
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
 
   const handleCopy = (text?: string | null) => {
     if (!text) return;
@@ -213,14 +232,21 @@ export function RepasseLogsList({
 
                       {!hideDriverColumn && (
                         <td className="py-3.5 px-4">
-                          <Link
-                            to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
-                            className="font-semibold text-primary hover:underline flex items-center gap-1.5"
-                          >
-                            <User className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <span className="truncate max-w-[160px]">{item.motorista.nome}</span>
-                          </Link>
-                          {item.motorista.telefone && (
+                          {item.motorista?.id ? (
+                            <Link
+                              to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
+                              className="font-semibold text-primary hover:underline flex items-center gap-1.5"
+                            >
+                              <User className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span className="truncate max-w-[160px]">{item.motorista.nome}</span>
+                            </Link>
+                          ) : (
+                            <div className="font-semibold text-muted-foreground flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <span className="truncate max-w-[160px]">{item.motorista?.nome || "Motorista excluído"}</span>
+                            </div>
+                          )}
+                          {item.motorista?.telefone && (
                             <span className="text-[11px] text-muted-foreground font-mono block">
                               {phoneMask(item.motorista.telefone)}
                             </span>
@@ -280,6 +306,21 @@ export function RepasseLogsList({
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={deleteRepasseMutation.isPending && deleteRepasseMutation.variables === item.id}
+                            onClick={() => handleDeleteRepasse(item)}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                            title="Excluir repasse"
+                          >
+                            {deleteRepasseMutation.isPending && deleteRepasseMutation.variables === item.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -315,12 +356,18 @@ export function RepasseLogsList({
                   {!hideDriverColumn && (
                     <div className="text-xs flex items-center justify-between">
                       <span className="text-muted-foreground">Motorista:</span>
-                      <Link
-                        to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
-                        className="font-semibold text-primary hover:underline truncate max-w-[200px]"
-                      >
-                        {item.motorista.nome}
-                      </Link>
+                      {item.motorista?.id ? (
+                        <Link
+                          to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
+                          className="font-semibold text-primary hover:underline truncate max-w-[200px]"
+                        >
+                          {item.motorista.nome}
+                        </Link>
+                      ) : (
+                        <span className="font-semibold text-muted-foreground truncate max-w-[200px]">
+                          {item.motorista?.nome || "Motorista excluído"}
+                        </span>
+                      )}
                     </div>
                   )}
 
@@ -377,6 +424,21 @@ export function RepasseLogsList({
                     >
                       <Eye className="h-3.5 w-3.5" />
                       <span>Detalhes</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={deleteRepasseMutation.isPending && deleteRepasseMutation.variables === item.id}
+                      onClick={() => handleDeleteRepasse(item)}
+                      className="h-8 px-2.5 bg-destructive/10 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30 text-xs rounded-xl gap-1.5"
+                    >
+                      {deleteRepasseMutation.isPending && deleteRepasseMutation.variables === item.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      <span>Excluir</span>
                     </Button>
                   </div>
                 </div>

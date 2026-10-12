@@ -9,27 +9,43 @@ interface ResponsavelCarteirinhaHeaderProps {
   carteirinha: ResponsavelCarteirinhaData;
 }
 
+const formatSalaExibicao = (sala?: string | null) => {
+  if (!sala || !sala.trim()) return "";
+  const trimmed = sala.trim();
+  return /^sala\s*/i.test(trimmed) ? trimmed : `Sala ${trimmed}`;
+};
+
 export const ResponsavelCarteirinhaHeader: React.FC<ResponsavelCarteirinhaHeaderProps> = ({ carteirinha }) => {
-  const temCobrancasVencidas = carteirinha.cobrancas?.some(c => c.status === "vencido") ?? false;
+  const temCobrancasVencidas = carteirinha.cobrancas?.some((c) => c.status === "vencido") ?? false;
+
+  const subtituloPartes: string[] = [];
+  if (carteirinha.escola_nome) subtituloPartes.push(carteirinha.escola_nome);
+  if (carteirinha.turma) subtituloPartes.push(carteirinha.turma);
+  if (carteirinha.sala) {
+    const salaFormatada = formatSalaExibicao(carteirinha.sala);
+    if (salaFormatada) subtituloPartes.push(salaFormatada);
+  }
+  const subtituloEscola = subtituloPartes.join(" • ");
 
   return (
-    <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-6 shadow-sm overflow-hidden border border-white/10">
+    <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-6 shadow-sm border border-white/10 overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[35%] bg-white/5 rounded-t-[24px] pointer-events-none z-0" />
       <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/5 blur-xl pointer-events-none" />
-      <div className="relative z-10 w-full flex flex-col items-center px-4 pt-6 pb-6 sm:pt-8 sm:pb-8">
-        <div className="rounded-full bg-white/10 p-1 shrink-0 backdrop-blur-xs">
-          <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-[#183659] border-2 border-white/20 flex items-center justify-center overflow-hidden text-white shadow-xs">
-            <User className="w-8 h-8 sm:w-10 sm:h-10 text-white/90" />
+
+      <div className="relative z-10 w-full flex flex-col items-center px-4 pt-7 pb-7">
+        <div className="rounded-full bg-white/10 p-1 shadow-sm shrink-0 backdrop-blur-xs">
+          <div className="h-16 w-16 rounded-full bg-[#183659] border-2 border-white/20 flex items-center justify-center shadow-xs">
+            <User className="w-8 h-8 text-white fill-current" />
           </div>
         </div>
 
         <div className="text-center mt-3 w-full px-2">
-          <h2 className="text-xl md:text-[22px] font-semibold text-white tracking-tight leading-snug">
+          <h2 className="text-xl md:text-[22px] font-bold text-white tracking-tight leading-snug break-words">
             {carteirinha.nome}
           </h2>
-          {carteirinha.escola_nome && (
-            <p className="text-xs sm:text-sm font-normal text-white/70 mt-1">
-              {carteirinha.escola_nome} {carteirinha.turma ? `• ${carteirinha.turma}` : ""} {carteirinha.sala ? `• Sala ${carteirinha.sala}` : ""}
+          {subtituloEscola && (
+            <p className="text-xs sm:text-sm font-normal text-white/70 mt-1 max-w-md mx-auto truncate">
+              {subtituloEscola}
             </p>
           )}
         </div>
@@ -37,35 +53,35 @@ export const ResponsavelCarteirinhaHeader: React.FC<ResponsavelCarteirinhaHeader
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4">
           <Badge
             className={cn(
-              "rounded-[18px] border-none px-3 py-1 text-[11px] font-medium tracking-tight",
+              "px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs",
               carteirinha.ativo
-                ? "bg-emerald-500/20 text-emerald-300"
-                : "bg-rose-500/20 text-rose-300"
+                ? "text-emerald-950 bg-emerald-300"
+                : "text-rose-950 bg-rose-200"
             )}
           >
             {carteirinha.ativo ? "Ativo" : "Inativo"}
           </Badge>
 
           {carteirinha.isento ? (
-            <Badge className="rounded-[18px] border-none px-3 py-1 text-[11px] font-medium tracking-tight bg-sky-500/20 text-sky-300">
+            <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs text-sky-950 bg-sky-200">
               Isento
             </Badge>
           ) : (
             temCobrancasVencidas && (
-              <Badge className="rounded-[18px] border-none px-3 py-1 text-[11px] font-medium tracking-tight bg-[#e7000b]/20 text-[#ff6b6b]">
+              <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs bg-rose-500 text-white animate-pulse">
                 Possui Débitos
               </Badge>
             )
           )}
 
           {carteirinha.periodo && (
-            <Badge className="rounded-[18px] border-none px-3 py-1 text-[11px] font-medium tracking-tight bg-white/10 text-white">
+            <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs bg-white/15 text-white">
               {formatPeriodo(carteirinha.periodo)}
             </Badge>
           )}
 
           {carteirinha.modalidade && (
-            <Badge className="rounded-[18px] border-none px-3 py-1 text-[11px] font-medium tracking-tight bg-white/10 text-white">
+            <Badge className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-[18px] border-none shadow-2xs bg-white/15 text-white">
               {formatModalidade(carteirinha.modalidade)}
             </Badge>
           )}

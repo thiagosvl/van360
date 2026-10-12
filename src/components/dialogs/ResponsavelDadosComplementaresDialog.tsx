@@ -203,16 +203,16 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
 
       <BaseDialog.Body>
         <Form {...form}>
-          <form id="form-dados-complementares" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-2 text-left">
+          <form id="form-dados-complementares" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 py-2 text-left">
             <Banner
               variant="warning"
               title="Por favor, complete as informações pendentes do seu cadastro para continuar."
             />
 
             {needsPersonalData && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a] mb-3">
-                  <div className="w-8 h-8 rounded-[12px] bg-[#f5f5f5] flex items-center justify-center text-[#0a0a0a] border border-[#e5e5e5] shadow-xs shrink-0">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                     <UserCheck className="w-4 h-4" />
                   </div>
                   Dados Pessoais
@@ -279,14 +279,10 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
               </section>
             )}
 
-            {needsPersonalData && needsAddress && (
-              <hr className="border-[#e5e5e5]" />
-            )}
-
             {needsAddress && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a] mb-3">
-                  <div className="w-8 h-8 rounded-[12px] bg-[#f5f5f5] flex items-center justify-center text-[#0a0a0a] border border-[#e5e5e5] shadow-xs shrink-0">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
                   Endereço

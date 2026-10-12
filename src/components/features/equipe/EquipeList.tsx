@@ -6,11 +6,11 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { MembroEquipe } from "@/types/equipe";
 import { UserType } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters/name";
-import { phoneMask } from "@/utils/masks";
-import { Car, ChevronRight, Edit, KeyRound, Mail, Phone, Trash2, UserCheck, Users2, XCircle, CheckCircle2 } from "lucide-react";
-import { memo, useState } from "react";
+import { Car, Edit, KeyRound, Mail, Phone, Trash2, UserCheck, Users2, XCircle, CheckCircle2 } from "lucide-react";
 import { EquipeSummary } from "./EquipeSummary";
 import { cn } from "@/lib/utils";
+import { memo, useState } from "react";
+import { phoneMask } from "@/utils/masks";
 
 interface EquipeListProps {
   membros: MembroEquipe[];
@@ -99,7 +99,6 @@ const EquipeMobileCard = memo(function EquipeMobileCard({
 
         <div className="flex items-center gap-2 shrink-0">
           <StatusBadge status={membro.ativo !== false} />
-          <ChevronRight className="w-4 h-4 text-[#737373]/50 group-hover:text-[#0a0a0a] transition-colors" />
         </div>
       </div>
     </MobileActionItem>
@@ -120,12 +119,148 @@ export const EquipeList = memo(function EquipeList({
     <>
       <ResponsiveDataList
         data={membros}
-      mobileContainerClassName="space-y-2.5"
-      mobileItemRenderer={(membro, index) => (
-        <EquipeMobileCard
-          key={membro.id}
-          membro={membro}
-          index={index}
+        mobileContainerClassName="space-y-2.5"
+        mobileItemRenderer={(membro, index) => (
+          <EquipeMobileCard
+            key={membro.id}
+            membro={membro}
+            index={index}
+            isGestor={isGestor}
+            onEdit={onEdit}
+            onResetPassword={onResetPassword}
+            onToggleStatus={onToggleStatus}
+            onDelete={onDelete}
+          />
+        )}
+      >
+        <div className="rounded-[24px] overflow-hidden bg-white border border-[#e5e5e5] shadow-xs">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
+                <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Membro
+                </th>
+                <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Contato
+                </th>
+                <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Veículo Atribuído
+                </th>
+                <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e5e5e5]">
+              {membros.map((membro) => {
+                const isMonitor = membro.tipo === UserType.MONITOR;
+                const displayName = membro.apelido ? `${membro.nome} (${membro.apelido})` : membro.nome;
+
+                const desktopActions = [
+                  {
+                    label: "Editar Dados",
+                    icon: <Edit className="w-4 h-4" />,
+                    onClick: () => onEdit(membro),
+                  },
+                  {
+                    label: "Redefinir Senha",
+                    icon: <KeyRound className="w-4 h-4" />,
+                    onClick: () => onResetPassword(membro),
+                  },
+                  ...(isGestor
+                    ? [
+                      {
+                        label: membro.ativo !== false ? "Desativar Acesso" : "Ativar Acesso",
+                        icon: membro.ativo !== false ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />,
+                        isDestructive: membro.ativo !== false,
+                        onClick: () => onToggleStatus(membro),
+                      },
+                      {
+                        label: "Excluir",
+                        icon: <Trash2 className="w-4 h-4" />,
+                        isDestructive: true,
+                        onClick: () => onDelete(membro),
+                      },
+                    ]
+                    : []),
+                ];
+
+                return (
+                  <tr
+                    key={membro.id}
+                    onClick={() => setSelectedMembro(membro)}
+                    className="group hover:bg-[#fafafa]/80 transition-colors cursor-pointer"
+                  >
+                    <td className="px-6 py-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] shrink-0">
+                          {isMonitor ? <Users2 className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <p className="font-semibold text-[#0a0a0a] text-sm tracking-tight truncate max-w-[220px]">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-[#737373] font-normal">
+                            {isMonitor ? "Monitor" : "Motorista"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 align-middle">
+                      <div className="flex flex-col text-xs space-y-0.5">
+                        <span className="text-[#0a0a0a] font-medium flex items-center gap-1.5">
+                          <Phone className="w-3 h-3 text-[#737373]" />
+                          {phoneMask(membro.telefone || "")}
+                        </span>
+                        <span className="text-[#737373] truncate max-w-[200px] flex items-center gap-1.5">
+                          <Mail className="w-3 h-3 text-[#737373]" />
+                          {membro.email}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 align-middle">
+                      {membro.veiculos ? (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Car className="w-4 h-4 text-[#737373] shrink-0" />
+                          <span className="text-[#0a0a0a] font-medium">
+                            {membro.veiculos.modelo} <span className="text-[#737373]">({membro.veiculos.placa})</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-[#737373]/70 font-normal">Não atribuído</span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 align-middle">
+                      <StatusBadge status={membro.ativo !== false} />
+                    </td>
+
+                    <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
+                      <ActionsDropdown
+                        actions={desktopActions}
+                        title="Opções do Membro"
+                        description={membro.nome}
+                        header={<EquipeSummary membro={membro} />}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </ResponsiveDataList>
+
+      {selectedMembro && (
+        <ActionSheetWrapper
+          membro={selectedMembro}
+          open={!!selectedMembro}
+          onOpenChange={(open) => !open && setSelectedMembro(null)}
           isGestor={isGestor}
           onEdit={onEdit}
           onResetPassword={onResetPassword}
@@ -133,142 +268,6 @@ export const EquipeList = memo(function EquipeList({
           onDelete={onDelete}
         />
       )}
-    >
-      <div className="rounded-[24px] overflow-hidden bg-white border border-[#e5e5e5] shadow-xs">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-              <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Membro
-              </th>
-              <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Contato
-              </th>
-              <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Veículo Atribuído
-              </th>
-              <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Status
-              </th>
-              <th className="px-6 py-4 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#e5e5e5]">
-            {membros.map((membro) => {
-              const isMonitor = membro.tipo === UserType.MONITOR;
-              const displayName = membro.apelido ? `${membro.nome} (${membro.apelido})` : membro.nome;
-
-              const desktopActions = [
-                {
-                  label: "Editar Dados",
-                  icon: <Edit className="w-4 h-4" />,
-                  onClick: () => onEdit(membro),
-                },
-                {
-                  label: "Redefinir Senha",
-                  icon: <KeyRound className="w-4 h-4" />,
-                  onClick: () => onResetPassword(membro),
-                },
-                ...(isGestor
-                  ? [
-                    {
-                      label: membro.ativo !== false ? "Desativar Acesso" : "Ativar Acesso",
-                      icon: membro.ativo !== false ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />,
-                      isDestructive: membro.ativo !== false,
-                      onClick: () => onToggleStatus(membro),
-                    },
-                    {
-                      label: "Excluir",
-                      icon: <Trash2 className="w-4 h-4" />,
-                      isDestructive: true,
-                      onClick: () => onDelete(membro),
-                    },
-                  ]
-                  : []),
-              ];
-
-              return (
-                <tr
-                  key={membro.id}
-                  onClick={() => setSelectedMembro(membro)}
-                  className="group hover:bg-[#fafafa]/80 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] shrink-0">
-                        {isMonitor ? <Users2 className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <p className="font-semibold text-[#0a0a0a] text-sm tracking-tight truncate max-w-[220px]">
-                          {displayName}
-                        </p>
-                        <p className="text-xs text-[#737373] font-normal">
-                          {isMonitor ? "Monitor" : "Motorista"}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex flex-col text-xs space-y-0.5">
-                      <span className="text-[#0a0a0a] font-medium flex items-center gap-1.5">
-                        <Phone className="w-3 h-3 text-[#737373]" />
-                        {phoneMask(membro.telefone || "")}
-                      </span>
-                      <span className="text-[#737373] truncate max-w-[200px] flex items-center gap-1.5">
-                        <Mail className="w-3 h-3 text-[#737373]" />
-                        {membro.email}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 align-middle">
-                    {membro.veiculos ? (
-                      <div className="flex items-center gap-2 text-xs">
-                        <Car className="w-4 h-4 text-[#737373] shrink-0" />
-                        <span className="text-[#0a0a0a] font-medium">
-                          {membro.veiculos.modelo} <span className="text-[#737373]">({membro.veiculos.placa})</span>
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-[#737373]/70 font-normal">Não atribuído</span>
-                    )}
-                  </td>
-
-                  <td className="px-6 py-4 align-middle">
-                    <StatusBadge status={membro.ativo !== false} />
-                  </td>
-
-                  <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
-                    <ActionsDropdown
-                      actions={desktopActions}
-                      title="Opções do Membro"
-                      description={membro.nome}
-                      header={<EquipeSummary membro={membro} />}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </ResponsiveDataList>
-
-    {selectedMembro && (
-      <ActionSheetWrapper
-        membro={selectedMembro}
-        open={!!selectedMembro}
-        onOpenChange={(open) => !open && setSelectedMembro(null)}
-        isGestor={isGestor}
-        onEdit={onEdit}
-        onResetPassword={onResetPassword}
-        onToggleStatus={onToggleStatus}
-        onDelete={onDelete}
-      />
-    )}
     </>
   );
 });

@@ -106,10 +106,11 @@ export const ResponsavelLoginForm: React.FC = () => {
             </div>
 
             {phoneForm.formState.errors.root && (
-              <div className="mt-4 p-3 rounded-[14px] bg-red-50 border border-red-200 flex items-start gap-2 text-xs font-medium text-[#e7000b]">
-                <span className="mt-0.5">⚠️</span>
-                <span>{phoneForm.formState.errors.root.message}</span>
-              </div>
+              <Banner
+                variant="danger"
+                className="mt-4"
+                description={phoneForm.formState.errors.root.message || "Erro ao verificar telefone."}
+              />
             )}
 
             <div className="pt-2 mt-4">
@@ -195,10 +196,11 @@ export const ResponsavelLoginForm: React.FC = () => {
             />
 
             {pinForm.formState.errors.root && (
-              <div className="mt-4 p-3 rounded-[14px] bg-red-50 border border-red-200 flex items-start gap-2 text-xs font-medium text-[#e7000b]">
-                <span className="mt-0.5">⚠️</span>
-                <span>{pinForm.formState.errors.root.message}</span>
-              </div>
+              <Banner
+                variant="danger"
+                className="mt-4"
+                description={pinForm.formState.errors.root.message || "Erro ao verificar senha."}
+              />
             )}
 
             <div className="pt-2 mt-4">

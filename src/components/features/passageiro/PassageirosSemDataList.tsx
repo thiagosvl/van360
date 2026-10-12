@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { formatShortName } from "@/utils/formatters/name";
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { ChevronRight, User } from "lucide-react";
-import { ROUTES } from "@/constants/routes";
+import { User } from "lucide-react";
 import { Aniversariante } from "@/types/passageiro";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { ROUTES } from "@/constants/routes";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 
 interface PassageirosSemDataListProps {
   passageiros: Omit<Aniversariante, "dia">[];
@@ -58,7 +58,6 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
                 </span>
               </div>
             </div>
-            {canEditPassageiro && <ChevronRight className="w-4 h-4 text-[#737373] shrink-0 ml-2" />}
           </div>
         );
       })}

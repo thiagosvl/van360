@@ -202,19 +202,15 @@ export default function MinhaEquipe() {
 
           {isGestor && (
             <TabsContent value="motoristas" className="space-y-4 mt-0 focus-visible:outline-none">
-              {motoristasAuxiliares.length > 0 && (
-                <EquipeToolbar
-                  totalItens={motoristasAuxiliares.length}
-                  totalFiltrados={motoristasFiltrados.length}
-                  searchTerm={busca}
-                  onSearchChange={setBusca}
-                  onNovoRegistro={() => {
-                    setEditingMotorista(null);
-                    setMotoristaDialogOpen(true);
-                  }}
-                  tipoLabel="Motorista"
-                />
-              )}
+              <EquipeToolbar
+                searchTerm={busca}
+                onSearchChange={setBusca}
+                onNovoRegistro={() => {
+                  setEditingMotorista(null);
+                  setMotoristaDialogOpen(true);
+                }}
+                tipoLabel="Motorista"
+              />
 
               {showSkeleton ? (
                 <ListSkeleton count={4} />
@@ -271,19 +267,15 @@ export default function MinhaEquipe() {
           )}
 
           <TabsContent value="monitores" className="space-y-4 mt-0 focus-visible:outline-none">
-            {monitores.length > 0 && (
-              <EquipeToolbar
-                totalItens={monitores.length}
-                totalFiltrados={monitoresFiltrados.length}
-                searchTerm={busca}
-                onSearchChange={setBusca}
-                onNovoRegistro={() => {
-                  setEditingMonitor(null);
-                  setMonitorDialogOpen(true);
-                }}
-                tipoLabel="Monitor"
-              />
-            )}
+            <EquipeToolbar
+              searchTerm={busca}
+              onSearchChange={setBusca}
+              onNovoRegistro={() => {
+                setEditingMonitor(null);
+                setMonitorDialogOpen(true);
+              }}
+              tipoLabel="Monitor"
+            />
 
             {showSkeleton ? (
               <ListSkeleton count={4} />

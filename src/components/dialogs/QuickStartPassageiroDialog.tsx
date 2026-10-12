@@ -267,21 +267,15 @@ export function QuickStartPassageiroDialog({
                   />
                 </section>
 
-                <hr className="border-[#e5e5e5]" />
-
                 <section>
                   <PassageiroFormResponsavel isSearching={fullFormViewModel.isSearchingResponsavel} />
                 </section>
-
-                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormFinanceiro
                     editingPassageiro={null}
                   />
                 </section>
-
-                <hr className="border-[#e5e5e5]" />
 
                 <section>
                   <PassageiroFormEndereco />
@@ -295,73 +289,75 @@ export function QuickStartPassageiroDialog({
               onSubmit={form.handleSubmit((data) => handleSubmit(data, keepOpen), onFormError)}
               className="pb-6 space-y-4"
             >
-              <FormField
-                control={form.control}
-                name="nome"
-                render={({ field, fieldState }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                      Nome do Aluno <span className="text-[#e7000b]">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
-                        <Input
-                          placeholder="Digite o nome completo"
-                          {...field}
-                          className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
-                          aria-invalid={!!fieldState.error}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Nome do Aluno <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
+                          <Input
+                            placeholder="Digite o nome completo"
+                            {...field}
+                            className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="escola_id"
-                render={({ field, fieldState }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                      Escola <span className="text-[#e7000b]">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <NativeSelect
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === "add-new-school") {
-                            openEscolaFormDialog({
-                              allowBatchCreation: false,
-                              onSuccess: (escola) => {
-                                if (escola?.id) {
-                                  setNewEscola(escola);
-                                  form.setValue("escola_id", escola.id, { shouldValidate: true });
-                                }
-                              },
-                            });
-                          } else {
-                            field.onChange(val);
-                          }
-                        }}
-                        icon={<School className="h-4 w-4 text-[#737373]" />}
-                        error={!!fieldState.error}
-                      >
-                        <option value="">Selecionar</option>
-                        {escolasDisplay.map((e) => (
-                          <option key={e.id} value={e.id}>{e.nome}</option>
-                        ))}
-                        <option value="add-new-school">
-                          + Cadastrar Escola
-                        </option>
-                      </NativeSelect>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="escola_id"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Escola <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "add-new-school") {
+                              openEscolaFormDialog({
+                                allowBatchCreation: false,
+                                onSuccess: (escola) => {
+                                  if (escola?.id) {
+                                    setNewEscola(escola);
+                                    form.setValue("escola_id", escola.id, { shouldValidate: true });
+                                  }
+                                },
+                              });
+                            } else {
+                              field.onChange(val);
+                            }
+                          }}
+                          icon={<School className="h-4 w-4 text-[#737373]" />}
+                          error={!!fieldState.error}
+                        >
+                          <option value="">Selecionar</option>
+                          {escolasDisplay.map((e) => (
+                            <option key={e.id} value={e.id}>{e.nome}</option>
+                          ))}
+                          <option value="add-new-school">
+                            + Cadastrar Escola
+                          </option>
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-5 gap-3">
                 <div className="col-span-3">

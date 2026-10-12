@@ -69,7 +69,6 @@ export function SignatureDialog({
           isLoading={isSigning}
           disabled={isSigning}
           icon={<ShieldCheck className="h-4 w-4" />}
-          className="bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/10"
         />
       </BaseDialog.Footer>
     </BaseDialog>

@@ -288,7 +288,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
                     e.stopPropagation();
                     handleStartEditing();
                   }}
-                  className="px-4 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-[18px] shadow-xs active:scale-95 transition-all cursor-pointer"
+                  className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-[18px] shadow-xs active:scale-95 transition-all cursor-pointer"
                 >
                   Toque para assinar
                 </button>

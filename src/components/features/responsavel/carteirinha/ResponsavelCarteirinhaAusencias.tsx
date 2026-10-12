@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Plus, Loader2, Calendar, Bus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Banner } from "@/components/ui/Banner";
 import { ResponsavelCarteirinhaData, ResponsavelAusenciaItem } from "@/types/responsavel";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,6 +45,7 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
   const removerAusenciaMutation = useRemoverAusenciaResponsavelMutation();
 
   const rotas = carteirinha.rotas || [];
+  const hasRotas = rotas.length > 0;
 
   const todayStr = useMemo(() => {
     const d = new Date();
@@ -58,11 +60,11 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
 
   const rotasMap = useMemo(() => {
     const map = new Map<string, string>();
-    (carteirinha.rotas || []).forEach((r) => {
+    rotas.forEach((r) => {
       map.set(r.id, r.nome);
     });
     return map;
-  }, [carteirinha.rotas]);
+  }, [rotas]);
 
   const gruposAusencias = useMemo<GrupoAusenciaResponsavel[]>(() => {
     const map = new Map<string, ResponsavelAusenciaItem[]>();
@@ -104,7 +106,7 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
     if (openConfirmationDialog) {
       openConfirmationDialog({
         title: "Remover Registro de Ausência?",
-        description: `Tem certeza que deseja remover a notificação de ausência do dia ${dateFormatted}?`,
+        description: `Tem certeza que deseja remover o agendamento de ausência do dia ${dateFormatted}?`,
         confirmText: "Confirmar",
         cancelText: "Cancelar",
         variant: "warning",
@@ -134,24 +136,35 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
   };
 
   return (
-    <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 sm:p-6 text-left space-y-4">
+    <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 sm:p-6 text-left space-y-4">
       <div className="flex items-center justify-between text-left min-h-[32px]">
-        <h3 className="text-base font-semibold text-[#0a0a0a]">Ausências</h3>
+        <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Ausências</h3>
 
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setIsAddDialogOpen(true)}
-          className="h-8 rounded-[18px] border font-medium text-xs flex items-center gap-1.5 px-3 transition-all border-[#e5e5e5] bg-[#f5f5f5] hover:bg-[#e5e5e5] text-[#0a0a0a] shadow-none cursor-pointer"
+          disabled={!hasRotas}
+          onClick={() => {
+            if (!hasRotas) return;
+            setIsAddDialogOpen(true);
+          }}
+          className="h-8 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-3.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Plus className="w-3.5 h-3.5" /> Registrar
+          <Plus className="w-3 h-3" /> Registrar
         </Button>
       </div>
 
+      {!hasRotas && (
+        <Banner
+          variant="warning"
+          description="Este aluno não está vinculado a nenhuma rota, portanto não é possível registrar ausências."
+        />
+      )}
+
       {gruposAusencias.length === 0 ? (
-        <div className="p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] text-center space-y-1">
-          <p className="text-xs text-[#737373]">
+        <div className="p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] text-center space-y-2">
+          <p className="text-xs text-[#737373] font-medium">
             Nenhuma ausência futura agendada para este aluno.
           </p>
         </div>

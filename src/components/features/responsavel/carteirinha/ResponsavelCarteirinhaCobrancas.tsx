@@ -110,10 +110,17 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
   }>({ open: false, url: null });
 
   const [annualReceiptOpen, setAnnualReceiptOpen] = useState(false);
+  const [selectedReciboAnual, setSelectedReciboAnual] = useState<{
+    id: string;
+    ano: number;
+    recibo_url: string;
+    total_pago: number;
+    quantidade_meses: number;
+  } | null>(null);
 
-  const reciboAnualDoAno = useMemo(() => {
-    return carteirinha.recibos_anuais?.find((r) => r.ano === currentYear) || null;
-  }, [carteirinha.recibos_anuais, currentYear]);
+  const recibosAnuaisOrdenados = useMemo(() => {
+    return [...(carteirinha.recibos_anuais || [])].sort((a, b) => b.ano - a.ano);
+  }, [carteirinha.recibos_anuais]);
 
   const handleOpenReceiptDialog = (url: string, descricao?: string) => {
     setReceiptDialogState({ open: true, url, descricao });
@@ -136,14 +143,22 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
   return (
     <div className="space-y-4 text-left">
-      {reciboAnualDoAno && (
-        <CarteirinhaReciboAnualCard
-          ano={currentYear}
-          totalPago={reciboAnualDoAno.total_pago}
-          quantidadeMeses={reciboAnualDoAno.quantidade_meses}
-          reciboUrl={reciboAnualDoAno.recibo_url}
-          onVisualizar={() => setAnnualReceiptOpen(true)}
-        />
+      {recibosAnuaisOrdenados.length > 0 && (
+        <div className="space-y-2.5">
+          {recibosAnuaisOrdenados.map((recibo) => (
+            <CarteirinhaReciboAnualCard
+              key={recibo.id || recibo.ano}
+              ano={recibo.ano}
+              totalPago={recibo.total_pago}
+              quantidadeMeses={recibo.quantidade_meses}
+              reciboUrl={recibo.recibo_url}
+              onVisualizar={() => {
+                setSelectedReciboAnual(recibo);
+                setAnnualReceiptOpen(true);
+              }}
+            />
+          ))}
+        </div>
       )}
 
       <div className="flex items-center justify-between gap-3">
@@ -328,12 +343,17 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
         />
       )}
 
-      {reciboAnualDoAno && (
+      {selectedReciboAnual && (
         <AnnualReceiptDialog
           isOpen={annualReceiptOpen}
-          onClose={() => safeCloseDialog(() => setAnnualReceiptOpen(false))}
-          receiptUrl={reciboAnualDoAno.recibo_url}
-          ano={currentYear}
+          onClose={() => {
+            safeCloseDialog(() => {
+              setAnnualReceiptOpen(false);
+              setSelectedReciboAnual(null);
+            });
+          }}
+          receiptUrl={selectedReciboAnual.recibo_url}
+          ano={selectedReciboAnual.ano}
           alunoNome={carteirinha.nome}
         />
       )}

@@ -323,6 +323,8 @@ export type Database = {
           updated_at: string
           usuario_id: string | null
           valor: number
+          valor_juros: number | null
+          valor_multa: number | null
           valor_pago: number | null
           valor_taxa_plataforma: number | null
         }
@@ -355,6 +357,8 @@ export type Database = {
           updated_at?: string
           usuario_id?: string | null
           valor: number
+          valor_juros?: number | null
+          valor_multa?: number | null
           valor_pago?: number | null
           valor_taxa_plataforma?: number | null
         }
@@ -387,6 +391,8 @@ export type Database = {
           updated_at?: string
           usuario_id?: string | null
           valor?: number
+          valor_juros?: number | null
+          valor_multa?: number | null
           valor_pago?: number | null
           valor_taxa_plataforma?: number | null
         }
@@ -416,7 +422,7 @@ export type Database = {
           end_to_end_id_in: string | null
           end_to_end_id_out: string | null
           id: string
-          motorista_id: string
+          motorista_id: string | null
           passageiro_id: string | null
           provedor: Database["public"]["Enums"]["provedor_pagamento_enum"]
           saque_provedor_id: string | null
@@ -439,7 +445,7 @@ export type Database = {
           end_to_end_id_in?: string | null
           end_to_end_id_out?: string | null
           id?: string
-          motorista_id: string
+          motorista_id?: string | null
           passageiro_id?: string | null
           provedor?: Database["public"]["Enums"]["provedor_pagamento_enum"]
           saque_provedor_id?: string | null
@@ -462,7 +468,7 @@ export type Database = {
           end_to_end_id_in?: string | null
           end_to_end_id_out?: string | null
           id?: string
-          motorista_id?: string
+          motorista_id?: string | null
           passageiro_id?: string | null
           provedor?: Database["public"]["Enums"]["provedor_pagamento_enum"]
           saque_provedor_id?: string | null

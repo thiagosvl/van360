@@ -25,6 +25,9 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Sparkles,
+  Zap,
+  TrendingUp,
 } from "lucide-react";
 
 export interface ConfigurarCobrancaWizardDialogProps {
@@ -83,6 +86,9 @@ export default function ConfigurarCobrancaWizardDialog({
   };
 
   const getStepTitle = () => {
+    if (step === WIZARD_STEP.BENEFICIOS) {
+      return "Como Funciona a Cobrança Automática";
+    }
     if (step === WIZARD_STEP.PIX) {
       return modalidade === WIZARD_MODALIDADE.AUTOMATICA
         ? "Chave Pix para Repasse"
@@ -95,6 +101,9 @@ export default function ConfigurarCobrancaWizardDialog({
   };
 
   const getStepIcon = () => {
+    if (step === WIZARD_STEP.BENEFICIOS) {
+      return <Sparkles className="w-5 h-5 text-emerald-600" />;
+    }
     if (step === WIZARD_STEP.PIX) {
       return (
         <Key
@@ -123,6 +132,90 @@ export default function ConfigurarCobrancaWizardDialog({
       />
 
       <BaseDialog.Body className="space-y-4">
+        {step === WIZARD_STEP.BENEFICIOS && (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                Menos cobrança manual, mais tempo para você
+              </h3>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Com a cobrança automática, você não precisa conferir comprovantes bancários nem lembrar os responsáveis um a um no WhatsApp.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-emerald-50/60 border border-emerald-200/60">
+                <div className="h-7 w-7 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <Zap className="w-3.5 h-3.5" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    Baixa automática sem conferir comprovante
+                  </h4>
+                  <p className="text-xs text-[#525252] leading-relaxed">
+                    O responsável paga o Pix gerado e o sistema quita a parcela imediatamente, sem você precisar abrir app do banco ou pedir print.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-emerald-50/60 border border-emerald-200/60">
+                <div className="h-7 w-7 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    Cálculo automático de juros e multa em atrasos
+                  </h4>
+                  <p className="text-xs text-[#525252] leading-relaxed">
+                    Se a parcela vencer, o código Pix já atualiza com os encargos definidos por você, sem desgaste de cobrar acréscimos na conversa.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-emerald-50/60 border border-emerald-200/60">
+                <div className="h-7 w-7 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <Receipt className="w-3.5 h-3.5" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    Recibo profissional enviado aos pais
+                  </h4>
+                  <p className="text-xs text-[#525252] leading-relaxed">
+                    Assim que o Pix for confirmado, o comprovante oficial é enviado no WhatsApp e no e-mail do responsável.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-emerald-50/60 border border-emerald-200/60">
+                <div className="h-7 w-7 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <CircleDollarSign className="w-3.5 h-3.5" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                    Repasse direto na sua conta Pix
+                  </h4>
+                  <p className="text-xs text-[#525252] leading-relaxed">
+                    O valor líquido das parcelas pagas é transferido automaticamente para a sua chave Pix no mesmo dia.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-between gap-3">
+              <div className="space-y-0.5 min-w-0">
+                <p className="text-xs font-medium text-[#0a0a0a]">
+                  Taxa do serviço por parcela recebida
+                </p>
+                <p className="text-[11px] text-[#737373]">
+                  Descontada exclusivamente quando o responsável efetuar o pagamento via Pix.
+                </p>
+              </div>
+              <div className="shrink-0 px-2.5 py-1 rounded-[12px] bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] font-semibold text-xs">
+                {taxaFormatada} / parcela
+              </div>
+            </div>
+          </div>
+        )}
         {step === WIZARD_STEP.PIX && (
           <div className="space-y-4">
             <div className="space-y-1">
@@ -225,7 +318,7 @@ export default function ConfigurarCobrancaWizardDialog({
                   Taxa por cobrança recebida
                 </h4>
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Cobrada exclusivamente quando o pai paga via Pix. Sem mensalidade ou taxas fixas.
+                  Cobrada exclusivamente quando o responsável efetuar o pagamento da parcela via Pix.
                 </p>
               </div>
               <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-[14px] bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-bold text-sm">
@@ -362,7 +455,7 @@ export default function ConfigurarCobrancaWizardDialog({
       </BaseDialog.Body>
 
       <BaseDialog.Footer>
-        {step !== WIZARD_STEP.PIX ? (
+        {step !== (modalidade === WIZARD_MODALIDADE.AUTOMATICA ? WIZARD_STEP.BENEFICIOS : WIZARD_STEP.PIX) ? (
           <BaseDialog.Action
             label="Voltar"
             variant="outline"
@@ -387,7 +480,13 @@ export default function ConfigurarCobrancaWizardDialog({
         )}
 
         <BaseDialog.Action
-          label={step === WIZARD_STEP.AVISOS ? "Concluir Ativação" : "Avançar"}
+          label={
+            step === WIZARD_STEP.BENEFICIOS
+              ? "Entendi, quero configurar"
+              : step === WIZARD_STEP.AVISOS
+                ? "Concluir Ativação"
+                : "Avançar"
+          }
           variant="primary"
           icon={step === WIZARD_STEP.AVISOS ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
           onClick={handleNext}

@@ -17,7 +17,7 @@ import {
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatPeriodo } from "@/utils/formatters/periodo";
-import { ChevronRight, User } from "lucide-react";
+import { User } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -61,7 +61,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
         <User className="w-4 h-4" />
       </div>
 
-      <div className="flex-grow min-w-0 pr-6">
+      <div className="flex-grow min-w-0">
         <p className={cn(
           "font-semibold text-sm leading-tight truncate",
           passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
@@ -92,10 +92,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
             </p>
           )}
         </div>
-      </div>
-
-      <div className="flex-shrink-0 text-[#737373]">
-        <ChevronRight className="h-4 w-4" />
       </div>
     </div>
   );
