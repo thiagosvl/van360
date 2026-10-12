@@ -12,7 +12,7 @@ import { toast } from "@/utils/notifications/toast";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
 import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog, useAppRating } from "@/hooks";
 
 interface ManualPaymentViewModelProps {
   isOpen: boolean;
@@ -34,6 +34,7 @@ export function useManualPaymentViewModel({
   onPaymentRecorded,
 }: ManualPaymentViewModelProps) {
   const registrarPagamento = useRegistrarPagamentoManual();
+  const { trackCobrancaBaixada } = useAppRating();
   const [openCalendar, setOpenCalendar] = useState(false);
 
   const form = useForm<PaymentFormData>({
@@ -91,11 +92,13 @@ export function useManualPaymentViewModel({
               title: "Recibo Van360",
               text,
             });
+          } else {
+            void trackCobrancaBaixada();
           }
         },
       }
     );
-  }, [cobrancaId, passageiroNome, registrarPagamento, onPaymentRecorded, onClose]);
+  }, [cobrancaId, passageiroNome, registrarPagamento, onPaymentRecorded, onClose, trackCobrancaBaixada]);
 
   const onFormError = useCallback(() => {
     toast.error("validacao.formularioComErros");

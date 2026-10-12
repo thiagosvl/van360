@@ -200,8 +200,8 @@ export function PassageirosList({
                   {canViewFinancials && (
                     <TableCell className="px-6 py-3.5 text-right">
                       <span className={cn(
-                        "font-semibold text-sm",
-                        passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
+                        "font-normal text-sm text-[#737373] tabular-nums",
+                        !passageiro.ativo && "opacity-60"
                       )}>
                         {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
                           style: "currency",
@@ -214,8 +214,8 @@ export function PassageirosList({
                     <div className="flex flex-col items-start gap-0.5">
                       <span
                         className={cn(
-                          "text-sm font-medium max-w-[240px] block truncate",
-                          passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
+                          "text-sm font-normal max-w-[240px] block truncate",
+                          passageiro.ativo ? "text-[#737373]" : "text-[#737373]/60"
                         )}
                         title={passageiro.escola?.nome}
                       >
@@ -236,8 +236,8 @@ export function PassageirosList({
                     {passageiro.veiculo ? (
                       <div className="flex flex-col">
                         <span className={cn(
-                          "text-sm font-medium",
-                          passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
+                          "text-sm font-normal tabular-nums",
+                          passageiro.ativo ? "text-[#737373]" : "text-[#737373]/60"
                         )}>
                           {formatarPlacaExibicao(passageiro.veiculo.placa)}
                         </span>

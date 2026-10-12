@@ -23,6 +23,7 @@ import { useDeletePrePassageiro } from "@/hooks/api/usePrePassageiroMutations";
 import { useLayout } from "@/contexts/LayoutContext";
 import { toast } from "@/utils/notifications/toast";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useAppRating } from "@/hooks";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseCurrencyToNumber } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
@@ -43,6 +44,7 @@ export function useRevisarSolicitacaoViewModel({
   onSuccess,
 }: UseRevisarSolicitacaoViewModelProps) {
   const { profile } = useProfile();
+  const { trackAlunoCadastradoOuAprovado } = useAppRating();
   const defaultAnoLetivo = getDefaultAnoLetivo();
   const {
     openEscolaFormDialog,
@@ -333,6 +335,7 @@ export function useRevisarSolicitacaoViewModel({
 
         const novoPassageiro = (response as { passageiro?: Passageiro })?.passageiro ?? (response as unknown as Passageiro);
         safeCloseDialog(onClose);
+        void trackAlunoCadastradoOuAprovado();
         if (onSuccess && novoPassageiro) {
           onSuccess(novoPassageiro);
         }

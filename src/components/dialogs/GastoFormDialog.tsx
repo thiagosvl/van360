@@ -27,13 +27,14 @@ import {
   useProfile,
   useSession,
   safeCloseDialog,
+  useAppRating,
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { GastoEscopoAcao, GastoTipoCalculoParcela } from "@/types/enums";
 import { GastoCategoriaForm } from "@/components/features/financeiro/GastoCategoriaForm";
 import { parseLocalDate } from "@/utils/dateUtils";
-import { obterTextoPeriodo, obterDetalhesEdicaoParcelas, formatarPlacaExibicao } from "@/utils/domain";
+import { obterTextoPeriodo, obterDetalhesEdicaoParcelas, formatarPlacaExibicao, formatarVeiculoExibicao } from "@/utils/domain";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -102,6 +103,7 @@ export default function GastoFormDialog({
   const [openCalendar, setOpenCalendar] = useState(false);
   const createGasto = useCreateGasto();
   const updateGasto = useUpdateGasto();
+  const { trackGastoRegistrado } = useAppRating();
 
   const [isAddingNewCat, setIsAddingNewCat] = useState(false);
 
@@ -212,7 +214,12 @@ export default function GastoFormDialog({
     } else {
       createGasto.mutate(
         { usuarioId, data: formattedData },
-        { onSuccess: successCallback }
+        {
+          onSuccess: () => {
+            successCallback();
+            void trackGastoRegistrado();
+          },
+        }
       );
     }
   };
@@ -593,7 +600,7 @@ export default function GastoFormDialog({
                         </option>
                         {veiculos.map((v) => (
                           <option key={v.id} value={v.id}>
-                            {v.modelo ? `${v.modelo} (${formatarPlacaExibicao(v.placa)})` : formatarPlacaExibicao(v.placa)}
+                            {formatarVeiculoExibicao(v)}
                           </option>
                         ))}
                       </NativeSelect>

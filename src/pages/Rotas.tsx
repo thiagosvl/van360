@@ -14,6 +14,7 @@ import { useRotasViewModel, TAB_MINHAS_ROTAS, TAB_HISTORICO } from "@/hooks/ui/u
 import { useLayout } from "@/contexts/LayoutContext";
 import { RouteExecutionStatus } from "@/types/route";
 import { cn } from "@/lib/utils";
+import { formatarVeiculoExibicao } from "@/utils/domain";
 
 export default function Rotas() {
   const vm = useRotasViewModel();
@@ -43,9 +44,7 @@ export default function Rotas() {
     const map = new Map<string, string>();
     vm.rotas.forEach((r: any) => {
       if (r.veiculo_id && r.veiculo) {
-        const label = r.veiculo.placa
-          ? `${r.veiculo.modelo || "Veículo"} (${r.veiculo.placa})`
-          : r.veiculo.modelo || r.veiculo_id;
+        const label = formatarVeiculoExibicao(r.veiculo) || r.veiculo_id;
         map.set(r.veiculo_id, label);
       }
     });

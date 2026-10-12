@@ -183,7 +183,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
         </div>
 
         <div className="flex flex-col items-center sm:items-end gap-1 flex-shrink-0 absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2">
-          <p className="font-bold text-[#0a0a0a] text-[13px] sm:text-sm leading-none tabular-nums mb-0.5 text-center sm:text-right">
+          <p className="font-bold text-[#0a0a0a] text-xs leading-none tabular-nums mb-0.5 text-center sm:text-right">
             {getCobrancaValorExibicao(cobranca) > 0
               ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {
                 style: "currency",
@@ -370,6 +370,17 @@ export function CobrancasList({
             </div>
           </div>
         </TableCell>
+        <TableCell className="px-6 py-4 text-left">
+          <span className="font-normal text-sm text-[#737373] tabular-nums">
+            {getCobrancaValorExibicao(cobranca) > 0
+              ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+              : "R$ --"}
+          </span>
+        </TableCell>
+
         <TableCell className="px-6 py-4 text-center">
           {cobranca.repasse_em_processamento ? (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
@@ -385,17 +396,6 @@ export function CobrancasList({
               dataVencimento={cobranca?.data_vencimento}
             />
           )}
-        </TableCell>
-
-        <TableCell className="px-6 py-4 text-right">
-          <span className="font-semibold text-sm text-[#0a0a0a]">
-            {getCobrancaValorExibicao(cobranca) > 0
-              ? getCobrancaValorExibicao(cobranca).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })
-              : "R$ --"}
-          </span>
         </TableCell>
 
         <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -451,11 +451,11 @@ export function CobrancasList({
                 <TableHead className="px-6 py-3.5 text-left text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Aluno
                 </TableHead>
+                <TableHead className="px-6 py-3.5 text-left text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Valor
+                </TableHead>
                 <TableHead className="px-6 py-3.5 text-center text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Status
-                </TableHead>
-                <TableHead className="px-6 py-3.5 text-right text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
-                  Valor
                 </TableHead>
                 <TableHead className="px-6 py-3.5 text-right text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Ações

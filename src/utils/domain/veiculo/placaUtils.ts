@@ -57,3 +57,22 @@ export function aplicarMascaraPlaca(valor: string): string {
     return v;
 }
 
+export function formatarVeiculoExibicao(veiculo?: {
+    placa?: string | null;
+    marca?: string | null;
+    modelo?: string | null;
+} | null): string {
+    if (!veiculo) return "";
+    const placaFormatada = formatarPlacaExibicao(veiculo.placa || "");
+    const descricao = [veiculo.marca, veiculo.modelo]
+        .filter(Boolean)
+        .map((s) => s?.trim())
+        .filter(Boolean)
+        .join(" ");
+
+    if (placaFormatada && descricao) {
+        return `${placaFormatada} (${descricao})`;
+    }
+
+    return placaFormatada || descricao || "";
+}

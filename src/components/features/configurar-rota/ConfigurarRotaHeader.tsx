@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { formatarVeiculoExibicao } from "@/utils/domain";
 
 interface ConfigurarRotaHeaderProps {
   nome: string;
@@ -76,7 +77,7 @@ export function ConfigurarRotaHeader({
                 <option value="none">Nenhum veículo selecionado</option>
                 {veiculosList.map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.modelo} ({v.placa})
+                    {formatarVeiculoExibicao(v)}
                   </option>
                 ))}
               </NativeSelect>

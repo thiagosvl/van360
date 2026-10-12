@@ -146,139 +146,46 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
   return (
     <MobileActionItem actions={swipeActions} showHint={index === 0} showTrigger={false} className="bg-transparent" renderHeader={renderHeader}>
-      <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] active:scale-[0.99] transition-all flex flex-col gap-2.5 relative">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0", iconConfig.className)}>
-              <iconConfig.icon className="w-4 h-4" />
-            </div>
-
-            <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-[#0a0a0a] text-sm truncate leading-snug">
-                {formatShortName(nomeExibicao, true)}
-              </span>
-              <span
-                className={cn(
-                  "text-xs text-[#737373] font-normal leading-snug",
-                  formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-1"
-                )}
-              >
-                {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
-              </span>
-            </div>
+      <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] active:scale-[0.99] transition-all flex items-center justify-between gap-3 relative">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0", iconConfig.className)}>
+            <iconConfig.icon className="w-4 h-4" />
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {isImportado ? (
-              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                Importado
-              </span>
-            ) : isAssinado ? (
-              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#171717] text-[#fafafa]">
-                Assinado
-              </span>
-            ) : isPendente ? (
-              <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
-                Pendente
-              </span>
-            ) : null}
+          <div className="flex flex-col min-w-0">
+            <span className="font-semibold text-[#0a0a0a] text-sm truncate leading-snug">
+              {formatShortName(nomeExibicao, true)}
+            </span>
+            <span
+              className={cn(
+                "text-xs text-[#737373] font-normal leading-snug",
+                formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-1"
+              )}
+            >
+              {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
+            </span>
+            <span className="text-xs text-[#737373] font-normal leading-snug">
+              {valor > 0
+                ? `${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`
+                : "Sem valor mensal"}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-[#e5e5e5] gap-2">
-          <div className="flex items-baseline gap-1">
-            <span className="text-sm font-semibold text-[#0a0a0a]">
-              {valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isImportado ? (
+            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+              Importado
             </span>
-            <span className="text-[11px] font-medium text-[#737373]">/mês</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {!hasContract && (
-              isMissingResponsible ? (
-                <Button
-                  type="button"
-                  variant="tonal"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isDesativado) {
-                      toast.info(
-                        !isContratoConfigurado
-                          ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
-                          : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
-                      );
-                      return;
-                    }
-                    onCompletarCadastro?.(passId, item);
-                  }}
-                  aria-disabled={isDesativado}
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>Completar Cadastro</span>
-                </Button>
-              ) : onGerarContrato ? (
-                <Button
-                  type="button"
-                  variant="tonal"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isDesativado) {
-                      toast.info(
-                        !isContratoConfigurado
-                          ? "Configure seu modelo de contrato antes de gerar contratos para os alunos."
-                          : "O uso de contratos está desativado. Reative nas opções para voltar a gerar contratos."
-                      );
-                      return;
-                    }
-                    onGerarContrato(passId, item);
-                  }}
-                  aria-disabled={isDesativado}
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Gerar Contrato</span>
-                </Button>
-              ) : null
-            )}
-
-            {urlContrato && (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onVisualizarFinal(urlContrato);
-                  }}
-                  className="h-8 px-3 rounded-[18px] bg-white hover:bg-[#f5f5f5] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-[#e5e5e5] hover:border-[#737373]/50 text-xs font-medium gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5 text-[#0a0a0a]" />
-                  <span>Ver</span>
-                </Button>
-
-                {isAssinado && onDownload && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDownload(item);
-                    }}
-                    disabled={isDownloading === item.id}
-                    className="h-8 px-2.5 rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb] active:scale-[0.98] text-[#0a0a0a] hover:text-[#0a0a0a] border border-transparent text-xs font-medium gap-1.5 transition-all shadow-none shrink-0 cursor-pointer"
-                  >
-                    {isDownloading === item.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#737373]" />
-                    ) : (
-                      <Download className="w-3.5 h-3.5 text-[#0a0a0a]" />
-                    )}
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
+          ) : isAssinado ? (
+            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#171717] text-[#fafafa]">
+              Assinado
+            </span>
+          ) : isPendente ? (
+            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
+              Pendente
+            </span>
+          ) : null}
         </div>
       </div>
     </MobileActionItem>
@@ -368,10 +275,10 @@ export const ContratosList = memo(function ContratosList({
                 Aluno / Responsável
               </TableHead>
               <TableHead className="px-6 py-4 text-left text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                Status
-              </TableHead>
-              <TableHead className="px-6 py-4 text-right text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                 Valor Mensal
+              </TableHead>
+              <TableHead className="px-6 py-4 text-left text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                Status
               </TableHead>
               <TableHead className="px-6 py-4 text-right text-[12px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                 Ações
@@ -426,6 +333,21 @@ export const ContratosList = memo(function ContratosList({
                   </TableCell>
 
                   <TableCell className="px-6 py-4">
+                    <span className="font-normal text-sm text-[#737373] tabular-nums">
+                      {(
+                        Number(
+                          item.dados_contrato?.valorMensal ||
+                          item.valor_parcela ||
+                          item.valor_cobranca,
+                        ) || 0
+                      ).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </span>
+                  </TableCell>
+
+                  <TableCell className="px-6 py-4">
                     {isImportado ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
                         Assinado (Importado)
@@ -443,21 +365,6 @@ export const ContratosList = memo(function ContratosList({
                         {isMissingResponsible ? "Cadastro Incompleto" : "Sem Contrato"}
                       </span>
                     )}
-                  </TableCell>
-
-                  <TableCell className="px-6 py-4 text-right">
-                    <span className="font-semibold text-[#0a0a0a] text-sm">
-                      {(
-                        Number(
-                          item.dados_contrato?.valorMensal ||
-                          item.valor_parcela ||
-                          item.valor_cobranca,
-                        ) || 0
-                      ).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </span>
                   </TableCell>
 
                   <TableCell className="px-6 py-4 text-right">

@@ -6,11 +6,12 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { MembroEquipe } from "@/types/equipe";
 import { UserType } from "@/types/enums";
 import { formatShortName } from "@/utils/formatters/name";
-import { Car, Edit, KeyRound, Mail, Phone, Trash2, UserCheck, Users2, XCircle, CheckCircle2 } from "lucide-react";
+import { Car, Edit, KeyRound, Phone, Trash2, UserCheck, Users2, XCircle, CheckCircle2 } from "lucide-react";
 import { EquipeSummary } from "./EquipeSummary";
 import { cn } from "@/lib/utils";
 import { memo, useState } from "react";
 import { phoneMask } from "@/utils/masks";
+import { formatarPlacaExibicao, formatarVeiculoExibicao } from "@/utils/domain";
 
 interface EquipeListProps {
   membros: MembroEquipe[];
@@ -89,7 +90,16 @@ const EquipeMobileCard = memo(function EquipeMobileCard({
             {membro.veiculos ? (
               <p className="text-xs text-[#737373] font-normal flex items-center gap-1 mt-0.5 truncate">
                 <Car className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                <span className="truncate">{membro.veiculos.modelo} ({membro.veiculos.placa})</span>
+                <span className="truncate">
+                  <span className="text-[#0a0a0a] font-semibold">
+                    {formatarPlacaExibicao(membro.veiculos.placa)}
+                  </span>
+                  {[membro.veiculos.marca, membro.veiculos.modelo].filter(Boolean).length > 0 && (
+                    <span className="text-[#737373] font-normal ml-1">
+                      ({[membro.veiculos.marca, membro.veiculos.modelo].filter(Boolean).join(" ")})
+                    </span>
+                  )}
+                </span>
               </p>
             ) : (
               <p className="text-xs text-[#737373]/70 font-normal mt-0.5">Sem veículo atribuído</p>
@@ -157,7 +167,9 @@ export const EquipeList = memo(function EquipeList({
             <tbody className="divide-y divide-[#e5e5e5]">
               {membros.map((membro) => {
                 const isMonitor = membro.tipo === UserType.MONITOR;
-                const displayName = membro.apelido ? `${membro.nome} (${membro.apelido})` : membro.nome;
+                const hasApelido = Boolean(membro.apelido && membro.apelido.trim().length > 0);
+                const primaryName = hasApelido ? membro.apelido : membro.nome;
+                const secondaryName = hasApelido ? membro.nome : null;
 
                 const desktopActions = [
                   {
@@ -201,35 +213,39 @@ export const EquipeList = memo(function EquipeList({
                         </div>
                         <div className="flex flex-col min-w-0">
                           <p className="font-semibold text-[#0a0a0a] text-sm tracking-tight truncate max-w-[220px]">
-                            {displayName}
+                            {primaryName}
                           </p>
-                          <p className="text-xs text-[#737373] font-normal">
-                            {isMonitor ? "Monitor" : "Motorista"}
-                          </p>
+                          {secondaryName && (
+                            <p className="text-xs text-[#737373] font-normal truncate max-w-[220px]">
+                              {secondaryName}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>
 
                     <td className="px-6 py-4 align-middle">
-                      <div className="flex flex-col text-xs space-y-0.5">
-                        <span className="text-[#0a0a0a] font-medium flex items-center gap-1.5">
-                          <Phone className="w-3 h-3 text-[#737373]" />
-                          {phoneMask(membro.telefone || "")}
-                        </span>
-                        <span className="text-[#737373] truncate max-w-[200px] flex items-center gap-1.5">
-                          <Mail className="w-3 h-3 text-[#737373]" />
-                          {membro.email}
-                        </span>
-                      </div>
+                      {membro.telefone ? (
+                        <div className="flex items-center text-xs text-[#737373] font-normal">
+                          <span className="flex items-center gap-1.5">
+                            <Phone className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                            {phoneMask(membro.telefone)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-[#737373]/70 font-normal">-</span>
+                      )}
                     </td>
 
                     <td className="px-6 py-4 align-middle">
                       {membro.veiculos ? (
-                        <div className="flex items-center gap-2 text-xs">
-                          <Car className="w-4 h-4 text-[#737373] shrink-0" />
-                          <span className="text-[#0a0a0a] font-medium">
-                            {membro.veiculos.modelo} <span className="text-[#737373]">({membro.veiculos.placa})</span>
-                          </span>
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-[#0a0a0a] text-sm uppercase tracking-tight">
+                            {formatarPlacaExibicao(membro.veiculos.placa)}
+                          </p>
+                          <p className="text-xs text-[#737373] font-normal truncate max-w-[200px]">
+                            {[membro.veiculos.marca, membro.veiculos.modelo].filter(Boolean).join(" ")}
+                          </p>
                         </div>
                       ) : (
                         <span className="text-xs text-[#737373]/70 font-normal">Não atribuído</span>

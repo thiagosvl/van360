@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,6 +24,8 @@ import { User, Mail, Phone, Lock, Car, FileText, Wand2, Eye, EyeOff } from "luci
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/client";
 import { safeCloseDialog } from "@/hooks";
+import { useLayout } from "@/contexts/LayoutContext";
+import { formatarVeiculoExibicao } from "@/utils/domain";
 import type { MembroEquipe, VeiculoMembro } from "@/types/equipe";
 
 const motoristaSchema = z
@@ -69,7 +71,20 @@ export function MotoristaAuxiliarFormDialog({
   onSuccess,
 }: MotoristaAuxiliarFormDialogProps) {
   const queryClient = useQueryClient();
+  const { openVeiculoFormDialog } = useLayout();
   const [showSenha, setShowSenha] = useState(true);
+  const [newVeiculo, setNewVeiculo] = useState<VeiculoMembro | null>(null);
+
+  const veiculosDisplay = useMemo(() => {
+    const list = [...veiculos];
+    if (editingMembro?.veiculos && !list.some((v) => v.id === editingMembro.veiculos?.id)) {
+      list.push(editingMembro.veiculos);
+    }
+    if (newVeiculo && !list.some((v) => v.id === newVeiculo.id)) {
+      list.push(newVeiculo);
+    }
+    return list;
+  }, [veiculos, editingMembro, newVeiculo]);
 
   const form = useForm<MotoristaFormData>({
     resolver: zodResolver(motoristaSchema),
@@ -88,9 +103,16 @@ export function MotoristaAuxiliarFormDialog({
   const cpfValue = form.watch("cpf") || "";
   const isCnpj = cpfValue.replace(/\D/g, "").length > 11;
 
+  const prevOpenRef = useRef(false);
+  const prevEditingIdRef = useRef<string | null | undefined>(undefined);
+
   useEffect(() => {
-    if (isOpen) {
+    const isOpening = isOpen && !prevOpenRef.current;
+    const isEditingChanged = isOpen && prevEditingIdRef.current !== editingMembro?.id;
+
+    if (isOpening || isEditingChanged) {
       setShowSenha(true);
+      setNewVeiculo(null);
       if (editingMembro) {
         form.reset({
           nome: editingMembro.nome || "",
@@ -115,7 +137,17 @@ export function MotoristaAuxiliarFormDialog({
         });
       }
     }
-  }, [isOpen, editingMembro, veiculos, form]);
+
+    prevOpenRef.current = isOpen;
+    prevEditingIdRef.current = editingMembro?.id;
+  }, [isOpen, editingMembro]);
+
+  useEffect(() => {
+    const currentId = form.getValues("veiculo_id");
+    if (newVeiculo?.id && currentId !== newVeiculo.id) {
+      form.setValue("veiculo_id", newVeiculo.id, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [newVeiculo, form]);
 
   const handleApiError = (err: unknown, defaultMsg: string) => {
     const errorResponse = err as { response?: { data?: { field?: string; message?: string; error?: string } }; message?: string };
@@ -446,7 +478,7 @@ export function MotoristaAuxiliarFormDialog({
                             type="email"
                             disabled={!!editingMembro}
                             className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] hover:border-[#737373]/50 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] disabled:opacity-60"
-                            placeholder="carlos@email.com"
+                            placeholder="voce@email.com"
                             aria-invalid={!!fieldState.error}
                           />
                         </div>
@@ -459,7 +491,7 @@ export function MotoristaAuxiliarFormDialog({
                 <FormField
                   control={form.control}
                   name="veiculo_id"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-xs sm:text-[13px] font-medium text-[#737373] ml-1">
                         Veículo Atribuído <span className="text-[#e7000b]">*</span>
@@ -467,15 +499,39 @@ export function MotoristaAuxiliarFormDialog({
                       <FormControl>
                         <NativeSelect
                           value={field.value || ""}
-                          onChange={field.onChange}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "add-new-vehicle") {
+                              e.target.value = field.value || "";
+                              openVeiculoFormDialog({
+                                allowBatchCreation: false,
+                                onSuccess: (veiculo) => {
+                                  if (veiculo?.id) {
+                                    const veiculoMembro: VeiculoMembro = {
+                                      id: veiculo.id,
+                                      placa: veiculo.placa,
+                                      marca: veiculo.marca,
+                                      modelo: veiculo.modelo,
+                                    };
+                                    setNewVeiculo(veiculoMembro);
+                                    form.setValue("veiculo_id", veiculo.id, { shouldValidate: true, shouldDirty: true });
+                                  }
+                                },
+                              });
+                            } else {
+                              field.onChange(val);
+                            }
+                          }}
                           icon={<Car className="h-4 w-4 text-[#737373]" />}
+                          error={!!fieldState.error}
                         >
                           <option value="">Selecionar</option>
-                          {veiculos.map((v) => (
+                          {veiculosDisplay.map((v) => (
                             <option key={v.id} value={v.id}>
-                              {v.modelo} ({v.placa})
+                              {formatarVeiculoExibicao(v)}
                             </option>
                           ))}
+                          <option value="add-new-vehicle">+ Cadastrar Veículo</option>
                         </NativeSelect>
                       </FormControl>
                       <FormMessage />

@@ -90,19 +90,19 @@ export default function Splash() {
   }, [step]);
 
   return (
-    <main className="h-[100dvh] w-full bg-[#f9f8fd] overflow-hidden flex flex-col justify-between relative">
+    <main className="h-[100dvh] w-full bg-[#fbf9f5] overflow-hidden flex flex-col justify-between relative">
       {step === "motorista" && (
         <button
           type="button"
           onClick={handleBackToProfile}
           aria-label="Voltar para seleção de perfil"
-          className="absolute left-4 top-[max(env(safe-area-inset-top),2.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),3rem)] [@media(max-height:680px)]:top-4 w-10 h-10 rounded-full bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
+          className="absolute left-4 top-[max(env(safe-area-inset-top),1.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),2rem)] [@media(max-height:680px)]:top-4 w-10 h-10 rounded-full bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
         >
           <ArrowLeft className="w-5 h-5 text-[#737373]" />
         </button>
       )}
 
-      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),5.5rem)] [@media(min-height:751px)_and_(max-height:850px)]:!pt-[max(env(safe-area-inset-top),4.5rem)] [@media(min-height:681px)_and_(max-height:750px)]:!pt-[max(env(safe-area-inset-top),3.75rem)] [@media(min-height:581px)_and_(max-height:680px)]:!pt-6 [@media(max-height:580px)]:!pt-3 px-6 z-10">
+      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),2.75rem)] [@media(min-height:751px)]:!pt-[max(env(safe-area-inset-top),3.25rem)] [@media(max-height:680px)]:!pt-[max(env(safe-area-inset-top),1.5rem)] [@media(max-height:580px)]:!pt-2 px-6 z-10">
         {step === "profile" ? (
           <div className="flex flex-col items-center w-full max-w-[340px] animate-in fade-in zoom-in-95 duration-300">
             <img
@@ -111,17 +111,17 @@ export default function Splash() {
               className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8 drop-shadow-xs"
             />
 
-            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
+            <div className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 text-center">
               <h1 className="font-bold text-[#0a0a0a] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Quem está acessando?
               </h1>
 
-              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
+              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
                 Selecione uma opção para continuar
               </p>
             </div>
 
-            <div className="w-full space-y-2.5 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
+            <div className="w-full space-y-2 mt-5 [@media(min-height:751px)]:mt-6 [@media(max-height:680px)]:mt-3.5">
               <button
                 type="button"
                 onClick={handleSelectMotorista}
@@ -149,7 +149,7 @@ export default function Splash() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#e5e5e5]" />
                 </div>
-                <span className="relative bg-[#f9f8fd] px-3 text-xs text-[#737373] font-medium select-none">
+                <span className="relative bg-[#fbf9f5] px-3 text-xs text-[#737373] font-medium select-none">
                   ou
                 </span>
               </div>
@@ -186,17 +186,17 @@ export default function Splash() {
               className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8 drop-shadow-xs"
             />
 
-            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
+            <div className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 text-center">
               <h1 className="font-bold text-[#0a0a0a] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Transporte Escolar
               </h1>
 
-              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
+              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
                 Você dirige. A gente organiza.
               </p>
             </div>
 
-            <div className="w-full space-y-2.5 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
+            <div className="w-full space-y-2 mt-5 [@media(min-height:751px)]:mt-6 [@media(max-height:680px)]:mt-3.5">
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
@@ -221,7 +221,7 @@ export default function Splash() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#e5e5e5]" />
                 </div>
-                <span className="relative bg-[#f9f8fd] px-3 text-xs text-[#737373] font-medium select-none">
+                <span className="relative bg-[#fbf9f5] px-3 text-xs text-[#737373] font-medium select-none">
                   ou
                 </span>
               </div>
@@ -250,7 +250,7 @@ export default function Splash() {
         )}
       </section>
 
-      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-3 [@media(max-height:750px)]:mt-2 pointer-events-none select-none">
+      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-2 pointer-events-none select-none">
         <SplashIllustration
           src="/assets/login-splash.webp"
           alt="Van escolar"
@@ -261,11 +261,9 @@ export default function Splash() {
             w-full
             h-auto
             top-auto
-            bottom-[-20px]
-            [@media(min-height:751px)_and_(max-height:850px)]:!bottom-[-45px]
-            [@media(max-width:340px)]:!bottom-[-45px]
-            [@media(min-width:341px)_and_(min-height:681px)_and_(max-height:750px)]:!bottom-[-70px]
-            [@media(min-width:341px)_and_(max-height:680px)]:!bottom-[-70px]
+            bottom-[-10px]
+            [@media(min-height:751px)]:!bottom-[-15px]
+            [@media(max-height:680px)]:!bottom-[-20px]
           "
         />
       </section>

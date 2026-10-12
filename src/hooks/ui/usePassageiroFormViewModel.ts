@@ -6,7 +6,8 @@ import {
     usePassageiro,
     usePassageiroForm, 
     useUpdatePassageiro, 
-    useVeiculosWithFilters 
+    useVeiculosWithFilters,
+    useAppRating
 } from "@/hooks";
 import {
   PassageiroFormModes,
@@ -47,6 +48,7 @@ export function usePassageiroFormViewModel({
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
+  const { trackAlunoCadastradoOuAprovado } = useAppRating();
   const { mutateAsync: lookupResponsavel, isPending: isSearchingResponsavel } = useBuscarResponsavel();
   
   const searchedTermsSet = useRef<Set<string>>(new Set());
@@ -418,6 +420,9 @@ export function usePassageiroFormViewModel({
            hasCriticalContractChanges
         });
         onClose();
+        if (!isEdit) {
+          void trackAlunoCadastradoOuAprovado();
+        }
       },
       onError: (err: unknown) => {
         const msg = getErrorMessage(err);

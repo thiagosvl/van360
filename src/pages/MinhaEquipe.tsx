@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/config/permissions";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useLayout } from "@/contexts/LayoutContext";
 import { UserType } from "@/types/enums";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -33,8 +34,13 @@ import { apiClient } from "@/services/api/client";
 import type { MembroEquipe, VeiculoMembro } from "@/types/equipe";
 
 export default function MinhaEquipe() {
+  const { setPageTitle } = useLayout();
   const { can, isGestor } = usePermissions();
   const hasAccess = can(PERMISSIONS.EQUIPE_GERENCIAR_MONITORES) || can(PERMISSIONS.EQUIPE_GERENCIAR_TODOS);
+
+  useEffect(() => {
+    setPageTitle("Minha Equipe");
+  }, [setPageTitle]);
 
   const queryClient = useQueryClient();
   const { user } = useSession();

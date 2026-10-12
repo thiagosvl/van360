@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -6,6 +7,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { InitialLoading } from "./InitialLoading";
 import { UserType } from "@/types/enums";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { useAppRating } from "@/hooks";
 
 import { consumePendingDeepLink } from "@/utils/deepLink";
 
@@ -14,10 +16,29 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { profile, isLoading: profileLoading } = useProfile(session?.user?.id);
   const userRole = profile?.tipo || (session?.user as { tipo?: UserType } | undefined)?.tipo || UserType.MOTORISTA;
   const isDriver = userRole === UserType.MOTORISTA;
+  const { trackActiveDay, checkSubscriptionConversion } = useAppRating();
 
-  const { subscription, isLoading: subscriptionLoading, isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(
+  const {
+    subscription,
+    isLoading: subscriptionLoading,
+    isBlocked: isSubscriptionBlocked,
+    isTrial,
+    isActive,
+  } = useSubscriptionAccess(
     session?.user?.id && isDriver ? session.user.id : undefined
   );
+
+  useEffect(() => {
+    if (session && isDriver) {
+      trackActiveDay();
+    }
+  }, [session, isDriver, trackActiveDay]);
+
+  useEffect(() => {
+    if (session && isDriver && !subscriptionLoading && isActive && !isTrial) {
+      void checkSubscriptionConversion(true);
+    }
+  }, [session, isDriver, subscriptionLoading, isActive, isTrial, checkSubscriptionConversion]);
 
   const {
     isAuthenticated: isResponsavelAuth,

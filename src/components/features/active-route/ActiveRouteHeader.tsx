@@ -3,6 +3,7 @@ import { Banner } from "@/components/ui/Banner";
 import { XCircle, Route, Loader2, Play, Edit, Users, Bus, MapPin, School, Trash2, CheckCircle2, ChevronRight, CalendarDays, ArrowLeft } from "lucide-react";
 import { RouteExecution, RouteExecutionStatus } from "@/types/route";
 import { cn } from "@/lib/utils";
+import { formatarVeiculoExibicao } from "@/utils/domain";
 
 interface ActiveRouteHeaderProps {
   execucao?: RouteExecution | null;
@@ -63,9 +64,7 @@ export function ActiveRouteHeader({
 }: ActiveRouteHeaderProps) {
   const paradasCountDisplay = todasParadasCount || totalStops;
   const veiculo = execucao?.rota?.veiculo;
-  const veiculoDisplay = veiculo?.modelo
-    ? `${veiculo.modelo}${veiculo.placa ? ` (${veiculo.placa})` : ""}`
-    : veiculo?.placa || null;
+  const veiculoDisplay = formatarVeiculoExibicao(veiculo) || null;
   const hasChamada = temAlunosVolta && !!onOpenChamadaRapida;
 
   return (

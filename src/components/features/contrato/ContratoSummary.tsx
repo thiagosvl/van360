@@ -55,20 +55,22 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
           Contrato do Aluno
         </span>
 
-        <span
-          className={cn(
-            "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
-            isAssinado
-              ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
-              : isImportado
-                ? "bg-sky-500/[0.08] text-sky-700 border-sky-500/20"
-                : isPendente
-                  ? "bg-amber-500/[0.08] text-amber-700 border-amber-500/20"
-                  : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
-          )}
-        >
-          {statusLabel}
-        </span>
+        {!(isSemContrato && isMissingResponsible) && (
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
+              isAssinado
+                ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
+                : isImportado
+                  ? "bg-sky-500/[0.08] text-sky-700 border-sky-500/20"
+                  : isPendente
+                    ? "bg-amber-500/[0.08] text-amber-700 border-amber-500/20"
+                    : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
+            )}
+          >
+            {statusLabel}
+          </span>
+        )}
       </div>
 
       <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
@@ -114,10 +116,10 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
         {valor && (
           <div className="flex items-baseline shrink-0">
-            <span className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight leading-none">
+            <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-none">
               {formatCurrency(valor)}
             </span>
-            <span className="text-xs font-medium text-[#737373] ml-1">/mês</span>
+            <span className="text-xs font-normal text-[#737373] ml-1">/mês</span>
           </div>
         )}
       </div>

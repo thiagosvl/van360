@@ -3,6 +3,7 @@ export { useGastosCalculations } from "./business/useGastosCalculations";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 export { useBiometricLock } from "./business/useBiometricLock";
+export { useAppRating } from "./business/useAppRating";
 
 // UI hooks
 export { useCobrancaActions } from "./ui/useCobrancaActions";

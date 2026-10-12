@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/utils/notifications/toast";
+import { formatarVeiculoExibicao } from "@/utils/domain";
 import {
   useAdminUserDetails,
   useUpdateUserAdmin,
@@ -780,7 +781,7 @@ export default function AdminUserDetails() {
               </Link>
               {data.veiculo_vinculado && (
                 <span className="text-muted-foreground">
-                  • Veículo atribuído: <strong className="text-foreground font-medium">{data.veiculo_vinculado.modelo} ({data.veiculo_vinculado.placa})</strong>
+                  • Veículo atribuído: <strong className="text-foreground font-medium">{formatarVeiculoExibicao(data.veiculo_vinculado)}</strong>
                 </span>
               )}
             </div>

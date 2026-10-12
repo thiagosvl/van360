@@ -34,6 +34,7 @@ export const STORAGE_KEYS = {
   BIOMETRIC_LOCK_GRACE_PERIOD: "van360:biometric_lock_grace_period",
   BIOMETRIC_LOCK_LAST_BACKGROUND: "van360:biometric_lock_last_background",
   DISMISSED_PIX_BANNER: "van360_dismissed_pix_banner",
+  APP_RATING_TRACKER: "van360:app_rating_tracker",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */
