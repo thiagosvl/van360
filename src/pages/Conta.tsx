@@ -93,7 +93,7 @@ export const Conta = memo(function Conta() {
   }, [tabParam, isSubConta, setPageTitle]);
 
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [appVersion, setAppVersion] = useState<string>("1.0.6");
+  const [appVersion, setAppVersion] = useState<string>("1.0.7");
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
@@ -370,6 +370,80 @@ export const Conta = memo(function Conta() {
         {!isSubConta && (
           <div className="space-y-2">
             <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
+              Cobranças e pagamentos
+            </h2>
+            <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => handleSelectFleetTab("cobrancas")}
+                className={cn(
+                  "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
+                  isSubscriptionBlocked
+                    ? "opacity-50 hover:bg-[#fafafa]/50"
+                    : "hover:bg-[#fafafa]"
+                )}
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div
+                    className={cn(
+                      "h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] transition-all duration-200",
+                      !isSubscriptionBlocked && "group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
+                    )}
+                  >
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                      Cobranças & Pix
+                    </h3>
+                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                      Lembretes aos pais, chave Pix, baixa automática, repasse e recibos
+                    </p>
+                  </div>
+                </div>
+                {isSubscriptionBlocked ? (
+                  <Lock className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
+            Notificações
+          </h2>
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("minhas_notificacoes")}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                    Minhas Notificações
+                  </h3>
+                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                    {isSubConta
+                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
+                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+            </button>
+          </div>
+        </div>
+
+        {!isSubConta && (
+          <div className="space-y-2">
+            <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
               Rotas e Itinerários
             </h2>
             <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
@@ -447,80 +521,6 @@ export const Conta = memo(function Conta() {
             </div>
           </div>
         )}
-
-        {!isSubConta && (
-          <div className="space-y-2">
-            <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
-              Cobranças e pagamentos
-            </h2>
-            <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
-              <button
-                type="button"
-                onClick={() => handleSelectFleetTab("cobrancas")}
-                className={cn(
-                  "w-full p-4 sm:p-5 flex items-center justify-between text-left transition-colors group cursor-pointer",
-                  isSubscriptionBlocked
-                    ? "opacity-50 hover:bg-[#fafafa]/50"
-                    : "hover:bg-[#fafafa]"
-                )}
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div
-                    className={cn(
-                      "h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] transition-all duration-200",
-                      !isSubscriptionBlocked && "group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
-                    )}
-                  >
-                    <CreditCard className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
-                      Cobranças & Pix
-                    </h3>
-                    <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
-                      Lembretes aos pais, chave Pix, baixa automática, repasse e recibos
-                    </p>
-                  </div>
-                </div>
-                {isSubscriptionBlocked ? (
-                  <Lock className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">
-            Notificações
-          </h2>
-          <div className="bg-white rounded-[24px] border border-[#e5e5e5] divide-y divide-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
-            <button
-              type="button"
-              onClick={() => handleSelectTab("minhas_notificacoes")}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors group cursor-pointer"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5] group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
-                    Minhas Notificações
-                  </h3>
-                  <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
-                    {isSubConta
-                      ? "Lembretes de aniversariantes e avisos operacionais no seu celular"
-                      : "Lembretes de parcelas a conferir, aniversariantes e avisos no seu celular"}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-            </button>
-          </div>
-        </div>
 
         <div className="space-y-2">
           <h2 className="text-[11px] sm:text-xs font-semibold text-[#737373] uppercase tracking-wider px-1">

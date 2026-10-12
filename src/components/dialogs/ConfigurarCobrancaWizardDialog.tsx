@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import BaseDialog from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -19,8 +21,6 @@ import {
   Key,
   CircleDollarSign,
   ReceiptText,
-  Minus,
-  Plus,
   Receipt,
   ArrowLeft,
   ArrowRight,
@@ -28,6 +28,7 @@ import {
   Sparkles,
   Zap,
   TrendingUp,
+  BellOff,
 } from "lucide-react";
 
 export interface ConfigurarCobrancaWizardDialogProps {
@@ -46,6 +47,8 @@ export default function ConfigurarCobrancaWizardDialog({
   onSuccess,
 }: ConfigurarCobrancaWizardDialogProps) {
   const { openWhatsAppCobrancaPreviewDialog } = useLayout();
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const pixFormRef = useRef<HTMLDivElement>(null);
 
   const {
     step,
@@ -55,24 +58,22 @@ export default function ConfigurarCobrancaWizardDialog({
     tipoChave,
     chavePix,
     enviarRecibo,
-    avisoPrevioAtivo,
-    diasAvisoPrevio,
     vencimentoHojeAtivo,
     atraso3DiasAtivo,
     taxaFormatada,
     taxaEfetiva,
     isPixValido,
     pixErrorMessage,
+    incluirPix,
+    handleIncluirPixChange,
+    isAvancarDisabled,
     setChavePixTouched,
     handleTipoChaveChange,
     handleChavePixChange,
     setEnviarRecibo,
-    setAvisoPrevioAtivo,
     setVencimentoHojeAtivo,
     setAtraso3DiasAtivo,
-    handleDiasStep,
     handleBack,
-    handleSkipPix,
     handleNext,
   } = useConfigurarCobrancaWizardViewModel({
     modalidade,
@@ -80,6 +81,22 @@ export default function ConfigurarCobrancaWizardDialog({
     onClose,
     onSuccess,
   });
+
+  const handleSelectPix = (valor: boolean) => {
+    handleIncluirPixChange(valor);
+    if (valor) {
+      setTimeout(() => {
+        if (bodyRef.current) {
+          bodyRef.current.scrollTo({
+            top: bodyRef.current.scrollHeight,
+            behavior: "smooth",
+          });
+        } else {
+          pixFormRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+      }, 120);
+    }
+  };
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -97,27 +114,20 @@ export default function ConfigurarCobrancaWizardDialog({
     if (step === WIZARD_STEP.TAXAS) {
       return "Taxa do Pix e Repasse";
     }
-    return "Avisos no WhatsApp";
+    return "Lembretes no WhatsApp";
   };
 
   const getStepIcon = () => {
     if (step === WIZARD_STEP.BENEFICIOS) {
-      return <Sparkles className="w-5 h-5 text-emerald-600" />;
+      return <Sparkles className="w-5 h-5 text-[#0a0a0a]" />;
     }
     if (step === WIZARD_STEP.PIX) {
-      return (
-        <Key
-          className={cn(
-            "w-5 h-5",
-            modalidade === WIZARD_MODALIDADE.AUTOMATICA ? "text-emerald-600" : "text-primary"
-          )}
-        />
-      );
+      return <Key className="w-5 h-5 text-[#0a0a0a]" />;
     }
     if (step === WIZARD_STEP.TAXAS) {
-      return <CircleDollarSign className="w-5 h-5 text-emerald-600" />;
+      return <CircleDollarSign className="w-5 h-5 text-[#0a0a0a]" />;
     }
-    return <ReceiptText className="w-5 h-5 text-primary" />;
+    return <ReceiptText className="w-5 h-5 text-[#0a0a0a]" />;
   };
 
   return (
@@ -131,7 +141,7 @@ export default function ConfigurarCobrancaWizardDialog({
         onClose={handleClose}
       />
 
-      <BaseDialog.Body className="space-y-4">
+      <BaseDialog.Body containerRef={bodyRef} className="space-y-4">
         {step === WIZARD_STEP.BENEFICIOS && (
           <div className="space-y-4">
             <div className="space-y-1">
@@ -226,10 +236,17 @@ export default function ConfigurarCobrancaWizardDialog({
               </h3>
               <p className="text-xs text-[#737373] leading-relaxed">
                 {modalidade === WIZARD_MODALIDADE.AUTOMATICA
-                  ? "Cadastre sua chave Pix. O valor das parcelas pagas pelos pais será transferido automaticamente para a conta dela."
-                  : "Informe sua chave abaixo para que a gente possa envia-la nos lembretes. Caso não utilize Pix, clique em 'Não usar Pix'."}
+                  ? "Cadastre sua chave Pix. O valor das parcelas pagas pelos pais será transferido automaticamente para ela."
+                  : "Escolha se deseja enviar sua chave Pix nos lembretes com botão de copiar ou apenas notificar com os dados da parcela."}
               </p>
             </div>
+
+            {modalidade === WIZARD_MODALIDADE.AUTOMATICA && (
+              <Banner
+                variant="info"
+                description="Os pais pagarão por um QR Code Pix gerado para cada parcela. O dinheiro cai nesta sua chave Pix cadastrada."
+              />
+            )}
 
             <div className="flex items-center justify-between p-3.5 rounded-[18px] bg-white border border-[#e5e5e5]">
               <div className="flex items-center gap-3 min-w-0">
@@ -243,9 +260,9 @@ export default function ConfigurarCobrancaWizardDialog({
                   <p className="text-[11px] text-[#737373] truncate mt-0.5">
                     {modalidade === WIZARD_MODALIDADE.AUTOMATICA
                       ? "Veja a mensagem com QR Code Pix dinâmico"
-                      : chavePix
+                      : incluirPix === true && chavePix
                         ? "Veja a mensagem com sua chave Pix"
-                        : "Veja como os responsáveis recebem o aviso"}
+                        : "Veja como os responsáveis recebem o lembrete"}
                   </p>
                 </div>
               </div>
@@ -257,7 +274,12 @@ export default function ConfigurarCobrancaWizardDialog({
                       modalidade === WIZARD_MODALIDADE.AUTOMATICA
                         ? PREVIEW_COBRANCA_MODALIDADE.AUTOMATICA
                         : PREVIEW_COBRANCA_MODALIDADE.LEMBRETE,
-                    userChavePix: chavePix || null,
+                    userChavePix:
+                      modalidade === WIZARD_MODALIDADE.AUTOMATICA
+                        ? chavePix || null
+                        : incluirPix === true
+                          ? chavePix || null
+                          : null,
                   })
                 }
                 className="shrink-0 h-9 px-4 rounded-[18px] bg-white border border-[#e5e5e5] hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs sm:text-sm font-medium transition-colors cursor-pointer ml-2 inline-flex items-center justify-center"
@@ -266,47 +288,106 @@ export default function ConfigurarCobrancaWizardDialog({
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#0a0a0a]">Tipo de Chave</label>
-                <NativeSelect
-                  value={tipoChave || ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    handleTipoChaveChange(val ? (val as TipoChavePix) : undefined);
-                  }}
-                >
-                  <option value="" disabled>
-                    Selecionar tipo...
-                  </option>
-                  <option value={TipoChavePix.CPF}>CPF</option>
-                  <option value={TipoChavePix.CNPJ}>CNPJ</option>
-                  <option value={TipoChavePix.EMAIL}>E-mail</option>
-                  <option value={TipoChavePix.TELEFONE}>Telefone Celular</option>
-                  <option value={TipoChavePix.ALEATORIA}>Chave Aleatória</option>
-                </NativeSelect>
+            {modalidade === WIZARD_MODALIDADE.LEMBRETES && (
+              <div className="space-y-2.5">
+                {[
+                  {
+                    value: true,
+                    label: "Utilizar chave Pix",
+                    sublabel: "Envia sua chave nos lembretes com botão de copiar para facilitar o pagamento pelos pais.",
+                    icon: <Key className="w-5 h-5" />,
+                  },
+                  {
+                    value: false,
+                    label: "Não utilizar chave Pix",
+                    sublabel: "Envia apenas o valor e vencimento nos lembretes, sem chave Pix.",
+                    icon: <BellOff className="w-5 h-5" />,
+                  },
+                ].map(({ value, label, sublabel, icon }) => {
+                  const isActive = incluirPix === value;
+                  return (
+                    <button
+                      key={String(value)}
+                      type="button"
+                      onClick={() => handleSelectPix(value)}
+                      className={cn(
+                        "w-full p-3.5 sm:p-4 rounded-[18px] border transition-all flex items-center gap-3.5 sm:gap-4 active:scale-[0.99] cursor-pointer group text-left",
+                        isActive
+                          ? "border-primary bg-white shadow-xs ring-1 ring-primary/20"
+                          : "border-[#e5e5e5] bg-[#fafafa] hover:bg-white hover:border-[#737373]/40"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 transition-colors",
+                          isActive
+                            ? "bg-primary text-white shadow-xs"
+                            : "bg-white text-[#737373] border border-[#e5e5e5]"
+                        )}
+                      >
+                        {icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-[#0a0a0a]">{label}</p>
+                        <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">{sublabel}</p>
+                      </div>
+                      <div
+                        className={cn(
+                          "w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all",
+                          isActive ? "border-primary bg-primary" : "border-[#e5e5e5] bg-white"
+                        )}
+                      >
+                        {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+            )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#0a0a0a]">Chave Pix</label>
-                <Input
-                  placeholder={
-                    tipoChave ? "Digite sua chave Pix" : "Selecione o tipo de chave primeiro"
-                  }
-                  value={chavePix}
-                  disabled={!tipoChave}
-                  type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
-                  aria-invalid={Boolean(pixErrorMessage)}
-                  onChange={(e) => handleChavePixChange(e.target.value)}
-                  onBlur={() => setChavePixTouched(true)}
-                />
-                {pixErrorMessage && (
-                  <p className="text-xs font-normal text-[#e7000b] ml-1">
-                    {pixErrorMessage}
-                  </p>
-                )}
+            {(modalidade === WIZARD_MODALIDADE.AUTOMATICA || incluirPix === true) && (
+              <div ref={pixFormRef} className="space-y-3 pt-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#0a0a0a]">Tipo de Chave</label>
+                  <NativeSelect
+                    value={tipoChave || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleTipoChaveChange(val ? (val as TipoChavePix) : undefined);
+                    }}
+                  >
+                    <option value="" disabled>
+                      Selecionar tipo...
+                    </option>
+                    <option value={TipoChavePix.CPF}>CPF</option>
+                    <option value={TipoChavePix.CNPJ}>CNPJ</option>
+                    <option value={TipoChavePix.EMAIL}>E-mail</option>
+                    <option value={TipoChavePix.TELEFONE}>Telefone Celular</option>
+                    <option value={TipoChavePix.ALEATORIA}>Chave Aleatória</option>
+                  </NativeSelect>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#0a0a0a]">Chave Pix</label>
+                  <Input
+                    placeholder={
+                      tipoChave ? "Digite sua chave Pix" : "Selecione o tipo de chave primeiro"
+                    }
+                    value={chavePix}
+                    disabled={!tipoChave}
+                    type={tipoChave === TipoChavePix.TELEFONE ? "tel" : "text"}
+                    aria-invalid={Boolean(pixErrorMessage)}
+                    onChange={(e) => handleChavePixChange(e.target.value)}
+                    onBlur={() => setChavePixTouched(true)}
+                  />
+                  {pixErrorMessage && (
+                    <p className="text-xs font-normal text-[#e7000b] ml-1">
+                      {pixErrorMessage}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -375,58 +456,13 @@ export default function ConfigurarCobrancaWizardDialog({
         {step === WIZARD_STEP.AVISOS && (
           <div className="space-y-4">
             <div className="divide-y divide-[#e5e5e5] space-y-3.5">
-              <div className="space-y-2 pt-1 first:pt-0">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-0.5 min-w-0 pr-1">
-                    <h3 className="text-xs sm:text-sm font-medium text-[#0a0a0a] leading-tight">
-                      Lembrete antes do vencimento
-                    </h3>
-                    <p className="text-xs text-[#737373]">
-                      Avisa os pais com antecedência para lembrarem da parcela.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={avisoPrevioAtivo}
-                    onCheckedChange={setAvisoPrevioAtivo}
-                  />
-                </div>
-
-                {avisoPrevioAtivo && (
-                  <div className="pt-1 w-full">
-                    <div className="w-full flex items-center justify-between bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-1 shadow-none">
-                      <button
-                        type="button"
-                        disabled={diasAvisoPrevio <= 1}
-                        onClick={() => handleDiasStep(-1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-[14px] bg-white text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all border border-[#e5e5e5] cursor-pointer"
-                        title="Diminuir antecedência"
-                      >
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="text-xs font-medium text-[#0a0a0a] px-3 text-center select-none">
-                        {diasAvisoPrevio} {diasAvisoPrevio === 1 ? "dia antes" : "dias antes"}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={diasAvisoPrevio >= 5}
-                        onClick={() => handleDiasStep(1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-[14px] bg-white text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all border border-[#e5e5e5] cursor-pointer"
-                        title="Aumentar antecedência"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between gap-3 pt-3">
+              <div className="flex items-center justify-between gap-3 pt-1 first:pt-0">
                 <div className="space-y-0.5 min-w-0 pr-1">
                   <h3 className="text-xs sm:text-sm font-medium text-[#0a0a0a] leading-tight">
                     Lembrete no dia do vencimento
                   </h3>
                   <p className="text-xs text-[#737373]">
-                    Envia mensagem na data exata em que a parcela vence.
+                    Envia mensagem no WhatsApp na data exata em que a parcela vence.
                   </p>
                 </div>
                 <Switch
@@ -441,7 +477,7 @@ export default function ConfigurarCobrancaWizardDialog({
                     Lembrete de atraso (3 dias após)
                   </h3>
                   <p className="text-xs text-[#737373]">
-                    Avisa o responsável caso a parcela continue pendente após 3 dias.
+                    Avisa o responsável no WhatsApp caso a parcela continue pendente após 3 dias.
                   </p>
                 </div>
                 <Switch
@@ -463,13 +499,6 @@ export default function ConfigurarCobrancaWizardDialog({
             onClick={handleBack}
             disabled={isSubmitting}
           />
-        ) : modalidade === WIZARD_MODALIDADE.LEMBRETES ? (
-          <BaseDialog.Action
-            label="Não usar Pix"
-            variant="outline"
-            onClick={handleSkipPix}
-            disabled={isSubmitting}
-          />
         ) : (
           <BaseDialog.Action
             label="Cancelar"
@@ -482,7 +511,7 @@ export default function ConfigurarCobrancaWizardDialog({
         <BaseDialog.Action
           label={
             step === WIZARD_STEP.BENEFICIOS
-              ? "Entendi, quero configurar"
+              ? "Quero configurar"
               : step === WIZARD_STEP.AVISOS
                 ? "Concluir Ativação"
                 : "Avançar"
@@ -491,7 +520,7 @@ export default function ConfigurarCobrancaWizardDialog({
           icon={step === WIZARD_STEP.AVISOS ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
           onClick={handleNext}
           isLoading={isSubmitting}
-          disabled={step === WIZARD_STEP.PIX && !isPixValido}
+          disabled={isAvancarDisabled}
         />
       </BaseDialog.Footer>
     </BaseDialog>

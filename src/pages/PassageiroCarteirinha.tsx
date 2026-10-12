@@ -743,7 +743,7 @@ export default function PassageiroCarteirinha() {
         description: action === "ativar"
           ? "O responsável do aluno voltará a receber lembretes e notificações de cobrança."
           : "O responsável do aluno não receberá mais lembretes e notificações de cobrança.",
-        confirmText: action === "ativar" ? "Ativar" : "Desativar",
+        confirmText: action === "ativar" ? "Confirmar" : "Confirmar",
         variant: action === "desativar" ? "warning" : "default",
         onConfirm: async () => {
           try {

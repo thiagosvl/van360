@@ -40,6 +40,12 @@ export function AdminUserFinancialConfigCard({
     modo_cobranca: ModoCobrancaEnum.DESATIVADO,
     taxa_personalizada: "",
     enviar_recibo_automatico: true,
+    cobrar_multa_atraso: false,
+    multa_atraso_tipo: "percentual",
+    multa_atraso_valor: "",
+    cobrar_juros_atraso: false,
+    juros_atraso_tipo: "percentual",
+    juros_atraso_valor: "",
   });
 
   useEffect(() => {
@@ -56,6 +62,18 @@ export function AdminUserFinancialConfigCard({
           config.enviar_recibo_automatico !== undefined
             ? Boolean(config.enviar_recibo_automatico)
             : true,
+        cobrar_multa_atraso: Boolean(config.cobrar_multa_atraso),
+        multa_atraso_tipo: config.multa_atraso_tipo || "percentual",
+        multa_atraso_valor:
+          config.multa_atraso_valor !== null && config.multa_atraso_valor !== undefined
+            ? String(config.multa_atraso_valor)
+            : "",
+        cobrar_juros_atraso: Boolean(config.cobrar_juros_atraso),
+        juros_atraso_tipo: config.juros_atraso_tipo || "percentual",
+        juros_atraso_valor:
+          config.juros_atraso_valor !== null && config.juros_atraso_valor !== undefined
+            ? String(config.juros_atraso_valor)
+            : "",
       });
     }
   }, [config]);
@@ -67,6 +85,14 @@ export function AdminUserFinancialConfigCard({
       ? Number(formData.taxa_personalizada.replace(",", "."))
       : null;
 
+    const multaNum = formData.multa_atraso_valor.trim()
+      ? Number(formData.multa_atraso_valor.replace(",", "."))
+      : null;
+
+    const jurosNum = formData.juros_atraso_valor.trim()
+      ? Number(formData.juros_atraso_valor.replace(",", "."))
+      : null;
+
     updateMutation.mutate({
       userId,
       data: {
@@ -75,6 +101,12 @@ export function AdminUserFinancialConfigCard({
         modo_cobranca: formData.modo_cobranca,
         taxa_personalizada: taxaNum,
         enviar_recibo_automatico: formData.enviar_recibo_automatico,
+        cobrar_multa_atraso: formData.cobrar_multa_atraso,
+        multa_atraso_tipo: formData.multa_atraso_tipo,
+        multa_atraso_valor: multaNum,
+        cobrar_juros_atraso: formData.cobrar_juros_atraso,
+        juros_atraso_tipo: formData.juros_atraso_tipo,
+        juros_atraso_valor: jurosNum,
       },
     });
   };
@@ -214,6 +246,106 @@ export function AdminUserFinancialConfigCard({
                         onCheckedChange={(val) => setFormData((p) => ({ ...p, enviar_recibo_automatico: val }))}
                       />
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-border pt-5">
+                <h4 className="text-xs font-semibold text-foreground">
+                  Multa e juros por atraso (QR Code Pix)
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3 p-3.5 rounded-2xl bg-secondary/30 border border-border">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-semibold text-foreground block">Multa por atraso</Label>
+                        <span className="text-xs text-muted-foreground block">
+                          Incide uma única vez após o vencimento
+                        </span>
+                      </div>
+                      <Switch
+                        checked={formData.cobrar_multa_atraso}
+                        onCheckedChange={(val) => setFormData((p) => ({ ...p, cobrar_multa_atraso: val }))}
+                      />
+                    </div>
+                    {formData.cobrar_multa_atraso && (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-muted-foreground">Formato</Label>
+                          <Select
+                            value={formData.multa_atraso_tipo}
+                            onValueChange={(val) => setFormData((p) => ({ ...p, multa_atraso_tipo: val }))}
+                          >
+                            <SelectTrigger className="h-9 rounded-xl bg-background border-input text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentual" className="text-xs">Percentual (%)</SelectItem>
+                              <SelectItem value="fixo" className="text-xs">Fixo (R$)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-muted-foreground">Valor</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.multa_atraso_valor}
+                            onChange={(e) => setFormData((p) => ({ ...p, multa_atraso_valor: e.target.value }))}
+                            placeholder={formData.multa_atraso_tipo === "percentual" ? "Ex: 2 (%)" : "Ex: 10 (R$)"}
+                            className="h-9 rounded-xl bg-background border-input text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 p-3.5 rounded-2xl bg-secondary/30 border border-border">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-semibold text-foreground block">Juros de mora</Label>
+                        <span className="text-xs text-muted-foreground block">
+                          Incide por dia de atraso
+                        </span>
+                      </div>
+                      <Switch
+                        checked={formData.cobrar_juros_atraso}
+                        onCheckedChange={(val) => setFormData((p) => ({ ...p, cobrar_juros_atraso: val }))}
+                      />
+                    </div>
+                    {formData.cobrar_juros_atraso && (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-muted-foreground">Formato</Label>
+                          <Select
+                            value={formData.juros_atraso_tipo}
+                            onValueChange={(val) => setFormData((p) => ({ ...p, juros_atraso_tipo: val }))}
+                          >
+                            <SelectTrigger className="h-9 rounded-xl bg-background border-input text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentual" className="text-xs">% ao mês</SelectItem>
+                              <SelectItem value="fixo" className="text-xs">R$ ao dia</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-muted-foreground">Valor</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.juros_atraso_valor}
+                            onChange={(e) => setFormData((p) => ({ ...p, juros_atraso_valor: e.target.value }))}
+                            placeholder={formData.juros_atraso_tipo === "percentual" ? "Ex: 1 (%)" : "Ex: 0.50 (R$)"}
+                            className="h-9 rounded-xl bg-background border-input text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

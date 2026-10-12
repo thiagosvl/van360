@@ -1,7 +1,16 @@
 export const PREPOSICOES_NOME = new Set(["de", "da", "do", "dos", "das", "e"]);
 
+export const normalizeCompoundName = (name?: string): string => {
+  if (!name) return "";
+  return name.trim().replace(/\s*\/\s*/g, " / ");
+};
+
 export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
   if (!fullName) return "";
+  if (fullName.includes("/")) {
+    return normalizeCompoundName(fullName);
+  }
+
   const names = fullName.trim().split(/\s+/);
 
   if (includeSecond && names.length >= 2) {
@@ -27,6 +36,10 @@ export const formatShortName = (fullName?: string, includeSecond?: boolean) => {
 
 export const formatFirstName = (fullName?: string) => {
   if (!fullName) return "Nome não informado";
+  if (fullName.includes("/")) {
+    return normalizeCompoundName(fullName);
+  }
+
   const names = fullName.trim().split(/\s+/);
   return names[0] || "Nome não informado";
 };

@@ -179,7 +179,7 @@ export function resolveOrigemAtribuicao(
       label: ORIGEM_ATRIBUICAO_LABELS.SITE_INSTITUCIONAL,
       detalhe: CAMPANHA_FALLBACK_LABELS.DIRETO,
       categoria: AtribuicaoCategoria.SITE_ORGANICO,
-      corBadge: "bg-black/5 text-[#0a0a0a] border-[#e5e5e5]",
+      corBadge: "bg-sky-500/10 text-sky-400 border-sky-500/20",
     };
   }
 

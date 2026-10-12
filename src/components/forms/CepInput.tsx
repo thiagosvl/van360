@@ -89,7 +89,7 @@ export function CepInput<T extends FieldValues>({
   return (
     <FormItem className={cn("space-y-1.5", className)}>
       <FormLabel className={cn("text-[#0a0a0a] font-medium text-xs", labelClassName)}>
-        {label} {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[11px] font-normal text-[#737373] ml-1">(Opcional)</span>}
+        {label} {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">

@@ -956,7 +956,7 @@ export function RevisarSolicitacaoDialog({
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
                           <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                            Parentesco do Responsável
+                            Parentesco
                           </FormLabel>
                           <FormControl>
                             <NativeSelect
@@ -1045,7 +1045,7 @@ export function RevisarSolicitacaoDialog({
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1 sm:col-span-2">
                           <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                            E-mail do Responsável
+                            E-mail
                           </FormLabel>
                           <FormControl>
                             <Input

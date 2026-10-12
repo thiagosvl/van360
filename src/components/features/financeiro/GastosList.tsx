@@ -71,7 +71,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5 min-w-[70px]">
-          <p className="font-semibold text-[#0a0a0a] text-sm leading-none">
+          <p className="font-bold text-[#0a0a0a] text-xs leading-none tabular-nums mb-0.5 text-right">
             {formatCurrency(gasto.valor)}
           </p>
           {placa && (
@@ -126,13 +126,13 @@ export const GastosList = memo(function GastosList({
                   Descrição
                 </th>
                 <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                  Veículo
+                  Valor
                 </th>
                 <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Data
                 </th>
-                <th className="px-6 py-3.5 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
-                  Valor
+                <th className="px-6 py-3.5 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                  Veículo
                 </th>
                 <th className="px-6 py-3.5 text-right text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Ações
@@ -175,6 +175,14 @@ export const GastosList = memo(function GastosList({
                         {obterDescricaoFormatadaGasto(gasto)}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-left align-middle">
+                      <span className="font-normal text-[#0a0a0a] text-sm tabular-nums">
+                        {formatCurrency(gasto.valor)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 align-middle text-xs font-medium text-[#737373]">
+                      {formatDateToBR(gasto.data)}
+                    </td>
                     <td className="px-6 py-4 align-middle">
                       {placa ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
@@ -183,14 +191,6 @@ export const GastosList = memo(function GastosList({
                       ) : (
                         <span className="text-xs text-[#737373]">-</span>
                       )}
-                    </td>
-                    <td className="px-6 py-4 align-middle text-xs font-medium text-[#737373]">
-                      {formatDateToBR(gasto.data)}
-                    </td>
-                    <td className="px-6 py-4 text-right align-middle">
-                      <span className="font-semibold text-[#0a0a0a] text-sm">
-                        {formatCurrency(gasto.valor)}
-                      </span>
                     </td>
                     <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
                       <GastoActionsMenu

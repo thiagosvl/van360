@@ -164,28 +164,27 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             >
               {formatNomeResponsavelExibicao(responsavelExibicao, formatoNomeResponsavel)}
             </span>
-            <span className="text-xs text-[#737373] font-normal leading-snug">
-              {valor > 0
-                ? `${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`
-                : "Sem valor mensal"}
-            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           {isImportado ? (
-            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+            <span className="px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium bg-sky-500/[0.08] text-sky-700 border border-sky-500/20">
               Importado
             </span>
           ) : isAssinado ? (
-            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#171717] text-[#fafafa]">
+            <span className="px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium bg-emerald-500/[0.08] text-emerald-700 border border-emerald-500/20">
               Assinado
             </span>
           ) : isPendente ? (
-            <span className="px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
+            <span className="px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium bg-amber-500/[0.08] text-amber-700 border border-amber-500/20">
               Pendente
             </span>
-          ) : null}
+          ) : (
+            <span className="px-2.5 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]">
+              {isMissingResponsible ? "Cadastro Incompleto" : "Sem Contrato"}
+            </span>
+          )}
         </div>
       </div>
     </MobileActionItem>
@@ -349,15 +348,15 @@ export const ContratosList = memo(function ContratosList({
 
                   <TableCell className="px-6 py-4">
                     {isImportado ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-sky-500/[0.08] text-sky-700 border border-sky-500/20">
                         Assinado (Importado)
                       </span>
                     ) : isAssinado ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#171717] text-[#fafafa]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-emerald-500/[0.08] text-emerald-700 border border-emerald-500/20">
                         Assinado
                       </span>
                     ) : isPendente ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-amber-500/[0.08] text-amber-700 border border-amber-500/20">
                         Pendente
                       </span>
                     ) : (

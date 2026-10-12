@@ -3,7 +3,7 @@ import { UserType } from "@/types/enums";
 import { phoneMask } from "@/utils/masks";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { Car, Phone } from "lucide-react";
-import { StatusBadge } from "@/components/common/StatusBadge";
+import { cn } from "@/lib/utils";
 
 interface EquipeSummaryProps {
   membro: MembroEquipe;
@@ -25,7 +25,16 @@ export function EquipeSummary({ membro }: EquipeSummaryProps) {
           {isMonitor ? "Monitor" : "Motorista"}
         </span>
 
-        <StatusBadge status={membro.ativo !== false} />
+        <div
+          className={cn(
+            "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
+            membro.ativo !== false
+              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+              : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
+          )}
+        >
+          {membro.ativo !== false ? "Ativo" : "Inativo"}
+        </div>
       </div>
 
       <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight break-words w-full min-w-0 mt-0.5">

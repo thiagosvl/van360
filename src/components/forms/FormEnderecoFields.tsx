@@ -115,7 +115,7 @@ export function FormEnderecoFields({
           render={({ field, fieldState }) => (
             <FormItem className="col-span-2 sm:col-span-4 relative space-y-1.5">
               <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                Logradouro {required && <span className="text-[#e7000b]">*</span>}
+                Logradouro {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
               </FormLabel>
               <FormControl>
                 <div className="relative">
@@ -195,7 +195,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-1 sm:col-span-2 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Número {required && <span className="text-[#e7000b]">*</span>}
+              Número {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
             </FormLabel>
             <FormControl>
               <div className="relative">
@@ -221,7 +221,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-1 sm:col-span-2 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Complemento
+              Complemento <span className="text-[#737373] font-normal text-xs">(opcional)</span>
             </FormLabel>
             <FormControl>
               <div className="relative">
@@ -249,7 +249,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-2 sm:col-span-2 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Bairro {required && <span className="text-[#e7000b]">*</span>}
+              Bairro {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
             </FormLabel>
             <FormControl>
               <div className="relative">
@@ -276,7 +276,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-2 sm:col-span-4 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Cidade {required && <span className="text-[#e7000b]">*</span>}
+              Cidade {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
             </FormLabel>
             <FormControl>
               <div className="relative">
@@ -303,7 +303,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-2 sm:col-span-2 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Estado {required && <span className="text-[#e7000b]">*</span>}
+              Estado {required ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
             </FormLabel>
             <FormControl>
               <NativeSelect
@@ -333,7 +333,7 @@ export function FormEnderecoFields({
         render={({ field, fieldState }) => (
           <FormItem className="col-span-2 sm:col-span-6 space-y-1.5">
             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-              Ponto de Referência
+              Ponto de Referência <span className="text-[#737373] font-normal text-xs">(opcional)</span>
             </FormLabel>
             <FormControl>
               <div className="relative">

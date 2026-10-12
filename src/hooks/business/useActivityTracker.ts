@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { historicoApi, RegistrarEventoDTO } from "@/services/api/historico.api";
+import { sessionManager } from "@/services/sessionManager";
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { getDispositivoCadastro } from "@/utils/detectPlatform";
 import { isImpersonating } from "@/utils/impersonate";
@@ -45,7 +46,15 @@ export function useActivityTracker() {
         }
       }
 
-      localStorage.setItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP, now.toString());
+      const currentSession = sessionManager.getCurrentSession();
+      let token = currentSession?.access_token;
+
+      if (!token) {
+        const { data } = await sessionManager.getSession();
+        token = data.session?.access_token;
+      }
+
+      if (!token) return;
 
       const dispositivo = getDispositivoCadastro();
 
@@ -59,6 +68,7 @@ export function useActivityTracker() {
       };
 
       await historicoApi.registrarEvento(payload);
+      localStorage.setItem(STORAGE_KEYS.LAST_APP_OPEN_TIMESTAMP, now.toString());
     } catch {
       return;
     }

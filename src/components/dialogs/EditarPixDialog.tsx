@@ -28,7 +28,7 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
         title="Configurar Chave Pix"
-        icon={<Key className="w-5 h-5 text-primary" />}
+        icon={<Key className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
       <BaseDialog.Body>

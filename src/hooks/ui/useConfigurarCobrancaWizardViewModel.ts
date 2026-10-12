@@ -50,6 +50,9 @@ export function useConfigurarCobrancaWizardViewModel({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [chavePixTouched, setChavePixTouched] = useState(false);
+  const [incluirPix, setIncluirPix] = useState<boolean | null>(() =>
+    modalidade === WIZARD_MODALIDADE.AUTOMATICA ? true : null
+  );
 
   const initialTipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
   const initialChave = financeiro?.chave_pix_repasse || profile?.chave_pix || "";
@@ -180,6 +183,28 @@ export function useConfigurarCobrancaWizardViewModel({
     return null;
   }, [tipoChave, chavePix, chavePixTouched, modalidade]);
 
+  const handleIncluirPixChange = (valor: boolean) => {
+    setIncluirPix(valor);
+    if (!valor) {
+      setChavePixTouched(false);
+    }
+  };
+
+  const isAvancarDisabled = useMemo(() => {
+    if (step === WIZARD_STEP.BENEFICIOS) return false;
+    if (step === WIZARD_STEP.TAXAS) return false;
+    if (step === WIZARD_STEP.AVISOS) return false;
+    if (step === WIZARD_STEP.PIX) {
+      if (modalidade === WIZARD_MODALIDADE.AUTOMATICA) {
+        return !isPixValido;
+      }
+      if (incluirPix === null) return true;
+      if (incluirPix === false) return false;
+      return !isPixValido;
+    }
+    return false;
+  }, [step, modalidade, isPixValido, incluirPix]);
+
   const handleDiasStep = (delta: number) => {
     setDiasAvisoPrevio((prev) => Math.max(1, Math.min(5, prev + delta)));
   };
@@ -208,16 +233,35 @@ export function useConfigurarCobrancaWizardViewModel({
     }
 
     if (step === WIZARD_STEP.PIX) {
-      setChavePixTouched(true);
-      if (!isPixValido) {
-        toast.error(
-          modalidade === WIZARD_MODALIDADE.AUTOMATICA
-            ? "Informe uma chave Pix válida para habilitar a cobrança com baixa automática."
-            : "Informe uma chave Pix válida ou clique em 'Não usar Pix'."
-        );
+      if (modalidade === WIZARD_MODALIDADE.AUTOMATICA) {
+        setChavePixTouched(true);
+        if (!isPixValido) {
+          toast.error("Informe uma chave Pix válida para habilitar a cobrança com baixa automática.");
+          return;
+        }
+        setStep(WIZARD_STEP.TAXAS);
         return;
       }
-      setStep(modalidade === WIZARD_MODALIDADE.AUTOMATICA ? WIZARD_STEP.TAXAS : WIZARD_STEP.AVISOS);
+
+      if (incluirPix === null) {
+        toast.warning("Selecione se deseja ou não incluir sua chave Pix.");
+        return;
+      }
+
+      if (incluirPix === false) {
+        setTipoChave(undefined);
+        setChavePix("");
+        setChavePixTouched(false);
+        setStep(WIZARD_STEP.AVISOS);
+        return;
+      }
+
+      setChavePixTouched(true);
+      if (!isPixValido) {
+        toast.error("Informe uma chave Pix válida para continuar.");
+        return;
+      }
+      setStep(WIZARD_STEP.AVISOS);
       return;
     }
 
@@ -288,6 +332,9 @@ export function useConfigurarCobrancaWizardViewModel({
     setAvisoPrevioAtivo,
     setVencimentoHojeAtivo,
     setAtraso3DiasAtivo,
+    incluirPix,
+    handleIncluirPixChange,
+    isAvancarDisabled,
     handleDiasStep,
     handleBack,
     handleSkipPix,

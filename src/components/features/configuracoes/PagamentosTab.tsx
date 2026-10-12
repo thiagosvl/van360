@@ -34,6 +34,7 @@ import {
   Receipt,
   Key,
   Pencil,
+  Smartphone,
 } from "lucide-react";
 
 export const MODO_COBRANCA = ModoCobrancaEnum;
@@ -335,7 +336,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </div>
 
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Sem mensagens aos pais. Você lembra e recebe manualmente.
+                  Sem mensagens aos pais. Você cobra, recebe e dá baixa manualmente, um por um.
                 </p>
               </div>
             </button>
@@ -385,7 +386,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </div>
 
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Avisos antes e no vencimento com sua chave Pix. Recebimento direto e baixa manual por você.
+                  Lembretes no WhatsApp no dia do vencimento e com 3 dias de atraso. Você recebe e dá baixa manualmente, um por um.
                 </p>
               </div>
             </button>
@@ -435,7 +436,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </div>
 
                 <p className="text-xs text-[#737373] leading-relaxed">
-                  Baixa automática na hora e repasse via Pix. Taxa de {taxaFormatada} por parcela paga.
+                  O Van360 cobra no WhatsApp, dá baixa na parcela assim que o pai paga e ainda envia o recibo automaticamente. Seu secretário financeiro: você só dirige. Taxa de {taxaFormatada} por parcela paga.
                 </p>
               </div>
             </button>
@@ -444,11 +445,10 @@ export const PagamentosTab = memo(function PagamentosTab() {
           {quantidadeExcecoesAtuais > 0 && (
             <Banner
               variant="info"
-              description={`Você possui ${quantidadeExcecoesAtuais} ${
-                quantidadeExcecoesAtuais === 1
-                  ? "aluno com regra diferente do padrão da van"
-                  : "alunos com regras diferentes do padrão da van"
-              }. Alterações no padrão podem manter ou unificar essas regras.`}
+              description={`Você possui ${quantidadeExcecoesAtuais} ${quantidadeExcecoesAtuais === 1
+                ? "aluno com regra diferente do padrão da van"
+                : "alunos com regras diferentes do padrão da van"
+                }. Alterações no padrão podem manter ou unificar essas regras.`}
             />
           )}
         </div>
@@ -469,7 +469,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 </h2>
                 <p className="text-xs text-[#737373] mt-0.5">
                   {modoVisual === MODO_COBRANCA.AUTOMATICA
-                    ? "Sua conta bancária onde o dinheiro dos pagamentos recebidos será repassado."
+                    ? "Sua chave Pix onde o dinheiro dos pagamentos recebidos será repassado."
                     : "Chave Pix enviada aos pais nos lembretes do WhatsApp."}
                 </p>
               </div>
@@ -493,8 +493,8 @@ export const PagamentosTab = memo(function PagamentosTab() {
               variant="info"
               description={
                 chavePixDisplay
-                  ? "Sua chave Pix cadastrada será enviada aos responsáveis nos lembretes de cobrança para pagamento direto."
-                  : "Opcional: cadastre sua chave Pix se desejar que ela seja enviada nos lembretes do WhatsApp. Se preferir não cadastrar, o lembrete será enviado apenas com o valor e a data de vencimento."
+                  ? "Sua chave Pix cadastrada será enviada nos lembretes do WhatsApp com botão de copiar para facilitar o pagamento pelos pais."
+                  : "Lembretes configurados para envio dos dados da parcela no WhatsApp. Você pode adicionar uma chave Pix a qualquer momento."
               }
             />
           )}
@@ -503,7 +503,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
             <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="h-10 w-10 rounded-[14px] bg-white text-[#737373] flex items-center justify-center border border-[#e5e5e5] shrink-0">
-                  <Key className="w-4.5 h-4.5 text-[#0a0a0a]" />
+                  <Key className="w-4.5 h-4.5" />
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   <span className="text-xs font-medium text-[#737373] block">
@@ -536,12 +536,14 @@ export const PagamentosTab = memo(function PagamentosTab() {
               </div>
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-[#0a0a0a]">
-                  Nenhuma chave Pix configurada
+                  {modoVisual === MODO_COBRANCA.LEMBRETES
+                    ? "Lembretes ativos sem chave Pix"
+                    : "Nenhuma chave Pix configurada"}
                 </h4>
                 <p className="text-xs text-[#737373] max-w-sm mx-auto">
                   {modoVisual === MODO_COBRANCA.AUTOMATICA
                     ? "Cadastre sua chave Pix para poder receber os repasses automáticos das parcelas pagas."
-                    : "Cadastre uma chave Pix caso queira que ela seja enviada nos lembretes do WhatsApp."}
+                    : "Você optou por enviar apenas os dados da parcela no WhatsApp. Toque para adicionar uma chave Pix se desejar."}
                 </p>
               </div>
               <button
@@ -555,7 +557,9 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-9 px-4 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary-hover text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Key className="w-3.5 h-3.5" />
-                Cadastrar Chave Pix
+                {modoVisual === MODO_COBRANCA.LEMBRETES
+                  ? "Adicionar Chave Pix"
+                  : "Cadastrar Chave Pix"}
               </button>
             </div>
           )}
@@ -571,10 +575,10 @@ export const PagamentosTab = memo(function PagamentosTab() {
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
-                  Lembretes no WhatsApp
+                  Lembretes aos Pais
                 </h2>
                 <p className="text-xs text-[#737373] mt-0.5">
-                  Defina em quais momentos os pais receberão a notificação da parcela
+                  Defina em quais momentos os responsáveis receberão as notificações da parcela
                 </p>
               </div>
             </div>
@@ -604,6 +608,84 @@ export const PagamentosTab = memo(function PagamentosTab() {
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0 pr-1">
                   <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
+                    Lembrete no dia do vencimento
+                  </h3>
+                  <p className="text-xs text-[#737373] mt-0.5">
+                    Envia mensagem na data exata em que a parcela vence.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                    <span className="text-[10px] text-[#737373]">Enviado via:</span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
+                      <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
+                      WhatsApp
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                      <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                      App dos Pais
+                    </span>
+                  </div>
+                </div>
+
+                <div className="shrink-0 self-start pt-0.5">
+                  <Switch
+                    id="switch-cobranca-vencimento-hoje-ativo"
+                    checked={configuracoes?.cobranca_vencimento_hoje_ativo ?? true}
+                    loading={updatingKey === "cobranca_vencimento_hoje_ativo"}
+                    disabled={isBusy}
+                    onCheckedChange={() =>
+                      handleToggleAviso(
+                        "cobranca_vencimento_hoje_ativo",
+                        configuracoes?.cobranca_vencimento_hoje_ativo ?? true
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0 pr-1">
+                  <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
+                    Lembrete de atraso (3 dias após)
+                  </h3>
+                  <p className="text-xs text-[#737373] mt-0.5">
+                    Avisa o responsável caso a parcela continue pendente após 3 dias.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                    <span className="text-[10px] text-[#737373]">Enviado via:</span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
+                      <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
+                      WhatsApp
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                      <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                      App dos Pais
+                    </span>
+                  </div>
+                </div>
+
+                <div className="shrink-0 self-start pt-0.5">
+                  <Switch
+                    id="switch-cobranca-atraso-3-dias-ativo"
+                    checked={configuracoes?.cobranca_atraso_3_dias_ativo ?? true}
+                    loading={updatingKey === "cobranca_atraso_3_dias_ativo"}
+                    disabled={isBusy}
+                    onCheckedChange={() =>
+                      handleToggleAviso(
+                        "cobranca_atraso_3_dias_ativo",
+                        configuracoes?.cobranca_atraso_3_dias_ativo ?? true
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0 pr-1">
+                  <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
                     Lembrete antes do vencimento
                   </h3>
                   <p className="text-xs text-[#737373] mt-0.5">
@@ -611,7 +693,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                   </p>
                 </div>
 
-                <div className="shrink-0">
+                <div className="shrink-0 self-start pt-0.5">
                   <Switch
                     id="switch-cobranca-aviso-previo-ativo"
                     checked={configuracoes?.cobranca_aviso_previo_ativo ?? true}
@@ -628,7 +710,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
               </div>
 
               {(configuracoes?.cobranca_aviso_previo_ativo ?? true) && (
-                <div className="space-y-2 pt-0.5">
+                <div className="space-y-2 pt-1">
                   <div className="space-y-1.5 max-w-xs">
                     <span className="text-[11px] sm:text-xs font-medium text-[#737373] block">
                       Dias de antecedência:
@@ -664,61 +746,13 @@ export const PagamentosTab = memo(function PagamentosTab() {
                   </div>
                 </div>
               )}
-            </div>
 
-            <div className="space-y-2 pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="space-y-0.5 min-w-0 pr-1">
-                  <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
-                    Lembrete no dia do vencimento
-                  </h3>
-                  <p className="text-xs text-[#737373] mt-0.5">
-                    Envia mensagem na data exata em que a parcela vence.
-                  </p>
-                </div>
-
-                <div className="shrink-0">
-                  <Switch
-                    id="switch-cobranca-vencimento-hoje-ativo"
-                    checked={configuracoes?.cobranca_vencimento_hoje_ativo ?? true}
-                    loading={updatingKey === "cobranca_vencimento_hoje_ativo"}
-                    disabled={isBusy}
-                    onCheckedChange={() =>
-                      handleToggleAviso(
-                        "cobranca_vencimento_hoje_ativo",
-                        configuracoes?.cobranca_vencimento_hoje_ativo ?? true
-                      )
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2 pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="space-y-0.5 min-w-0 pr-1">
-                  <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
-                    Lembrete de atraso (3 dias após)
-                  </h3>
-                  <p className="text-xs text-[#737373] mt-0.5">
-                    Avisa o responsável caso a parcela continue pendente após 3 dias.
-                  </p>
-                </div>
-
-                <div className="shrink-0">
-                  <Switch
-                    id="switch-cobranca-atraso-3-dias-ativo"
-                    checked={configuracoes?.cobranca_atraso_3_dias_ativo ?? true}
-                    loading={updatingKey === "cobranca_atraso_3_dias_ativo"}
-                    disabled={isBusy}
-                    onCheckedChange={() =>
-                      handleToggleAviso(
-                        "cobranca_atraso_3_dias_ativo",
-                        configuracoes?.cobranca_atraso_3_dias_ativo ?? true
-                      )
-                    }
-                  />
-                </div>
+              <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                <span className="text-[10px] text-[#737373]">Enviado via:</span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                  <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                  Somente no App dos Pais (não envia WhatsApp)
+                </span>
               </div>
             </div>
           </div>

@@ -575,7 +575,7 @@ export default function ResponsavelFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                      CPF
+                      CPF <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -603,7 +603,7 @@ export default function ResponsavelFormDialog({
                 render={({ field, fieldState }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                      E-mail
+                      E-mail <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">

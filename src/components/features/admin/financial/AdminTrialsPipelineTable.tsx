@@ -183,20 +183,20 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
   return (
     <div className="space-y-6">
       <Card className="border border-border bg-card rounded-3xl shadow-xs overflow-hidden text-left">
-        <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-secondary/40 space-y-4">
+        <CardHeader className="p-3.5 sm:p-5 border-b border-border/80 bg-secondary/40 space-y-3.5 sm:space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-                <Calendar className="h-5 w-5" />
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 mt-0.5 sm:mt-0">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <div>
-                <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <div className="min-w-0">
+                <CardTitle className="text-sm sm:text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
                   <span>Vencimento de Trials</span>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
+                  <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold whitespace-nowrap">
                     {activeTrials.length} em andamento
                   </span>
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-2 sm:line-clamp-none">
                   Acompanhamento de trials ordenados por data de expiração, histórico de ações e uso real.
                 </p>
               </div>
@@ -233,265 +233,360 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
             </div>
           </div>
 
-          <div className="flex items-stretch gap-2.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-1 sm:mx-0 sm:px-0 sm:pb-0 touch-pan-x">
+          <div className="flex items-stretch gap-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-3.5 px-3.5 pb-1 sm:mx-0 sm:px-0 sm:pb-0 touch-pan-x">
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("todos")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
+                "w-[115px] sm:w-auto shrink-0 text-left p-2.5 sm:p-3 rounded-xl border transition-all",
                 periodFilter === "todos"
-                  ? "bg-primary/20 border-primary text-foreground shadow-sm"
+                  ? "bg-primary/20 border-primary text-foreground shadow-xs"
                   : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-medium text-muted-foreground block uppercase tracking-wider">Todos</span>
-              <span className="text-base font-bold text-foreground">{activeCounts.todos} trials</span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground block uppercase tracking-wider truncate">Todos</span>
+              <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">{activeCounts.todos} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("1a2")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
+                "w-[115px] sm:w-auto shrink-0 text-left p-2.5 sm:p-3 rounded-xl border transition-all",
                 periodFilter === "1a2"
-                  ? "bg-destructive/20 border-destructive text-foreground shadow-sm"
+                  ? "bg-destructive/20 border-destructive text-foreground shadow-xs"
                   : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-medium text-destructive block uppercase tracking-wider">Em 1 a 2 dias</span>
-              <span className="text-base font-bold text-foreground">{activeCounts.ate2} trials</span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-destructive block uppercase tracking-wider truncate">Em 1 a 2 dias</span>
+              <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">{activeCounts.ate2} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("3a5")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
+                "w-[115px] sm:w-auto shrink-0 text-left p-2.5 sm:p-3 rounded-xl border transition-all",
                 periodFilter === "3a5"
-                  ? "bg-amber-500/20 border-amber-500 text-foreground shadow-sm"
+                  ? "bg-amber-500/20 border-amber-500 text-foreground shadow-xs"
                   : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-medium text-amber-500 block uppercase tracking-wider">Em 3 a 5 dias</span>
-              <span className="text-base font-bold text-foreground">{activeCounts.de3a5} trials</span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-amber-500 block uppercase tracking-wider truncate">Em 3 a 5 dias</span>
+              <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">{activeCounts.de3a5} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("6a10")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
+                "w-[115px] sm:w-auto shrink-0 text-left p-2.5 sm:p-3 rounded-xl border transition-all",
                 periodFilter === "6a10"
-                  ? "bg-sky-500/20 border-sky-500 text-foreground shadow-sm"
+                  ? "bg-sky-500/20 border-sky-500 text-foreground shadow-xs"
                   : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-medium text-sky-500 block uppercase tracking-wider">Em 6 a 10 dias</span>
-              <span className="text-base font-bold text-foreground">{activeCounts.de6a10} trials</span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-sky-500 block uppercase tracking-wider truncate">Em 6 a 10 dias</span>
+              <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">{activeCounts.de6a10} trials</span>
             </button>
 
             <button
               type="button"
               onClick={() => handlePeriodFilterChange("mais10")}
               className={cn(
-                "w-[140px] shrink-0 sm:w-auto sm:shrink text-left p-3 rounded-xl border transition-all",
+                "w-[115px] sm:w-auto shrink-0 text-left p-2.5 sm:p-3 rounded-xl border transition-all",
                 periodFilter === "mais10"
-                  ? "bg-purple-500/20 border-purple-500 text-foreground shadow-sm"
+                  ? "bg-purple-500/20 border-purple-500 text-foreground shadow-xs"
                   : "bg-background border-border text-muted-foreground hover:border-border/80 hover:text-foreground hover:bg-secondary/40"
               )}
             >
-              <span className="text-[11px] font-medium text-muted-foreground block uppercase tracking-wider">Mais de 10 dias</span>
-              <span className="text-base font-bold text-foreground">{activeCounts.mais10} trials</span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground block uppercase tracking-wider truncate">Mais de 10 dias</span>
+              <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">{activeCounts.mais10} trials</span>
             </button>
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-2 text-slate-400">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            <div className="p-12 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <span className="text-xs">Carregando pipeline de vencimento...</span>
             </div>
           ) : filteredActiveTrials.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs font-semibold">
+            <div className="p-8 text-center text-muted-foreground text-xs font-semibold">
               Nenhum trial em andamento encontrado para os filtros selecionados.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-900/30">
-                    <th className="py-3 px-4">Motorista</th>
-                    <th className="py-3 px-3">Vencimento</th>
-                    <th className="py-3 px-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSortToggleActive("diasAcessados")}
-                        className={cn(
-                          "inline-flex items-center justify-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
-                          sortFieldActive === "diasAcessados" && "text-blue-400 font-black"
-                        )}
-                      >
-                        <span>Dias Acessados</span>
-                        {sortFieldActive === "diasAcessados" ? (
-                          sortDirectionActive === "desc" ? (
-                            <ArrowDown className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                          ) : (
-                            <ArrowUp className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
-                        )}
-                      </button>
-                    </th>
-                    <th className="py-3 px-3">
-                      <button
-                        type="button"
-                        onClick={() => handleSortToggleActive("totalAcoes")}
-                        className={cn(
-                          "inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
-                          sortFieldActive === "totalAcoes" && "text-blue-400 font-black"
-                        )}
-                      >
-                        <span>Ações</span>
-                        {sortFieldActive === "totalAcoes" ? (
-                          sortDirectionActive === "desc" ? (
-                            <ArrowDown className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                          ) : (
-                            <ArrowUp className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
-                        )}
-                      </button>
-                    </th>
-                    <th className="py-3 px-3">Indicação</th>
-                    <th className="py-3 px-4 text-right">Plano Cadastro</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {paginatedActiveTrials.map((item) => {
-                    const dias = item.diasRestantes;
-                    const dataFormatada = formatDateBR(item.trialEndsAt);
-                    const apelidoExibicao = item.apelido?.trim() || item.nome;
-                    const cleanPhone = item.telefone?.replace(/\D/g, "");
+            <>
+              <div className="block md:hidden divide-y divide-border/60">
+                {paginatedActiveTrials.map((item) => {
+                  const dias = item.diasRestantes;
+                  const dataFormatada = formatDateBR(item.trialEndsAt);
+                  const apelidoExibicao = item.apelido?.trim() || item.nome;
+                  const cleanPhone = item.telefone?.replace(/\D/g, "");
 
-                    let diasTextoCor = "text-slate-300";
-                    if (dias <= 2) {
-                      diasTextoCor = "text-rose-400";
-                    } else if (dias <= 5) {
-                      diasTextoCor = "text-amber-400";
-                    } else if (dias <= 10) {
-                      diasTextoCor = "text-sky-400";
-                    }
+                  let diasBadgeBg = "bg-secondary text-muted-foreground border-border";
+                  if (dias <= 2) {
+                    diasBadgeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
+                  } else if (dias <= 5) {
+                    diasBadgeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+                  } else if (dias <= 10) {
+                    diasBadgeBg = "bg-sky-500/15 text-sky-400 border-sky-500/30";
+                  }
 
-                    return (
-                      <tr key={item.assinaturaId} className="hover:bg-slate-800/25 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="space-y-1">
-                            <Link
-                              to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
-                              className="font-bold text-white text-xs hover:text-blue-400 hover:underline transition-colors block"
+                  const detalheEntidades = [
+                    item.alunos > 0 ? `${item.alunos} ${item.alunos === 1 ? "aluno" : "alunos"}` : null,
+                    item.escolas > 0 ? `${item.escolas} ${item.escolas === 1 ? "escola" : "escolas"}` : null,
+                    item.veiculos > 0 ? `${item.veiculos} ${item.veiculos === 1 ? "veículo" : "veículos"}` : null,
+                    item.rotas > 0 ? `${item.rotas} ${item.rotas === 1 ? "rota" : "rotas"}` : null,
+                    item.contratos > 0 ? `${item.contratos} ${item.contratos === 1 ? "contrato" : "contratos"}` : null,
+                    item.solicitacoes > 0 ? `${item.solicitacoes} ${item.solicitacoes === 1 ? "solicitação" : "solicitações"}` : null,
+                  ].filter(Boolean).join(" • ");
+
+                  return (
+                    <div key={item.assinaturaId} className="p-3 sm:p-4 space-y-2 hover:bg-secondary/30 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
+                            className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors block truncate"
+                          >
+                            {apelidoExibicao}
+                          </Link>
+                          {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
+                            <span className="text-muted-foreground text-[11px] block truncate">{item.nome}</span>
+                          )}
+                        </div>
+                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0", diasBadgeBg)}>
+                          {dias === 0 ? "Vence hoje" : `em ${dias} ${dias === 1 ? "dia" : "dias"}`} ({dataFormatada})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
+                        <div className="flex items-center gap-2">
+                          {cleanPhone && (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => handleCopyPhone(item.telefone!, e)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[10px] font-mono cursor-pointer shrink-0"
+                              title="Clique para copiar o número do WhatsApp"
                             >
-                              {apelidoExibicao}
-                            </Link>
-                            {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
-                              <span className="text-slate-400 text-[11px] block">{item.nome}</span>
-                            )}
-                            {cleanPhone && (
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                onClick={(e) => handleCopyPhone(item.telefone!, e)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
-                                }}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[11px] font-mono cursor-pointer select-all shrink-0 mt-0.5"
-                                title="Clique para copiar o número do WhatsApp"
-                              >
-                                <WhatsAppIcon className="h-3 w-3 shrink-0" />
-                                <span>{phoneMask(item.telefone || "")}</span>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className={`text-xs font-bold ${diasTextoCor}`}>
-                            {dias === 0 ? "Vence hoje" : `em ${dias} ${dias === 1 ? "dia" : "dias"}`}{" "}
-                            <span className="text-slate-400 font-normal">({dataFormatada})</span>
+                              <WhatsAppIcon className="h-2.5 w-2.5 shrink-0" />
+                              <span>{phoneMask(item.telefone || "")}</span>
+                            </div>
+                          )}
+                          <span className="px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-mono font-medium border border-border/60">
+                            {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"} de uso
                           </span>
-                        </td>
+                        </div>
 
-                        <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 text-xs font-mono font-bold">
-                            {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-3">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-bold font-mono">
-                              {item.totalAcoes} ações
-                            </span>
-                            {item.alunos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 text-xs">
-                                {item.alunos} {item.alunos === 1 ? "aluno" : "alunos"}
-                              </span>
-                            )}
-                            {item.escolas > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.escolas} {item.escolas === 1 ? "escola" : "escolas"}
-                              </span>
-                            )}
-                            {item.veiculos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.veiculos} {item.veiculos === 1 ? "veículo" : "veículos"}
-                              </span>
-                            )}
-                            {item.rotas > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.rotas} {item.rotas === 1 ? "rota" : "rotas"}
-                              </span>
-                            )}
-                            {item.contratos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.contratos} {item.contratos === 1 ? "contrato" : "contratos"}
-                              </span>
-                            )}
-                            {item.solicitacoes > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.solicitacoes} {item.solicitacoes === 1 ? "solicitação" : "solicitações"}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className="text-xs text-slate-300 font-medium">
-                            {item.indicadoPor || "-"}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-4 text-right whitespace-nowrap text-slate-300">
-                          <span className="font-bold text-white text-xs block">
+                        <div className="text-right">
+                          <span className="font-bold text-foreground text-[11px]">
                             {formatCurrency(item.valorMensal)}/mês
                           </span>
-                          <span className="text-[11px] text-slate-500 block">
-                            {formatCurrency(item.valorAnual)}/ano
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
 
-              <div className="p-3 sm:p-4 border-t border-slate-800/80 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-slate-400 font-medium">
-                  Listando <strong className="text-white">{totalActive > 0 ? (pageActive - 1) * pageSize + 1 : 0}</strong> a{" "}
-                  <strong className="text-white">{Math.min(pageActive * pageSize, totalActive)}</strong> de{" "}
-                  <strong className="text-white">{totalActive}</strong> {totalActive === 1 ? "trial" : "trials"}
+                      <div className="px-2.5 py-1.5 rounded-lg bg-secondary/40 border border-border/60 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded bg-primary/15 border border-primary/30 text-primary text-[10px] font-bold font-mono shrink-0">
+                            {item.totalAcoes} ações
+                          </span>
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {detalheEntidades || "Nenhuma entidade criada"}
+                          </span>
+                        </div>
+                        {item.indicadoPor && (
+                          <span className="text-[10px] text-muted-foreground shrink-0 truncate max-w-[100px]" title={`Indicado por: ${item.indicadoPor}`}>
+                            Ind: {item.indicadoPor}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/80 text-muted-foreground text-[11px] font-bold uppercase tracking-wider bg-secondary/30">
+                      <th className="py-3 px-4">Motorista</th>
+                      <th className="py-3 px-3">Vencimento</th>
+                      <th className="py-3 px-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleSortToggleActive("diasAcessados")}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-1.5 hover:text-foreground transition-colors cursor-pointer select-none",
+                            sortFieldActive === "diasAcessados" && "text-primary font-black"
+                          )}
+                        >
+                          <span>Dias Acessados</span>
+                          {sortFieldActive === "diasAcessados" ? (
+                            sortDirectionActive === "desc" ? (
+                              <ArrowDown className="w-3.5 h-3.5 text-primary shrink-0" />
+                            ) : (
+                              <ArrowUp className="w-3.5 h-3.5 text-primary shrink-0" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-3 px-3">
+                        <button
+                          type="button"
+                          onClick={() => handleSortToggleActive("totalAcoes")}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer select-none",
+                            sortFieldActive === "totalAcoes" && "text-primary font-black"
+                          )}
+                        >
+                          <span>Ações</span>
+                          {sortFieldActive === "totalAcoes" ? (
+                            sortDirectionActive === "desc" ? (
+                              <ArrowDown className="w-3.5 h-3.5 text-primary shrink-0" />
+                            ) : (
+                              <ArrowUp className="w-3.5 h-3.5 text-primary shrink-0" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-3 px-3">Indicação</th>
+                      <th className="py-3 px-4 text-right">Plano Cadastro</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 font-medium">
+                    {paginatedActiveTrials.map((item) => {
+                      const dias = item.diasRestantes;
+                      const dataFormatada = formatDateBR(item.trialEndsAt);
+                      const apelidoExibicao = item.apelido?.trim() || item.nome;
+                      const cleanPhone = item.telefone?.replace(/\D/g, "");
+
+                      let diasTextoCor = "text-muted-foreground";
+                      if (dias <= 2) {
+                        diasTextoCor = "text-destructive";
+                      } else if (dias <= 5) {
+                        diasTextoCor = "text-amber-500";
+                      } else if (dias <= 10) {
+                        diasTextoCor = "text-sky-500";
+                      }
+
+                      return (
+                        <tr key={item.assinaturaId} className="hover:bg-secondary/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <Link
+                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
+                                className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors block"
+                              >
+                                {apelidoExibicao}
+                              </Link>
+                              {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
+                                <span className="text-muted-foreground text-[11px] block">{item.nome}</span>
+                              )}
+                              {cleanPhone && (
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(e) => handleCopyPhone(item.telefone!, e)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[11px] font-mono cursor-pointer select-all shrink-0 mt-0.5"
+                                  title="Clique para copiar o número do WhatsApp"
+                                >
+                                  <WhatsAppIcon className="h-3 w-3 shrink-0" />
+                                  <span>{phoneMask(item.telefone || "")}</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className={`text-xs font-bold ${diasTextoCor}`}>
+                              {dias === 0 ? "Vence hoje" : `em ${dias} ${dias === 1 ? "dia" : "dias"}`}{" "}
+                              <span className="text-muted-foreground font-normal">({dataFormatada})</span>
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-mono font-bold">
+                              {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-primary text-xs font-bold font-mono">
+                                {item.totalAcoes} ações
+                              </span>
+                              {item.alunos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary border border-border text-foreground text-xs">
+                                  {item.alunos} {item.alunos === 1 ? "aluno" : "alunos"}
+                                </span>
+                              )}
+                              {item.escolas > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.escolas} {item.escolas === 1 ? "escola" : "escolas"}
+                                </span>
+                              )}
+                              {item.veiculos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.veiculos} {item.veiculos === 1 ? "veículo" : "veículos"}
+                                </span>
+                              )}
+                              {item.rotas > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.rotas} {item.rotas === 1 ? "rota" : "rotas"}
+                                </span>
+                              )}
+                              {item.contratos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.contratos} {item.contratos === 1 ? "contrato" : "contratos"}
+                                </span>
+                              )}
+                              {item.solicitacoes > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.solicitacoes} {item.solicitacoes === 1 ? "solicitação" : "solicitações"}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className="text-xs text-muted-foreground font-medium">
+                              {item.indicadoPor || "-"}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-4 text-right whitespace-nowrap text-muted-foreground">
+                            <span className="font-bold text-foreground text-xs block">
+                              {formatCurrency(item.valorMensal)}/mês
+                            </span>
+                            <span className="text-[11px] text-muted-foreground block">
+                              {formatCurrency(item.valorAnual)}/ano
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-3 sm:p-4 border-t border-border/80 bg-secondary/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <span className="text-muted-foreground font-medium text-center sm:text-left">
+                  Listando <strong className="text-foreground">{totalActive > 0 ? (pageActive - 1) * pageSize + 1 : 0}</strong> a{" "}
+                  <strong className="text-foreground">{Math.min(pageActive * pageSize, totalActive)}</strong> de{" "}
+                  <strong className="text-foreground">{totalActive}</strong> {totalActive === 1 ? "trial" : "trials"}
                 </span>
 
                 {totalPagesActive > 1 && (
@@ -524,26 +619,26 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                   </div>
                 )}
               </div>
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       <Card className="border border-destructive/30 bg-card rounded-3xl shadow-xs overflow-hidden text-left">
-        <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-destructive/5 space-y-4">
+        <CardHeader className="p-3.5 sm:p-5 border-b border-border/80 bg-destructive/5 space-y-3.5 sm:space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shrink-0">
-                <ClockAlert className="h-5 w-5" />
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shrink-0 mt-0.5 sm:mt-0">
+                <ClockAlert className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <div>
-                <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <div className="min-w-0">
+                <CardTitle className="text-sm sm:text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
                   <span>Trials Vencidos Recentemente</span>
-                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-destructive/15 text-destructive border border-destructive/30 font-semibold">
+                  <span className="text-[10px] sm:text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-destructive/15 text-destructive border border-destructive/30 font-semibold whitespace-nowrap">
                     {recentExpiredTrials.length} nos últimos 5 dias
                   </span>
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-2 sm:line-clamp-none">
                   Motoristas com trial expirado nos últimos 5 dias que ainda não ativaram plano. Priorize contato com quem teve alto engajamento.
                 </p>
               </div>
@@ -569,187 +664,282 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
 
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-2 text-slate-400">
-              <Loader2 className="h-6 w-6 animate-spin text-rose-500" />
+            <div className="p-12 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-destructive" />
               <span className="text-xs">Carregando trials vencidos recentemente...</span>
             </div>
           ) : filteredExpiredTrials.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs font-semibold">
+            <div className="p-8 text-center text-muted-foreground text-xs font-semibold">
               Nenhum trial expirado nos últimos 5 dias encontrado.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-900/30">
-                    <th className="py-3 px-4">Motorista</th>
-                    <th className="py-3 px-3">Venceu em</th>
-                    <th className="py-3 px-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSortToggleExpired("diasAcessados")}
-                        className={cn(
-                          "inline-flex items-center justify-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
-                          sortFieldExpired === "diasAcessados" && "text-rose-400 font-black"
-                        )}
-                      >
-                        <span>Dias Acessados</span>
-                        {sortFieldExpired === "diasAcessados" ? (
-                          sortDirectionExpired === "desc" ? (
-                            <ArrowDown className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                          ) : (
-                            <ArrowUp className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
-                        )}
-                      </button>
-                    </th>
-                    <th className="py-3 px-3">
-                      <button
-                        type="button"
-                        onClick={() => handleSortToggleExpired("totalAcoes")}
-                        className={cn(
-                          "inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer select-none",
-                          sortFieldExpired === "totalAcoes" && "text-rose-400 font-black"
-                        )}
-                      >
-                        <span>Ações</span>
-                        {sortFieldExpired === "totalAcoes" ? (
-                          sortDirectionExpired === "desc" ? (
-                            <ArrowDown className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                          ) : (
-                            <ArrowUp className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 opacity-60 shrink-0" />
-                        )}
-                      </button>
-                    </th>
-                    <th className="py-3 px-3">Indicação</th>
-                    <th className="py-3 px-4 text-right">Plano Cadastro</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {paginatedExpiredTrials.map((item) => {
-                    const diasAtras = Math.abs(item.diasRestantes);
-                    const dataFormatada = formatDateBR(item.trialEndsAt);
-                    const apelidoExibicao = item.apelido?.trim() || item.nome;
-                    const cleanPhone = item.telefone?.replace(/\D/g, "");
-                    const isHotLead = item.totalAcoes >= 10 || item.diasAcessados >= 2;
+            <>
+              <div className="block md:hidden divide-y divide-border/60">
+                {paginatedExpiredTrials.map((item) => {
+                  const diasAtras = Math.abs(item.diasRestantes);
+                  const dataFormatada = formatDateBR(item.trialEndsAt);
+                  const apelidoExibicao = item.apelido?.trim() || item.nome;
+                  const cleanPhone = item.telefone?.replace(/\D/g, "");
+                  const isHotLead = item.totalAcoes >= 10 || item.diasAcessados >= 2;
 
-                    return (
-                      <tr key={item.assinaturaId} className="hover:bg-rose-950/10 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Link
-                                to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
-                                className="font-bold text-white text-xs hover:text-blue-400 hover:underline transition-colors"
-                              >
-                                {apelidoExibicao}
-                              </Link>
-                              {isHotLead && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold border bg-amber-500/15 text-amber-400 border-amber-500/30">
-                                  <Flame className="h-2.5 w-2.5" />
-                                  Lead Quente
+                  const detalheEntidades = [
+                    item.alunos > 0 ? `${item.alunos} ${item.alunos === 1 ? "aluno" : "alunos"}` : null,
+                    item.escolas > 0 ? `${item.escolas} ${item.escolas === 1 ? "escola" : "escolas"}` : null,
+                    item.veiculos > 0 ? `${item.veiculos} ${item.veiculos === 1 ? "veículo" : "veículos"}` : null,
+                    item.rotas > 0 ? `${item.rotas} ${item.rotas === 1 ? "rota" : "rotas"}` : null,
+                    item.contratos > 0 ? `${item.contratos} ${item.contratos === 1 ? "contrato" : "contratos"}` : null,
+                    item.solicitacoes > 0 ? `${item.solicitacoes} ${item.solicitacoes === 1 ? "solicitação" : "solicitações"}` : null,
+                  ].filter(Boolean).join(" • ");
+
+                  return (
+                    <div key={item.assinaturaId} className="p-3 sm:p-4 space-y-2 hover:bg-destructive/5 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Link
+                              to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
+                              className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors block truncate"
+                            >
+                              {apelidoExibicao}
+                            </Link>
+                            {isHotLead && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold border bg-amber-500/15 text-amber-400 border-amber-500/30 shrink-0">
+                                <Flame className="h-2.5 w-2.5" />
+                                Lead Quente
+                              </span>
+                            )}
+                          </div>
+                          {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
+                            <span className="text-muted-foreground text-[11px] block truncate">{item.nome}</span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-destructive/15 text-destructive border-destructive/30 whitespace-nowrap shrink-0">
+                          {diasAtras === 0 ? "Venceu hoje" : `Venceu há ${diasAtras} ${diasAtras === 1 ? "dia" : "dias"}`} ({dataFormatada})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
+                        <div className="flex items-center gap-2">
+                          {cleanPhone && (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => handleCopyPhone(item.telefone!, e)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[10px] font-mono cursor-pointer shrink-0"
+                              title="Clique para copiar o número do WhatsApp"
+                            >
+                              <WhatsAppIcon className="h-2.5 w-2.5 shrink-0" />
+                              <span>{phoneMask(item.telefone || "")}</span>
+                            </div>
+                          )}
+                          <span className="px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-mono font-medium border border-border/60">
+                            {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"} de uso
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="font-bold text-foreground text-[11px]">
+                            {formatCurrency(item.valorMensal)}/mês
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="px-2.5 py-1.5 rounded-lg bg-secondary/40 border border-border/60 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded bg-destructive/15 border border-destructive/30 text-destructive text-[10px] font-bold font-mono shrink-0">
+                            {item.totalAcoes} ações
+                          </span>
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {detalheEntidades || "Nenhuma entidade criada"}
+                          </span>
+                        </div>
+                        {item.indicadoPor && (
+                          <span className="text-[10px] text-muted-foreground shrink-0 truncate max-w-[100px]" title={`Indicado por: ${item.indicadoPor}`}>
+                            Ind: {item.indicadoPor}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/80 text-muted-foreground text-[11px] font-bold uppercase tracking-wider bg-secondary/30">
+                      <th className="py-3 px-4">Motorista</th>
+                      <th className="py-3 px-3">Venceu em</th>
+                      <th className="py-3 px-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleSortToggleExpired("diasAcessados")}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-1.5 hover:text-foreground transition-colors cursor-pointer select-none",
+                            sortFieldExpired === "diasAcessados" && "text-destructive font-black"
+                          )}
+                        >
+                          <span>Dias Acessados</span>
+                          {sortFieldExpired === "diasAcessados" ? (
+                            sortDirectionExpired === "desc" ? (
+                              <ArrowDown className="w-3.5 h-3.5 text-destructive shrink-0" />
+                            ) : (
+                              <ArrowUp className="w-3.5 h-3.5 text-destructive shrink-0" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-3 px-3">
+                        <button
+                          type="button"
+                          onClick={() => handleSortToggleExpired("totalAcoes")}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer select-none",
+                            sortFieldExpired === "totalAcoes" && "text-destructive font-black"
+                          )}
+                        >
+                          <span>Ações</span>
+                          {sortFieldExpired === "totalAcoes" ? (
+                            sortDirectionExpired === "desc" ? (
+                              <ArrowDown className="w-3.5 h-3.5 text-destructive shrink-0" />
+                            ) : (
+                              <ArrowUp className="w-3.5 h-3.5 text-destructive shrink-0" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-3 px-3">Indicação</th>
+                      <th className="py-3 px-4 text-right">Plano Cadastro</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 font-medium">
+                    {paginatedExpiredTrials.map((item) => {
+                      const diasAtras = Math.abs(item.diasRestantes);
+                      const dataFormatada = formatDateBR(item.trialEndsAt);
+                      const apelidoExibicao = item.apelido?.trim() || item.nome;
+                      const cleanPhone = item.telefone?.replace(/\D/g, "");
+                      const isHotLead = item.totalAcoes >= 10 || item.diasAcessados >= 2;
+
+                      return (
+                        <tr key={item.assinaturaId} className="hover:bg-destructive/5 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Link
+                                  to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuarioId}`}
+                                  className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors"
+                                >
+                                  {apelidoExibicao}
+                                </Link>
+                                {isHotLead && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold border bg-amber-500/15 text-amber-400 border-amber-500/30">
+                                    <Flame className="h-2.5 w-2.5" />
+                                    Lead Quente
+                                  </span>
+                                )}
+                              </div>
+                              {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
+                                <span className="text-muted-foreground text-[11px] block">{item.nome}</span>
+                              )}
+                              {cleanPhone && (
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(e) => handleCopyPhone(item.telefone!, e)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[11px] font-mono cursor-pointer select-all shrink-0 mt-0.5"
+                                  title="Clique para copiar o número do WhatsApp"
+                                >
+                                  <WhatsAppIcon className="h-3 w-3 shrink-0" />
+                                  <span>{phoneMask(item.telefone || "")}</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className="text-xs font-bold text-destructive">
+                              {diasAtras === 0 ? "Venceu hoje" : `Venceu há ${diasAtras} ${diasAtras === 1 ? "dia" : "dias"}`}{" "}
+                              <span className="text-muted-foreground font-normal">({dataFormatada})</span>
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-mono font-bold">
+                              {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md bg-destructive/15 border border-destructive/30 text-destructive text-xs font-bold font-mono">
+                                {item.totalAcoes} ações
+                              </span>
+                              {item.alunos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary border border-border text-foreground text-xs">
+                                  {item.alunos} {item.alunos === 1 ? "aluno" : "alunos"}
+                                </span>
+                              )}
+                              {item.escolas > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.escolas} {item.escolas === 1 ? "escola" : "escolas"}
+                                </span>
+                              )}
+                              {item.veiculos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.veiculos} {item.veiculos === 1 ? "veículo" : "veículos"}
+                                </span>
+                              )}
+                              {item.rotas > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.rotas} {item.rotas === 1 ? "rota" : "rotas"}
+                                </span>
+                              )}
+                              {item.contratos > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.contratos} {item.contratos === 1 ? "contrato" : "contratos"}
+                                </span>
+                              )}
+                              {item.solicitacoes > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border/60 text-muted-foreground text-xs">
+                                  {item.solicitacoes} {item.solicitacoes === 1 ? "solicitação" : "solicitações"}
                                 </span>
                               )}
                             </div>
-                            {item.apelido?.trim() && item.apelido.trim() !== item.nome && (
-                              <span className="text-slate-400 text-[11px] block">{item.nome}</span>
-                            )}
-                            {cleanPhone && (
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                onClick={(e) => handleCopyPhone(item.telefone!, e)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === " ") handleCopyPhone(item.telefone!, e);
-                                }}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-[11px] font-mono cursor-pointer select-all shrink-0 mt-0.5"
-                                title="Clique para copiar o número do WhatsApp"
-                              >
-                                <WhatsAppIcon className="h-3 w-3 shrink-0" />
-                                <span>{phoneMask(item.telefone || "")}</span>
-                              </div>
-                            )}
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className="text-xs font-bold text-rose-400">
-                            {diasAtras === 0 ? "Venceu hoje" : `Venceu há ${diasAtras} ${diasAtras === 1 ? "dia" : "dias"}`}{" "}
-                            <span className="text-slate-400 font-normal">({dataFormatada})</span>
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 text-xs font-mono font-bold">
-                            {item.diasAcessados} {item.diasAcessados === 1 ? "dia" : "dias"}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-3">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold font-mono">
-                              {item.totalAcoes} ações
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className="text-xs text-muted-foreground font-medium">
+                              {item.indicadoPor || "-"}
                             </span>
-                            {item.alunos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 text-xs">
-                                {item.alunos} {item.alunos === 1 ? "aluno" : "alunos"}
-                              </span>
-                            )}
-                            {item.escolas > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.escolas} {item.escolas === 1 ? "escola" : "escolas"}
-                              </span>
-                            )}
-                            {item.veiculos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.veiculos} {item.veiculos === 1 ? "veículo" : "veículos"}
-                              </span>
-                            )}
-                            {item.rotas > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.rotas} {item.rotas === 1 ? "rota" : "rotas"}
-                              </span>
-                            )}
-                            {item.contratos > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.contratos} {item.contratos === 1 ? "contrato" : "contratos"}
-                              </span>
-                            )}
-                            {item.solicitacoes > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 border border-slate-800/60 text-slate-400 text-xs">
-                                {item.solicitacoes} {item.solicitacoes === 1 ? "solicitação" : "solicitações"}
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className="text-xs text-slate-300 font-medium">
-                            {item.indicadoPor || "-"}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-4 text-right whitespace-nowrap text-slate-300">
-                          <span className="font-bold text-white text-xs block">
-                            {formatCurrency(item.valorMensal)}/mês
-                          </span>
-                          <span className="text-[11px] text-slate-500 block">
-                            {formatCurrency(item.valorAnual)}/ano
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          <td className="py-3 px-4 text-right whitespace-nowrap text-muted-foreground">
+                            <span className="font-bold text-foreground text-xs block">
+                              {formatCurrency(item.valorMensal)}/mês
+                            </span>
+                            <span className="text-[11px] text-muted-foreground block">
+                              {formatCurrency(item.valorAnual)}/ano
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="p-3 sm:p-4 border-t border-border/80 bg-secondary/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-muted-foreground font-medium">
+                <span className="text-muted-foreground font-medium text-center sm:text-left">
                   Listando <strong className="text-foreground">{totalExpired > 0 ? (pageExpired - 1) * pageSize + 1 : 0}</strong> a{" "}
                   <strong className="text-foreground">{Math.min(pageExpired * pageSize, totalExpired)}</strong> de{" "}
                   <strong className="text-foreground">{totalExpired}</strong> {totalExpired === 1 ? "trial vencido" : "trials vencidos"}
@@ -785,7 +975,7 @@ export function AdminTrialsPipelineTable({ trials, isLoading, onRefresh }: Admin
                   </div>
                 )}
               </div>
-            </div>
+            </>
           )}
         </CardContent>
       </Card>

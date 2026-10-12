@@ -63,6 +63,11 @@ import {
   Edit2,
   Smartphone,
   Sparkles,
+  Navigation,
+  Radio,
+  SlidersHorizontal,
+  ReceiptText,
+  Percent,
 } from "lucide-react";
 import { AdminUserPassengersTab } from "@/components/features/admin/user-details/AdminUserPassengersTab";
 import { AdminUserVehiclesTab } from "@/components/features/admin/user-details/AdminUserVehiclesTab";
@@ -142,6 +147,7 @@ const userSchema = z.object({
     .refine((val) => val.trim().split(/\s+/).length >= 2, "Digite seu nome e sobrenome"),
   apelido: z.string().optional(),
   cpfcnpj: cpfCnpjSchema,
+  cpf_responsavel: z.string().optional(),
   telefone: phoneSchema,
   email: emailSchema,
   ativo: z.boolean(),
@@ -424,10 +430,27 @@ export default function AdminUserDetails() {
       email: "",
       telefone: "",
       cpfcnpj: "",
+      cpf_responsavel: "",
       ativo: true,
       data_nascimento: "",
       cobranca_aviso_previo_whatsapp_ativo: false,
     },
+  });
+
+  const [configForm, setConfigForm] = useState({
+    notificar_inicio_rota: false,
+    notificar_proxima_parada: false,
+    notificar_conclusao_parada: false,
+    notificar_motorista_parcelas: true,
+    notificar_motorista_aniversarios: true,
+    rastreamento_ativo: true,
+    rastreamento_modo: "completo" as "completo" | "apenas_proximo",
+    formato_nome_responsavel: "primeiro_nome" as "primeiro_nome" | "completo",
+    exibir_telefone_lista_alunos: false,
+    cobranca_aviso_previo_ativo: true,
+    cobranca_dias_aviso_previo: 2,
+    cobranca_vencimento_hoje_ativo: true,
+    cobranca_atraso_3_dias_ativo: true,
   });
 
   const [subForm, setSubForm] = useState({
@@ -465,9 +488,28 @@ export default function AdminUserDetails() {
         email: u.email || "",
         telefone: phoneMask(u.telefone || ""),
         cpfcnpj: cpfMask(u.cpfcnpj || ""),
+        cpf_responsavel: u.cpf_responsavel ? cpfMask(u.cpf_responsavel) : "",
         ativo: u.ativo ?? true,
         data_nascimento: formatBirth(),
         cobranca_aviso_previo_whatsapp_ativo: data?.configuracoes?.cobranca_aviso_previo_whatsapp_ativo ?? false,
+      });
+    }
+    if (data?.configuracoes) {
+      const c = data.configuracoes;
+      setConfigForm({
+        notificar_inicio_rota: Boolean(c.notificar_inicio_rota),
+        notificar_proxima_parada: Boolean(c.notificar_proxima_parada),
+        notificar_conclusao_parada: Boolean(c.notificar_conclusao_parada),
+        notificar_motorista_parcelas: c.notificar_motorista_parcelas ?? true,
+        notificar_motorista_aniversarios: c.notificar_motorista_aniversarios ?? true,
+        rastreamento_ativo: c.rastreamento_ativo ?? true,
+        rastreamento_modo: (c.rastreamento_modo as "completo" | "apenas_proximo") || "completo",
+        formato_nome_responsavel: (c.formato_nome_responsavel as "primeiro_nome" | "completo") || "primeiro_nome",
+        exibir_telefone_lista_alunos: Boolean(c.exibir_telefone_lista_alunos),
+        cobranca_aviso_previo_ativo: c.cobranca_aviso_previo_ativo ?? true,
+        cobranca_dias_aviso_previo: c.cobranca_dias_aviso_previo ?? 2,
+        cobranca_vencimento_hoje_ativo: c.cobranca_vencimento_hoje_ativo ?? true,
+        cobranca_atraso_3_dias_ativo: c.cobranca_atraso_3_dias_ativo ?? true,
       });
     }
     if (data?.assinatura) {
@@ -493,6 +535,7 @@ export default function AdminUserDetails() {
     const email = formData.email.trim();
     const cleanCpf = formData.cpfcnpj.replace(/\D/g, "");
     const cleanPhone = formData.telefone.replace(/\D/g, "");
+    const cleanCpfResp = formData.cpf_responsavel ? formData.cpf_responsavel.replace(/\D/g, "") : null;
 
     updateUser.mutate({
       id,
@@ -503,9 +546,20 @@ export default function AdminUserDetails() {
         email,
         telefone: cleanPhone,
         cpfcnpj: cleanCpf,
+        cpf_responsavel: cleanCpfResp,
         ativo: formData.ativo,
         data_nascimento: formData.data_nascimento || null,
         cobranca_aviso_previo_whatsapp_ativo: formData.cobranca_aviso_previo_whatsapp_ativo,
+      },
+    });
+  };
+
+  const handleSaveConfigs = () => {
+    if (!id) return;
+    updateUser.mutate({
+      id,
+      data: {
+        configuracoes: configForm,
       },
     });
   };
@@ -791,12 +845,12 @@ export default function AdminUserDetails() {
 
       {/* HEADER DE TOPO EXECUTIVO */}
       <div className="p-5 md:p-6 bg-card border border-border rounded-3xl shadow-xs space-y-4 relative">
-        {/* BOTÃO COPIAR ID NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
+        {/* BOTÃO COPIAR TELEFONE NO CANTO SUPERIOR DIREITO (APENAS MOBILE) */}
         <button
           type="button"
-          onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
+          onClick={() => handleCopy(data.user.telefone, "Telefone copiado!")}
           className="md:hidden absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-xl bg-secondary/60 hover:bg-secondary border border-border flex items-center justify-center cursor-pointer"
-          title="Copiar ID do usuário"
+          title="Copiar telefone do usuário"
         >
           <Copy className="h-4 w-4 text-primary" />
         </button>
@@ -843,9 +897,9 @@ export default function AdminUserDetails() {
 
                 <button
                   type="button"
-                  onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
+                  onClick={() => handleCopy(data.user.telefone, "Telefone copiado!")}
                   className="hidden md:inline-flex text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-secondary shrink-0 cursor-pointer"
-                  title="Copiar ID do usuário"
+                  title="Copiar telefone do usuário"
                 >
                   <Copy className="h-4 w-4 text-primary" />
                 </button>
@@ -906,6 +960,15 @@ export default function AdminUserDetails() {
                     </span>
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => handleCopy(data.user.id, "ID do usuário copiado!")}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-foreground border border-border hover:bg-secondary/80 transition-colors cursor-pointer"
+                  title="Copiar ID do usuário"
+                >
+                  <Copy className="h-3.5 w-3.5 text-primary" />
+                  <span>ID</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1181,6 +1244,17 @@ export default function AdminUserDetails() {
                       {data.user.razao_social || "—"}
                     </span>
                   </div>
+
+                  {data.user.cpf_responsavel && (
+                    <div>
+                      <span className="text-[11px] font-medium text-muted-foreground block">
+                        CPF do responsável legal
+                      </span>
+                      <span className="font-mono font-normal text-foreground block">
+                        {cpfCnpjMask(data.user.cpf_responsavel)}
+                      </span>
+                    </div>
+                  )}
 
                   <div>
                     <span className="text-[11px] font-medium text-muted-foreground block">
@@ -1489,6 +1563,202 @@ export default function AdminUserDetails() {
             })()}
 
           </div>
+
+          {/* DEFINIÇÕES OPERACIONAIS & APLICATIVO (/conta) */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                <span>Definições do motorista (Aba Conta)</span>
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleTabChange("dados")}
+                className="h-7 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/10 gap-1 rounded-lg cursor-pointer"
+              >
+                <span>Editar configurações</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              {/* CARD 1: COBRANÇAS & PIX (À ESQUERDA) */}
+              <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+                <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                  <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 truncate">
+                      <ReceiptText className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <span>Cobranças & Pix</span>
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 whitespace-nowrap",
+                      data.configuracao_financeira?.modo_cobranca === "AUTOMATICA"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : data.configuracao_financeira?.modo_cobranca === "LEMBRETES"
+                          ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                          : "bg-secondary text-muted-foreground border-border"
+                    )}>
+                      {data.configuracao_financeira?.modo_cobranca === "AUTOMATICA" ? "Baixa automática" : data.configuracao_financeira?.modo_cobranca === "LEMBRETES" ? "Lembretes WhatsApp" : "Não cobrar"}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Taxa da plataforma (Pix)</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {data.configuracao_financeira?.taxa_personalizada !== null && data.configuracao_financeira?.taxa_personalizada !== undefined
+                          ? `R$ ${Number(data.configuracao_financeira.taxa_personalizada).toFixed(2).replace(".", ",")} (personalizada)`
+                          : `R$ ${Number(data.configuracao_financeira?.taxa_efetiva ?? 4.0).toFixed(2).replace(".", ",")} (padrão)`}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Lembrete antes do vencimento</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.cobranca_aviso_previo_ativo !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.cobranca_aviso_previo_ativo !== false
+                          ? `Ativo (${data.configuracoes?.cobranca_dias_aviso_previo ?? 2} dias antes)`
+                          : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Lembrete no dia do vencimento</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.cobranca_vencimento_hoje_ativo !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.cobranca_vencimento_hoje_ativo !== false ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Lembrete de atraso (3 dias)</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.cobranca_atraso_3_dias_ativo !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.cobranca_atraso_3_dias_ativo !== false ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Recibo automático via WhatsApp</span>
+                      <span className={cn("text-xs font-medium", data.configuracao_financeira?.enviar_recibo_automatico !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracao_financeira?.enviar_recibo_automatico !== false ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Multa e juros por atraso</span>
+                      <span className={cn("text-xs font-medium", data.configuracao_financeira?.cobrar_multa_atraso || data.configuracao_financeira?.cobrar_juros_atraso ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracao_financeira?.cobrar_multa_atraso || data.configuracao_financeira?.cobrar_juros_atraso ? "Configurados" : "Não configurados"}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* CARD 2: ALERTAS & PREFERÊNCIAS DO APP */}
+              <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+                <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                  <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 truncate">
+                      <Smartphone className="h-4 w-4 text-indigo-400 shrink-0" />
+                      <span>Alertas & Preferências</span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-normal shrink-0 whitespace-nowrap">
+                      Ajustes operacionais
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Lembrete de pagamentos e parcelas</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.notificar_motorista_parcelas !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.notificar_motorista_parcelas !== false ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Lembrete de aniversariantes</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.notificar_motorista_aniversarios !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.notificar_motorista_aniversarios !== false ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Exibição do nome do responsável</span>
+                      <span className="font-medium text-foreground">
+                        {data.configuracoes?.formato_nome_responsavel === "completo" ? "Nome Completo" : "Primeiro Nome"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Telefone na lista de alunos</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.exibir_telefone_lista_alunos ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.exibir_telefone_lista_alunos ? "Visível" : "Oculto"}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* CARD 3: AVISOS DE ROTA & RASTREAMENTO (ÚLTIMO / À DIREITA) */}
+              <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+                <CardHeader className="p-4 border-b border-border/40 bg-secondary/30">
+                  <CardTitle className="text-xs font-headline font-semibold text-foreground flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 truncate">
+                      <Navigation className="h-4 w-4 text-primary shrink-0" />
+                      <span>Avisos de rota & GPS</span>
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 whitespace-nowrap",
+                      (data.configuracoes?.notificar_inicio_rota || data.configuracoes?.notificar_proxima_parada || data.configuracoes?.notificar_conclusao_parada)
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-secondary text-muted-foreground border-border"
+                    )}>
+                      {(data.configuracoes?.notificar_inicio_rota || data.configuracoes?.notificar_proxima_parada || data.configuracoes?.notificar_conclusao_parada) ? "Notificações ativas" : "Pausadas"}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Início de rota</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.notificar_inicio_rota ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.notificar_inicio_rota ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Próxima parada (Van a caminho)</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.notificar_proxima_parada ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.notificar_proxima_parada ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Confirmação de embarque / entrega</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.notificar_conclusao_parada ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.notificar_conclusao_parada ? "Ativo" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Rastreamento pelos pais (GPS)</span>
+                      <span className={cn("text-xs font-medium", data.configuracoes?.rastreamento_ativo !== false ? "text-emerald-400" : "text-muted-foreground")}>
+                        {data.configuracoes?.rastreamento_ativo !== false ? "Permitido" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-muted-foreground">Modo de rastreamento</span>
+                      <span className="font-medium text-foreground">
+                        {data.configuracoes?.rastreamento_modo === "apenas_proximo" ? "Apenas próximo" : "Completo"}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="dados" className="m-0 mt-0 border-0 outline-none p-0 focus-visible:ring-0 focus-visible:outline-none transform-gpu will-change-transform">
@@ -1567,6 +1837,31 @@ export default function AdminUserDetails() {
                                   </FormItem>
                                 )}
                               />
+
+                              {isCnpj && (
+                                <FormField
+                                  control={userForm.control}
+                                  name="cpf_responsavel"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                      <FormLabel className="text-xs font-medium text-foreground">
+                                        CPF do responsável legal
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          maxLength={14}
+                                          onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                                          inputMode="numeric"
+                                          placeholder="Digite o CPF do responsável legal"
+                                          className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground font-mono"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )}
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FormField
@@ -2271,8 +2566,304 @@ export default function AdminUserDetails() {
 
             <AdminUserFinancialConfigCard
               userId={id!}
-              initialConfig={(data as any).configuracao_financeira}
+              initialConfig={data.configuracao_financeira}
             />
+
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+              <div>
+                <CardHeader className="p-5 sm:p-6 border-b border-border/40 bg-secondary/30">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
+                      <Navigation className="h-4 w-4 text-primary" />
+                      <span>Avisos de rota & rastreamento GPS</span>
+                    </CardTitle>
+                    <span className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border",
+                      (configForm.notificar_inicio_rota || configForm.notificar_proxima_parada || configForm.notificar_conclusao_parada)
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-secondary text-muted-foreground border-border"
+                    )}>
+                      {(configForm.notificar_inicio_rota || configForm.notificar_proxima_parada || configForm.notificar_conclusao_parada) ? "Notificações ativas" : "Pausadas"}
+                    </span>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-5 sm:p-6 space-y-5">
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, notificar_inicio_rota: !p.notificar_inicio_rota }))}>
+                          Notificar início da rota
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Envia aviso aos responsáveis quando a rota for iniciada.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.notificar_inicio_rota}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, notificar_inicio_rota: val }))}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, notificar_proxima_parada: !p.notificar_proxima_parada }))}>
+                          Notificar próxima parada
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Avisa o responsável que a van está a caminho do próximo ponto.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.notificar_proxima_parada}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, notificar_proxima_parada: val }))}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, notificar_conclusao_parada: !p.notificar_conclusao_parada }))}>
+                          Notificar conclusão de parada
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Avisa quando o embarque ou desembarque for realizado.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.notificar_conclusao_parada}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, notificar_conclusao_parada: val }))}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, rastreamento_ativo: !p.rastreamento_ativo }))}>
+                          Rastreamento GPS em tempo real
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Permite que os responsáveis acompanhem a localização da van no mapa.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.rastreamento_ativo}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, rastreamento_ativo: val }))}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 pt-3 border-t border-border/40">
+                      <Label className="text-xs font-medium text-foreground">Modo de exibição do rastreamento</Label>
+                      <Select
+                        value={configForm.rastreamento_modo}
+                        onValueChange={(val: "completo" | "apenas_proximo") => setConfigForm(p => ({ ...p, rastreamento_modo: val }))}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus:ring-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="completo" className="text-xs">
+                            Rota completa (todo o trajeto)
+                          </SelectItem>
+                          <SelectItem value="apenas_proximo" className="text-xs">
+                            Apenas quando for a vez do aluno
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </div>
+
+              <CardContent className="p-5 sm:p-6 pt-0">
+                <Button
+                  type="button"
+                  onClick={handleSaveConfigs}
+                  disabled={updateUser.isPending}
+                  className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                >
+                  {updateUser.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-1.5" />
+                      Salvar avisos e rastreamento
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-foreground flex flex-col justify-between">
+              <div>
+                <CardHeader className="p-5 sm:p-6 border-b border-border/40 bg-secondary/30">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm sm:text-base font-headline font-semibold text-foreground tracking-tight flex items-center gap-2">
+                      <SlidersHorizontal className="h-4 w-4 text-primary" />
+                      <span>Preferências & lembretes WhatsApp</span>
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-5 sm:p-6 space-y-5">
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, notificar_motorista_parcelas: !p.notificar_motorista_parcelas }))}>
+                          Notificar recebimento de parcelas
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Receber avisos instantâneos quando pagamentos forem confirmados.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.notificar_motorista_parcelas}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, notificar_motorista_parcelas: val }))}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, notificar_motorista_aniversarios: !p.notificar_motorista_aniversarios }))}>
+                          Lembrete de aniversariantes
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Avisos matinais sobre alunos aniversariantes no dia.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.notificar_motorista_aniversarios}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, notificar_motorista_aniversarios: val }))}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 pt-3 border-t border-border/40">
+                      <Label className="text-xs font-medium text-foreground">Formato do nome do responsável</Label>
+                      <Select
+                        value={configForm.formato_nome_responsavel}
+                        onValueChange={(val: "primeiro_nome" | "completo") => setConfigForm(p => ({ ...p, formato_nome_responsavel: val }))}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus:ring-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="primeiro_nome" className="text-xs">
+                            Primeiro nome (ex: Thiago)
+                          </SelectItem>
+                          <SelectItem value="completo" className="text-xs">
+                            Nome completo (ex: Thiago Silva)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, exibir_telefone_lista_alunos: !p.exibir_telefone_lista_alunos }))}>
+                          Telefone na lista de alunos
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Exibe o botão de telefone/WhatsApp diretamente na lista de embarque.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configForm.exibir_telefone_lista_alunos}
+                        onCheckedChange={(val) => setConfigForm(p => ({ ...p, exibir_telefone_lista_alunos: val }))}
+                      />
+                    </div>
+
+                    <div className="pt-3 border-t border-border/40 space-y-3">
+                      <h5 className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1.5">
+                        <ReceiptText className="h-3.5 w-3.5 text-primary" />
+                        <span>Lembretes de cobrança automática</span>
+                      </h5>
+
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, cobranca_aviso_previo_ativo: !p.cobranca_aviso_previo_ativo }))}>
+                            Aviso antes do vencimento
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground">
+                            Mensagem com QR Code Pix enviada antes do vencimento.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configForm.cobranca_aviso_previo_ativo}
+                          onCheckedChange={(val) => setConfigForm(p => ({ ...p, cobranca_aviso_previo_ativo: val }))}
+                        />
+                      </div>
+
+                      {configForm.cobranca_aviso_previo_ativo && (
+                        <div className="space-y-1.5 pl-4 border-l-2 border-primary/30">
+                          <Label className="text-xs font-medium text-foreground">Dias de antecedência</Label>
+                          <Select
+                            value={String(configForm.cobranca_dias_aviso_previo)}
+                            onValueChange={(val) => setConfigForm(p => ({ ...p, cobranca_dias_aviso_previo: Number(val) }))}
+                          >
+                            <SelectTrigger className="h-9 rounded-xl bg-secondary/60 border-border text-foreground text-xs focus:ring-primary">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1" className="text-xs">1 dia antes</SelectItem>
+                              <SelectItem value="2" className="text-xs">2 dias antes</SelectItem>
+                              <SelectItem value="3" className="text-xs">3 dias antes</SelectItem>
+                              <SelectItem value="5" className="text-xs">5 dias antes</SelectItem>
+                              <SelectItem value="7" className="text-xs">7 dias antes</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      <div className="flex items-start justify-between gap-4 pt-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, cobranca_vencimento_hoje_ativo: !p.cobranca_vencimento_hoje_ativo }))}>
+                            Aviso no dia do vencimento
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground">
+                            Lembrete de vencimento hoje com chave Pix e valor.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configForm.cobranca_vencimento_hoje_ativo}
+                          onCheckedChange={(val) => setConfigForm(p => ({ ...p, cobranca_vencimento_hoje_ativo: val }))}
+                        />
+                      </div>
+
+                      <div className="flex items-start justify-between gap-4 pt-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-medium text-foreground cursor-pointer" onClick={() => setConfigForm(p => ({ ...p, cobranca_atraso_3_dias_ativo: !p.cobranca_atraso_3_dias_ativo }))}>
+                            Aviso de atraso (3 dias)
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground">
+                            Mensagem cordial lembrando da pendência de pagamento.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configForm.cobranca_atraso_3_dias_ativo}
+                          onCheckedChange={(val) => setConfigForm(p => ({ ...p, cobranca_atraso_3_dias_ativo: val }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </div>
+
+              <CardContent className="p-5 sm:p-6 pt-0">
+                <Button
+                  type="button"
+                  onClick={handleSaveConfigs}
+                  disabled={updateUser.isPending}
+                  className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                >
+                  {updateUser.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-1.5" />
+                      Salvar preferências e lembretes
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 

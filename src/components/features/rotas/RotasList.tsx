@@ -37,7 +37,7 @@ export function RotasList({
         action={
           canGerenciar
             ? {
-              label: "Configurar Primeira Rota",
+              label: "Nova Rota",
               onClick: onOpenCreateRoute,
             }
             : undefined

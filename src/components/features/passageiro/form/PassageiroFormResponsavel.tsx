@@ -53,7 +53,7 @@ export function PassageiroFormResponsavel({
               render={({ field, fieldState }) => (
                 <FormItem className="space-y-1.5">
                   <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    CPF do Responsável
+                    CPF do Responsável <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -156,7 +156,7 @@ export function PassageiroFormResponsavel({
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Parentesco do Responsável {isExternal && <span className="text-[#e7000b]">*</span>}
+                  Parentesco {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -184,7 +184,7 @@ export function PassageiroFormResponsavel({
             render={({ field, fieldState }) => (
               <FormItem className={cn(isExternal ? "" : "sm:col-span-2", "space-y-1.5")}>
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  E-mail do Responsável {isExternal && <span className="text-[#e7000b]">*</span>}
+                  E-mail {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -212,7 +212,7 @@ export function PassageiroFormResponsavel({
           <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
             <MapPin className="w-4 h-4" />
           </div>
-          Endereço Principal
+          Endereço Principal {!isExternal && <span className="text-[#737373] font-normal text-xs sm:text-sm">(opcional)</span>}
         </div>
         <FormEnderecoFields namePrefix={fieldNames.enderecoPrefix} required={isExternal} isExternal={isExternal} />
       </div>

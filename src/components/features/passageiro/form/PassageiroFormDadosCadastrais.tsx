@@ -133,7 +133,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Data de Nascimento {isExternal && <span className="text-[#e7000b]">*</span>}
+                  Data de Nascimento {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -163,7 +163,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Gênero {isExternal && <span className="text-[#e7000b]">*</span>}
+                  Gênero {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -265,7 +265,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className={cn("col-span-1", hideVeiculo && !isExternal && "sm:col-span-2", "space-y-1.5")}>
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Escola <span className={cn("text-[#e7000b]", isExternal && "hidden")}>*</span>
+                  Escola {isExternal ? <span className="text-[#737373] font-normal text-xs">(opcional)</span> : <span className="text-[#e7000b]">*</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -312,7 +312,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Modalidade {isExternal && <span className="text-[#e7000b]">*</span>}
+                  Modalidade {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -340,7 +340,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Período {isExternal && <span className="text-[#e7000b]">*</span>}
+                  Período {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -368,7 +368,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Turma
+                  Turma <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -393,7 +393,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Sala
+                  Sala <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -418,7 +418,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className={cn("col-span-1", !isExternal && "sm:col-span-2", "space-y-1.5")}>
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Professor(a)
+                  Professor(a) <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -446,7 +446,7 @@ export function PassageiroFormDadosCadastrais({
               render={({ field, fieldState }) => (
                 <FormItem className="col-span-1 space-y-1.5">
                   <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    Início do Transporte
+                    Início do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                   </FormLabel>
                   <Popover open={openCalendarInicio} onOpenChange={setOpenCalendarInicio}>
                     <PopoverTrigger asChild>
@@ -512,7 +512,7 @@ export function PassageiroFormDadosCadastrais({
               render={({ field, fieldState }) => (
                 <FormItem className="col-span-1 space-y-1.5">
                   <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    Término do Transporte
+                    Término do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                   </FormLabel>
                   <Popover open={openCalendarFim} onOpenChange={setOpenCalendarFim}>
                     <PopoverTrigger asChild>
@@ -575,7 +575,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Horário de Entrada
+                  Horário de Entrada <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <TimeInput
@@ -601,7 +601,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Horário de Saída
+                  Horário de Saída <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <TimeInput
