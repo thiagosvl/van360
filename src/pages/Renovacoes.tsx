@@ -339,7 +339,6 @@ export default function Renovacoes() {
         <RenovacaoKPICard
           kpis={kpis}
           anoDestino={anoDestino}
-          onOpenViradaAno={handleOpenVirada}
         />
 
         <RenovacaoContratoConfigCard anoDestino={anoDestino} />
