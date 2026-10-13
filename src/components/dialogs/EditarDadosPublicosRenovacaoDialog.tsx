@@ -158,71 +158,71 @@ export function EditarDadosPublicosRenovacaoDialog({
       <BaseDialog.Header
         title="Atualizar Meus Dados"
         subtitle="Mantenha seus contatos e endereço sincronizados com o motorista"
-        icon={<User className="w-5 h-5 text-emerald-700" />}
+        icon={<User className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
       />
 
       <BaseDialog.Body className="space-y-6 max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
         <div className="space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <User className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
+            <User className="w-4 h-4 text-[#0a0a0a]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
               Dados do Responsável
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-xs font-medium text-slate-600">Nome Completo</Label>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs font-medium text-[#0a0a0a]">Nome Completo</Label>
               <Input
                 value={nomeResp}
                 onChange={(e) => setNomeResp(e.target.value)}
                 placeholder="Seu nome completo"
-                className="h-9 text-xs"
+                className="h-10 text-xs rounded-[18px] border-[#e5e5e5]"
               />
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-slate-600">WhatsApp / Celular</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-[#0a0a0a]">WhatsApp / Celular</Label>
               <div className="relative">
                 <Input
                   value={telefoneResp}
                   onChange={(e) => setTelefoneResp(phoneMask(e.target.value))}
                   placeholder="(00) 00000-0000"
-                  className="h-9 text-xs pl-8"
+                  className="h-10 text-xs pl-8 rounded-[18px] border-[#e5e5e5]"
                 />
-                <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
+                <Phone className="w-3.5 h-3.5 text-[#737373] absolute left-3 top-3.5" />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-slate-600">CPF</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-[#0a0a0a]">CPF</Label>
               <Input
                 value={cpfResp}
                 onChange={(e) => setCpfResp(cpfMask(e.target.value))}
                 placeholder="000.000.000-00"
-                className="h-9 text-xs"
+                className="h-10 text-xs rounded-[18px] border-[#e5e5e5]"
               />
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-slate-600">E-mail</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-[#0a0a0a]">E-mail</Label>
               <div className="relative">
                 <Input
                   type="email"
                   value={emailResp}
                   onChange={(e) => setEmailResp(e.target.value)}
                   placeholder="seuemail@exemplo.com"
-                  className="h-9 text-xs pl-8"
+                  className="h-10 text-xs pl-8 rounded-[18px] border-[#e5e5e5]"
                 />
-                <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
+                <Mail className="w-3.5 h-3.5 text-[#737373] absolute left-3 top-3.5" />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-slate-600">Grau de Parentesco</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-[#0a0a0a]">Grau de Parentesco</Label>
               <Select value={parentescoResp} onValueChange={setParentescoResp}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-10 text-xs rounded-[18px] border-[#e5e5e5]">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -239,9 +239,9 @@ export function EditarDadosPublicosRenovacaoDialog({
         </div>
 
         <div className="space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <MapPin className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
+            <MapPin className="w-4 h-4 text-[#0a0a0a]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
               Endereço Residencial (Embarque / Desembarque)
             </span>
           </div>
@@ -252,48 +252,48 @@ export function EditarDadosPublicosRenovacaoDialog({
         </div>
 
         <div className="space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <GraduationCap className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
+            <GraduationCap className="w-4 h-4 text-[#0a0a0a]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
               Dados Escolares e Cuidados do Aluno
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Turma / Série Nova</Label>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label className="text-xs font-medium text-[#0a0a0a]">Turma / Série Nova</Label>
               <Input
                 value={turma}
                 onChange={(e) => setTurma(e.target.value)}
                 placeholder="Ex: 3º Ano B"
-                className="h-9 text-xs"
+                className="h-10 text-xs rounded-[18px] border-[#e5e5e5]"
               />
             </div>
 
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Sala (se souber)</Label>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label className="text-xs font-medium text-[#0a0a0a]">Sala (se souber)</Label>
               <Input
                 value={sala}
                 onChange={(e) => setSala(e.target.value)}
                 placeholder="Ex: Sala 04"
-                className="h-9 text-xs"
+                className="h-10 text-xs rounded-[18px] border-[#e5e5e5]"
               />
             </div>
 
-            <div className="space-y-1 sm:col-span-1">
-              <Label className="text-xs font-medium text-slate-600">Professor(a) (se souber)</Label>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label className="text-xs font-medium text-[#0a0a0a]">Professor(a) (se souber)</Label>
               <Input
                 value={nomeProfessor}
                 onChange={(e) => setNomeProfessor(e.target.value)}
                 placeholder="Ex: Profa. Juliana"
-                className="h-9 text-xs"
+                className="h-10 text-xs rounded-[18px] border-[#e5e5e5]"
               />
             </div>
 
-            <div className="space-y-1 sm:col-span-3">
+            <div className="space-y-1.5 sm:col-span-3">
               <div className="flex items-center gap-1.5 mb-1">
-                <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
-                <Label className="text-xs font-medium text-slate-600">
+                <HeartPulse className="w-3.5 h-3.5 text-[#e7000b]" />
+                <Label className="text-xs font-medium text-[#0a0a0a]">
                   Observações de Saúde, Alergias ou Cuidados Especiais
                 </Label>
               </div>
@@ -301,7 +301,7 @@ export function EditarDadosPublicosRenovacaoDialog({
                 value={observacoes}
                 onChange={(e) => setObservacoes(e.target.value)}
                 placeholder="Alergia a picada de inseto, remédios em uso, restrições..."
-                className="text-xs resize-none h-18"
+                className="text-xs resize-none h-20 rounded-[18px] border-[#e5e5e5]"
               />
             </div>
           </div>
@@ -321,7 +321,7 @@ export function EditarDadosPublicosRenovacaoDialog({
           onClick={handleSalvar}
           isLoading={isPending}
           icon={<Save className="w-4 h-4" />}
-          className="bg-emerald-700 hover:bg-emerald-800 shadow-emerald-900/20"
+          className="bg-primary hover:bg-primary/90 rounded-[18px]"
         />
       </BaseDialog.Footer>
     </BaseDialog>

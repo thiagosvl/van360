@@ -10,7 +10,6 @@ import {
   School,
   ChevronDown,
   ChevronUp,
-  FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
@@ -125,17 +124,17 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border transition-all duration-200 overflow-hidden bg-white shadow-2xs",
+        "rounded-[20px] sm:rounded-[24px] border transition-all duration-200 overflow-hidden bg-white shadow-xs",
         isSelected
-          ? "border-blue-300 ring-2 ring-blue-100/80 bg-blue-50/20"
-          : "border-slate-200/90 hover:border-slate-300"
+          ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
+          : "border-[#e5e5e5] hover:border-[#737373]/50"
       )}
     >
       <div
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 sm:gap-3 cursor-pointer select-none"
+        className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none"
       >
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <label
             onClick={(e) => e.stopPropagation()}
             className="p-1 -m-1 cursor-pointer flex items-center justify-center shrink-0"
@@ -144,7 +143,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
               type="checkbox"
               checked={isSelected}
               onChange={() => onToggleSelect(item.passageiro_id)}
-              className="h-4 w-4 sm:h-4.5 sm:w-4.5 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c] cursor-pointer"
+              className="h-4 w-4 rounded-[4px] border-[#e5e5e5] text-[#0a0a0a] focus:ring-[#0a0a0a] cursor-pointer"
             />
           </label>
 
@@ -152,42 +151,42 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
             <img
               src={item.foto_url}
               alt={shortName}
-              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0 border border-slate-200"
+              className="h-10 w-10 rounded-full object-cover shrink-0 border border-[#e5e5e5]"
             />
           ) : (
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
-              <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+            <div className="h-10 w-10 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+              <User className="w-5 h-5 text-[#737373]" />
             </div>
           )}
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-bold text-slate-900 text-xs sm:text-sm leading-tight truncate">
+              <h3 className="font-semibold text-[#0a0a0a] text-sm sm:text-base leading-tight truncate">
                 {shortName}
               </h3>
               {(isValorAlterado || isEscolaAlterada || isPeriodoAlterado) && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-amber-50 text-amber-700 border border-amber-200/70 text-[10px] font-bold">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-amber-500/[0.08] text-amber-700 border border-amber-500/20 text-[10px] font-medium">
                   Condições Ajustadas
                 </span>
               )}
               {item.contrato_status === "assinado" && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-bold">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-emerald-500/[0.08] text-emerald-700 border border-emerald-500/20 text-[10px] font-medium">
                   Contrato Assinado
                 </span>
               )}
               {item.contrato_status === "pendente" && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 border border-sky-200/70 text-[10px] font-bold">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-sky-500/[0.08] text-sky-700 border border-sky-500/20 text-[10px] font-medium">
                   Contrato Pendente
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 font-normal truncate mt-0.5">
+            <div className="flex items-center gap-2 text-xs text-[#737373] font-normal truncate mt-0.5">
               {respName && <span className="truncate">{respName}</span>}
               {item.escola_nome_atual && (
                 <>
-                  <span className="text-slate-300">•</span>
-                  <span className="truncate hidden min-[400px]:inline text-slate-600 font-medium">
+                  <span className="text-[#e5e5e5]">•</span>
+                  <span className="truncate hidden min-[400px]:inline text-[#737373]">
                     {item.escola_nome_atual}
                   </span>
                 </>
@@ -196,46 +195,46 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {item.notificacao_enviada_em ? (
             <span
-              title={`Notificação de renovação enviada em ${formatDateToBR(item.notificacao_enviada_em)}`}
-              className="hidden min-[480px]:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+              title={`Notificação enviada em ${formatDateToBR(item.notificacao_enviada_em)}`}
+              className="hidden min-[480px]:inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] bg-emerald-500/[0.08] text-emerald-700 border border-emerald-500/20"
             >
-              <WhatsAppIcon className="w-2.5 h-2.5 fill-current text-emerald-600" />
+              <WhatsAppIcon className="w-3 h-3 fill-current text-emerald-600" />
               <span>Enviado ({formatDateToBR(item.notificacao_enviada_em)})</span>
             </span>
           ) : (
             <span
               title="Ainda não notificado"
-              className="hidden min-[480px]:inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500"
+              className="hidden min-[480px]:inline-flex items-center text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]"
             >
               Não notificado
             </span>
           )}
 
           {isConfirmed && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[18px] bg-emerald-500/[0.08] text-emerald-700 border border-emerald-500/20 text-xs font-medium">
               <Check className="w-3 h-3 stroke-[2.5]" />
               <span className="hidden sm:inline">Confirmado</span>
             </span>
           )}
 
           {isRecusado && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[18px] bg-[#e7000b]/[0.08] text-[#e7000b] border border-[#e7000b]/20 text-xs font-medium">
               <X className="w-3 h-3 stroke-[2.5]" />
               <span className="hidden sm:inline">Saída</span>
             </span>
           )}
 
           {isPendente && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[18px] bg-amber-500/[0.08] text-amber-700 border border-amber-500/20 text-xs font-medium">
               <Clock className="w-3 h-3 stroke-[2.5]" />
               <span className="hidden sm:inline">Pendente</span>
             </span>
           )}
 
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+          <div className="w-7 h-7 rounded-[10px] flex items-center justify-center text-[#737373] hover:text-[#0a0a0a] transition-colors">
             {isExpanded ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -246,23 +245,23 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
       </div>
 
       {isExpanded && (
-        <div className="border-t border-slate-100 p-3 sm:p-4 bg-slate-50/40 space-y-3 animate-in fade-in-50 duration-150">
+        <div className="border-t border-[#e5e5e5] p-4 bg-[#fafafa] space-y-3.5">
           {(isEscolaAlterada || isPeriodoAlterado) && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {isEscolaAlterada && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/60">
-                  <School className="w-3 h-3 shrink-0" />
-                  <span className="line-through text-rose-500">{item.escola_nome_atual || "Antiga"}</span>
-                  <ArrowRight className="w-2.5 h-2.5 text-blue-400 shrink-0" />
-                  <span className="text-emerald-700 font-bold">{item.nova_escola_nome || "Nova escola"}</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-[18px] bg-sky-500/[0.08] text-sky-700 border border-sky-500/20">
+                  <School className="w-3.5 h-3.5 shrink-0" />
+                  <span className="line-through text-[#e7000b]">{item.escola_nome_atual || "Antiga"}</span>
+                  <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
+                  <span className="text-[#0a0a0a] font-semibold">{item.nova_escola_nome || "Nova escola"}</span>
                 </span>
               )}
               {isPeriodoAlterado && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/60 capitalize">
-                  <Clock className="w-3 h-3 shrink-0" />
-                  <span className="line-through text-rose-500">{item.periodo_atual}</span>
-                  <ArrowRight className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-                  <span className="text-emerald-700 font-bold">{item.novo_periodo}</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-[18px] bg-amber-500/[0.08] text-amber-700 border border-amber-500/20 capitalize">
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  <span className="line-through text-[#e7000b]">{item.periodo_atual}</span>
+                  <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
+                  <span className="text-[#0a0a0a] font-semibold">{item.novo_periodo}</span>
                 </span>
               )}
             </div>
@@ -270,38 +269,38 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
           <div
             onClick={() => onOpenEditarReserva?.(item)}
-            className="flex items-center justify-between p-3 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 hover:shadow-2xs transition-all cursor-pointer"
+            className="flex items-center justify-between p-3.5 rounded-[18px] border border-[#e5e5e5] bg-white hover:border-[#737373]/50 transition-all cursor-pointer shadow-none"
             title="Clique para editar valores e proposta da reserva"
           >
             <div>
-              <span className="text-[11px] text-slate-500 font-medium block">
+              <span className="text-xs text-[#737373] font-normal block">
                 Parcela Atual ({anoDestino - 1})
               </span>
-              <span className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block">
+              <span className="text-sm sm:text-base font-semibold text-[#0a0a0a] mt-0.5 block">
                 {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
               </span>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0 mx-2" />
+            <ArrowRight className="w-4 h-4 text-[#737373] shrink-0 mx-2" />
 
             <div className="text-right">
-              <span className="text-[11px] text-slate-500 font-medium block">
+              <span className="text-xs text-[#737373] font-normal block">
                 Nova Parcela ({anoDestino})
               </span>
               <div className="flex items-baseline justify-end gap-1.5 mt-0.5">
                 {isValorAlterado && (
-                  <span className="text-xs font-semibold line-through text-rose-500">
+                  <span className="text-xs font-normal line-through text-[#e7000b]">
                     {formatCurrency(item.valor_cobranca_atual)}
                   </span>
                 )}
                 <span
                   className={cn(
-                    "text-sm sm:text-base font-bold block",
+                    "text-sm sm:text-base font-semibold block",
                     item.isento_atual
-                      ? "text-slate-700"
+                      ? "text-[#737373]"
                       : isValorAlterado
                       ? "text-emerald-700"
-                      : "text-slate-900"
+                      : "text-[#0a0a0a]"
                   )}
                 >
                   {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
@@ -318,7 +317,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                   variant="outline"
                   size="sm"
                   onClick={handleReenviarWhatsAppManual}
-                  className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
+                  className="w-full rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer"
                 >
                   <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
                   <span>Reenviar pelo WhatsApp</span>
@@ -330,10 +329,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                   size="sm"
                   onClick={handleDispararWaba}
                   disabled={isSendingWaba}
-                  className="w-full rounded-xl border-slate-300 bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
+                  className="w-full rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer disabled:opacity-40"
                 >
                   {isSendingWaba ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                   ) : (
                     <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
                   )}
@@ -346,9 +345,9 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                 variant="outline"
                 size="sm"
                 disabled
-                className="w-full rounded-xl border-slate-200 bg-slate-50 text-slate-400 text-xs font-bold h-9 gap-1.5 opacity-60"
+                className="w-full rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] text-xs font-medium h-9 gap-1.5 opacity-60"
               >
-                <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-slate-400" />
+                <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-[#737373]" />
                 <span>Sem WhatsApp</span>
               </Button>
             )}
@@ -362,24 +361,24 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                   e.stopPropagation();
                   onOpenEditarReserva(item);
                 }}
-                className="w-full rounded-xl border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold h-9 gap-1.5 shadow-2xs cursor-pointer"
+                className="w-full rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer"
               >
-                <Pencil className="w-3.5 h-3.5 text-slate-600" />
+                <Pencil className="w-3.5 h-3.5 text-[#737373]" />
                 <span>Editar Proposta</span>
               </Button>
             )}
           </div>
 
-          <div className="grid grid-cols-3 p-1 rounded-xl bg-slate-200/60 border border-slate-200 gap-1">
+          <div className="grid grid-cols-3 p-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] gap-1">
             <button
               type="button"
               onClick={handleSetSaida}
               disabled={loadingAction !== null}
               className={cn(
-                "h-8 sm:h-9 rounded-lg font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer",
+                "h-8 sm:h-9 rounded-[14px] font-medium text-xs flex items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer",
                 isRecusado
-                  ? "bg-rose-600 text-white shadow-2xs"
-                  : "text-slate-600 hover:text-rose-700 hover:bg-white/70"
+                  ? "bg-[#e7000b] text-white shadow-xs"
+                  : "text-[#737373] hover:text-[#e7000b] hover:bg-white"
               )}
             >
               {loadingAction === "saida" ? (
@@ -397,10 +396,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
               onClick={handleSetPendente}
               disabled={loadingAction !== null}
               className={cn(
-                "h-8 sm:h-9 rounded-lg font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer",
+                "h-8 sm:h-9 rounded-[14px] font-medium text-xs flex items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer",
                 isPendente
-                  ? "bg-amber-500 text-white shadow-2xs"
-                  : "text-slate-600 hover:text-amber-700 hover:bg-white/70"
+                  ? "bg-[#0a0a0a] text-white shadow-xs"
+                  : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
               )}
             >
               {loadingAction === "pendente" ? (
@@ -418,10 +417,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
               onClick={handleSetConfirmado}
               disabled={loadingAction !== null}
               className={cn(
-                "h-8 sm:h-9 rounded-lg font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer",
+                "h-8 sm:h-9 rounded-[14px] font-medium text-xs flex items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer",
                 isConfirmed
-                  ? "bg-emerald-600 text-white shadow-2xs"
-                  : "text-slate-600 hover:text-emerald-700 hover:bg-white/70"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-[#737373] hover:text-emerald-700 hover:bg-white"
               )}
             >
               {loadingAction === "confirmar" ? (

@@ -144,6 +144,7 @@ export default function Renovacoes() {
               variant="warning"
               title="Cancelamento de Contratos Digitais"
               description={`${countContratos} ${countContratos === 1 ? "do aluno selecionado possui" : "dos alunos selecionados possuem"} contrato digital (${anoDestino}) gerado ou assinado. Ao registrar a saída em lote, esses documentos serão cancelados.`}
+              className="rounded-[18px]"
             />
           )}
         </div>
@@ -182,6 +183,7 @@ export default function Renovacoes() {
               variant="warning"
               title="Cancelamento de Contratos Digitais"
               description={`${countContratos} ${countContratos === 1 ? "do aluno selecionado possui" : "dos alunos selecionados possuem"} contrato digital (${anoDestino}) gerado ou assinado. Ao redefinir para pendente, esses documentos serão cancelados.`}
+              className="rounded-[18px]"
             />
           )}
         </div>
@@ -217,6 +219,7 @@ export default function Renovacoes() {
               variant="warning"
               title="Cancelamento de Contrato Digital"
               description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao registrar a saída, esse documento será cancelado no sistema.`}
+              className="rounded-[18px]"
             />
           )}
         </div>
@@ -252,6 +255,7 @@ export default function Renovacoes() {
               variant="warning"
               title="Cancelamento de Contrato Digital"
               description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao voltar para pendente, esse documento será cancelado e uma nova via precisará ser gerada caso a vaga seja confirmada novamente.`}
+              className="rounded-[18px]"
             />
           )}
         </div>
@@ -280,7 +284,7 @@ export default function Renovacoes() {
     }
 
     if (listaParaEnviar.length === 0) {
-      toast.info("Não há passageiros selecionados ou pendentes para notificar.");
+      toast.info("Não há alunos selecionados ou pendentes para notificar.");
       return;
     }
 
@@ -331,7 +335,7 @@ export default function Renovacoes() {
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-5 pb-24 sm:pb-28">
+      <div className="max-w-6xl mx-auto space-y-5 pb-24 sm:pb-28 pt-2 sm:pt-4">
         <RenovacaoKPICard
           kpis={kpis}
           anoDestino={anoDestino}
@@ -381,14 +385,14 @@ export default function Renovacoes() {
           />
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {isViewSemTelefone ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-orange-50/80 border border-orange-200">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-[24px] bg-[#fafafa] border border-[#e5e5e5]">
               <div>
-                <h4 className="text-sm sm:text-base font-bold text-orange-950">
+                <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
                   Alunos com Contato Pendente ({passageiros.length})
                 </h4>
-                <p className="text-xs text-orange-850 mt-0.5">
+                <p className="text-xs text-[#737373] mt-0.5 font-normal">
                   Cadastre ou atualize o telefone do responsável para habilitá-los na lista de renovação.
                 </p>
               </div>
@@ -400,9 +404,9 @@ export default function Renovacoes() {
                   setStatusFilter(ALL_STATUS_FILTER);
                   setPage(1);
                 }}
-                className="h-8 px-3 rounded-xl border-orange-300 text-orange-900 bg-white hover:bg-orange-100 text-xs font-bold shrink-0 gap-1.5 cursor-pointer shadow-2xs"
+                className="h-9 px-3.5 rounded-[18px] border border-[#e5e5e5] text-[#0a0a0a] bg-white hover:bg-[#f5f5f5] text-xs font-medium shrink-0 gap-1.5 cursor-pointer shadow-none"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-3.5 h-3.5 text-[#737373]" />
                 <span>Voltar para Renovação</span>
               </Button>
             </div>
@@ -419,6 +423,7 @@ export default function Renovacoes() {
                     setPage(1);
                   },
                 }}
+                className="rounded-[18px]"
               />
             )
           )}
@@ -426,11 +431,11 @@ export default function Renovacoes() {
           {passageiros.length === 0 ? (
             <UnifiedEmptyState
               icon={Users}
-              title={isViewSemTelefone ? "Nenhum aluno sem telefone" : "Nenhum passageiro encontrado"}
+              title={isViewSemTelefone ? "Nenhum aluno sem telefone" : "Nenhum aluno encontrado"}
               description={
                 isViewSemTelefone
                   ? "Todos os alunos possuem responsáveis com telefone cadastrado e estão aptos para a renovação!"
-                  : "Nenhum passageiro corresponde aos filtros aplicados para este ano letivo."
+                  : "Nenhum aluno corresponde aos filtros aplicados para este ano letivo."
               }
             />
           ) : (
@@ -438,12 +443,12 @@ export default function Renovacoes() {
               {!isViewSemTelefone && (
                 <div className="flex flex-wrap items-center justify-between gap-2 px-1 py-0.5">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 text-xs font-medium text-[#0a0a0a] cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={toggleSelectAll}
-                        className="h-4 w-4 rounded-md border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c] cursor-pointer"
+                        className="h-4 w-4 rounded-[4px] border-[#e5e5e5] text-[#0a0a0a] focus:ring-[#0a0a0a] cursor-pointer"
                       />
                       <span>
                         {isAllSelected ? "Desmarcar todos" : `Marcar todos (${passageiros.length})`}
@@ -454,7 +459,7 @@ export default function Renovacoes() {
                       <button
                         type="button"
                         onClick={selectOnlyPendentes}
-                        className="text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
+                        className="text-xs font-medium text-amber-700 hover:text-amber-800 bg-amber-500/[0.08] hover:bg-amber-500/[0.15] border border-amber-500/20 px-2.5 py-0.5 rounded-[18px] transition-colors cursor-pointer"
                       >
                         Marcar pendentes ({pendentesAptosCount})
                       </button>
@@ -465,7 +470,7 @@ export default function Renovacoes() {
                     <button
                       type="button"
                       onClick={clearSelection}
-                      className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      className="text-xs font-normal text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
                     >
                       Limpar seleção ({selectedIds.size})
                     </button>
@@ -473,7 +478,7 @@ export default function Renovacoes() {
                 </div>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {isViewSemTelefone
                   ? paginatedPassageiros.map((p) => (
                       <RenovacaoSemTelefoneCard
@@ -516,15 +521,15 @@ export default function Renovacoes() {
               />
 
               {!isViewSemTelefone && (
-                <div className="mt-8 rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="mt-8 rounded-[24px] border border-[#e5e5e5] bg-white p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-center sm:text-left">
-                    <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                    <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
                       Transição para o Ano Letivo {anoDestino}
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-[#737373] mt-0.5 font-normal">
                       {kpis.contadores.confirmados > 0
-                        ? `${kpis.contadores.confirmados} passageiro(s) confirmado(s) prontos para virada.`
-                        : "Confirme os passageiros que continuarão no transporte para aplicar a virada."}
+                        ? `${kpis.contadores.confirmados} aluno(s) confirmado(s) prontos para virada.`
+                        : "Confirme os alunos que continuarão no transporte para aplicar a virada."}
                     </p>
                   </div>
 
@@ -532,9 +537,9 @@ export default function Renovacoes() {
                     type="button"
                     onClick={handleOpenVirada}
                     disabled={isLoading || kpis.contadores.confirmados === 0}
-                    className="w-full sm:w-auto h-11 px-5 rounded-xl bg-gradient-to-r from-[#142e4a] to-[#1a3a5c] hover:from-[#0d1e30] hover:to-[#142e4a] text-white font-bold text-xs sm:text-sm shadow-sm gap-2 transition-all active:scale-[0.99] cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto h-11 px-5 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm shadow-xs gap-2 transition-all active:scale-[0.98] cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Rocket className="w-4 h-4 text-amber-400" />
+                    <Rocket className="w-4 h-4 text-white" />
                     <span>Iniciar Ano Letivo {anoDestino} (Aplicar Virada)</span>
                   </Button>
                 </div>

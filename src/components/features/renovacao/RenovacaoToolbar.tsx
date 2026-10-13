@@ -128,14 +128,14 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
   );
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       <DataTableToolbar
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
-        searchPlaceholder="Buscar por passageiro ou responsável..."
+        searchPlaceholder="Buscar por aluno ou responsável..."
         filterConfig={{
-          title: "Filtrar Passageiros",
-          description: "Refine sua busca para encontrar passageiros específicos.",
+          title: "Filtrar Alunos",
+          description: "Refine sua busca para encontrar alunos específicos.",
           hasActiveFilters,
           onClear: handleClearFilters,
           onApply: handleApplyFilters,
@@ -151,9 +151,9 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
                 type="button"
                 variant="outline"
                 onClick={handleOpenLote}
-                className="flex-1 md:flex-initial bg-white border-slate-200 text-[#1a3a5c] font-bold text-xs sm:text-sm gap-2 h-12 md:h-14 rounded-2xl px-3.5 sm:px-5 shadow-sm hover:bg-gray-50 shrink-0 active:scale-95 cursor-pointer"
+                className="flex-1 md:flex-initial bg-white border border-[#e5e5e5] hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 sm:px-4 shadow-none shrink-0 active:scale-[0.98] cursor-pointer"
               >
-                <SlidersHorizontal className="h-4 w-4 text-slate-500 shrink-0" />
+                <SlidersHorizontal className="h-4 w-4 text-[#737373] shrink-0" />
                 <span>Ajustes em Lote</span>
               </Button>
             )}
@@ -163,7 +163,7 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
                 type="button"
                 onClick={onNotificarLote}
                 disabled={isNotificandoLote}
-                className="hidden md:inline-flex bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm gap-2 h-14 rounded-2xl px-5 shadow-sm shrink-0 active:scale-95 cursor-pointer"
+                className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-4 shadow-xs shrink-0 active:scale-[0.98] cursor-pointer disabled:opacity-40"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
                 <span>
@@ -185,15 +185,15 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
             type="button"
             onClick={onNotificarLote}
             disabled={isNotificandoLote}
-            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs min-[360px]:text-sm gap-2 h-12 rounded-2xl shadow-sm active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm gap-2 h-11 rounded-[18px] shadow-xs active:scale-[0.99] transition-all cursor-pointer disabled:opacity-40"
           >
             <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
             <span>
               {isNotificandoLote
                 ? "Enviando notificações..."
                 : pendentesCount !== undefined && pendentesCount > 0
-                ? `Disparar WhatsApp de Renovação (${pendentesCount})`
-                : "Disparar WhatsApp de Renovação"}
+                ? `Disparar WhatsApp (${pendentesCount})`
+                : "Disparar WhatsApp"}
             </span>
           </Button>
         </div>

@@ -155,7 +155,7 @@ export function EditarReservaDialog({
       onSuccess?.();
       safeCloseDialog(onClose);
     } catch {
-      toast.error("Erro ao atualizar reserva do passageiro.");
+      toast.error("Erro ao atualizar reserva do aluno.");
     }
   };
 
@@ -164,59 +164,61 @@ export function EditarReservaDialog({
       open={isOpen}
       onOpenChange={() => !updateMutation.isPending && safeCloseDialog(onClose)}
       maxWidth="md"
+      description={`Configuração da reserva e condições financeiras para o ano letivo de ${anoDestino}`}
     >
       <BaseDialog.Header
-        title={`RESERVA DE VAGA\n${anoDestino}`}
-        icon={<Sparkles className="w-5 h-5 text-[#1a3a5c]" />}
+        title={`Reserva de Vaga • ${anoDestino}`}
+        subtitle="Condições da proposta e valores para o próximo ano letivo"
+        icon={<Sparkles className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={updateMutation.isPending}
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-        <BaseDialog.Body className="p-4 sm:p-6 space-y-6 overflow-y-auto">
-          <div className="rounded-2xl bg-slate-50/70 p-4 border border-slate-200/70">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-              Passageiro
+        <BaseDialog.Body className="p-4 sm:p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+          <div className="rounded-[20px] bg-[#fafafa] p-4 border border-[#e5e5e5]">
+            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block">
+              Aluno
             </span>
-            <span className="text-base font-bold text-[#1a3a5c] block mt-0.5">
+            <span className="text-base font-bold text-[#0a0a0a] tracking-tight block mt-0.5">
               {passageiro?.nome}
             </span>
           </div>
 
           {!isIsentoOriginal && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c]">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-                  <DollarSign className="w-5 h-5" />
-                </div>
-                Parcelas
+              <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
+                <DollarSign className="w-4 h-4 text-[#0a0a0a]" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
+                  Condições da Parcela
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
-                <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <span className="text-xs text-slate-500 font-medium block">
-                    Parcela Atual (2026)
+                <div className="rounded-[18px] border border-[#e5e5e5] bg-white p-3">
+                  <span className="text-[11px] text-[#737373] font-medium block">
+                    Parcela Atual
                   </span>
-                  <span className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block">
+                  <span className="text-sm sm:text-base font-bold text-[#0a0a0a] mt-0.5 block tracking-tight">
                     {formatCurrency(passageiro?.valor_cobranca_atual)}
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-emerald-300 bg-emerald-50/50 p-3">
-                  <span className="text-xs text-emerald-800 font-medium block">
+                <div className="rounded-[18px] border border-[#0a0a0a] bg-[#0a0a0a]/[0.02] p-3">
+                  <span className="text-[11px] text-[#0a0a0a] font-medium block">
                     Nova Parcela ({anoDestino})
                   </span>
-                  <span className="text-sm sm:text-base font-bold text-emerald-900 mt-0.5 block">
+                  <span className="text-sm sm:text-base font-bold text-[#0a0a0a] mt-0.5 block tracking-tight">
                     {novoValor ? novoValor : "R$ 0,00"}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
                   Como deseja definir o valor?
                 </Label>
-                <div className="grid grid-cols-3 rounded-xl border border-slate-200 p-1 bg-slate-50/70 gap-1">
+                <div className="grid grid-cols-3 rounded-[18px] border border-[#e5e5e5] p-1 bg-[#fafafa] gap-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -224,10 +226,10 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-bold rounded-lg transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "direto"
-                        ? "bg-[#1a3a5c] text-white shadow-2xs"
-                        : "text-slate-600 hover:bg-white/80"
+                        ? "bg-[#0a0a0a] text-white shadow-xs"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                     )}
                   >
                     Valor Final
@@ -239,13 +241,13 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-bold rounded-lg transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "fixo"
-                        ? "bg-[#1a3a5c] text-white shadow-2xs"
-                        : "text-slate-600 hover:bg-white/80"
+                        ? "bg-[#0a0a0a] text-white shadow-xs"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                     )}
                   >
-                    + R$
+                    + R$ (Fixo)
                   </button>
                   <button
                     type="button"
@@ -254,41 +256,41 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-bold rounded-lg transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "percentual"
-                        ? "bg-[#1a3a5c] text-white shadow-2xs"
-                        : "text-slate-600 hover:bg-white/80"
+                        ? "bg-[#0a0a0a] text-white shadow-xs"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                     )}
                   >
-                    + %
+                    + % (Percentual)
                   </button>
                 </div>
               </div>
 
               {modoCalculo === "direto" ? (
                 <div className="space-y-1.5">
-                  <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                    Novo Valor da Parcela ({anoDestino}) <span className="text-red-600">*</span>
+                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                    Novo Valor da Parcela ({anoDestino}) <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                    <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                     <Input
                       value={novoValor}
                       onChange={(e) => setNovoValor(moneyMask(e.target.value))}
                       placeholder="R$ 0,00"
-                      className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
                       required
                     />
                   </div>
                 </div>
               ) : (
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
-                      {modoCalculo === "fixo" ? "Valor do Acréscimo (R$)" : "Percentual de Acréscimo (%)"}{" "}
-                      <span className="text-red-600">*</span>
-                    </Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                    {modoCalculo === "fixo" ? "Valor do Acréscimo (R$)" : "Percentual de Acréscimo (%)"}{" "}
+                    <span className="text-[#e7000b]">*</span>
+                  </Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                    <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                     <Input
                       value={valorIncremento}
                       onChange={(e) => {
@@ -318,21 +320,21 @@ export function EditarReservaDialog({
                         }
                       }}
                       placeholder={modoCalculo === "percentual" ? "Ex: 10%" : "Ex: R$ 30,00"}
-                      className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
                     />
                   </div>
 
                   {valorIncremento.trim() && (
-                    <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-center text-xs text-slate-700">
+                    <div className="rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-2.5 text-center text-xs text-[#737373]">
                       {modoCalculo === "fixo" ? (
                         <>
-                          {formatCurrency(passageiro?.valor_cobranca_atual)} (atual) + {formatCurrency(moneyToNumber(valorIncremento))} ={" "}
-                          <strong className="font-bold text-slate-900">{novoValor}</strong>
+                          {formatCurrency(passageiro?.valor_cobranca_atual)} + {formatCurrency(moneyToNumber(valorIncremento))} ={" "}
+                          <strong className="font-bold text-[#0a0a0a]">{novoValor}</strong>
                         </>
                       ) : (
                         <>
-                          {formatCurrency(passageiro?.valor_cobranca_atual)} (atual) + {valorIncremento}% ={" "}
-                          <strong className="font-bold text-slate-900">{novoValor}</strong>
+                          {formatCurrency(passageiro?.valor_cobranca_atual)} + {valorIncremento}% ={" "}
+                          <strong className="font-bold text-[#0a0a0a]">{novoValor}</strong>
                         </>
                       )}
                     </div>
@@ -340,21 +342,82 @@ export function EditarReservaDialog({
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Dia do Vencimento <span className="text-red-600">*</span>
-                </Label>
-                <Select value={novoDiaVencimento} onValueChange={setNovoDiaVencimento}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                    Vencimento <span className="text-[#e7000b]">*</span>
+                  </Label>
+                  <Select value={novoDiaVencimento} onValueChange={setNovoDiaVencimento}>
+                    <SelectTrigger className="h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
+                      <SelectValue placeholder="Dia" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                        <SelectItem key={day} value={day.toString()} className="text-xs">
+                          Dia {day}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                    Início Cobrança
+                  </Label>
                   <div className="relative">
-                    <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-left text-slate-700 font-normal w-full">
-                      <SelectValue placeholder="Selecione o dia" />
+                    <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <Input
+                      value={dataInicioCobranca}
+                      onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
+                      placeholder="DD/MM/AAAA"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                    Fim Cobrança
+                  </Label>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <Input
+                      value={dataFimCobranca}
+                      onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
+                      placeholder="DD/MM/AAAA"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
+              <Car className="w-4 h-4 text-[#0a0a0a]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
+                Dados do Transporte
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Escola <span className="text-[#e7000b]">*</span>
+                </Label>
+                <Select value={novaEscolaId} onValueChange={setNovaEscolaId}>
+                  <div className="relative">
+                    <School className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
+                      <SelectValue placeholder="Selecione a escola" />
                     </SelectTrigger>
                   </div>
                   <SelectContent className="max-h-60 overflow-y-auto">
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                      <SelectItem key={day} value={day.toString()}>
-                        Dia {day}
+                    {escolasList.map((escola) => (
+                      <SelectItem key={escola.id} value={escola.id} className="text-xs">
+                        {escola.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -362,199 +425,139 @@ export function EditarReservaDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Início da Cobrança
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Período <span className="text-[#e7000b]">*</span>
+                </Label>
+                <Select value={novoPeriodo} onValueChange={setNovoPeriodo}>
+                  <div className="relative">
+                    <Sun className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
+                      <SelectValue placeholder="Selecione o período" />
+                    </SelectTrigger>
+                  </div>
+                  <SelectContent>
+                    {periodos.map((p) => (
+                      <SelectItem key={p.value} value={p.value} className="text-xs">
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Modalidade <span className="text-[#e7000b]">*</span>
+                </Label>
+                <Select value={novaModalidade} onValueChange={setNovaModalidade}>
+                  <div className="relative">
+                    <Compass className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
+                      <SelectValue placeholder="Selecione a modalidade" />
+                    </SelectTrigger>
+                  </div>
+                  <SelectContent>
+                    {modalidades.map((m) => (
+                      <SelectItem key={m.value} value={m.value} className="text-xs">
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Veículo
+                </Label>
+                <Select value={novoVeiculoId} onValueChange={setNovoVeiculoId}>
+                  <div className="relative">
+                    <Car className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
+                      <SelectValue placeholder="Selecione o veículo" />
+                    </SelectTrigger>
+                  </div>
+                  <SelectContent>
+                    {veiculosList.map((v) => (
+                      <SelectItem key={v.id} value={v.id} className="text-xs">
+                        {v.modelo} ({formatarPlacaExibicao(v.placa)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Turma
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <Users className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
-                    value={dataInicioCobranca}
-                    onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    value={novaTurma}
+                    onChange={(e) => setNovaTurma(e.target.value)}
+                    placeholder="Ex: 5º Ano B"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Fim da Cobrança
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Nome do Professor
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <User className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
-                    value={dataFimCobranca}
-                    onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    value={novoNomeProfessor}
+                    onChange={(e) => setNovoNomeProfessor(e.target.value)}
+                    placeholder="Ex: Profa. Márcia"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                   />
                 </div>
               </div>
-            </div>
-          )}
 
-          <div className="space-y-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-3 text-lg font-bold text-[#1a3a5c]">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200/80 shadow-sm flex-shrink-0">
-                <Car className="w-5 h-5" />
-              </div>
-              Transporte
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Escola <span className="text-red-600">*</span>
-              </Label>
-              <Select value={novaEscolaId} onValueChange={setNovaEscolaId}>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Início do Transporte
+                </Label>
                 <div className="relative">
-                  <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-left text-slate-700 font-normal w-full">
-                    <SelectValue placeholder="Selecione a escola" />
-                  </SelectTrigger>
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <Input
+                    value={dataInicioTransporte}
+                    onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
+                    placeholder="DD/MM/AAAA"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                  />
                 </div>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {escolasList.map((escola) => (
-                    <SelectItem key={escola.id} value={escola.id}>
-                      {escola.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Período <span className="text-red-600">*</span>
-              </Label>
-              <Select value={novoPeriodo} onValueChange={setNovoPeriodo}>
-                <div className="relative">
-                  <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-left text-slate-700 font-normal w-full">
-                    <SelectValue placeholder="Selecione o período" />
-                  </SelectTrigger>
-                </div>
-                <SelectContent>
-                  {periodos.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Modalidade <span className="text-red-600">*</span>
-              </Label>
-              <Select value={novaModalidade} onValueChange={setNovaModalidade}>
-                <div className="relative">
-                  <Compass className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-left text-slate-700 font-normal w-full">
-                    <SelectValue placeholder="Selecione a modalidade" />
-                  </SelectTrigger>
-                </div>
-                <SelectContent>
-                  {modalidades.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Veículo
-              </Label>
-              <Select value={novoVeiculoId} onValueChange={setNovoVeiculoId}>
-                <div className="relative">
-                  <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-left text-slate-700 font-normal w-full">
-                    <SelectValue placeholder="Selecione o veículo" />
-                  </SelectTrigger>
-                </div>
-                <SelectContent>
-                  {veiculosList.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.modelo} ({formatarPlacaExibicao(v.placa)})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Turma
-              </Label>
-              <div className="relative">
-                <Users className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                <Input
-                  value={novaTurma}
-                  onChange={(e) => setNovaTurma(e.target.value)}
-                  placeholder="Ex: 5º Ano B"
-                  className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
-                />
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Nome do Professor
-              </Label>
-              <div className="relative">
-                <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                <Input
-                  value={novoNomeProfessor}
-                  onChange={(e) => setNovoNomeProfessor(e.target.value)}
-                  placeholder="Ex: Profa. Márcia"
-                  className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Início do Transporte
-              </Label>
-              <div className="relative">
-                <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                <Input
-                  value={dataInicioTransporte}
-                  onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
-                  placeholder="DD/MM/AAAA"
-                  className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                Fim do Transporte
-              </Label>
-              <div className="relative">
-                <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                <Input
-                  value={dataFimTransporte}
-                  onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
-                  placeholder="DD/MM/AAAA"
-                  className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Fim do Transporte
+                </Label>
+                <div className="relative">
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <Input
+                    value={dataFimTransporte}
+                    onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
+                    placeholder="DD/MM/AAAA"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </BaseDialog.Body>
 
-        <BaseDialog.Footer className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-slate-100">
+        <BaseDialog.Footer className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-[#e5e5e5]">
           <BaseDialog.Action
             label="Cancelar"
             variant="secondary"
             onClick={() => safeCloseDialog(onClose)}
           />
           <BaseDialog.Action
-            label="Salvar"
+            label="Salvar Reserva"
             variant="primary"
             type="submit"
             isLoading={updateMutation.isPending}

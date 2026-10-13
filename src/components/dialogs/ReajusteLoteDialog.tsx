@@ -72,7 +72,7 @@ export function ReajusteLoteDialog({
     if (tipoReajuste === RenovacaoReajusteTipo.VALOR_PADRAO) {
       const fixoVal = moneyToNumber(valorInput);
       if (fixoVal <= 0) return null;
-      return `Todos os passageiros selecionados terão a nova parcela definida exatamente em ${formatCurrency(fixoVal)}.`;
+      return `Todos os alunos selecionados terão a nova parcela definida exatamente em ${formatCurrency(fixoVal)}.`;
     }
 
     return null;
@@ -177,19 +177,21 @@ export function ReajusteLoteDialog({
       open={isOpen}
       onOpenChange={() => !reajusteMutation.isPending && safeCloseDialog(onClose)}
       maxWidth="md"
+      description={`Aplicação em lote de valores e prazos para o ano letivo de ${anoDestino}`}
     >
       <BaseDialog.Header
-        title="AJUSTES EM LOTE"
-        icon={<Sparkles className="w-5 h-5 text-[#1a3a5c]" />}
+        title={`Ajustes em Lote • ${anoDestino}`}
+        subtitle="Defina valores e calendários para múltiplos alunos simultaneamente"
+        icon={<Sparkles className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={reajusteMutation.isPending}
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-        <BaseDialog.Body className="p-4 sm:p-6 space-y-4 overflow-y-auto">
+        <BaseDialog.Body className="p-4 sm:p-6 space-y-5 overflow-y-auto max-h-[70vh]">
           <div className="space-y-1.5">
-            <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
-              Para quem você quer aplicar? <span className="text-red-600">*</span>
+            <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+              Para quem deseja aplicar? <span className="text-[#e7000b]">*</span>
             </Label>
 
             <Popover open={isEscolaPopoverOpen} onOpenChange={setIsEscolaPopoverOpen}>
@@ -197,19 +199,19 @@ export function ReajusteLoteDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 rounded-xl bg-slate-50 border-slate-200 text-left font-normal justify-between text-slate-700 px-3 hover:bg-slate-100/60"
+                  className="w-full h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] text-left font-normal justify-between text-[#0a0a0a] px-3.5 hover:bg-[#fafafa]"
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <School className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span className="truncate text-sm">{getEscolaDisplayText()}</span>
+                    <School className="w-4 h-4 text-[#737373] shrink-0" />
+                    <span className="truncate text-xs sm:text-sm">{getEscolaDisplayText()}</span>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                  <ChevronDown className="w-4 h-4 text-[#737373] shrink-0 ml-2" />
                 </Button>
               </PopoverTrigger>
 
-              <PopoverContent className="w-[320px] sm:w-[380px] p-3 rounded-2xl shadow-xl border-slate-200" align="start">
+              <PopoverContent className="w-[320px] sm:w-[380px] p-3 rounded-[20px] shadow-xl border-[#e5e5e5] bg-white" align="start">
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-2.5 p-2 rounded-xl hover:bg-slate-50 border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center space-x-2.5 p-2 rounded-[14px] hover:bg-[#fafafa] border-b border-[#e5e5e5] pb-2.5">
                     <Checkbox
                       id="all-escolas"
                       checked={isAllSelected}
@@ -217,7 +219,7 @@ export function ReajusteLoteDialog({
                     />
                     <label
                       htmlFor="all-escolas"
-                      className="text-xs font-bold text-slate-900 cursor-pointer flex-1"
+                      className="text-xs font-semibold text-[#0a0a0a] cursor-pointer flex-1"
                     >
                       Toda a Frota (Todas as Escolas)
                     </label>
@@ -227,7 +229,7 @@ export function ReajusteLoteDialog({
                     {escolasList.map((escola) => (
                       <div
                         key={escola.id}
-                        className="flex items-center space-x-2.5 p-1.5 rounded-lg hover:bg-slate-50"
+                        className="flex items-center space-x-2.5 p-1.5 rounded-[12px] hover:bg-[#fafafa]"
                       >
                         <Checkbox
                           id={`escola-${escola.id}`}
@@ -236,7 +238,7 @@ export function ReajusteLoteDialog({
                         />
                         <label
                           htmlFor={`escola-${escola.id}`}
-                          className="text-xs text-slate-700 cursor-pointer flex-1 truncate"
+                          className="text-xs text-[#0a0a0a] cursor-pointer flex-1 truncate"
                         >
                           {escola.nome}
                         </label>
@@ -248,9 +250,9 @@ export function ReajusteLoteDialog({
             </Popover>
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-slate-100">
-            <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
-              O que você deseja ajustar em lote? <span className="text-red-600">*</span>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+              O que você deseja ajustar em lote? <span className="text-[#e7000b]">*</span>
             </Label>
 
             <div className="grid grid-cols-3 gap-2">
@@ -258,13 +260,13 @@ export function ReajusteLoteDialog({
                 type="button"
                 onClick={() => setAcaoSelecionada("mensalidade")}
                 className={cn(
-                  "flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border text-center transition-all cursor-pointer",
+                  "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "mensalidade"
-                    ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold shadow-2xs"
-                    : "border-slate-200 bg-slate-50/60 text-slate-600 hover:bg-slate-100"
+                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-[#1a3a5c]" />
+                <DollarSign className="w-4 h-4 mb-1 text-[#0a0a0a]" />
                 <span className="text-xs">Valor da Parcela</span>
               </button>
 
@@ -272,35 +274,35 @@ export function ReajusteLoteDialog({
                 type="button"
                 onClick={() => setAcaoSelecionada("transporte")}
                 className={cn(
-                  "flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border text-center transition-all cursor-pointer",
+                  "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "transporte"
-                    ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold shadow-2xs"
-                    : "border-slate-200 bg-slate-50/60 text-slate-600 hover:bg-slate-100"
+                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <Car className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-[#1a3a5c]" />
-                <span className="text-xs">Período Transporte</span>
+                <Car className="w-4 h-4 mb-1 text-[#0a0a0a]" />
+                <span className="text-xs">Transporte</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setAcaoSelecionada("cobranca")}
                 className={cn(
-                  "flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border text-center transition-all cursor-pointer",
+                  "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "cobranca"
-                    ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold shadow-2xs"
-                    : "border-slate-200 bg-slate-50/60 text-slate-600 hover:bg-slate-100"
+                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-[#1a3a5c]" />
-                <span className="text-xs">Período Cobrança</span>
+                <CalendarDays className="w-4 h-4 mb-1 text-[#0a0a0a]" />
+                <span className="text-xs">Cobrança</span>
               </button>
             </div>
           </div>
 
           {acaoSelecionada === "mensalidade" && (
-            <div className="space-y-3 pt-1.5 border-t border-slate-100">
-              <Label className="text-slate-700 font-semibold ml-1 text-xs sm:text-sm">
+            <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
+              <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
                 Tipo de Reajuste
               </Label>
 
@@ -316,14 +318,14 @@ export function ReajusteLoteDialog({
                 <label
                   htmlFor={fixoId}
                   className={cn(
-                    "flex items-center space-x-3 rounded-xl border p-3 sm:p-3.5 transition-all cursor-pointer",
+                    "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.FIXO
-                      ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold"
-                      : "border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700 font-medium"
+                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.FIXO} id={fixoId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal">
+                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
                     Acrescentar valor fixo (R$)
                   </span>
                 </label>
@@ -331,14 +333,14 @@ export function ReajusteLoteDialog({
                 <label
                   htmlFor={percentualId}
                   className={cn(
-                    "flex items-center space-x-3 rounded-xl border p-3 sm:p-3.5 transition-all cursor-pointer",
+                    "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
-                      ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold"
-                      : "border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700 font-medium"
+                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.PERCENTUAL} id={percentualId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal">
+                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
                     Acrescentar percentual (%)
                   </span>
                 </label>
@@ -346,30 +348,30 @@ export function ReajusteLoteDialog({
                 <label
                   htmlFor={padraoId}
                   className={cn(
-                    "flex items-center space-x-3 rounded-xl border p-3 sm:p-3.5 transition-all cursor-pointer",
+                    "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.VALOR_PADRAO
-                      ? "border-[#1a3a5c] bg-[#1a3a5c]/5 text-[#1a3a5c] font-semibold"
-                      : "border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700 font-medium"
+                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.VALOR_PADRAO} id={padraoId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal">
+                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
                     Definir novo valor fixo para todos (R$)
                   </span>
                 </label>
               </RadioGroup>
 
               <div className="space-y-1.5 pt-1">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
                   {tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
                     ? "Percentual a acrescentar (%)"
                     : tipoReajuste === RenovacaoReajusteTipo.FIXO
-                    ? "Valor a acrescentar por passageiro (R$)"
+                    ? "Valor a acrescentar por aluno (R$)"
                     : "Novo valor da parcela para todos (R$)"}{" "}
-                  <span className="text-red-600">*</span>
+                  <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
                     value={valorInput}
                     onChange={(e) => {
@@ -386,13 +388,13 @@ export function ReajusteLoteDialog({
                         ? "Ex: R$ 30,00"
                         : "Ex: R$ 380,00"
                     }
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
                     required
                   />
                 </div>
 
                 {exemploCalculo && (
-                  <p className="text-[11px] sm:text-xs text-slate-500 pt-0.5 leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-[#737373] pt-0.5 leading-relaxed">
                     {exemploCalculo}
                   </p>
                 )}
@@ -401,34 +403,34 @@ export function ReajusteLoteDialog({
           )}
 
           {acaoSelecionada === "transporte" && (
-            <div className="space-y-4 pt-2 border-t border-slate-100">
+            <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Início do Transporte <span className="text-red-600">*</span>
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Início do Transporte <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
                     value={dataInicioTransporte}
                     onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Fim do Transporte <span className="text-red-600">*</span>
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Fim do Transporte <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
                     value={dataFimTransporte}
                     onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                     required
                   />
                 </div>
@@ -437,34 +439,34 @@ export function ReajusteLoteDialog({
           )}
 
           {acaoSelecionada === "cobranca" && (
-            <div className="space-y-4 pt-2 border-t border-slate-100">
+            <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Início da Cobrança <span className="text-red-600">*</span>
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Início da Cobrança <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
                     value={dataInicioCobranca}
                     onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-slate-700 font-semibold ml-1 text-sm">
-                  Fim da Cobrança <span className="text-red-600">*</span>
+                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  Fim da Cobrança <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
+                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
                   <Input
                     value={dataFimCobranca}
                     onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm sm:text-base text-slate-700 font-normal w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
                     required
                   />
                 </div>
@@ -472,21 +474,21 @@ export function ReajusteLoteDialog({
             </div>
           )}
 
-          <div className="rounded-2xl bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 p-3.5 space-y-1">
-            <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider block">
+          <div className="rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 space-y-1">
+            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block">
               O que vai acontecer?
             </span>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-[#0a0a0a] leading-relaxed">
               {selectedEscolaIds.length === 0
                 ? "Nenhuma escola selecionada. Selecione ao menos uma escola acima."
                 : acaoSelecionada === "mensalidade"
                 ? valorInput.trim()
                   ? tipoReajuste === RenovacaoReajusteTipo.FIXO
-                    ? `Um acréscimo de ${formatCurrency(moneyToNumber(valorInput))} será aplicado na parcela de todos os passageiros de ${getEscolaDisplayText()} para ${anoDestino}.`
+                    ? `Um acréscimo de ${formatCurrency(moneyToNumber(valorInput))} será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
                     : tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
-                    ? `Um acréscimo de ${valorInput}% será aplicado na parcela de todos os passageiros de ${getEscolaDisplayText()} para ${anoDestino}.`
-                    : `A parcela será definida exatamente em ${formatCurrency(moneyToNumber(valorInput))} para todos os passageiros de ${getEscolaDisplayText()} para ${anoDestino}.`
-                  : `O valor da parcela será atualizado para os passageiros de ${getEscolaDisplayText()} para ${anoDestino}.`
+                    ? `Um acréscimo de ${valorInput}% será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                    : `A parcela será definida exatamente em ${formatCurrency(moneyToNumber(valorInput))} para todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                  : `O valor da parcela será atualizado para os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
                 : acaoSelecionada === "transporte"
                 ? `O período de transporte (${dataInicioTransporte} a ${dataFimTransporte}) será atualizado para ${getEscolaDisplayText()}.`
                 : `O período de cobrança (${dataInicioCobranca} a ${dataFimCobranca}) será atualizado para ${getEscolaDisplayText()}.`}
@@ -494,14 +496,14 @@ export function ReajusteLoteDialog({
           </div>
         </BaseDialog.Body>
 
-        <BaseDialog.Footer className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-slate-100">
+        <BaseDialog.Footer className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-[#e5e5e5]">
           <BaseDialog.Action
             label="Cancelar"
             variant="secondary"
             onClick={() => safeCloseDialog(onClose)}
           />
           <BaseDialog.Action
-            label="Aplicar"
+            label="Aplicar Ajustes"
             variant="primary"
             type="submit"
             isLoading={reajusteMutation.isPending}
