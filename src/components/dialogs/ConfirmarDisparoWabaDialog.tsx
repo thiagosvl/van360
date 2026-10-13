@@ -160,7 +160,7 @@ export function ConfirmarDisparoWabaDialog({
           type="button"
           onClick={handleConfirm}
           disabled={aptos.length === 0 || isSending}
-          className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[18px] bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-xs"
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[18px] bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white text-xs font-medium transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-xs"
         >
           {isSending ? (
             <Loader2 className="w-4 h-4 animate-spin text-white" />

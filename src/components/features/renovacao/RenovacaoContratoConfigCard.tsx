@@ -47,47 +47,57 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
   };
 
   return (
-    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-center shrink-0">
-          <FileText className="w-4 h-4 text-[#0a0a0a]" />
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-[#0a0a0a]">
-              Contrato Digital • {anoDestino}
-            </h3>
-            {usarContratos ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[18px] text-[11px] font-medium border bg-emerald-50 text-emerald-800 border-emerald-300/80">
-                <CheckCircle2 className="w-3 h-3" />
-                Ativo
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[11px] font-medium border bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]">
-                Desativado
-              </span>
-            )}
+    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-center shrink-0 mt-0.5">
+            <FileText className="w-5 h-5 text-[#0a0a0a]" />
           </div>
-          <p className="text-xs text-[#737373] mt-0.5 truncate">
-            Exigir assinatura digital do responsável ao confirmar a vaga.
-          </p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
+                Contrato Digital • {anoDestino}
+              </h3>
+              {usarContratos ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium border bg-emerald-50 text-emerald-800 border-emerald-300/80">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Ativo
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium border bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]">
+                  Desativado
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#737373] mt-1 leading-relaxed">
+              Exigir assinatura digital do responsável ao confirmar a vaga.
+            </p>
+          </div>
+        </div>
+
+        <div className="shrink-0 pt-0.5">
+          <Switch
+            checked={usarContratos}
+            onCheckedChange={handleToggleUsarContratos}
+            loading={isLoading || salvarConfigMutation.isPending}
+            disabled={isLoading || salvarConfigMutation.isPending}
+            aria-label={`Alternar contrato digital para ${anoDestino}`}
+          />
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
-        <Switch
-          checked={usarContratos}
-          onCheckedChange={handleToggleUsarContratos}
-          loading={isLoading || salvarConfigMutation.isPending}
-          disabled={isLoading || salvarConfigMutation.isPending}
-          aria-label={`Alternar contrato digital para ${anoDestino}`}
-        />
+      <div className="pt-2.5 border-t border-[#f0f0f0] flex items-center justify-between gap-2">
+        <span className="text-[11px] sm:text-xs text-[#737373] truncate">
+          {usarContratos
+            ? "Cláusulas e termos configurados para a renovação"
+            : "Ative para exigir assinatura ao confirmar vaga"}
+        </span>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => openContractSetupDialog({ ano: anoDestino })}
-          className="h-8 px-2.5 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium gap-1.5 shadow-none cursor-pointer"
+          className="h-8 px-3 rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium gap-1.5 shadow-none shrink-0 cursor-pointer"
         >
           <Settings2 className="w-3.5 h-3.5 text-[#737373]" />
           <span>Configurar</span>

@@ -33,7 +33,7 @@ export function RenovacaoStatusPills({
   const pills: PillItem[] = [
     {
       id: ALL_STATUS_FILTER,
-      label: "Aptos para Renovação",
+      label: "Todos",
       count: contadores.total_ativos - semTelefoneCount,
       activeClasses: "bg-primary/10 text-primary border-primary/25 font-semibold shadow-xs",
       activeBadgeClasses: "bg-primary/20 text-primary font-bold",

@@ -12,6 +12,7 @@ import {
 import { RenovacaoToolbar } from "@/components/features/renovacao/RenovacaoToolbar";
 import { RenovacaoPassengerCard } from "@/components/features/renovacao/RenovacaoPassengerCard";
 import { RenovacaoSemTelefoneCard } from "@/components/features/renovacao/RenovacaoSemTelefoneCard";
+import { RenovacaoSemTelefoneBanner } from "@/components/features/renovacao/RenovacaoSemTelefoneBanner";
 import { RenovacaoStickyBar } from "@/components/features/renovacao/RenovacaoStickyBar";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
@@ -413,45 +414,35 @@ export default function Renovacoes() {
 
         <div className="space-y-3">
           {isViewSemTelefone ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-[24px] bg-[#fafafa] border border-[#e5e5e5]">
+            <div className="space-y-1 px-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter(ALL_STATUS_FILTER);
+                  setPage(1);
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group mb-1"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>Voltar para Renovação</span>
+              </button>
               <div>
                 <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
                   Alunos com Contato Pendente ({passageiros.length})
                 </h4>
                 <p className="text-xs text-[#737373] mt-0.5 font-normal">
-                  Cadastre ou atualize o telefone do responsável para habilitá-los na lista de renovação.
+                  Cadastre o telefone do responsável para habilitar a renovação.
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setStatusFilter(ALL_STATUS_FILTER);
-                  setPage(1);
-                }}
-                className="h-9 px-3.5 rounded-[18px] border border-[#e5e5e5] text-[#0a0a0a] bg-white hover:bg-[#f5f5f5] text-xs font-medium shrink-0 gap-1.5 cursor-pointer shadow-none"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-[#737373]" />
-                <span>Voltar para Renovação</span>
-              </Button>
             </div>
           ) : (
-            semTelefoneCount > 0 && (
-              <Banner
-                variant="warning"
-                title={`${semTelefoneCount} aluno(s) sem telefone cadastrado`}
-                description="Eles não aparecem na lista de renovação abaixo até que o telefone seja informado."
-                action={{
-                  label: "Ver e Cadastrar Contatos",
-                  onClick: () => {
-                    setStatusFilter(SEM_TELEFONE_FILTER);
-                    setPage(1);
-                  },
-                }}
-                className="rounded-[18px]"
-              />
-            )
+            <RenovacaoSemTelefoneBanner
+              count={semTelefoneCount}
+              onVerAlunos={() => {
+                setStatusFilter(SEM_TELEFONE_FILTER);
+                setPage(1);
+              }}
+            />
           )}
 
           {passageiros.length === 0 ? (

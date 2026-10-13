@@ -163,7 +163,7 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
                 type="button"
                 onClick={onNotificarLote}
                 disabled={isNotificandoLote}
-                className="hidden md:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm gap-2 h-10 rounded-[18px] px-4 shadow-xs shrink-0 cursor-pointer disabled:opacity-40"
+                className="hidden md:inline-flex bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs sm:text-sm gap-2 h-10 rounded-[18px] px-4 shadow-xs shrink-0 cursor-pointer disabled:opacity-40 transition-all"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
                 <span>
@@ -185,7 +185,7 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
             type="button"
             onClick={onNotificarLote}
             disabled={isNotificandoLote}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm gap-2 h-10 rounded-[18px] shadow-xs cursor-pointer disabled:opacity-40"
+            className="w-full bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs sm:text-sm gap-2 h-10 rounded-[18px] shadow-xs cursor-pointer disabled:opacity-40 transition-all"
           >
             <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
             <span>
