@@ -262,11 +262,11 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "mensalidade"
-                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <DollarSign className="w-4 h-4 mb-1 text-[#0a0a0a]" />
+                <DollarSign className={cn("w-4 h-4 mb-1", acaoSelecionada === "mensalidade" ? "text-primary" : "text-[#737373]")} />
                 <span className="text-xs">Valor da Parcela</span>
               </button>
 
@@ -276,11 +276,11 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "transporte"
-                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <Car className="w-4 h-4 mb-1 text-[#0a0a0a]" />
+                <Car className={cn("w-4 h-4 mb-1", acaoSelecionada === "transporte" ? "text-primary" : "text-[#737373]")} />
                 <span className="text-xs">Transporte</span>
               </button>
 
@@ -290,11 +290,11 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "cobranca"
-                    ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.03] text-[#0a0a0a] font-semibold"
+                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
-                <CalendarDays className="w-4 h-4 mb-1 text-[#0a0a0a]" />
+                <CalendarDays className={cn("w-4 h-4 mb-1", acaoSelecionada === "cobranca" ? "text-primary" : "text-[#737373]")} />
                 <span className="text-xs">Cobrança</span>
               </button>
             </div>
@@ -320,12 +320,12 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.FIXO
-                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
                       : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.FIXO} id={fixoId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
+                  <span className={cn("text-xs sm:text-sm flex-1 leading-normal", tipoReajuste === RenovacaoReajusteTipo.FIXO ? "text-primary font-medium" : "text-[#0a0a0a]")}>
                     Acrescentar valor fixo (R$)
                   </span>
                 </label>
@@ -335,12 +335,12 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
-                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
                       : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.PERCENTUAL} id={percentualId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
+                  <span className={cn("text-xs sm:text-sm flex-1 leading-normal", tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL ? "text-primary font-medium" : "text-[#0a0a0a]")}>
                     Acrescentar percentual (%)
                   </span>
                 </label>
@@ -350,12 +350,12 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.VALOR_PADRAO
-                      ? "border-[#0a0a0a] bg-[#0a0a0a]/[0.02] text-[#0a0a0a] font-semibold"
+                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
                       : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.VALOR_PADRAO} id={padraoId} />
-                  <span className="text-xs sm:text-sm flex-1 leading-normal text-[#0a0a0a]">
+                  <span className={cn("text-xs sm:text-sm flex-1 leading-normal", tipoReajuste === RenovacaoReajusteTipo.VALOR_PADRAO ? "text-primary font-medium" : "text-[#0a0a0a]")}>
                     Definir novo valor fixo para todos (R$)
                   </span>
                 </label>

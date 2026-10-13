@@ -18,6 +18,8 @@ interface PillItem {
   label: string;
   count: number;
   icon?: React.ComponentType<{ className?: string }>;
+  activeClasses: string;
+  activeBadgeClasses: string;
 }
 
 export function RenovacaoStatusPills({
@@ -33,21 +35,29 @@ export function RenovacaoStatusPills({
       id: ALL_STATUS_FILTER,
       label: "Aptos para Renovação",
       count: contadores.total_ativos - semTelefoneCount,
+      activeClasses: "bg-primary/10 text-primary border-primary/25 font-semibold shadow-xs",
+      activeBadgeClasses: "bg-primary/20 text-primary font-bold",
     },
     {
       id: RenovacaoStatus.CONFIRMADO,
       label: "Confirmados",
       count: contadores.confirmados,
+      activeClasses: "bg-emerald-50 text-emerald-800 border-emerald-300/80 font-semibold shadow-xs",
+      activeBadgeClasses: "bg-emerald-100/90 text-emerald-800 font-bold",
     },
     {
       id: RenovacaoStatus.PENDENTE,
       label: "Pendentes",
       count: contadores.pendentes,
+      activeClasses: "bg-amber-50 text-amber-800 border-amber-300/80 font-semibold shadow-xs",
+      activeBadgeClasses: "bg-amber-100/90 text-amber-800 font-bold",
     },
     {
       id: RenovacaoStatus.RECUSADO,
       label: "Saídas",
       count: contadores.saidas,
+      activeClasses: "bg-rose-50 text-rose-800 border-rose-300/80 font-semibold shadow-xs",
+      activeBadgeClasses: "bg-rose-100/90 text-rose-800 font-bold",
     },
     ...(semTelefoneCount > 0
       ? [
@@ -56,6 +66,8 @@ export function RenovacaoStatusPills({
             label: "Sem Telefone",
             count: semTelefoneCount,
             icon: PhoneOff,
+            activeClasses: "bg-amber-50 text-amber-800 border-amber-300/80 font-semibold shadow-xs",
+            activeBadgeClasses: "bg-amber-100/90 text-amber-800 font-bold",
           },
         ]
       : []),
@@ -73,9 +85,9 @@ export function RenovacaoStatusPills({
             type="button"
             onClick={() => onSelectStatus(pill.id)}
             className={cn(
-              "flex flex-shrink-0 items-center gap-2 rounded-[18px] px-3.5 h-9 text-xs font-medium transition-all border shadow-none cursor-pointer",
+              "flex flex-shrink-0 items-center gap-2 rounded-[18px] px-3.5 h-9 text-xs transition-all border cursor-pointer",
               isSelected
-                ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
+                ? pill.activeClasses
                 : "bg-white text-[#737373] hover:text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#fafafa]"
             )}
           >
@@ -83,10 +95,10 @@ export function RenovacaoStatusPills({
             <span>{pill.label}</span>
             <span
               className={cn(
-                "rounded-[18px] px-2 py-0.5 text-[11px] font-medium leading-none",
+                "rounded-[18px] px-2 py-0.5 text-[11px] leading-none",
                 isSelected
-                  ? "bg-white/20 text-white"
-                  : "bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]"
+                  ? pill.activeBadgeClasses
+                  : "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]"
               )}
             >
               {pill.count}

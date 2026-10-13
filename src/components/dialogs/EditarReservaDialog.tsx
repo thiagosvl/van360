@@ -228,8 +228,8 @@ export function EditarReservaDialog({
                     className={cn(
                       "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "direto"
-                        ? "bg-[#0a0a0a] text-white shadow-xs"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
+                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
                     Valor Final
@@ -243,8 +243,8 @@ export function EditarReservaDialog({
                     className={cn(
                       "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "fixo"
-                        ? "bg-[#0a0a0a] text-white shadow-xs"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
+                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
                     + R$ (Fixo)
@@ -258,8 +258,8 @@ export function EditarReservaDialog({
                     className={cn(
                       "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "percentual"
-                        ? "bg-[#0a0a0a] text-white shadow-xs"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
+                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
                     + % (Percentual)
