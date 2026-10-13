@@ -47,7 +47,7 @@ export function useReajusteLote() {
       return response.data;
     },
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
       toast.success("Reajuste em lote aplicado com sucesso!", {
         description: `${data.updated_count} passageiros foram atualizados.`,
       });
@@ -81,7 +81,7 @@ export function useUpdateRenovacao() {
       return response.data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao atualizar reserva", {
@@ -106,7 +106,7 @@ export function useAtualizarStatusLoteRenovacao() {
       return response.data as { success: boolean; updated_count: number };
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao atualizar em lote", {
@@ -207,7 +207,7 @@ export function useNotificarPassageiroRenovacao() {
       return response.data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao enviar notificação WhatsApp", {
@@ -238,7 +238,7 @@ export function useNotificarLoteRenovacao() {
       return response.data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao disparar notificações em lote", {
@@ -296,8 +296,10 @@ export function useSalvarRenovacaoContratoConfig() {
       return response.data;
     },
     onSuccess: async (_, variables) => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.contratoConfig(variables.ano) });
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.contratoConfig(variables.ano) }),
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+      ]);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao salvar configuração de contrato", {
