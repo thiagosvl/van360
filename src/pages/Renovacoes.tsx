@@ -114,8 +114,11 @@ export default function Renovacoes() {
       cancelText: "Cancelar",
       variant: "success",
       onConfirm: async () => {
-        safeCloseDialog(closeConfirmationDialog);
-        await handleConfirmarLote();
+        try {
+          await handleConfirmarLote();
+        } finally {
+          safeCloseDialog(closeConfirmationDialog);
+        }
       },
       onCancel: () => {
         safeCloseDialog(closeConfirmationDialog);
@@ -153,8 +156,11 @@ export default function Renovacoes() {
       cancelText: "Voltar",
       variant: "destructive",
       onConfirm: async () => {
-        safeCloseDialog(closeConfirmationDialog);
-        await handleRegistrarSaidaLote();
+        try {
+          await handleRegistrarSaidaLote();
+        } finally {
+          safeCloseDialog(closeConfirmationDialog);
+        }
       },
       onCancel: () => {
         safeCloseDialog(closeConfirmationDialog);
@@ -192,8 +198,11 @@ export default function Renovacoes() {
       cancelText: "Voltar",
       variant: "warning",
       onConfirm: async () => {
-        safeCloseDialog(closeConfirmationDialog);
-        await handleReativarLote();
+        try {
+          await handleReativarLote();
+        } finally {
+          safeCloseDialog(closeConfirmationDialog);
+        }
       },
       onCancel: () => {
         safeCloseDialog(closeConfirmationDialog);
@@ -207,33 +216,42 @@ export default function Renovacoes() {
     const temContrato = Boolean(p?.contrato_status);
     const contratoAssinado = p?.contrato_status === "assinado";
 
-    openConfirmationDialog({
-      title: `Registrar saída de ${nomeAluno}?`,
-      description: (
-        <div className="space-y-3">
-          <p>
-            Tem certeza que deseja marcar a vaga de <strong>{nomeAluno}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
-          </p>
-          {temContrato && (
-            <Banner
-              variant="warning"
-              title="Cancelamento de Contrato Digital"
-              description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao registrar a saída, esse documento será cancelado no sistema.`}
-              className="rounded-[18px]"
-            />
-          )}
-        </div>
-      ),
-      confirmText: "Sim, Registrar Saída",
-      cancelText: "Voltar",
-      variant: "destructive",
-      onConfirm: async () => {
-        safeCloseDialog(closeConfirmationDialog);
-        await handleRegistrarSaida(passageiroId);
-      },
-      onCancel: () => {
-        safeCloseDialog(closeConfirmationDialog);
-      },
+    return new Promise<void>((resolve, reject) => {
+      openConfirmationDialog({
+        title: `Registrar saída de ${nomeAluno}?`,
+        description: (
+          <div className="space-y-3">
+            <p>
+              Tem certeza que deseja marcar a vaga de <strong>{nomeAluno}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
+            </p>
+            {temContrato && (
+              <Banner
+                variant="warning"
+                title="Cancelamento de Contrato Digital"
+                description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao registrar a saída, esse documento será cancelado no sistema.`}
+                className="rounded-[18px]"
+              />
+            )}
+          </div>
+        ),
+        confirmText: "Sim, Registrar Saída",
+        cancelText: "Voltar",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            await handleRegistrarSaida(passageiroId);
+            safeCloseDialog(closeConfirmationDialog);
+            resolve();
+          } catch (err) {
+            safeCloseDialog(closeConfirmationDialog);
+            reject(err);
+          }
+        },
+        onCancel: () => {
+          safeCloseDialog(closeConfirmationDialog);
+          resolve();
+        },
+      });
     });
   };
 
@@ -243,33 +261,42 @@ export default function Renovacoes() {
     const temContrato = Boolean(p?.contrato_status);
     const contratoAssinado = p?.contrato_status === "assinado";
 
-    openConfirmationDialog({
-      title: `Redefinir ${nomeAluno} para Pendente?`,
-      description: (
-        <div className="space-y-3">
-          <p>
-            A vaga de <strong>{nomeAluno}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
-          </p>
-          {temContrato && (
-            <Banner
-              variant="warning"
-              title="Cancelamento de Contrato Digital"
-              description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao voltar para pendente, esse documento será cancelado e uma nova via precisará ser gerada caso a vaga seja confirmada novamente.`}
-              className="rounded-[18px]"
-            />
-          )}
-        </div>
-      ),
-      confirmText: "Sim, Redefinir para Pendente",
-      cancelText: "Voltar",
-      variant: "warning",
-      onConfirm: async () => {
-        safeCloseDialog(closeConfirmationDialog);
-        await handleReativar(passageiroId);
-      },
-      onCancel: () => {
-        safeCloseDialog(closeConfirmationDialog);
-      },
+    return new Promise<void>((resolve, reject) => {
+      openConfirmationDialog({
+        title: `Redefinir ${nomeAluno} para Pendente?`,
+        description: (
+          <div className="space-y-3">
+            <p>
+              A vaga de <strong>{nomeAluno}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+            </p>
+            {temContrato && (
+              <Banner
+                variant="warning"
+                title="Cancelamento de Contrato Digital"
+                description={`Este aluno possui um contrato digital ${contratoAssinado ? "assinado" : "pendente"} para ${anoDestino}. Ao voltar para pendente, esse documento será cancelado e uma nova via precisará ser gerada caso a vaga seja confirmada novamente.`}
+                className="rounded-[18px]"
+              />
+            )}
+          </div>
+        ),
+        confirmText: "Sim, Redefinir para Pendente",
+        cancelText: "Voltar",
+        variant: "warning",
+        onConfirm: async () => {
+          try {
+            await handleReativar(passageiroId);
+            safeCloseDialog(closeConfirmationDialog);
+            resolve();
+          } catch (err) {
+            safeCloseDialog(closeConfirmationDialog);
+            reject(err);
+          }
+        },
+        onCancel: () => {
+          safeCloseDialog(closeConfirmationDialog);
+          resolve();
+        },
+      });
     });
   };
 

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
-import { formatCurrency, formatShortName } from "@/utils/formatters";
+import { formatCurrency, formatShortName, formatFirstName } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ interface RenovacaoPassengerCardProps {
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onConfirmarManual: (id: string) => Promise<void> | void;
-  onRegistrarSaida: (id: string, nomeAluno: string) => void;
-  onReativar: (id: string, nomeAluno: string, temContrato: boolean, contratoAssinado: boolean) => void;
+  onRegistrarSaida: (id: string, nomeAluno: string) => Promise<void> | void;
+  onReativar: (id: string, nomeAluno: string, temContrato: boolean, contratoAssinado: boolean) => Promise<void> | void;
   onOpenEditarReserva?: (item: RenovacaoPassageiroItem) => void;
   isUpdating?: boolean;
 }
@@ -82,18 +82,28 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     }
   };
 
-  const handleSetSaida = (e: React.MouseEvent) => {
+  const handleSetSaida = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isRecusado || loadingAction) return;
-    onRegistrarSaida(item.passageiro_id, item.nome);
+    setLoadingAction("saida");
+    try {
+      await onRegistrarSaida(item.passageiro_id, item.nome);
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
-  const handleSetPendente = (e: React.MouseEvent) => {
+  const handleSetPendente = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPendente || loadingAction) return;
+    setLoadingAction("pendente");
     const temContrato = Boolean(item.contrato_status);
     const contratoAssinado = item.contrato_status === "assinado";
-    onReativar(item.passageiro_id, item.nome, temContrato, contratoAssinado);
+    try {
+      await onReativar(item.passageiro_id, item.nome, temContrato, contratoAssinado);
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
   const handleDispararWaba = async (e: React.MouseEvent) => {
@@ -135,7 +145,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
   const shortName = formatShortName(item.nome, true);
   const respName = item.responsavel_principal?.nome
-    ? formatShortName(item.responsavel_principal.nome, true)
+    ? formatFirstName(item.responsavel_principal.nome)
     : null;
 
   return (
@@ -295,8 +305,8 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                     item.isento_atual
                       ? "text-[#737373]"
                       : isValorAlterado
-                      ? "text-emerald-700"
-                      : "text-[#0a0a0a]"
+                        ? "text-emerald-700"
+                        : "text-[#0a0a0a]"
                   )}
                 >
                   {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
@@ -360,7 +370,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                 className="rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer"
               >
                 <Pencil className="w-3.5 h-3.5 text-[#737373]" />
-                <span className="truncate">Editar Proposta</span>
+                <span className="truncate">Editar</span>
               </Button>
             )}
           </div>
