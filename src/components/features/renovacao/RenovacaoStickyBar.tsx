@@ -105,7 +105,7 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
               size="sm"
               onClick={onDispararWhatsApp}
               disabled={isProcessing}
-              className="col-span-2 h-10 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs gap-1.5 shadow-xs cursor-pointer"
+              className="col-span-2 h-10 rounded-[18px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs gap-1.5 shadow-xs cursor-pointer disabled:opacity-40"
             >
               {isProcessing ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white shrink-0" />
@@ -191,7 +191,7 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
               size="sm"
               onClick={onDispararWhatsApp}
               disabled={isProcessing}
-              className="h-9 px-4 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs gap-1.5 shadow-xs transition-all cursor-pointer"
+              className="h-9 px-4 rounded-[18px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-40"
             >
               {isProcessing ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-white shrink-0" />

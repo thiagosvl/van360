@@ -118,7 +118,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             },
             {
               value: ContratoTab.PENDENTES,
-              label: "Assinaturas Pendentes",
+              label: "Pendentes",
               badge: countPendentes,
               badgeLoading: isLoadingKPIs,
             },
@@ -159,7 +159,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               className="hidden sm:inline-flex h-10 sm:h-11 px-4 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground font-medium text-sm gap-2 shrink-0 transition-all shadow-xs border border-transparent cursor-pointer"
             >
               <FileText className="w-4 h-4 text-primary-foreground" />
-              <span>Configurar Modelo</span>
+              <span>Configurar</span>
             </Button>
 
             <Button

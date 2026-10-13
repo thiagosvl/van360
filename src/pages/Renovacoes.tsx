@@ -561,11 +561,12 @@ export default function Renovacoes() {
 
                   <Button
                     type="button"
+                    variant="tonal"
                     onClick={handleOpenVirada}
                     disabled={isLoading || kpis.contadores.confirmados === 0}
-                    className="w-full sm:w-auto h-11 px-5 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm shadow-xs gap-2 transition-all active:scale-[0.98] cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto h-11 px-5 rounded-[18px] font-medium text-xs sm:text-sm gap-2 transition-all active:scale-[0.98] cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Rocket className="w-4 h-4 text-white" />
+                    <Rocket className="w-4 h-4" />
                     <span>Iniciar Ano Letivo {anoDestino} (Aplicar Virada)</span>
                   </Button>
                 </div>

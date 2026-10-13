@@ -69,8 +69,9 @@ export const RenovacaoSemTelefoneCard = memo(function RenovacaoSemTelefoneCard({
       <div className="shrink-0 flex items-center">
         <Button
           type="button"
+          variant="tonal"
           onClick={() => onCadastrarResponsavel(item)}
-          className="w-full sm:w-auto h-10 px-4 rounded-[18px] bg-primary hover:bg-primary/90 text-white font-medium text-xs gap-1.5 shadow-xs active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full sm:w-auto h-9 px-3.5 rounded-[18px] text-xs font-medium gap-1.5 cursor-pointer"
         >
           <PhoneCall className="w-3.5 h-3.5" />
           <span>{temResponsavelSemTel ? "Preencher Telefone" : "Cadastrar Responsável"}</span>
