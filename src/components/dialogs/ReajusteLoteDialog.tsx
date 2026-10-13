@@ -190,7 +190,7 @@ export function ReajusteLoteDialog({
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
         <BaseDialog.Body className="p-4 sm:p-6 space-y-5 overflow-y-auto max-h-[70vh]">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+            <Label className="text-[#0a0a0a] font-medium text-xs">
               Para quem deseja aplicar? <span className="text-[#e7000b]">*</span>
             </Label>
 
@@ -199,7 +199,7 @@ export function ReajusteLoteDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] text-left font-normal justify-between text-[#0a0a0a] px-3.5 hover:bg-[#fafafa]"
+                  className="w-full h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal justify-between text-[#0a0a0a] px-3.5 hover:bg-white focus:bg-white"
                 >
                   <div className="flex items-center gap-2 truncate">
                     <School className="w-4 h-4 text-[#737373] shrink-0" />
@@ -251,7 +251,7 @@ export function ReajusteLoteDialog({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+            <Label className="text-[#0a0a0a] font-medium text-xs">
               O que você deseja ajustar em lote? <span className="text-[#e7000b]">*</span>
             </Label>
 
@@ -262,7 +262,7 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "mensalidade"
-                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
+                    ? "border-primary/30 bg-primary/5 text-primary font-medium shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
@@ -276,7 +276,7 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "transporte"
-                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
+                    ? "border-primary/30 bg-primary/5 text-primary font-medium shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
@@ -290,7 +290,7 @@ export function ReajusteLoteDialog({
                 className={cn(
                   "flex flex-col items-center justify-center p-3 rounded-[18px] border text-center transition-all cursor-pointer",
                   acaoSelecionada === "cobranca"
-                    ? "border-primary/30 bg-primary/5 text-primary font-semibold shadow-xs"
+                    ? "border-primary/30 bg-primary/5 text-primary font-medium shadow-xs"
                     : "border-[#e5e5e5] bg-[#fafafa] text-[#737373] hover:text-[#0a0a0a] hover:bg-white"
                 )}
               >
@@ -302,7 +302,7 @@ export function ReajusteLoteDialog({
 
           {acaoSelecionada === "mensalidade" && (
             <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
-              <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+              <Label className="text-[#0a0a0a] font-medium text-xs">
                 Tipo de Reajuste
               </Label>
 
@@ -320,8 +320,8 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.FIXO
-                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
-                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
+                      ? "border-primary/30 bg-primary/5 text-primary font-medium"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-normal"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.FIXO} id={fixoId} />
@@ -335,8 +335,8 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
-                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
-                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
+                      ? "border-primary/30 bg-primary/5 text-primary font-medium"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-normal"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.PERCENTUAL} id={percentualId} />
@@ -350,8 +350,8 @@ export function ReajusteLoteDialog({
                   className={cn(
                     "flex items-center space-x-3 rounded-[18px] border p-3 sm:p-3.5 transition-all cursor-pointer",
                     tipoReajuste === RenovacaoReajusteTipo.VALOR_PADRAO
-                      ? "border-primary/30 bg-primary/5 text-primary font-semibold"
-                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-medium"
+                      ? "border-primary/30 bg-primary/5 text-primary font-medium"
+                      : "border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#737373] font-normal"
                   )}
                 >
                   <RadioGroupItem value={RenovacaoReajusteTipo.VALOR_PADRAO} id={padraoId} />
@@ -362,7 +362,7 @@ export function ReajusteLoteDialog({
               </RadioGroup>
 
               <div className="space-y-1.5 pt-1">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   {tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
                     ? "Percentual a acrescentar (%)"
                     : tipoReajuste === RenovacaoReajusteTipo.FIXO
@@ -371,7 +371,7 @@ export function ReajusteLoteDialog({
                   <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={valorInput}
                     onChange={(e) => {
@@ -388,7 +388,7 @@ export function ReajusteLoteDialog({
                         ? "Ex: R$ 30,00"
                         : "Ex: R$ 380,00"
                     }
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
                 </div>
@@ -405,32 +405,32 @@ export function ReajusteLoteDialog({
           {acaoSelecionada === "transporte" && (
             <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Início do Transporte <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataInicioTransporte}
                     onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Fim do Transporte <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataFimTransporte}
                     onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
                 </div>
@@ -441,32 +441,32 @@ export function ReajusteLoteDialog({
           {acaoSelecionada === "cobranca" && (
             <div className="space-y-3 pt-2 border-t border-[#e5e5e5]">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Início da Cobrança <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataInicioCobranca}
                     onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Fim da Cobrança <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataFimCobranca}
                     onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
                 </div>
@@ -475,7 +475,7 @@ export function ReajusteLoteDialog({
           )}
 
           <div className="rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 space-y-1">
-            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block">
+            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block">
               O que vai acontecer?
             </span>
             <p className="text-xs text-[#0a0a0a] leading-relaxed">

@@ -68,7 +68,7 @@ export function ConfirmarViradaAnoDialog({
             <span className="text-xl font-bold tracking-tight text-[#0a0a0a] block">
               {contadores.confirmados}
             </span>
-            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block mt-0.5">
+            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block mt-0.5">
               Confirmados
             </span>
           </div>
@@ -77,7 +77,7 @@ export function ConfirmarViradaAnoDialog({
             <span className="text-xl font-bold tracking-tight text-[#737373] block">
               {contadores.saidas}
             </span>
-            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block mt-0.5">
+            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block mt-0.5">
               Saídas
             </span>
           </div>
@@ -86,7 +86,7 @@ export function ConfirmarViradaAnoDialog({
             <span className="text-xl font-bold tracking-tight text-[#0a0a0a] block">
               {contadores.pendentes}
             </span>
-            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block mt-0.5">
+            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block mt-0.5">
               Pendentes
             </span>
           </div>

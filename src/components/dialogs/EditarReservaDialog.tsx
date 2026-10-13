@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useUpdateRenovacao } from "@/hooks/api/useRenovacoes";
 import { useEscolasWithFilters, useProfile, useVeiculosWithFilters } from "@/hooks";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
@@ -176,22 +170,22 @@ export function EditarReservaDialog({
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
         <BaseDialog.Body className="p-4 sm:p-6 space-y-6 overflow-y-auto max-h-[70vh]">
-          <div className="rounded-[20px] bg-[#fafafa] p-4 border border-[#e5e5e5]">
-            <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block">
+          <div className="rounded-[20px] bg-[#fafafa] p-3.5 sm:p-4 border border-[#e5e5e5]">
+            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block">
               Aluno
             </span>
-            <span className="text-base font-bold text-[#0a0a0a] tracking-tight block mt-0.5">
+            <span className="text-sm sm:text-base font-semibold text-[#0a0a0a] block mt-0.5">
               {passageiro?.nome}
             </span>
           </div>
 
           {!isIsentoOriginal && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
-                <DollarSign className="w-4 h-4 text-[#0a0a0a]" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
-                  Condições da Parcela
-                </span>
+              <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a]">
+                <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+                Condições da Parcela
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -199,23 +193,23 @@ export function EditarReservaDialog({
                   <span className="text-[11px] text-[#737373] font-medium block">
                     Parcela Atual
                   </span>
-                  <span className="text-sm sm:text-base font-bold text-[#0a0a0a] mt-0.5 block tracking-tight">
+                  <span className="text-sm sm:text-base font-semibold text-[#0a0a0a] mt-0.5 block">
                     {formatCurrency(passageiro?.valor_cobranca_atual)}
                   </span>
                 </div>
 
-                <div className="rounded-[18px] border border-[#0a0a0a] bg-[#0a0a0a]/[0.02] p-3">
-                  <span className="text-[11px] text-[#0a0a0a] font-medium block">
+                <div className="rounded-[18px] border border-primary/20 bg-primary/5 p-3">
+                  <span className="text-[11px] text-primary font-medium block">
                     Nova Parcela ({anoDestino})
                   </span>
-                  <span className="text-sm sm:text-base font-bold text-[#0a0a0a] mt-0.5 block tracking-tight">
+                  <span className="text-sm sm:text-base font-semibold text-primary mt-0.5 block">
                     {novoValor ? novoValor : "R$ 0,00"}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+              <div className="space-y-1.5">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Como deseja definir o valor?
                 </Label>
                 <div className="grid grid-cols-3 rounded-[18px] border border-[#e5e5e5] p-1 bg-[#fafafa] gap-1">
@@ -226,9 +220,9 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "direto"
-                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
                         : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
@@ -241,9 +235,9 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "fixo"
-                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
                         : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
@@ -256,9 +250,9 @@ export function EditarReservaDialog({
                       setValorIncremento("");
                     }}
                     className={cn(
-                      "py-2 text-xs font-semibold rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
+                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
                       modoCalculo === "percentual"
-                        ? "bg-white text-primary font-bold shadow-xs border border-primary/20"
+                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
                         : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
                     )}
                   >
@@ -269,28 +263,28 @@ export function EditarReservaDialog({
 
               {modoCalculo === "direto" ? (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  <Label className="text-[#0a0a0a] font-medium text-xs">
                     Novo Valor da Parcela ({anoDestino}) <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={novoValor}
                       onChange={(e) => setNovoValor(moneyMask(e.target.value))}
                       placeholder="R$ 0,00"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                       required
                     />
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <div className="space-y-1.5">
+                  <Label className="text-[#0a0a0a] font-medium text-xs">
                     {modoCalculo === "fixo" ? "Valor do Acréscimo (R$)" : "Percentual de Acréscimo (%)"}{" "}
                     <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={valorIncremento}
                       onChange={(e) => {
@@ -320,7 +314,7 @@ export function EditarReservaDialog({
                         }
                       }}
                       placeholder={modoCalculo === "percentual" ? "Ex: 10%" : "Ex: R$ 30,00"}
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm font-medium w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     />
                   </div>
 
@@ -329,12 +323,12 @@ export function EditarReservaDialog({
                       {modoCalculo === "fixo" ? (
                         <>
                           {formatCurrency(passageiro?.valor_cobranca_atual)} + {formatCurrency(moneyToNumber(valorIncremento))} ={" "}
-                          <strong className="font-bold text-[#0a0a0a]">{novoValor}</strong>
+                          <strong className="font-semibold text-[#0a0a0a]">{novoValor}</strong>
                         </>
                       ) : (
                         <>
                           {formatCurrency(passageiro?.valor_cobranca_atual)} + {valorIncremento}% ={" "}
-                          <strong className="font-bold text-[#0a0a0a]">{novoValor}</strong>
+                          <strong className="font-semibold text-[#0a0a0a]">{novoValor}</strong>
                         </>
                       )}
                     </div>
@@ -344,49 +338,48 @@ export function EditarReservaDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  <Label className="text-[#0a0a0a] font-medium text-xs">
                     Vencimento <span className="text-[#e7000b]">*</span>
                   </Label>
-                  <Select value={novoDiaVencimento} onValueChange={setNovoDiaVencimento}>
-                    <SelectTrigger className="h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
-                      <SelectValue placeholder="Dia" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                        <SelectItem key={day} value={day.toString()} className="text-xs">
-                          Dia {day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <NativeSelect
+                    value={novoDiaVencimento}
+                    onChange={(e) => setNovoDiaVencimento(e.target.value)}
+                    icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <option key={day} value={day.toString()}>
+                        Dia {day}
+                      </option>
+                    ))}
+                  </NativeSelect>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  <Label className="text-[#0a0a0a] font-medium text-xs">
                     Início Cobrança
                   </Label>
                   <div className="relative">
-                    <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={dataInicioCobranca}
                       onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
                       placeholder="DD/MM/AAAA"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                  <Label className="text-[#0a0a0a] font-medium text-xs">
                     Fim Cobrança
                   </Label>
                   <div className="relative">
-                    <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                    <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={dataFimCobranca}
                       onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
                       placeholder="DD/MM/AAAA"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     />
                   </div>
                 </div>
@@ -394,155 +387,142 @@ export function EditarReservaDialog({
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-[#e5e5e5] pb-2">
-              <Car className="w-4 h-4 text-[#0a0a0a]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#737373]">
-                Dados do Transporte
-              </span>
+          <div className="space-y-4 pt-2 border-t border-[#e5e5e5]">
+            <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a]">
+              <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                <Car className="w-4 h-4" />
+              </div>
+              Dados do Transporte
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Escola <span className="text-[#e7000b]">*</span>
                 </Label>
-                <Select value={novaEscolaId} onValueChange={setNovaEscolaId}>
-                  <div className="relative">
-                    <School className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
-                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
-                      <SelectValue placeholder="Selecione a escola" />
-                    </SelectTrigger>
-                  </div>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    {escolasList.map((escola) => (
-                      <SelectItem key={escola.id} value={escola.id} className="text-xs">
-                        {escola.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={novaEscolaId}
+                  onChange={(e) => setNovaEscolaId(e.target.value)}
+                  icon={<School className="h-4 w-4 text-[#737373]" />}
+                >
+                  <option value="">Selecione a escola</option>
+                  {escolasList.map((escola) => (
+                    <option key={escola.id} value={escola.id}>
+                      {escola.nome}
+                    </option>
+                  ))}
+                </NativeSelect>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Período <span className="text-[#e7000b]">*</span>
                 </Label>
-                <Select value={novoPeriodo} onValueChange={setNovoPeriodo}>
-                  <div className="relative">
-                    <Sun className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
-                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
-                      <SelectValue placeholder="Selecione o período" />
-                    </SelectTrigger>
-                  </div>
-                  <SelectContent>
-                    {periodos.map((p) => (
-                      <SelectItem key={p.value} value={p.value} className="text-xs">
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={novoPeriodo}
+                  onChange={(e) => setNovoPeriodo(e.target.value)}
+                  icon={<Sun className="h-4 w-4 text-[#737373]" />}
+                >
+                  <option value="">Selecione o período</option>
+                  {periodos.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </NativeSelect>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Modalidade <span className="text-[#e7000b]">*</span>
                 </Label>
-                <Select value={novaModalidade} onValueChange={setNovaModalidade}>
-                  <div className="relative">
-                    <Compass className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
-                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
-                      <SelectValue placeholder="Selecione a modalidade" />
-                    </SelectTrigger>
-                  </div>
-                  <SelectContent>
-                    {modalidades.map((m) => (
-                      <SelectItem key={m.value} value={m.value} className="text-xs">
-                        {m.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={novaModalidade}
+                  onChange={(e) => setNovaModalidade(e.target.value)}
+                  icon={<Compass className="h-4 w-4 text-[#737373]" />}
+                >
+                  {modalidades.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </NativeSelect>
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Veículo
                 </Label>
-                <Select value={novoVeiculoId} onValueChange={setNovoVeiculoId}>
-                  <div className="relative">
-                    <Car className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
-                    <SelectTrigger className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full">
-                      <SelectValue placeholder="Selecione o veículo" />
-                    </SelectTrigger>
-                  </div>
-                  <SelectContent>
-                    {veiculosList.map((v) => (
-                      <SelectItem key={v.id} value={v.id} className="text-xs">
-                        {v.modelo} ({formatarPlacaExibicao(v.placa)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={novoVeiculoId}
+                  onChange={(e) => setNovoVeiculoId(e.target.value)}
+                  icon={<Car className="h-4 w-4 text-[#737373]" />}
+                >
+                  <option value="">Selecione o veículo</option>
+                  {veiculosList.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.modelo} ({formatarPlacaExibicao(v.placa)})
+                    </option>
+                  ))}
+                </NativeSelect>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Turma
                 </Label>
                 <div className="relative">
-                  <Users className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={novaTurma}
                     onChange={(e) => setNovaTurma(e.target.value)}
                     placeholder="Ex: 5º Ano B"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Nome do Professor
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={novoNomeProfessor}
                     onChange={(e) => setNovoNomeProfessor(e.target.value)}
                     placeholder="Ex: Profa. Márcia"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Início do Transporte
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataInicioTransporte}
                     onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#0a0a0a] ml-1">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
                   Fim do Transporte
                 </Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataFimTransporte}
                     onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
                     placeholder="DD/MM/AAAA"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] text-xs sm:text-sm w-full"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
               </div>

@@ -83,7 +83,7 @@ export function ConfirmarDisparoWabaDialog({
           <div className="rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-3.5">
             <div className="flex items-center gap-1.5 text-[#0a0a0a]">
               <CheckCircle2 className="w-4 h-4 text-[#0a0a0a] shrink-0" />
-              <span className="text-xs font-semibold">Com WhatsApp</span>
+              <span className="text-xs font-medium">Com WhatsApp</span>
             </div>
             <span className="text-xl font-bold text-[#0a0a0a] mt-1 block tracking-tight">
               {aptos.length} {aptos.length === 1 ? "aluno" : "alunos"}
@@ -93,7 +93,7 @@ export function ConfirmarDisparoWabaDialog({
           <div className="rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-3.5">
             <div className="flex items-center gap-1.5 text-[#737373]">
               <Users className="w-4 h-4 text-[#737373] shrink-0" />
-              <span className="text-xs font-semibold">Total Selecionado</span>
+              <span className="text-xs font-medium">Total Selecionado</span>
             </div>
             <span className="text-xl font-bold text-[#0a0a0a] mt-1 block tracking-tight">
               {passageiros.length} {passageiros.length === 1 ? "aluno" : "alunos"}
@@ -118,7 +118,7 @@ export function ConfirmarDisparoWabaDialog({
         )}
 
         <div className="space-y-2">
-          <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-wider block">
+          <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block">
             Destinatários ({aptos.length})
           </span>
           <div className="max-h-44 overflow-y-auto divide-y divide-[#e5e5e5] rounded-[18px] border border-[#e5e5e5] bg-[#fafafa]">
