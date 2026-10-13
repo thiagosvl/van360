@@ -215,10 +215,10 @@ export function FloatingVideoBubble({
         >
           <div
             onClick={handleOpen}
-            className="relative rounded-full overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.3)] border-4 border-white transition-transform hover:scale-105 group w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] flex-shrink-0 z-20 bg-black cursor-pointer"
+            className="relative rounded-full overflow-hidden shadow-lg border-4 border-white transition-transform hover:scale-105 group w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] flex-shrink-0 z-20 bg-[#0a0a0a] cursor-pointer"
             aria-label="Abrir vídeo demonstrativo"
           >
-            <div className="absolute inset-0 bg-[#f59e0b] rounded-full animate-ping opacity-20 z-0 pointer-events-none" />
+            <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-25 z-0 pointer-events-none" />
 
             <video
               src={previewUrl}
@@ -243,7 +243,7 @@ export function FloatingVideoBubble({
                   ref={dismissButtonRef}
                   type="button"
                   onClick={handleDismissClick}
-                  className="absolute -top-2 -right-1 md:-top-2 md:-left-1 md:right-auto z-30 bg-black/90 hover:bg-black text-white/80 hover:text-white rounded-full p-1 border border-white/20 shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="absolute -top-2 -right-1 md:-top-2 md:-left-1 md:right-auto z-30 bg-[#0a0a0a] hover:bg-[#171717] text-white/80 hover:text-white rounded-full p-1 border border-white/20 shadow-md transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                   aria-label="Não exibir novamente"
                   title="Não exibir novamente"
                 >
@@ -253,7 +253,7 @@ export function FloatingVideoBubble({
 
               <div
                 onClick={handleOpen}
-                className="bg-black/90 cursor-pointer text-white text-[10px] sm:text-[11px] uppercase font-bold pl-10 pr-5 md:pr-10 md:pl-5 py-3 rounded-r-full md:rounded-l-full md:rounded-r-none whitespace-nowrap shadow-xl tracking-widest border-y-2 border-r-2 md:border-l-2 md:border-r-0 border-white/10 hover:bg-black transition-colors"
+                className="bg-[#0a0a0a] cursor-pointer text-white text-[11px] font-medium pl-10 pr-5 md:pr-10 md:pl-5 py-2.5 rounded-r-[18px] md:rounded-l-[18px] md:rounded-r-none whitespace-nowrap shadow-md border-y border-r md:border-l md:border-r-0 border-white/10 hover:bg-[#171717] transition-colors"
               >
                 {tooltipText}
               </div>

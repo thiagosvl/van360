@@ -120,74 +120,78 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
     <div className="space-y-6 text-left">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
-          title="ALUNOS ATIVOS"
+          title="Alunos ativos"
           value={ativosCount}
           subtext={`${inativosCount} ${inativosCount === 1 ? "inativo" : "inativos"}`}
-          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.ACTIVE
+          cardBorder={`transition-all cursor-pointer ${
+            statusFilter === StatusFilter.ACTIVE
               ? "border-emerald-500 ring-2 ring-emerald-500/30 shadow-emerald-500/20"
-              : "border-emerald-500/40 shadow-emerald-500/10 hover:border-emerald-500/70"
-            }`}
-          iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              : "border-border hover:border-emerald-500/60"
+          }`}
+          iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
           icon={<CheckCircle2 className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.ACTIVE ? StatusFilter.ALL : StatusFilter.ACTIVE)}
         />
 
         <AdminKpiCard
-          title="CADASTROS INCOMPLETOS"
+          title="Cadastros incompletos"
           value={semValorCount}
           subtext={`${pctIncompletos}% sem valor de cobrança`}
-          cardBorder={`transition-all cursor-pointer ${statusFilter === StatusFilter.INCOMPLETE
+          cardBorder={`transition-all cursor-pointer ${
+            statusFilter === StatusFilter.INCOMPLETE
               ? "border-amber-500 ring-2 ring-amber-500/30 shadow-amber-500/20"
-              : "border-amber-500/40 shadow-amber-500/10 hover:border-amber-500/70"
-            }`}
-          iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
+              : "border-border hover:border-amber-500/60"
+          }`}
+          iconBg="bg-amber-500/10 text-amber-500 border-amber-500/20"
           icon={<AlertCircle className="h-5 w-5" />}
           onClick={() => setStatusFilter(statusFilter === StatusFilter.INCOMPLETE ? StatusFilter.ALL : StatusFilter.INCOMPLETE)}
         />
 
         <AdminKpiCard
-          title="MÉDIA DA MENSALIDADE"
+          title="Média da mensalidade"
           value={formatCurrency(mediaMensalidade)}
           subtext={`${comValorList.length} com valor informado`}
-          cardBorder="border-blue-500/40 shadow-blue-500/10"
-          iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+          cardBorder="border-border hover:border-primary/50"
+          iconBg="bg-primary/10 text-primary border-primary/20"
           icon={<DollarSign className="h-5 w-5" />}
         />
       </div>
 
       <AdminDriverVencimentosTabela passageiros={passageiros} />
 
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+      <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-6 border-b border-border bg-card">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1 text-left">
-              <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-400" />
-                Listagem de Alunos
-                {search.trim() || statusFilter !== StatusFilter.ALL ? (
-                  <span>({filtered.length} de {totalPassageiros})</span>
-                ) : (
-                  <span>({totalPassageiros})</span>
-                )}
+              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span>Listagem de alunos</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {search.trim() || statusFilter !== StatusFilter.ALL ? (
+                    `(${filtered.length} de ${totalPassageiros})`
+                  ) : (
+                    `(${totalPassageiros})`
+                  )}
+                </span>
               </CardTitle>
-              <p className="text-[11px] font-medium text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Alunos vinculados às rotas deste motorista.
               </p>
             </div>
 
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por aluno, responsável, escola..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-9 h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
+                className="pl-9 pr-9 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-3 text-slate-500 hover:text-white"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -199,40 +203,44 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.ALL)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.ALL
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                  : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                }`}
+              className={`px-3 py-1.5 rounded-xl font-medium text-xs transition-all whitespace-nowrap ${
+                statusFilter === StatusFilter.ALL
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
             >
               Todos ({totalPassageiros})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.ACTIVE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.ACTIVE
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                }`}
+              className={`px-3 py-1.5 rounded-xl font-medium text-xs transition-all whitespace-nowrap ${
+                statusFilter === StatusFilter.ACTIVE
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
             >
               Ativos ({ativosCount})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.INACTIVE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.INACTIVE
-                  ? "bg-rose-600 text-white shadow-md shadow-rose-600/20"
-                  : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                }`}
+              className={`px-3 py-1.5 rounded-xl font-medium text-xs transition-all whitespace-nowrap ${
+                statusFilter === StatusFilter.INACTIVE
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
             >
               Inativos ({inativosCount})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter(StatusFilter.INCOMPLETE)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${statusFilter === StatusFilter.INCOMPLETE
-                  ? "bg-amber-600 text-white shadow-md shadow-amber-600/20"
-                  : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                }`}
+              className={`px-3 py-1.5 rounded-xl font-medium text-xs transition-all whitespace-nowrap ${
+                statusFilter === StatusFilter.INCOMPLETE
+                  ? "bg-amber-600 text-white shadow-sm"
+                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
             >
               Incompletos ({semValorCount})
             </button>
@@ -257,14 +265,14 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800/80 bg-slate-900/70 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                    <tr className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
                       <th className="py-3.5 px-6">Aluno / Responsável</th>
                       <th className="py-3.5 px-4">Escola / Turno</th>
                       <th className="py-3.5 px-4">Mensalidade</th>
                       <th className="py-3.5 px-6 text-right">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-xs">
+                  <tbody className="divide-y divide-border/50 text-xs">
                     {filtered.map((p) => {
                       const valor = getValorMensalidade(p);
                       const hasValor = valor > 0;
@@ -272,35 +280,35 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                       const motivosBloqueio = !p.pode_cobrar ? getMotivosBloqueio(p) : [];
 
                       return (
-                        <tr key={p.id} className="hover:bg-slate-800/30 transition-colors group">
+                        <tr key={p.id} className="hover:bg-muted/30 transition-colors group">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
                               <div
-                                title={p.ativo ? "Aluno Ativo" : "Aluno Inativo"}
-                                className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-colors ${
+                                title={p.ativo ? "Aluno ativo" : "Aluno inativo"}
+                                className={`h-9 w-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                                   p.ativo
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                    ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                    : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
                                 }`}
                               >
                                 {p.nome.charAt(0).toUpperCase()}
                               </div>
                               <div className="min-w-0">
-                                <p className="font-headline font-bold text-slate-100 truncate group-hover:text-blue-400 transition-colors">
+                                <p className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                                   {p.nome}
                                 </p>
-                                <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-slate-400 font-medium mt-0.5">
+                                <div className="flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground mt-0.5">
                                   {p.responsavel_principal?.nome ? (
                                     <span>
-                                      Resp: <strong className="text-slate-300 font-semibold">{formatShortName(p.responsavel_principal.nome, true)}</strong>
+                                      Resp: <strong className="text-foreground font-medium">{formatShortName(p.responsavel_principal.nome, true)}</strong>
                                       {p.responsavel_principal.telefone ? ` (${phoneMask(p.responsavel_principal.telefone)})` : ""}
                                     </span>
                                   ) : (
-                                    <span className="italic text-slate-500">Sem resp. cadastrado</span>
+                                    <span className="italic text-muted-foreground/80">Sem responsável cadastrado</span>
                                   )}
                                   {(p.serie_ano || p.turma) && (
                                     <>
-                                      <span className="text-slate-600">•</span>
+                                      <span>•</span>
                                       <span>{p.serie_ano ? `${p.serie_ano}` : ""}{p.turma ? ` — Turma ${p.turma}` : ""}</span>
                                     </>
                                   )}
@@ -311,11 +319,11 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
 
                           <td className="py-4 px-4">
                             <div>
-                              <p className="font-medium text-slate-300 truncate">
+                              <p className="font-medium text-foreground truncate">
                                 {p.escolas?.nome || "Não informada"}
                               </p>
                               {p.turno && (
-                                <p className="text-[10px] text-slate-400 font-medium">
+                                <p className="text-xs text-muted-foreground">
                                   Turno: {p.turno}
                                 </p>
                               )}
@@ -325,15 +333,15 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                           <td className="py-4 px-4">
                             <div>
                               {hasValor ? (
-                                <span className="font-semibold text-slate-200 block">
+                                <span className="font-semibold text-foreground block">
                                   {formatCurrency(valor)}
                                 </span>
                               ) : (
-                                <span className="text-slate-500 italic text-[11px] block">—</span>
+                                <span className="text-muted-foreground italic text-xs block">—</span>
                               )}
                               {hasValidVencimento && (
-                                <span className="text-[10px] text-slate-400 font-medium block">
-                                  Venc. dia {p.dia_vencimento}
+                                <span className="text-xs text-muted-foreground block">
+                                  Vencimento dia {p.dia_vencimento}
                                 </span>
                               )}
                             </div>
@@ -359,10 +367,10 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                                             motoristaNome,
                                           })
                                         }
-                                        className={`h-8 rounded-xl border text-xs font-bold flex items-center gap-1.5 px-3 transition-all ${
+                                        className={`h-8 rounded-xl border text-xs font-semibold flex items-center gap-1.5 px-3 transition-all ${
                                           p.pode_cobrar
-                                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 hover:border-emerald-500/50 shadow-sm shadow-emerald-500/10"
-                                            : "bg-slate-900/40 border-slate-800/60 text-slate-500 opacity-40"
+                                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
+                                            : "bg-secondary/40 border-border text-muted-foreground opacity-50"
                                         }`}
                                       >
                                         <Send className="h-3.5 w-3.5" />
@@ -372,10 +380,10 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                                   </TooltipTrigger>
                                   <TooltipContent
                                     side="top"
-                                    className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                                    className="bg-popover border-border text-popover-foreground text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
                                   >
                                     {!p.pode_cobrar && (
-                                      <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                                      <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                                     )}
                                     <span>
                                       {!p.pode_cobrar
@@ -391,18 +399,18 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                                   size="sm"
                                   onClick={() => openAdminPassengerNotificationsDialog({ passageiroId: p.id, passageiroNome: p.nome })}
                                   title="Ver histórico de notificações"
-                                  className="h-8 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 text-xs font-bold flex items-center gap-1.5 px-3 transition-all"
+                                  className="h-8 rounded-xl bg-secondary/50 border border-border text-foreground hover:text-primary hover:border-primary/40 hover:bg-secondary text-xs font-semibold flex items-center gap-1.5 px-3 transition-all"
                                 >
-                                  <Bell className="h-3.5 w-3.5 text-blue-400" />
+                                  <Bell className="h-3.5 w-3.5 text-primary" />
                                   <span className="hidden sm:inline">Notificações</span>
                                 </Button>
                               </div>
 
                               {!p.pode_cobrar && motivosBloqueio.length > 0 && (
-                                <div className="flex items-center gap-1 text-[10px] text-amber-400/90 text-right max-w-xs justify-end">
-                                  <AlertCircle className="h-3 w-3 shrink-0 text-amber-400" />
+                                <div className="flex items-center gap-1 text-[11px] text-amber-500 text-right max-w-xs justify-end">
+                                  <AlertCircle className="h-3 w-3 shrink-0" />
                                   <span>
-                                    <strong className="font-semibold text-slate-400">Desabilitado por:</strong>{" "}
+                                    <strong className="font-semibold text-muted-foreground">Desabilitado por:</strong>{" "}
                                     {motivosBloqueio.join(" • ")}
                                   </span>
                                 </div>
@@ -426,30 +434,30 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                   return (
                     <div
                       key={p.id}
-                      className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 space-y-3 text-left shadow-lg"
+                      className="p-4 rounded-2xl bg-card border border-border space-y-3 text-left shadow-sm"
                     >
-                      <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
+                      <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`h-10 w-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
+                            className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
                               p.ativo
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
                             }`}
                           >
                             {p.nome.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h4 className="text-xs font-headline font-bold text-slate-100 leading-tight">
+                            <h4 className="text-xs font-semibold text-foreground leading-tight">
                               {p.nome}
                             </h4>
                             {p.responsavel_principal?.nome && (
-                              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                              <p className="text-xs text-muted-foreground mt-0.5">
                                 Resp: {formatShortName(p.responsavel_principal.nome, true)}
                               </p>
                             )}
                             {(p.serie_ano || p.turma) && (
-                              <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                              <p className="text-xs text-muted-foreground/80 mt-0.5">
                                 {p.serie_ano ? `${p.serie_ano}` : ""}{p.turma ? ` — Turma ${p.turma}` : ""}
                               </p>
                             )}
@@ -459,48 +467,48 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                         <ActiveStatusBadge active={p.ativo} />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-[11px] pt-1">
+                      <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                         <div className="space-y-0.5 col-span-2">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
+                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
                             Escola / Turno
                           </span>
-                          <span className="font-medium text-slate-300 block truncate">
+                          <span className="font-medium text-foreground block truncate">
                             {p.escolas?.nome || "Não informada"}
                             {p.turno ? ` — Turno ${p.turno}` : ""}
                           </span>
                         </div>
 
-                        <div className="space-y-0.5 col-span-2 pt-2 border-t border-slate-800/60 flex items-center justify-between">
+                        <div className="space-y-0.5 col-span-2 pt-2 border-t border-border/60 flex items-center justify-between">
                           <div>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
                               Mensalidade
                             </span>
                             {hasValor ? (
-                              <span className="font-medium text-slate-300 text-xs">
+                              <span className="font-semibold text-foreground text-xs">
                                 {formatCurrency(valor)}
                               </span>
                             ) : (
-                              <span className="text-slate-500 italic text-[10px]">
+                              <span className="text-muted-foreground italic text-xs">
                                 —
                               </span>
                             )}
                           </div>
 
                           <div>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block text-right">
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block text-right">
                               Vencimento
                             </span>
                             {hasValidVencimento ? (
-                              <span className="text-[10px] text-slate-300 font-medium">
+                              <span className="text-xs text-foreground font-medium">
                                 Dia {p.dia_vencimento}
                               </span>
                             ) : (
-                              <span className="text-slate-500 italic text-[10px] block text-right">—</span>
+                              <span className="text-muted-foreground italic text-xs block text-right">—</span>
                             )}
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-800/60 col-span-2 space-y-2">
+                        <div className="pt-2 border-t border-border/60 col-span-2 space-y-2">
                           <div className="grid grid-cols-2 gap-2">
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -519,10 +527,10 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                                         motoristaNome,
                                       })
                                     }
-                                    className={`w-full h-8 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    className={`w-full h-8 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                                       p.pode_cobrar
-                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
-                                        : "bg-slate-800/40 border-slate-800/60 text-slate-500 opacity-40"
+                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                                        : "bg-secondary/40 border-border text-muted-foreground opacity-50"
                                     }`}
                                   >
                                     <Send className="h-3.5 w-3.5" />
@@ -532,10 +540,10 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                               </TooltipTrigger>
                               <TooltipContent
                                 side="top"
-                                className="bg-slate-900 border-slate-800 text-slate-200 text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
+                                className="bg-popover border-border text-popover-foreground text-xs py-1.5 px-3 max-w-xs shadow-xl flex items-center gap-1.5 z-50"
                               >
                                 {!p.pode_cobrar && (
-                                  <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                                  <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                                 )}
                                 <span>
                                   {!p.pode_cobrar
@@ -550,19 +558,19 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
                               variant="ghost"
                               size="sm"
                               onClick={() => openAdminPassengerNotificationsDialog({ passageiroId: p.id, passageiroNome: p.nome })}
-                              className="w-full h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:text-blue-400 hover:bg-slate-700/60 text-[11px] font-bold flex items-center justify-center gap-1.5"
+                              className="w-full h-8 rounded-xl bg-secondary/60 border border-border text-foreground hover:text-primary hover:bg-secondary text-xs font-semibold flex items-center justify-center gap-1.5"
                             >
-                              <Bell className="h-3.5 w-3.5 text-blue-400" />
+                              <Bell className="h-3.5 w-3.5 text-primary" />
                               <span>Notificações</span>
                             </Button>
                           </div>
 
                           {!p.pode_cobrar && motivosBloqueio.length > 0 && (
-                            <div className="flex items-start gap-1.5 text-[10px] text-amber-400/90 bg-amber-500/5 border border-amber-500/10 rounded-lg p-2 leading-tight">
-                              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-400 mt-0.5" />
+                            <div className="flex items-start gap-1.5 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 leading-tight">
+                              <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                               <div>
-                                <span className="font-bold text-slate-300">Desabilitado por:</span>{" "}
-                                <span className="text-amber-300/90">{motivosBloqueio.join(" • ")}</span>
+                                <span className="font-semibold text-foreground">Desabilitado por:</span>{" "}
+                                <span>{motivosBloqueio.join(" • ")}</span>
                               </div>
                             </div>
                           )}

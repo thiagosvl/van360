@@ -41,7 +41,7 @@ export function WhatsAppShowcaseDialog({
         onClose={() => safeCloseDialog(onClose)}
       />
 
-      <BaseDialog.Body className="p-3 sm:p-5 bg-slate-50/50 overflow-y-auto">
+      <BaseDialog.Body className="p-3 sm:p-5 bg-[#f5f5f5] overflow-y-auto">
         <WhatsAppShowcaseEmulator
           initialTab={initialTab}
           driverName={activeDriverName}

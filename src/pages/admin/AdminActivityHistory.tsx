@@ -13,6 +13,7 @@ import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { ActivityUserGroupList } from "@/components/features/admin/ActivityUserGroupList";
 import { ActivityMetricsSummary } from "@/components/features/admin/ActivityMetricsSummary";
+import { AdminPeriodFilter } from "@/components/ui/AdminPeriodFilter";
 import { AdminActivityInspectDialog } from "@/components/dialogs/AdminActivityInspectDialog";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import type { AdminUserGroupLogItem, AdminUserLogItem } from "@/services/api/admin/admin-log.api";
@@ -120,15 +121,15 @@ export default function AdminActivityHistory() {
 
   return (
     <div className="space-y-6">
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="pb-3 border-b border-slate-800/80 bg-slate-900/40">
+      <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
+        <CardHeader className="pb-3 border-b border-border bg-card">
           <div className="flex items-center justify-between gap-4">
             <div>
               {isCurrentPageFirst && (
                 <div
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${isConnected
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${isConnected
                       ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                      : "bg-slate-800/60 border-slate-700/60 text-slate-400"
+                      : "bg-muted border-border text-muted-foreground"
                     }`}
                   title={isConnected ? "Conectado em tempo real" : "Conectando ao tempo real..."}
                 >
@@ -137,11 +138,11 @@ export default function AdminActivityHistory() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     )}
                     <span
-                      className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? "bg-emerald-500" : "bg-slate-500"
+                      className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? "bg-emerald-500" : "bg-muted-foreground"
                         }`}
                     />
                   </span>
-                  <span>{isConnected ? "Ao Vivo" : "Sincronizando"}</span>
+                  <span>{isConnected ? "Ao vivo" : "Sincronizando"}</span>
                 </div>
               )}
             </div>
@@ -150,20 +151,24 @@ export default function AdminActivityHistory() {
               <Button
                 type="button"
                 size="sm"
+                variant="outline"
                 onClick={() => setIsMobileFiltersOpen((p) => !p)}
-                className={`md:hidden h-8 rounded-xl px-2.5 flex items-center gap-1.5 border transition-all text-[10px] font-bold uppercase tracking-wider ${isMobileFiltersOpen
-                    ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                    : "bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-700"
+                className={`md:hidden h-8 rounded-lg px-2.5 flex items-center gap-1.5 border transition-all text-xs font-medium ${isMobileFiltersOpen
+                    ? "bg-primary/10 text-primary border-primary/30"
+                    : "bg-secondary/60 border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
               >
                 <Filter className="h-3.5 w-3.5" />
+                <span>Filtros</span>
               </Button>
+
               <Button
                 type="button"
                 size="sm"
+                variant="outline"
                 onClick={handleRefresh}
                 disabled={isFetching}
-                className="h-8 rounded-xl text-blue-400 bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800 hover:text-blue-300 hover:border-slate-700/80 px-3 flex items-center gap-1.5 transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
+                className="h-8 rounded-lg text-primary bg-secondary/60 border border-border hover:bg-secondary hover:text-primary px-3 flex items-center gap-1.5 transition-all text-xs font-medium shadow-xs disabled:opacity-50"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
                 <span className="hidden sm:inline">Atualizar</span>
@@ -172,19 +177,19 @@ export default function AdminActivityHistory() {
           </div>
 
           <div className="flex items-center gap-2 pt-3">
-            <div className="flex items-center p-1 rounded-xl bg-slate-950/70 border border-slate-800/90 w-full sm:w-auto">
+            <div className="flex items-center p-1 rounded-lg bg-secondary/60 border border-border w-full sm:w-auto">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => setActiveTab("feed")}
-                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "feed"
-                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${activeTab === "feed"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
               >
                 <Activity className="h-3.5 w-3.5" />
-                <span>Feed Global</span>
+                <span>Feed global</span>
               </Button>
 
               <Button
@@ -192,13 +197,13 @@ export default function AdminActivityHistory() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setActiveTab("by_user")}
-                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "by_user"
-                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                className={`flex-1 sm:flex-initial justify-center h-7 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${activeTab === "by_user"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
               >
                 <Users className="h-3.5 w-3.5" />
-                <span>Por Usuário</span>
+                <span>Por usuário</span>
               </Button>
             </div>
           </div>
@@ -214,69 +219,59 @@ export default function AdminActivityHistory() {
           />
 
           <div
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 ${!isMobileFiltersOpen ? "hidden md:grid" : ""
+            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 ${!isMobileFiltersOpen ? "hidden md:grid" : ""
               }`}
           >
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</Label>
+            <div className="flex flex-col gap-1.5 text-left">
+              <Label className="text-xs font-medium text-muted-foreground block leading-none">Usuário</Label>
               <Input
                 type="text"
-                placeholder="Documento, Telefone ou ID..."
+                placeholder="Documento, telefone ou ID..."
                 value={logsFilter.search_cpf}
                 onChange={(e) => handleFilterChange({ search_cpf: e.target.value })}
-                className="h-10 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0"
+                className="h-9 w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary transition-colors"
               />
             </div>
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Início</Label>
-              <Input
-                type="date"
-                value={logsFilter.dataInicio}
-                onChange={(e) => handleFilterChange({ dataInicio: e.target.value })}
-                className="h-10 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0"
-              />
-            </div>
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Fim</Label>
-              <Input
-                type="date"
-                value={logsFilter.dataFim}
-                onChange={(e) => handleFilterChange({ dataFim: e.target.value })}
-                className="h-10 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 text-sm focus-visible:ring-0"
-              />
-            </div>
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ação</Label>
+            <AdminPeriodFilter
+              label="Período da atividade"
+              defaultPreset="hoje"
+              showLabelAbove={true}
+              startDate={logsFilter.dataInicio}
+              endDate={logsFilter.dataFim}
+              onChange={(start, end) => handleFilterChange({ dataInicio: start, dataFim: end })}
+            />
+            <div className="flex flex-col gap-1.5 text-left">
+              <Label className="text-xs font-medium text-muted-foreground block leading-none">Ação</Label>
               <Select
                 value={logsFilter.acao}
                 onValueChange={(val) => handleFilterChange({ acao: val })}
               >
-                <SelectTrigger className="h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-[13px] focus-visible:ring-0">
+                <SelectTrigger className="h-9 w-full rounded-lg bg-background border border-border text-foreground text-sm focus-visible:ring-0">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 max-h-64">
-                  <SelectItem value="all">Todas as ações</SelectItem>
+                <SelectContent className="bg-popover border-border text-popover-foreground max-h-64">
+                  <SelectItem value="all" className="text-sm">Todas as ações</SelectItem>
                   {Object.values(AtividadeAcao).map((acao) => (
-                    <SelectItem key={acao} value={acao} className="text-[13px]">
+                    <SelectItem key={acao} value={acao} className="text-sm">
                       {acao.replace(/_/g, " ")}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 text-left">
-              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Entidade</Label>
+            <div className="flex flex-col gap-1.5 text-left">
+              <Label className="text-xs font-medium text-muted-foreground block leading-none">Entidade</Label>
               <Select
                 value={logsFilter.entidade}
                 onValueChange={(val) => handleFilterChange({ entidade: val })}
               >
-                <SelectTrigger className="h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-[13px] focus-visible:ring-0">
+                <SelectTrigger className="h-9 w-full rounded-lg bg-background border border-border text-foreground text-sm focus-visible:ring-0">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 max-h-64">
-                  <SelectItem value="all">Todas as entidades</SelectItem>
+                <SelectContent className="bg-popover border-border text-popover-foreground max-h-64">
+                  <SelectItem value="all" className="text-sm">Todas as entidades</SelectItem>
                   {Object.values(AtividadeEntidadeTipo).map((ent) => (
-                    <SelectItem key={ent} value={ent} className="text-[13px]">
+                    <SelectItem key={ent} value={ent} className="text-sm">
                       {ent.replace(/_/g, " ")}
                     </SelectItem>
                   ))}
@@ -295,14 +290,14 @@ export default function AdminActivityHistory() {
               />
 
               {usersData && usersData.total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
-                  <p className="text-xs font-semibold text-slate-400">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-border gap-4">
+                  <p className="text-xs font-normal text-muted-foreground">
                     Página {usersData.page} de {totalUserPages} ({usersData.total}{" "}
                     {usersData.total === 1 ? "usuário ativo" : "usuários ativos"} no período)
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Exibir:</Label>
                       <Select
                         value={usersLimit}
                         onValueChange={(val) => {
@@ -310,10 +305,10 @@ export default function AdminActivityHistory() {
                           setUsersPage(1);
                         }}
                       >
-                        <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                        <SelectTrigger className="h-8 rounded-lg bg-background border-border text-foreground text-xs focus-visible:ring-0 w-[70px]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                        <SelectContent className="bg-popover border-border text-popover-foreground">
                           <SelectItem value="10">10</SelectItem>
                           <SelectItem value="20">20</SelectItem>
                           <SelectItem value="50">50</SelectItem>
@@ -323,20 +318,20 @@ export default function AdminActivityHistory() {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
                         disabled={usersPage <= 1}
                         onClick={() => setUsersPage((p) => p - 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
                         disabled={usersPage >= totalUserPages}
                         onClick={() => setUsersPage((p) => p + 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -354,13 +349,13 @@ export default function AdminActivityHistory() {
               />
 
               {logsData && logsData.total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-slate-800 gap-4">
-                  <p className="text-xs font-semibold text-slate-400">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-4 border-t border-border gap-4">
+                  <p className="text-xs font-normal text-muted-foreground">
                     Página {logsData.page} de {totalFeedPages} ({logsData.total} logs)
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs font-semibold text-slate-400">Exibir:</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Exibir:</Label>
                       <Select
                         value={feedLimit}
                         onValueChange={(val) => {
@@ -368,10 +363,10 @@ export default function AdminActivityHistory() {
                           setLogsPage(1);
                         }}
                       >
-                        <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-slate-200 text-xs focus-visible:ring-0 w-[70px]">
+                        <SelectTrigger className="h-8 rounded-lg bg-background border-border text-foreground text-xs focus-visible:ring-0 w-[70px]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                        <SelectContent className="bg-popover border-border text-popover-foreground">
                           <SelectItem value="25">25</SelectItem>
                           <SelectItem value="50">50</SelectItem>
                           <SelectItem value="100">100</SelectItem>
@@ -382,20 +377,20 @@ export default function AdminActivityHistory() {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
                         disabled={logsPage <= 1}
                         onClick={() => setLogsPage((p) => p - 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
                         disabled={logsPage >= totalFeedPages}
                         onClick={() => setLogsPage((p) => p + 1)}
-                        className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white disabled:bg-slate-900/40 disabled:border-slate-800/40 disabled:text-slate-600 disabled:opacity-40"
+                        className="h-8 w-8 rounded-lg border-border bg-background text-foreground hover:bg-secondary disabled:opacity-40"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>

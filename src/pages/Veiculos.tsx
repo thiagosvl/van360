@@ -36,15 +36,12 @@ export default function Veiculos() {
     await refetch();
   };
 
-  const sectionCount = veiculos.length;
+  const totalVeiculos = veiculos.length;
   const hasSearch = hasActiveFilters || !!searchTerm.trim();
-  const countLabel = hasSearch
-    ? (sectionCount === 1 ? "ENCONTRADO" : "ENCONTRADOS")
-    : (sectionCount === 1 ? "CADASTRADO" : "CADASTRADOS");
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+      <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
         <VeiculosToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -56,15 +53,13 @@ export default function Veiculos() {
           onRegister={handleRegister}
         />
 
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-            {/* Veículos */}
-          </h2>
-          {sectionCount != null && (
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-              {sectionCount} {countLabel}
-            </span>
-          )}
+        <div className="flex items-center justify-end px-1">
+          <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
+            {totalVeiculos}{" "}
+            {hasSearch
+              ? (totalVeiculos === 1 ? "ENCONTRADO" : "ENCONTRADOS")
+              : (totalVeiculos === 1 ? "VEÍCULO" : "VEÍCULOS")}
+          </span>
         </div>
 
         {isVeiculosLoading ? (
@@ -79,19 +74,19 @@ export default function Veiculos() {
             }
             description={
               searchTerm || hasActiveFilters
-                ? `Não encontramos veículos com os filtros selecionados.`
+                ? "Não encontramos veículos com os filtros selecionados."
                 : "Comece cadastrando seu primeiro veículo para gerenciar a frota."
             }
             action={
-              (searchTerm || hasActiveFilters)
+              searchTerm || hasActiveFilters
                 ? {
-                  label: "Limpar Filtros",
-                  onClick: clearFilters,
-                }
+                    label: "Limpar Filtros",
+                    onClick: clearFilters,
+                  }
                 : {
-                  label: "Cadastrar Veículo",
-                  onClick: handleRegister,
-                }
+                    label: "Cadastrar Veículo",
+                    onClick: handleRegister,
+                  }
             }
           />
         ) : (

@@ -4,6 +4,7 @@ import {
   APP_STORE_BADGE_URL,
   APP_STORE_URL,
   getAppPlatformEligibility,
+  isNativeApp,
   PLAY_STORE_BADGE_URL,
   PLAY_STORE_URL,
 } from "@/utils/detectPlatform";
@@ -18,32 +19,47 @@ export function PassageiroExternalSuccess({
   onNewCadastro,
 }: PassageiroExternalSuccessProps) {
   const { isEligibleAndroid, isEligibleIos, hasEligibleApp } = getAppPlatformEligibility();
+  const showAppDownload = !isNativeApp() && hasEligibleApp;
 
   return (
-    <div className="min-h-screen bg-[#e8ecf1] flex items-center justify-center p-6">
-      <div className="max-w-md w-full p-8 text-center bg-slate-50 border border-slate-200 shadow-xl rounded-[2.5rem] relative overflow-hidden">
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-6">
+      <div className="max-w-md w-full p-8 text-center bg-white border border-[#e5e5e5] shadow-xs rounded-[24px] relative overflow-hidden">
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center border border-green-100">
-            <CheckCircle2 className="h-10 w-10 text-green-500" />
+          <div className="w-16 h-16 bg-emerald-50 rounded-[18px] flex items-center justify-center border border-emerald-100">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
         </div>
 
-        <h2 className="text-2xl font-extrabold text-[#1a3a5c] mb-3 tracking-tight">
+        <h2 className="text-2xl font-headline font-bold text-foreground mb-2 tracking-tight">
           Cadastro Enviado!
         </h2>
 
-        {hasEligibleApp ? (
-          <>
-            <p className="text-slate-500 mb-6 leading-relaxed text-sm font-medium">
+        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base font-medium mb-6">
+          Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
+        </p>
+
+        <div className="space-y-4">
+          <Button
+            variant="tonal"
+            onClick={onNewCadastro}
+            className="w-full h-11 rounded-[18px] font-semibold transition-all active:scale-[0.98]"
+          >
+            Fazer novo cadastro
+          </Button>
+        </div>
+
+        {showAppDownload && (
+          <div className="mt-6 pt-6 border-t border-[#e5e5e5]">
+            <p className="text-muted-foreground mb-4 leading-relaxed text-xs sm:text-sm font-medium">
               Baixe o aplicativo para acompanhar a{" "}
-              <strong className="text-[#1a3a5c] font-semibold">
+              <strong className="text-foreground font-semibold">
                 carteirinha do aluno
               </strong>{" "}
               e a rotina escolar:
             </p>
 
-            {isEligibleAndroid && (
-              <div className="flex flex-col items-center mb-6">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {isEligibleAndroid && (
                 <a
                   href={PLAY_STORE_URL}
                   target="_blank"
@@ -54,14 +70,12 @@ export function PassageiroExternalSuccess({
                   <img
                     src={PLAY_STORE_BADGE_URL}
                     alt="Disponível no Google Play"
-                    className="h-11 sm:h-12 w-auto object-contain"
+                    className="h-9 sm:h-10 w-auto object-contain"
                   />
                 </a>
-              </div>
-            )}
+              )}
 
-            {isEligibleIos && (
-              <div className="flex flex-col items-center mb-6">
+              {isEligibleIos && (
                 <a
                   href={APP_STORE_URL}
                   target="_blank"
@@ -72,29 +86,17 @@ export function PassageiroExternalSuccess({
                   <img
                     src={APP_STORE_BADGE_URL}
                     alt="Baixar na App Store"
-                    className="h-11 sm:h-12 w-auto object-contain"
+                    className="h-9 sm:h-10 w-auto object-contain"
                   />
                 </a>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-slate-500 mb-8 leading-relaxed text-base font-medium">
-            Tudo certo! Os dados do aluno foram enviados com sucesso para {subtitleDestino}.
-          </p>
+              )}
+            </div>
+          </div>
         )}
 
-        <div className="pt-2 space-y-4">
-          <Button
-            onClick={onNewCadastro}
-            className="w-full h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold shadow-md transition-all active:scale-[0.98]"
-          >
-            Fazer novo cadastro
-          </Button>
-          <p className="text-xs text-slate-400 font-medium italic">
-            Você já pode fechar esta janela com segurança.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground font-medium italic mt-6">
+          Você já pode fechar esta janela com segurança.
+        </p>
       </div>
     </div>
   );

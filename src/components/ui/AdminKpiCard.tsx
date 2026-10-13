@@ -17,8 +17,8 @@ export function AdminKpiCard({
   title,
   value,
   subtext,
-  cardBorder = "border-slate-800 shadow-slate-900/50",
-  iconBg = "bg-slate-800 text-slate-300 border-slate-700",
+  cardBorder,
+  iconBg,
   icon,
   onClick,
   className,
@@ -29,27 +29,27 @@ export function AdminKpiCard({
     <Card
       onClick={onClick}
       className={cn(
-        "border rounded-2xl bg-[#131b2e] p-3.5 sm:p-5 relative overflow-hidden transition-all duration-200",
+        "p-4 sm:p-5 relative overflow-hidden transition-all duration-200 rounded-3xl bg-card border border-border shadow-xs",
         cardBorder,
-        onClick && "cursor-pointer hover:scale-[1.01] hover:brightness-110",
+        onClick && "cursor-pointer hover:border-primary/40 hover:scale-[1.01]",
         className
       )}
     >
-      <div className="flex justify-between items-start gap-2">
-        <div className="space-y-1 min-w-0 flex-1">
-          <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-wider block leading-tight">
+      <div className="flex justify-between items-start gap-3">
+        <div className="space-y-1.5 min-w-0 flex-1">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block leading-tight truncate">
             {title}
           </span>
-          <p className="text-xl sm:text-3xl font-headline font-black text-white tracking-tight leading-none pt-0.5 break-words">
+          <p className="text-2xl sm:text-3xl font-semibold font-headline text-foreground tracking-tight leading-none pt-0.5 truncate">
             {formattedValue}
           </p>
           {subtext && (
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-1 leading-tight">
+            <p className="text-[11px] sm:text-xs font-normal text-muted-foreground mt-1 leading-tight truncate" title={subtext}>
               {subtext}
             </p>
           )}
         </div>
-        <div className={cn("p-1.5 sm:p-2.5 rounded-xl border shrink-0 flex items-center justify-center", iconBg)}>
+        <div className={cn("p-2.5 rounded-2xl border border-border/60 shrink-0 flex items-center justify-center bg-secondary/60 text-foreground", iconBg)}>
           {icon}
         </div>
       </div>

@@ -29,23 +29,23 @@ export function AdminStateDemographicsChart({ data }: AdminStateDemographicsChar
   const totalMotoristas = data.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left h-full w-full min-w-0">
-      <CardHeader className="p-6 pb-2">
-        <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center justify-between gap-2">
+    <Card className="border border-border shadow-xs rounded-3xl overflow-hidden bg-card text-left h-full w-full min-w-0">
+      <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40">
+        <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span className="truncate">DISTRIBUIÇÃO DE MOTORISTAS POR ESTADO (DDD)</span>
+            <span className="truncate">Distribuição por estado (DDD)</span>
           </div>
-          <span className="text-[10px] font-bold font-mono text-slate-400 shrink-0 ml-2">
-            {totalMotoristas} {totalMotoristas === 1 ? "MOTORISTA" : "MOTORISTAS"}
+          <span className="text-xs font-mono font-normal text-muted-foreground shrink-0 ml-2">
+            {totalMotoristas} {totalMotoristas === 1 ? "motorista" : "motoristas"}
           </span>
         </CardTitle>
-        <p className="text-[11px] font-medium text-slate-400 mt-1">
-          Identificação geográfica estimada a partir do DDD do WhatsApp cadastrado
+        <p className="text-xs font-normal text-muted-foreground mt-0.5">
+          Identificação geográfica estimada a partir do DDD cadastrado
         </p>
       </CardHeader>
 
-      <CardContent className="p-6 pt-4 w-full min-w-0">
+      <CardContent className="p-5 sm:p-6 pt-4 w-full min-w-0">
         {data.length === 0 ? (
           <div className="py-12">
             <AdminEmptyState
@@ -55,37 +55,37 @@ export function AdminStateDemographicsChart({ data }: AdminStateDemographicsChar
             />
           </div>
         ) : (
-          <div className="space-y-4 max-h-[360px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#1e293b_transparent] w-full min-w-0">
+          <div className="space-y-3.5 max-h-[360px] overflow-y-auto pr-2 [scrollbar-width:thin] w-full min-w-0">
             {data.map((item) => {
-              const corBarra = REGIAO_COLORS[item.regiao] || "bg-blue-500";
+              const corBarra = REGIAO_COLORS[item.regiao] || "bg-primary";
               const badgeClass = REGIAO_BADGES[item.regiao] || REGIAO_BADGES.Outros;
 
               return (
                 <div key={item.uf} className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono font-black text-[11px] px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-white shrink-0">
+                      <span className="font-mono font-medium text-xs px-2 py-0.5 rounded-lg bg-secondary border border-border text-foreground shrink-0">
                         {item.uf}
                       </span>
-                      <span className="font-bold text-slate-200 truncate">
+                      <span className="font-medium text-foreground truncate">
                         {item.nome}
                       </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${badgeClass} shrink-0 hidden sm:inline-block`}>
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-lg border ${badgeClass} shrink-0 hidden sm:inline-block`}>
                         {item.regiao}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2 font-mono shrink-0 ml-2">
-                      <span className="font-black text-slate-300 text-xs">
+                      <span className="font-semibold text-foreground text-xs">
                         {item.porcentagem}%
                       </span>
-                      <span className="text-[10px] text-slate-500 font-semibold">
+                      <span className="text-xs text-muted-foreground">
                         ({item.quantidade})
                       </span>
                     </div>
                   </div>
 
-                  <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden border border-border/40">
                     <div
                       className={`h-full ${corBarra} transition-all duration-700 rounded-full`}
                       style={{ width: `${Math.max(item.porcentagem, 2)}%` }}

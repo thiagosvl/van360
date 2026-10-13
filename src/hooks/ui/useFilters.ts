@@ -12,6 +12,7 @@ export interface UseFiltersOptions {
   mesParam?: string;
   anoParam?: string;
   categoriaParam?: string;
+  tipoParam?: string;
   syncWithUrl?: boolean;
   minSearchLength?: number;
   debounceMs?: number;
@@ -35,6 +36,8 @@ export interface UseFiltersReturn {
   setSelectedAno?: (value: number) => void;
   selectedCategoria?: string;
   setSelectedCategoria?: (value: string) => void;
+  selectedTipo?: string;
+  setSelectedTipo?: (value: string) => void;
   clearFilters: () => void;
   setFilters: (newFilters: {
     search?: string;
@@ -45,6 +48,7 @@ export interface UseFiltersReturn {
     mes?: number;
     ano?: number;
     categoria?: string;
+    tipo?: string;
   }) => void;
   hasActiveFilters: boolean;
 }
@@ -59,6 +63,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     mesParam,
     anoParam,
     categoriaParam,
+    tipoParam,
     syncWithUrl = true,
     minSearchLength = 3,
     debounceMs = 350,
@@ -83,6 +88,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const [localMes, setLocalMes] = useState<number | undefined>(() => mesParam ? getNowBR().getMonth() + 1 : undefined);
   const [localAno, setLocalAno] = useState<number | undefined>(() => anoParam ? getNowBR().getFullYear() : undefined);
   const [localCategoria, setLocalCategoria] = useState<string | undefined>(FilterDefaults.TODAS);
+  const [localTipo, setLocalTipo] = useState<string | undefined>(FilterDefaults.TODOS);
 
   const selectedStatus = syncWithUrl
     ? (searchParams.get(statusParam) ?? FilterDefaults.TODOS)
@@ -145,6 +151,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     }
     return localCategoria;
   }, [categoriaParam, syncWithUrl, searchParams, localCategoria]);
+
+  const selectedTipo = useMemo(() => {
+    if (!tipoParam) return undefined;
+    if (syncWithUrl) {
+      return searchParams.get(tipoParam) ?? FilterDefaults.TODOS;
+    }
+    return localTipo;
+  }, [tipoParam, syncWithUrl, searchParams, localTipo]);
 
   useEffect(() => {
     const trimmed = searchTerm.trim();
@@ -317,6 +331,26 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     [syncWithUrl, categoriaParam, setSearchParams]
   );
 
+  const setSelectedTipo = useCallback(
+    (value: string) => {
+      if (!tipoParam) return;
+      if (syncWithUrl) {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          if (value && value !== FilterDefaults.TODOS) {
+            newParams.set(tipoParam, value);
+          } else {
+            newParams.delete(tipoParam);
+          }
+          return newParams;
+        }, { replace: true });
+      } else {
+        setLocalTipo(value);
+      }
+    },
+    [syncWithUrl, tipoParam, setSearchParams]
+  );
+
   const setFilters = useCallback(
     (newFilters: {
       search?: string;
@@ -327,6 +361,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       mes?: number;
       ano?: number;
       categoria?: string;
+      tipo?: string;
     }) => {
       if (newFilters.search !== undefined) {
         setSearchTermState(newFilters.search);
@@ -344,6 +379,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         if (newFilters.mes !== undefined && mesParam) setLocalMes(newFilters.mes);
         if (newFilters.ano !== undefined && anoParam) setLocalAno(newFilters.ano);
         if (newFilters.categoria !== undefined && categoriaParam) setLocalCategoria(newFilters.categoria);
+        if (newFilters.tipo !== undefined && tipoParam) setLocalTipo(newFilters.tipo);
         return;
       }
 
@@ -390,6 +426,11 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           else newParams.delete(categoriaParam);
         }
 
+        if (newFilters.tipo !== undefined && tipoParam) {
+          if (newFilters.tipo && newFilters.tipo !== FilterDefaults.TODOS) newParams.set(tipoParam, newFilters.tipo);
+          else newParams.delete(tipoParam);
+        }
+
         return newParams;
       }, { replace: true });
     },
@@ -403,6 +444,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       mesParam,
       anoParam,
       categoriaParam,
+      tipoParam,
       minSearchLength,
       setSearchParams,
     ]
@@ -421,6 +463,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (mesParam) setLocalMes(getNowBR().getMonth() + 1);
       if (anoParam) setLocalAno(getNowBR().getFullYear());
       if (categoriaParam) setLocalCategoria(FilterDefaults.TODAS);
+      if (tipoParam) setLocalTipo(FilterDefaults.TODOS);
       return;
     }
 
@@ -434,6 +477,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (mesParam) newParams.delete(mesParam);
       if (anoParam) newParams.delete(anoParam);
       if (categoriaParam) newParams.delete(categoriaParam);
+      if (tipoParam) newParams.delete(tipoParam);
       return newParams;
     }, { replace: true });
   }, [
@@ -446,6 +490,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     mesParam,
     anoParam,
     categoriaParam,
+    tipoParam,
     setSearchParams,
   ]);
 
@@ -455,7 +500,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     (selectedEscola !== undefined && selectedEscola !== FilterDefaults.TODAS) ||
     (selectedVeiculo !== undefined && selectedVeiculo !== FilterDefaults.TODOS) ||
     (selectedPeriodo !== undefined && selectedPeriodo !== FilterDefaults.TODOS) ||
-    (selectedCategoria !== undefined && selectedCategoria !== FilterDefaults.TODAS);
+    (selectedCategoria !== undefined && selectedCategoria !== FilterDefaults.TODAS) ||
+    (selectedTipo !== undefined && selectedTipo !== FilterDefaults.TODOS);
 
   return {
     searchTerm,
@@ -486,6 +532,10 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     ...(selectedCategoria !== undefined && {
       selectedCategoria,
       setSelectedCategoria,
+    }),
+    ...(selectedTipo !== undefined && {
+      selectedTipo,
+      setSelectedTipo,
     }),
     clearFilters,
     setFilters,

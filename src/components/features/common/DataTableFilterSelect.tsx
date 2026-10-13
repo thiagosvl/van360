@@ -1,11 +1,5 @@
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import React from "react";
 
@@ -36,32 +30,24 @@ export const DataTableFilterSelect = ({
   triggerClassName,
 }: DataTableFilterSelectProps) => {
   return (
-    <div className={cn("space-y-1.5 md:space-y-2", className)}>
-      <div className="flex items-center gap-2 mb-1">
-        {icon && <span className="text-gray-400/80">{icon}</span>}
-        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none ml-0.5">
-          {label}
-        </Label>
-      </div>
-      <Select
+    <div className={cn("space-y-1.5", className)}>
+      <Label className="text-xs font-medium text-[#0a0a0a] leading-none block ml-0.5">
+        {label}
+      </Label>
+      <NativeSelect
+        icon={icon}
+        variant="white"
         value={value}
-        onValueChange={onValueChange}
+        onChange={(e) => onValueChange(e.target.value)}
+        className={triggerClassName}
       >
-        <SelectTrigger className={cn("w-full h-11 md:h-14 rounded-lg md:rounded-2xl bg-gray-50 border-gray-100 font-medium md:font-semibold text-[#1a3a5c] shadow-sm hover:bg-gray-100/50 transition-colors", triggerClassName)}>
-          <SelectValue placeholder={placeholder || label} />
-        </SelectTrigger>
-        <SelectContent className="z-[9999] rounded-xl border-gray-100 shadow-xl overflow-hidden bg-white">
-          {options.map((opt) => (
-            <SelectItem 
-                key={opt.value} 
-                value={opt.value}
-                className="py-3 font-medium text-[#1a3a5c] focus:bg-gray-50 focus:text-[#1a3a5c] cursor-pointer"
-            >
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {placeholder && <option value="">{placeholder}</option>}
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </NativeSelect>
     </div>
   );
 };

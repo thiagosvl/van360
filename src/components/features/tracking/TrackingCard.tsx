@@ -50,8 +50,8 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
         : `${passageiroNome} foi entregue com sucesso!`;
 
     return (
-      <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 text-emerald-900 shadow-xs flex items-center gap-3.5">
-        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-[20px] p-4 text-emerald-900 shadow-xs flex items-center gap-3.5">
+        <div className="w-10 h-10 rounded-[14px] bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600">
           <CheckCircle2 className="w-6 h-6" />
         </div>
         <div className="min-w-0">
@@ -76,15 +76,15 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
 
   if (!isLiberadoGps) {
     return (
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-[#1a3a5c]">
+      <div className="bg-white border border-[#e5e5e5] rounded-[20px] p-4 shadow-xs flex items-center gap-3.5">
+        <div className="w-10 h-10 rounded-[14px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
           <MapPin className="w-5 h-5" />
         </div>
         <div className="min-w-0">
-          <span className="block font-bold text-sm leading-tight text-slate-900">
+          <span className="block font-bold text-sm leading-tight text-foreground">
             Acompanhamento de Rota
           </span>
-          <span className="text-xs text-slate-500 font-medium block mt-0.5">
+          <span className="text-xs text-muted-foreground font-medium block mt-0.5">
             A localização ao vivo será exibida assim que a van estiver a caminho da sua parada.
           </span>
         </div>
@@ -109,10 +109,10 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
       : `Faltam ${paradasRestantes} ${paradasRestantes === 1 ? "parada" : "paradas"} antes de ${primeiroNome}`;
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs space-y-0">
-      <div className="p-4 bg-gradient-to-r from-slate-900 to-[#1a3a5c] text-white flex items-center justify-between gap-3">
+    <div className="bg-white border border-[#e5e5e5] rounded-[24px] overflow-hidden shadow-xs space-y-0">
+      <div className="p-4 bg-[#0b1a2e] text-white flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-400">
+          <div className="w-8 h-8 rounded-[10px] bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-400">
             <Radio className="w-4 h-4 animate-pulse" />
           </div>
           <div className="min-w-0">
@@ -124,7 +124,7 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
                 Ao Vivo
               </span>
             </div>
-            <span className="text-[11px] text-slate-300 font-medium block truncate">
+            <span className="text-[11px] text-white/70 font-medium block truncate">
               {descricaoSentido}
             </span>
           </div>
@@ -135,14 +135,14 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
         <TrackingMap
           vanCoord={vanCoord}
           heading={heading}
-          className="w-full h-56 rounded-xl overflow-hidden shadow-inner border border-slate-200"
+          className="w-full h-56 rounded-[18px] overflow-hidden shadow-inner border border-[#e5e5e5]"
         />
       </div>
 
       <div className="px-3 pb-3 pt-0 space-y-2 text-left">
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between gap-3">
+        <div className="bg-[#f5f5f5] border border-[#e5e5e5] rounded-[16px] p-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-[10px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
               {isEmbarcadoNaIda ? (
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               ) : (
@@ -150,10 +150,10 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
               )}
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] text-slate-500 font-medium block">
+              <span className="text-[11px] text-muted-foreground font-medium block">
                 {isEmbarcadoNaIda ? "Status do Aluno" : "Fila de paradas"}
               </span>
-              <span className="font-bold text-xs text-slate-900 block leading-tight">
+              <span className="font-bold text-xs text-foreground block leading-tight">
                 {textoFila}
               </span>
             </div>
@@ -171,16 +171,16 @@ export const TrackingCard: React.FC<TrackingCardProps> = ({
           )}
         </div>
 
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between gap-3">
+        <div className="bg-[#f5f5f5] border border-[#e5e5e5] rounded-[16px] p-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-[10px] bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
               <MapPin className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] text-slate-500 font-medium block">
+              <span className="text-[11px] text-muted-foreground font-medium block">
                 Destino da Corrida
               </span>
-              <span className="font-bold text-xs text-slate-900 block leading-tight truncate">
+              <span className="font-bold text-xs text-foreground block leading-tight truncate">
                 {destinoEndereco || (vanCoord ? "Van em trânsito" : "Aguardando sinal GPS...")}
               </span>
             </div>

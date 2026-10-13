@@ -1,21 +1,22 @@
 import { useMotoristaFinanceiroApi } from "../api/useMotoristaFinanceiroApi";
 import { formatCurrency } from "@/utils/formatters";
+import { ModoCobrancaEnum } from "@/types/enums";
 
 export function useMotoristaFinanceiroUi() {
   const { financeiro, isLoading, isError, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
 
   const taxaEfetiva = financeiro?.taxa_efetiva ?? 4.0;
   const taxaFormatada = formatCurrency(taxaEfetiva);
-  const cobrancaAtiva = !!financeiro?.cobranca_automatica_ativa;
-  const repassarAoPai = !!financeiro?.repassar_taxa_pais_padrao;
+  const modoCobranca = (financeiro?.modo_cobranca as ModoCobrancaEnum) || ModoCobrancaEnum.DESATIVADO;
+  const cobrancaAtiva = modoCobranca === ModoCobrancaEnum.AUTOMATICA;
 
   return {
     financeiro,
     isLoading,
     isError,
     isUpdating,
+    modoCobranca,
     cobrancaAtiva,
-    repassarAoPai,
     taxaEfetiva,
     taxaFormatada,
     updateFinanceiro,

@@ -86,7 +86,7 @@ export function useCobrancasViewModel() {
 
   const [pageAReceber, setPageAReceber] = useState(1);
   const [pageRecebidas, setPageRecebidas] = useState(1);
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(20);
 
   useEffect(() => {
     setBuscaAReceber("");

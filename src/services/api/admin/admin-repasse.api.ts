@@ -28,6 +28,9 @@ export const adminRepasseApi = {
   retryRepasse: (id: string) =>
     apiClient.post<{ success: boolean; message: string }>(`${BASE}/repasses/${id}/retry`).then((r) => r.data),
 
+  deleteRepasse: (id: string) =>
+    apiClient.delete<{ success: boolean; message: string }>(`${BASE}/repasses/${id}`).then((r) => r.data),
+
   getMotoristaConfiguracaoFinanceira: (userId: string) =>
     apiClient.get<MotoristaConfiguracaoFinanceira>(`${BASE}/users/${userId}/configuracoes-financeiras`).then((r) => r.data),
 

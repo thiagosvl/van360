@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SaaSPlan, Subscription, ReferralData, SubscriptionPricingSummary } from "@/types/subscription";
-import { SubscriptionIdentifer } from "@/types/enums";
+import { SubscriptionIdentifer, SubscriptionStatus } from "@/types/enums";
 import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -17,7 +18,21 @@ import {
   Star,
   Smile,
   XCircle,
+  RotateCw,
 } from "lucide-react";
+import { isNativeIos } from "@/utils/detectPlatform";
+import {
+  purchaseIosProduct,
+  restoreIosPurchases,
+  IAP_PRODUCTS,
+  IapCapacityTier,
+  IAP_TIER_PRICES,
+} from "@/services/native/iapRevenueCat.service";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { getWhatsAppUrl } from "@/constants";
+import { openBrowserLink } from "@/utils/browser";
 
 interface SubscriptionPlansShowcaseProps {
   plans: SaaSPlan[];
@@ -31,6 +46,8 @@ interface SubscriptionPlansShowcaseProps {
   isCanceled?: boolean;
   onSelectPlan: (planId?: string, identifier?: SubscriptionIdentifer) => void;
   pendingInvoicesSlot?: React.ReactNode;
+  activeStudentsCount?: number;
+  initialPeriod?: SubscriptionIdentifer;
 }
 
 interface Testimonial {
@@ -113,7 +130,7 @@ const showcaseFaqs: ShowcaseFaq[] = [
   {
     question: "Onde posso usar o Van360?",
     answer:
-      "Em qualquer lugar. Você pode acessar no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, temos também o app Android na Google Play, super leve e rápido. No iPhone, funciona com total desempenho diretamente pelo navegador.",
+      "Em qualquer lugar. Você pode acessar no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, você e os responsáveis também podem baixar o aplicativo oficial na Google Play (Android) ou na App Store (iPhone).",
   },
   {
     question: "Meus dados continuam salvos se a assinatura vencer?",
@@ -131,24 +148,24 @@ function ShowcaseFaqItem({ question, answer }: ShowcaseFaq) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-slate-100 last:border-0">
+    <div className="border-b border-[#e5e5e5] last:border-0">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-3.5 sm:py-4 text-left group cursor-pointer"
       >
-        <span className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-[#002444] transition-colors leading-snug pr-4">
+        <span className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug pr-4">
           {question}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0",
-            isOpen && "rotate-180 text-[#002444]"
+            "h-4 w-4 text-muted-foreground transition-transform duration-300 shrink-0",
+            isOpen && "rotate-180 text-primary"
           )}
         />
       </button>
       {isOpen && (
-        <div className="pb-3.5 text-xs text-slate-600 leading-relaxed animate-in fade-in duration-200">
+        <div className="pb-3.5 text-xs sm:text-sm text-muted-foreground leading-relaxed animate-in fade-in duration-200">
           {answer}
         </div>
       )}
@@ -168,10 +185,43 @@ export function SubscriptionPlansShowcase({
   isCanceled = false,
   onSelectPlan,
   pendingInvoicesSlot,
+  activeStudentsCount = 0,
+  initialPeriod,
 }: SubscriptionPlansShowcaseProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<SubscriptionIdentifer>(SubscriptionIdentifer.MONTHLY);
+  const isIos = isNativeIos();
+  const queryClient = useQueryClient();
+
+  const minCapacityTier = activeStudentsCount > 250
+    ? IapCapacityTier.TIER_PLUS_250
+    : activeStudentsCount > 110
+      ? IapCapacityTier.TIER_250
+      : IapCapacityTier.TIER_110;
+
+  const defaultPeriod = initialPeriod ?? (
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY
+      ? SubscriptionIdentifer.YEARLY
+      : SubscriptionIdentifer.MONTHLY
+  );
+
+  const [selectedPeriod, setSelectedPeriod] = useState<SubscriptionIdentifer>(defaultPeriod);
+  const [selectedCapacity, setSelectedCapacity] = useState<IapCapacityTier>(() => minCapacityTier);
+  const [isPurchasingIap, setIsPurchasingIap] = useState(false);
+  const [isRestoringIap, setIsRestoringIap] = useState(false);
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
   const [activeTestimonialIdx, setActiveTestimonialIdx] = useState(0);
+
+  useEffect(() => {
+    if (initialPeriod) {
+      setSelectedPeriod(initialPeriod);
+    }
+  }, [initialPeriod]);
+
+  useEffect(() => {
+    if (selectedCapacity < minCapacityTier) {
+      setSelectedCapacity(minCapacityTier);
+    }
+  }, [minCapacityTier, selectedCapacity]);
 
   const monthlyPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.MONTHLY);
   const annualPlan = plans?.find((p) => p.identificador === SubscriptionIdentifer.YEARLY);
@@ -180,23 +230,86 @@ export function SubscriptionPlansShowcase({
   const baseAnnualPrice = pricing?.baseAnnualPrice ?? (annualPlan ? Number(annualPlan.valor) : 0);
   const regularMonthlyPrice = pricing?.regularMonthlyPrice ?? baseMonthlyPrice;
   const regularAnnualPrice = pricing?.regularAnnualPrice ?? baseAnnualPrice;
-  const monthlyPrice = pricing?.monthlyPrice ?? baseMonthlyPrice;
-  const annualPrice = pricing?.annualPrice ?? baseAnnualPrice;
-  const annualMonthlyEquivalent = pricing?.annualMonthlyEquivalent ?? (annualPrice > 0 ? Number((annualPrice / 12).toFixed(2)) : 0);
-  const totalAnnualSavings = pricing?.totalAnnualSavings ?? (regularMonthlyPrice > 0 && annualPrice > 0 ? Math.max(0, Number(((regularMonthlyPrice * 12) - annualPrice).toFixed(2))) : 0);
-  const hasPromoMonthly = pricing?.hasPromoMonthly ?? (regularMonthlyPrice < baseMonthlyPrice);
-  const hasPromoAnnual = pricing?.hasPromoAnnual ?? (regularAnnualPrice < baseAnnualPrice);
-  const hasReferralDiscount = pricing?.hasReferralDiscount ?? Boolean(referral?.hasActiveDiscount);
+  const webMonthlyPrice = pricing?.monthlyPrice ?? baseMonthlyPrice;
+  const webAnnualPrice = pricing?.annualPrice ?? baseAnnualPrice;
+
+  const isPlus250 = selectedCapacity === IapCapacityTier.TIER_PLUS_250;
+  const activeIapCapacity = isPlus250 ? IapCapacityTier.TIER_110 : selectedCapacity;
+  const iosMonthlyPrice = IAP_TIER_PRICES[activeIapCapacity].monthly;
+  const iosAnnualPrice = IAP_TIER_PRICES[activeIapCapacity].annual;
+
+  const monthlyPrice = isIos ? iosMonthlyPrice : webMonthlyPrice;
+  const annualPrice = isIos ? iosAnnualPrice : webAnnualPrice;
+
+  const annualMonthlyEquivalent = annualPrice > 0 ? Number((annualPrice / 12).toFixed(2)) : 0;
+  const totalAnnualSavings = isIos
+    ? Number(((iosMonthlyPrice * 12) - iosAnnualPrice).toFixed(2))
+    : pricing?.totalAnnualSavings ?? (regularMonthlyPrice > 0 && annualPrice > 0 ? Math.max(0, Number(((regularMonthlyPrice * 12) - annualPrice).toFixed(2))) : 0);
+
+  const hasPromoMonthly = !isIos && (pricing?.hasPromoMonthly ?? (regularMonthlyPrice < baseMonthlyPrice));
+  const hasPromoAnnual = !isIos && (pricing?.hasPromoAnnual ?? (regularAnnualPrice < baseAnnualPrice));
+  const hasReferralDiscount = !isIos && (pricing?.hasReferralDiscount ?? Boolean(referral?.hasActiveDiscount));
 
   const referralDiscountPct = pricing?.referralDiscountPct ?? (referral?.discountPct || 0);
-  const freeMonths = pricing?.freeMonths ?? (regularMonthlyPrice > 0 && totalAnnualSavings > 0 ? Math.max(1, Math.round(totalAnnualSavings / regularMonthlyPrice)) : 2);
+  const freeMonths = isIos ? 2 : (pricing?.freeMonths ?? (regularMonthlyPrice > 0 && totalAnnualSavings > 0 ? Math.max(1, Math.round(totalAnnualSavings / regularMonthlyPrice)) : 2));
+
+  const handleIosPurchase = async (period: SubscriptionIdentifer) => {
+    setIsPurchasingIap(true);
+    try {
+      const productId = period === SubscriptionIdentifer.MONTHLY
+        ? (selectedCapacity === IapCapacityTier.TIER_110 ? IAP_PRODUCTS.MENSAL_110 : IAP_PRODUCTS.MENSAL_250)
+        : (selectedCapacity === IapCapacityTier.TIER_110 ? IAP_PRODUCTS.ANUAL_110 : IAP_PRODUCTS.ANUAL_250);
+
+      const result = await purchaseIosProduct(productId);
+      if (result.success) {
+        toast.success("Assinatura confirmada com sucesso pela App Store!");
+        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+        await queryClient.invalidateQueries({ queryKey: ["subscription-plans"] });
+      } else if (result.userCancelled) {
+        return;
+      } else {
+        toast.error(result.errorMessage || "Não foi possível concluir a compra.");
+      }
+    } catch {
+      toast.error("Erro inesperado ao processar a compra.");
+    } finally {
+      setIsPurchasingIap(false);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    setIsRestoringIap(true);
+    try {
+      const res = await restoreIosPurchases();
+      if (res.hasActiveSubscription) {
+        toast.success("Assinatura restaurada com sucesso!");
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+        await queryClient.invalidateQueries({ queryKey: ["subscription-plans"] });
+      } else {
+        toast.info("Nenhuma assinatura ativa encontrada para este Apple ID.");
+      }
+    } catch {
+      toast.error("Erro ao conectar com a App Store para restaurar compras.");
+    } finally {
+      setIsRestoringIap(false);
+    }
+  };
 
   const coreFeatures = [
     { feature: "Cobrança no WhatsApp", benefit: "lembretes com sua chave Pix, sem você ter que cobrar ninguém" },
     { feature: "Contratos digitais", benefit: "assinados no celular com validade jurídica, sem papel" },
     { feature: "Rotas e chamada", benefit: "mapa ao vivo para os pais e chamada na saída da escola" },
     { feature: "Controle financeiro e gastos", benefit: "quem pagou, quem deve e as despesas da sua van" },
-    { feature: "Alunos ilimitados", benefit: "todos os alunos no app, com dados, escola e responsáveis, sem papel" },
+    {
+      feature: "Capacidade de alunos",
+      benefit:
+        selectedCapacity === IapCapacityTier.TIER_110
+          ? "até 110 alunos cadastrados com rotas e carteirinhas"
+          : selectedCapacity === IapCapacityTier.TIER_250
+            ? "até 250 alunos cadastrados para frotas e equipes"
+            : "mais de 250 alunos com atendimento corporativo e frotas",
+    },
   ];
 
   const additionalFeatures = [
@@ -255,68 +368,187 @@ export function SubscriptionPlansShowcase({
     setTouchStartX(null);
   };
 
+  const isCurrentMonthly =
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY;
+
+  const isCurrentAnnual =
+    subscription?.status === SubscriptionStatus.ACTIVE &&
+    subscription?.planos?.identificador === SubscriptionIdentifer.YEARLY;
+
   const renderMonthlyCard = () => (
-    <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between h-full">
+    <div className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs hover:border-[#737373] transition-all flex flex-col justify-between h-full">
       <div>
         <div>
-          <h3 className="text-xl font-bold text-[#002444]">Plano Mensal</h3>
-          <p className="text-xs text-slate-500 mt-1">Cancele quando quiser, sem fidelidade</p>
+          <h3 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight">Plano Mensal</h3>
+          <p className="text-xs text-[#737373] mt-0.5">Cancele quando quiser, sem fidelidade</p>
         </div>
 
-        <div className="mt-4 space-y-0.5">
-          {(hasPromoMonthly || hasReferralDiscount) && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs text-slate-400 line-through font-medium">
-                De {SubscriptionUtils.formatCurrency(hasPromoMonthly ? baseMonthlyPrice : regularMonthlyPrice)}
+        {isIos && (
+          <div className="mt-3.5 pt-3.5 border-t border-[#e5e5e5] space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
+                Quantidade de alunos:
               </span>
-              {hasReferralDiscount && referralDiscountPct > 0 && (
-                <span className="text-xs text-emerald-600 font-semibold">
-                  (-{referralDiscountPct}% por indicação)
+              {activeStudentsCount > 0 && (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {activeStudentsCount} {activeStudentsCount === 1 ? "aluno ativo" : "alunos ativos"}
                 </span>
               )}
             </div>
-          )}
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl sm:text-4xl font-black text-[#002444] tracking-tight">
-              {SubscriptionUtils.formatCurrency(monthlyPrice)}
-            </span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 shrink-0">
-              {hasReferralDiscount ? " no 1º mês" : "/mês"}
-            </span>
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
+              <button
+                type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_110}
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_110)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
+                  selectedCapacity === IapCapacityTier.TIER_110
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_110 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
+                )}
+                title={minCapacityTier > IapCapacityTier.TIER_110 ? "Você possui mais de 110 alunos ativos" : undefined}
+              >
+                Até 110
+              </button>
+              <button
+                type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_250}
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_250)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
+                  selectedCapacity === IapCapacityTier.TIER_250
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_250 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
+                )}
+                title={minCapacityTier > IapCapacityTier.TIER_250 ? "Você possui mais de 250 alunos ativos" : undefined}
+              >
+                Até 250
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_PLUS_250)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center leading-tight truncate",
+                  selectedCapacity === IapCapacityTier.TIER_PLUS_250
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]"
+                )}
+              >
+                250 ou mais
+              </button>
+            </div>
+            {minCapacityTier > IapCapacityTier.TIER_110 && (
+              <p className="text-[10px] text-amber-700 font-medium pt-0.5 text-left">
+                Faixa definida pela sua quantidade de alunos ativos ({activeStudentsCount}).
+              </p>
+            )}
           </div>
-          <p className="text-xs text-slate-600 font-medium pt-0.5">
-            {hasReferralDiscount
-              ? `A partir do 2º mês: ${SubscriptionUtils.formatCurrency(regularMonthlyPrice)}/mês`
-              : "No Pix ou no cartão de crédito"}
-          </p>
-        </div>
+        )}
+
+        {isIos && isPlus250 ? (
+          <div className="mt-4 space-y-1 min-h-[72px] flex flex-col justify-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl sm:text-3xl font-semibold text-[#0a0a0a] tracking-tight">
+                Sob Consulta
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground font-medium">
+              Plano corporativo personalizado para frotas e equipes acima de 250 alunos
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-0.5 min-h-[72px]">
+            {(hasPromoMonthly || hasReferralDiscount) && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-muted-foreground line-through font-medium">
+                  De {SubscriptionUtils.formatCurrency(hasPromoMonthly ? baseMonthlyPrice : regularMonthlyPrice)}
+                </span>
+                {hasReferralDiscount && referralDiscountPct > 0 && (
+                  <span className="text-xs text-emerald-600 font-semibold">
+                    (-{referralDiscountPct}% por indicação)
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-semibold text-[#0a0a0a] tracking-tight tabular-nums">
+                {SubscriptionUtils.formatCurrency(monthlyPrice)}
+              </span>
+              <span className="text-xs sm:text-sm font-normal text-[#737373] shrink-0">
+                {hasReferralDiscount ? " no 1º mês" : "/mês"}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground font-medium pt-0.5">
+              {hasReferralDiscount
+                ? `A partir do 2º mês: ${SubscriptionUtils.formatCurrency(regularMonthlyPrice)}/mês`
+                : isIos
+                  ? "Cobrado na sua conta Apple ID"
+                  : "No Pix ou no cartão de crédito"}
+            </p>
+          </div>
+        )}
 
         <div className="mt-5">
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.currentTarget.blur();
-              if (monthlyPlan?.id) {
-                onSelectPlan(monthlyPlan.id, SubscriptionIdentifer.MONTHLY);
-              }
-            }}
-            className="w-full min-h-[46px] rounded-xl bg-[#002444] hover:bg-[#00172e] text-white font-bold text-sm shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Assinar Plano Mensal</span>
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+          {isIos && isPlus250 ? (
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                openBrowserLink(
+                  getWhatsAppUrl(
+                    "Olá! Tenho uma frota escolar com mais de 250 alunos e gostaria de um plano personalizado no Van360."
+                  )
+                );
+              }}
+              className="w-full min-h-[46px] rounded-[18px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-white" />
+              <span>Falar no WhatsApp</span>
+            </Button>
+          ) : isCurrentMonthly ? (
+            <Button
+              type="button"
+              disabled
+              variant="outline"
+              className="w-full min-h-[46px] rounded-[18px] border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] font-semibold text-sm cursor-not-allowed"
+            >
+              <span>Seu Plano Atual</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={isPurchasingIap}
+              onClick={(e) => {
+                e.currentTarget.blur();
+                if (isIos) {
+                  void handleIosPurchase(SubscriptionIdentifer.MONTHLY);
+                  return;
+                }
+                if (monthlyPlan?.id) {
+                  onSelectPlan(monthlyPlan.id, SubscriptionIdentifer.MONTHLY);
+                }
+              }}
+              className="w-full min-h-[46px] rounded-[18px] bg-primary hover:bg-primary-hover text-white font-semibold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>{isPurchasingIap ? "Processando..." : "Assinar Plano Mensal"}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
-        <div className="border-t border-slate-100 pt-5 mt-5 space-y-3">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="border-t border-[#e5e5e5] pt-5 mt-5 space-y-3">
+          <p className="text-[11px] font-medium text-[#737373] uppercase tracking-wider">
             Tudo o que resolve na sua van:
           </p>
-          <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700">
+          <ul className="space-y-2.5 text-xs sm:text-sm text-foreground">
             {coreFeatures.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2.5 font-normal">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span className="text-slate-600">
-                  <strong className="font-semibold text-slate-900">{item.feature}:</strong>{" "}
+                <span className="text-muted-foreground">
+                  <strong className="font-semibold text-foreground">{item.feature}:</strong>{" "}
                   {item.benefit}
                 </span>
               </li>
@@ -327,19 +559,19 @@ export function SubscriptionPlansShowcase({
             <button
               type="button"
               onClick={() => setIsFeaturesExpanded(!isFeaturesExpanded)}
-              className="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-[#002444] hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-[18px] border border-[#e5e5e5] text-xs font-semibold text-primary hover:bg-[#f5f5f5] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>{isFeaturesExpanded ? "Ocultar" : "Ver mais benefícios inclusos"}</span>
               <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isFeaturesExpanded && "rotate-180")} />
             </button>
 
             {isFeaturesExpanded && (
-              <ul className="space-y-2.5 pt-3 text-xs sm:text-sm text-slate-700 border-t border-slate-100 mt-2 animate-in fade-in duration-200">
+              <ul className="space-y-2.5 pt-3 text-xs sm:text-sm text-foreground border-t border-[#e5e5e5] mt-2 animate-in fade-in duration-200">
                 {additionalFeatures.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 font-normal">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="text-slate-600">
-                      <strong className="font-semibold text-slate-900">{item.feature}:</strong>{" "}
+                    <span className="text-muted-foreground">
+                      <strong className="font-semibold text-foreground">{item.feature}:</strong>{" "}
                       {item.benefit}
                     </span>
                   </li>
@@ -353,75 +585,190 @@ export function SubscriptionPlansShowcase({
   );
 
   const renderAnnualCard = () => (
-    <div className="relative bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between h-full">
+    <div className="relative bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs hover:border-[#737373] transition-all flex flex-col justify-between h-full">
       {totalAnnualSavings > 0 && (
-        <div className="absolute -top-3 right-6 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-tight border border-emerald-200/90 shadow-xs flex items-center gap-1.5">
+        <div className="absolute -top-3 right-6 z-10 px-3 py-0.5 rounded-[18px] bg-emerald-50 text-emerald-700 text-xs font-medium tracking-tight border border-emerald-200 shadow-xs flex items-center gap-1.5">
           <span>Economize {SubscriptionUtils.formatCurrency(totalAnnualSavings)}</span>
         </div>
       )}
 
       <div>
         <div>
-          <h3 className="text-xl font-bold text-[#002444]">Plano Anual</h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <h3 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight">Plano Anual</h3>
+          <p className="text-xs text-[#737373] mt-0.5">
             {freeMonths > 0
               ? `1 ano pelo preço de ${12 - freeMonths} ${12 - freeMonths === 1 ? "mês" : "meses"}`
               : "Máxima economia para a sua van o ano todo"}
           </p>
         </div>
 
-        <div className="mt-4 space-y-0.5">
-          {(hasPromoAnnual || hasReferralDiscount || (regularMonthlyPrice * 12) > annualPrice) && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs text-slate-400 line-through font-medium">
-                De {SubscriptionUtils.formatCurrency(hasPromoAnnual ? baseAnnualPrice : (regularMonthlyPrice * 12))}
+        {isIos && (
+          <div className="mt-3.5 pt-3.5 border-t border-[#e5e5e5] space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block text-left">
+                Quantidade de alunos:
               </span>
-              {hasReferralDiscount && referralDiscountPct > 0 && (
-                <span className="text-xs text-emerald-600 font-semibold">
-                  (-{referralDiscountPct}% por indicação)
+              {activeStudentsCount > 0 && (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {activeStudentsCount} {activeStudentsCount === 1 ? "aluno ativo" : "alunos ativos"}
                 </span>
               )}
             </div>
-          )}
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl sm:text-4xl font-black text-[#002444] tracking-tight">
-              {SubscriptionUtils.formatCurrency(annualPrice)}
-            </span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 shrink-0">
-              /ano
-            </span>
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
+              <button
+                type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_110}
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_110)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
+                  selectedCapacity === IapCapacityTier.TIER_110
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_110 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
+                )}
+                title={minCapacityTier > IapCapacityTier.TIER_110 ? "Você possui mais de 110 alunos ativos" : undefined}
+              >
+                Até 110
+              </button>
+              <button
+                type="button"
+                disabled={minCapacityTier > IapCapacityTier.TIER_250}
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_250)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center truncate",
+                  selectedCapacity === IapCapacityTier.TIER_250
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]",
+                  minCapacityTier > IapCapacityTier.TIER_250 && "opacity-40 cursor-not-allowed hover:text-[#737373]"
+                )}
+                title={minCapacityTier > IapCapacityTier.TIER_250 ? "Você possui mais de 250 alunos ativos" : undefined}
+              >
+                Até 250
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCapacity(IapCapacityTier.TIER_PLUS_250)}
+                className={cn(
+                  "py-2 px-1 rounded-[14px] text-[11px] sm:text-xs font-semibold transition-all cursor-pointer text-center leading-tight truncate",
+                  selectedCapacity === IapCapacityTier.TIER_PLUS_250
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]"
+                )}
+              >
+                250 ou mais
+              </button>
+            </div>
+            {minCapacityTier > IapCapacityTier.TIER_110 && (
+              <p className="text-[10px] text-amber-700 font-medium pt-0.5 text-left">
+                Faixa definida pela sua quantidade de alunos ativos ({activeStudentsCount}).
+              </p>
+            )}
           </div>
-          <p className="text-xs text-slate-600 font-medium pt-0.5">
-            Equivale a <span className="font-bold text-slate-900">{SubscriptionUtils.formatCurrency(annualMonthlyEquivalent)}/mês</span> em até 12x ou à vista
-          </p>
-        </div>
+        )}
+
+        {isIos && isPlus250 ? (
+          <div className="mt-4 space-y-1 min-h-[72px] flex flex-col justify-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl sm:text-3xl font-semibold text-[#0a0a0a] tracking-tight">
+                Sob Consulta
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground font-medium">
+              Plano corporativo personalizado para frotas e equipes acima de 250 alunos
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-0.5 min-h-[72px]">
+            {(hasPromoAnnual || hasReferralDiscount || (regularMonthlyPrice * 12) > annualPrice) && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-muted-foreground line-through font-medium">
+                  De {SubscriptionUtils.formatCurrency(hasPromoAnnual ? baseAnnualPrice : (regularMonthlyPrice * 12))}
+                </span>
+                {hasReferralDiscount && referralDiscountPct > 0 && (
+                  <span className="text-xs text-emerald-600 font-semibold">
+                    (-{referralDiscountPct}% por indicação)
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-semibold text-[#0a0a0a] tracking-tight tabular-nums">
+                {SubscriptionUtils.formatCurrency(annualPrice)}
+              </span>
+              <span className="text-xs sm:text-sm font-normal text-[#737373] shrink-0">
+                /ano
+              </span>
+            </div>
+            <p className="text-xs text-[#737373] font-normal pt-0.5">
+              Equivale a <span className="font-medium text-[#0a0a0a]">{SubscriptionUtils.formatCurrency(annualMonthlyEquivalent)}/mês</span> em até 12x ou à vista
+            </p>
+          </div>
+        )}
 
         <div className="mt-5">
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.currentTarget.blur();
-              if (annualPlan?.id) {
-                onSelectPlan(annualPlan.id, SubscriptionIdentifer.YEARLY);
-              }
-            }}
-            className="w-full min-h-[46px] rounded-xl bg-[#002444] hover:bg-[#00172e] text-white font-bold text-sm shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Assinar Plano Anual</span>
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+          {isIos && isPlus250 ? (
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                openBrowserLink(
+                  getWhatsAppUrl(
+                    "Olá! Tenho uma frota escolar com mais de 250 alunos e gostaria de um plano personalizado no Van360."
+                  )
+                );
+              }}
+              className="w-full min-h-[46px] rounded-[18px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-white" />
+              <span>Falar no WhatsApp</span>
+            </Button>
+          ) : isCurrentAnnual ? (
+            <Button
+              type="button"
+              disabled
+              variant="outline"
+              className="w-full min-h-[46px] rounded-[18px] border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] font-semibold text-sm cursor-not-allowed"
+            >
+              <span>Seu Plano Atual</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={isPurchasingIap}
+              onClick={(e) => {
+                e.currentTarget.blur();
+                if (isIos) {
+                  void handleIosPurchase(SubscriptionIdentifer.YEARLY);
+                  return;
+                }
+                if (annualPlan?.id) {
+                  onSelectPlan(annualPlan.id, SubscriptionIdentifer.YEARLY);
+                }
+              }}
+              className="w-full min-h-[46px] rounded-[18px] bg-primary hover:bg-primary-hover text-white font-semibold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>
+                {isPurchasingIap
+                  ? "Processando..."
+                  : isCurrentMonthly
+                    ? "Migrar para Plano Anual"
+                    : "Assinar Plano Anual"}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
-        <div className="border-t border-slate-100 pt-5 mt-5 space-y-3">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="border-t border-[#e5e5e5] pt-5 mt-5 space-y-3">
+          <p className="text-[11px] font-medium text-[#737373] uppercase tracking-wider">
             Tudo o que resolve na sua van:
           </p>
-          <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700">
+          <ul className="space-y-2.5 text-xs sm:text-sm text-foreground">
             {coreFeatures.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2.5 font-normal">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span className="text-slate-600">
-                  <strong className="font-semibold text-slate-900">{item.feature}:</strong>{" "}
+                <span className="text-muted-foreground">
+                  <strong className="font-semibold text-foreground">{item.feature}:</strong>{" "}
                   {item.benefit}
                 </span>
               </li>
@@ -432,19 +779,19 @@ export function SubscriptionPlansShowcase({
             <button
               type="button"
               onClick={() => setIsFeaturesExpanded(!isFeaturesExpanded)}
-              className="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-[#002444] hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-[18px] border border-[#e5e5e5] text-xs font-semibold text-primary hover:bg-[#f5f5f5] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>{isFeaturesExpanded ? "Ocultar" : "Ver mais benefícios inclusos"}</span>
               <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isFeaturesExpanded && "rotate-180")} />
             </button>
 
             {isFeaturesExpanded && (
-              <ul className="space-y-2.5 pt-3 text-xs sm:text-sm text-slate-700 border-t border-slate-100 mt-2 animate-in fade-in duration-200">
+              <ul className="space-y-2.5 pt-3 text-xs sm:text-sm text-foreground border-t border-[#e5e5e5] mt-2 animate-in fade-in duration-200">
                 {additionalFeatures.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 font-normal">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="text-slate-600">
-                      <strong className="font-semibold text-slate-900">{item.feature}:</strong>{" "}
+                    <span className="text-muted-foreground">
+                      <strong className="font-semibold text-foreground">{item.feature}:</strong>{" "}
                       {item.benefit}
                     </span>
                   </li>
@@ -458,106 +805,89 @@ export function SubscriptionPlansShowcase({
   );
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500 w-full">
-      <div className="text-center space-y-2">
-        {isCanceled ? (
-          <div className="space-y-4 w-full pt-1">
-            <Banner
-              variant="warning"
-              icon={<XCircle className="w-4 h-4 text-amber-600" />}
-              title="Assinatura cancelada"
-              description="Sua assinatura anterior foi cancelada e o acesso está suspenso."
-              className="text-left w-full"
-            />
-            <WhatsAppSupportButton
-              subtitle="Tire dúvidas sobre os planos ou reativação"
-              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
-            />
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold font-headline text-[#002444] tracking-tight">
-                Reative seu Acesso
-              </h1>
-              <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-                Seus alunos, cobranças, contratos e rotas continuam salvos com segurança. Escolha um plano abaixo para voltar a usar todas as funcionalidades.
-              </p>
-            </div>
-          </div>
-        ) : isExpired ? (
-          <div className="space-y-4 w-full pt-1">
-            <Banner
-              variant="danger"
-              icon={<Lock className="w-4 h-4 text-rose-600" />}
-              title="Acesso suspenso"
-              description="Seus dados continuam salvos com segurança."
-              className="text-left w-full"
-            />
-            <WhatsAppSupportButton
-              subtitle="Tire dúvidas sobre os planos ou reativação"
-              message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
-            />
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {isTrial && trialDaysLeft !== null && trialDaysLeft !== undefined && (
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1 rounded-full text-xs font-normal border border-emerald-200/80 bg-emerald-50/80 text-emerald-800 mb-2 sm:mb-3">
-                <span className="relative flex h-3.5 w-3.5 items-center justify-center shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="absolute inline-flex h-3 w-3 rounded-full bg-emerald-500/25" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006039]" />
-                </span>
-                <span>
-                  {trialDaysLeft === 0
-                    ? "Hoje é o seu último dia de teste gratuito"
-                    : trialDaysLeft === 1
-                      ? "1 dia de teste gratuito restante"
-                      : `${trialDaysLeft} dias de teste gratuitos restantes`}
-                </span>
+    <div id="subscription-plans-showcase" className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500 w-full">
+      {(isCanceled || isExpired) && (
+        <div className="text-center space-y-2">
+          {isCanceled ? (
+            <div className="space-y-4 w-full pt-1">
+              <Banner
+                variant="warning"
+                icon={<XCircle className="w-4 h-4 text-amber-600" />}
+                title="Assinatura cancelada"
+                description="Sua assinatura anterior foi cancelada e o acesso está suspenso."
+                className="text-left w-full"
+              />
+              <WhatsAppSupportButton
+                subtitle="Tire dúvidas sobre os planos ou reativação"
+                message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
+              />
+              <div className="space-y-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold font-headline text-[#0a0a0a] tracking-tight">
+                  Reative seu Acesso
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">
+                  Seus alunos, cobranças, contratos e rotas continuam salvos com segurança. Escolha um plano abaixo para voltar a usar todas as funcionalidades.
+                </p>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          ) : (
+            <div className="space-y-4 w-full pt-1">
+              <Banner
+                variant="danger"
+                icon={<Lock className="w-4 h-4 text-rose-600" />}
+                title="Acesso suspenso"
+                description="Seus dados continuam salvos com segurança."
+                className="text-left w-full"
+              />
+              <WhatsAppSupportButton
+                subtitle="Tire dúvidas sobre os planos ou reativação"
+                message="Olá! Estou na tela de assinatura do Van360 e gostaria de tirar uma dúvida."
+              />
+              <div className="space-y-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold font-headline text-[#0a0a0a] tracking-tight">
+                  Regularize sua Assinatura
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">
+                  Seus alunos, cobranças, contratos e rotas continuam salvos com segurança. Escolha um plano abaixo para voltar a usar o Van360.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {pendingInvoicesSlot}
 
       {pendingInvoicesSlot && (
         <div className="flex items-center gap-4 py-1">
-          <div className="flex-1 h-px bg-slate-200" />
-          <span className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-wider">
+          <div className="flex-1 h-px bg-[#e5e5e5]" />
+          <span className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             ou escolha outro plano
           </span>
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-[#e5e5e5]" />
         </div>
       )}
 
-
-      <div className="max-w-sm sm:max-w-md mx-auto w-full pt-1">
-        <Tabs
-          value={selectedPeriod}
-          onValueChange={(val) => setSelectedPeriod(val as SubscriptionIdentifer)}
-          className="w-full"
-        >
-          <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-            <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
-              <TabsTrigger
-                value={SubscriptionIdentifer.MONTHLY}
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              >
-                Plano Mensal
-              </TabsTrigger>
-              <TabsTrigger
-                value={SubscriptionIdentifer.YEARLY}
-                className="relative rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              >
-                <span>Plano Anual</span>
-                <span className="absolute -top-3 right-2 sm:right-1 px-2.5 py-0.5 rounded-full bg-[#002444] text-white text-[8px] font-semibold uppercase tracking-tight shadow-xs whitespace-nowrap flex items-center gap-1">
-                  mais popular
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </Tabs>
-      </div>
+      <Tabs
+        value={selectedPeriod}
+        onValueChange={(val) => setSelectedPeriod(val as SubscriptionIdentifer)}
+        className="w-full space-y-4 sm:space-y-6"
+      >
+        <AppTabNav
+          activeTab={selectedPeriod}
+          layout="fill"
+          items={[
+            {
+              value: SubscriptionIdentifer.MONTHLY,
+              label: "Plano Mensal",
+            },
+            {
+              value: SubscriptionIdentifer.YEARLY,
+              label: "Plano Anual",
+            },
+          ]}
+        />
+      </Tabs>
 
       <div>
         {selectedPeriod === SubscriptionIdentifer.YEARLY ? renderAnnualCard() : renderMonthlyCard()}
@@ -567,14 +897,14 @@ export function SubscriptionPlansShowcase({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/80 shadow-xs space-y-4 select-none touch-pan-y w-full overflow-hidden"
+        className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs space-y-4 select-none touch-pan-y w-full overflow-hidden"
       >
         <div className="space-y-4">
           <div className="text-center space-y-1 pb-1">
-            <h3 className="text-base sm:text-lg font-bold text-[#002444] tracking-tight">
+            <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight">
               Quem usa, recomenda
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Veja o que motoristas de van de todo o Brasil dizem sobre o Van360:
             </p>
           </div>
@@ -590,13 +920,13 @@ export function SubscriptionPlansShowcase({
                       key={i}
                       className={cn(
                         "w-4 h-4",
-                        isFilled ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-300"
+                        isFilled ? "fill-amber-400 text-amber-400" : "fill-[#e5e5e5] text-[#e5e5e5]"
                       )}
                     />
                   );
                 })}
               </div>
-              <span className="text-xs font-bold text-slate-700 ml-1.5">
+              <span className="text-xs font-medium text-[#0a0a0a] ml-1.5">
                 {testimonials[activeTestimonialIdx].rating}
               </span>
             </div>
@@ -608,7 +938,7 @@ export function SubscriptionPlansShowcase({
                   e.stopPropagation();
                   handlePrevTestimonial();
                 }}
-                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-[12px] border border-[#e5e5e5] flex items-center justify-center text-muted-foreground hover:bg-[#f5f5f5] hover:text-foreground transition-colors cursor-pointer"
                 aria-label="Depoimento anterior"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -619,7 +949,7 @@ export function SubscriptionPlansShowcase({
                   e.stopPropagation();
                   handleNextTestimonial();
                 }}
-                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-[12px] border border-[#e5e5e5] flex items-center justify-center text-muted-foreground hover:bg-[#f5f5f5] hover:text-foreground transition-colors cursor-pointer"
                 aria-label="Próximo depoimento"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -644,12 +974,12 @@ export function SubscriptionPlansShowcase({
                 : "animate-in fade-in slide-in-from-left-4 duration-300"
             )}
           >
-            <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed min-h-[44px] sm:min-h-[38px] flex items-center">
+            <p className="text-xs sm:text-sm text-foreground/80 italic leading-relaxed min-h-[44px] sm:min-h-[38px] flex items-center">
               &quot;{testimonials[activeTestimonialIdx].quote}&quot;
             </p>
 
-            <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-              <div className="w-11 h-11 rounded-full bg-slate-50 border border-slate-200/80 text-[#002444] flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+            <div className="flex items-center gap-3 pt-2 border-t border-[#e5e5e5]">
+              <div className="w-11 h-11 rounded-full bg-[#f5f5f5] border border-[#e5e5e5] text-foreground flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                 {testimonials[activeTestimonialIdx].logo ? (
                   <img
                     src={testimonials[activeTestimonialIdx].logo}
@@ -658,14 +988,14 @@ export function SubscriptionPlansShowcase({
                     loading="lazy"
                   />
                 ) : (
-                  <Smile className="w-5 h-5 text-[#002444]" />
+                  <Smile className="w-5 h-5 text-foreground" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h5 className="text-xs sm:text-sm font-bold text-[#002444]">
+                <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
                   {testimonials[activeTestimonialIdx].name}
                 </h5>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-muted-foreground">
                   {testimonials[activeTestimonialIdx].role}
                 </p>
               </div>
@@ -685,7 +1015,7 @@ export function SubscriptionPlansShowcase({
               }}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
-                activeTestimonialIdx === i ? "w-5 bg-[#002444]" : "w-1.5 bg-slate-200"
+                activeTestimonialIdx === i ? "w-5 bg-primary" : "w-1.5 bg-[#e5e5e5]"
               )}
               aria-label={`Ir para depoimento ${i + 1}`}
             />
@@ -693,22 +1023,60 @@ export function SubscriptionPlansShowcase({
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/80 shadow-xs space-y-4 w-full">
+      <div className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs space-y-4 w-full">
         <div className="text-center space-y-1">
-          <h3 className="text-base sm:text-lg font-bold text-[#002444] tracking-tight">
+          <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight">
             Dúvidas Frequentes
           </h3>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             Perguntas comuns de quem está contratando o Van360:
           </p>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#e5e5e5]">
           {showcaseFaqs.map((faq, idx) => (
             <ShowcaseFaqItem key={idx} question={faq.question} answer={faq.answer} />
           ))}
         </div>
       </div>
+
+      {isIos && (
+        <div className="bg-[#f5f5f5] rounded-[24px] p-5 sm:p-6 border border-[#e5e5e5] text-center space-y-3.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isRestoringIap}
+            onClick={() => void handleRestorePurchases()}
+            className="rounded-[18px] border-[#e5e5e5] bg-white text-xs font-semibold text-foreground hover:bg-[#f5f5f5] cursor-pointer"
+          >
+            <RotateCw className={cn("w-3.5 h-3.5 mr-1.5", isRestoringIap && "animate-spin")} />
+            <span>{isRestoringIap ? "Restaurando compras..." : "Restaurar Compras Anteriores"}</span>
+          </Button>
+
+          <p className="text-[11px] text-muted-foreground leading-relaxed max-w-xl mx-auto">
+            O valor da assinatura será cobrado em sua conta Apple ID na confirmação da compra. A assinatura é renovada automaticamente pelo mesmo período e valor contratados, a menos que a renovação automática seja desativada com antecedência mínima de 24 horas antes do término do período vigente. Você pode gerenciar ou cancelar sua assinatura a qualquer momento nos Ajustes da sua conta na App Store.
+          </p>
+
+          <div className="flex items-center justify-center gap-4 text-xs font-medium text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => openBrowserLink("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")}
+              className="underline hover:text-primary cursor-pointer"
+            >
+              Termos de Uso (EULA)
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => openBrowserLink("https://van360.com.br/politica-de-privacidade")}
+              className="underline hover:text-primary cursor-pointer"
+            >
+              Política de Privacidade
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

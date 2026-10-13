@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { safeCloseDialog } from "@/hooks";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { sessionManager } from "@/services/sessionManager";
 import { ROUTES } from "@/constants/routes";
-import { toast } from "sonner";
+import { toast } from "@/utils/notifications/toast";
 import { handleApiError } from "@/utils/errorHandler";
 
 export interface ExcluirContaDialogProps {
@@ -51,35 +50,32 @@ export function ExcluirContaDialog({
   };
 
   return (
-    <BaseDialog open={open} onOpenChange={handleClose}>
+    <BaseDialog open={open} onOpenChange={handleClose} maxWidth="sm">
       <BaseDialog.Header
-        title="Excluir minha conta"
-        icon={<AlertTriangle className="w-5 h-5 text-rose-600" />}
+        title="Excluir conta"
+        subtitle="Esta ação é permanente e irreversível."
+        icon={<Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
       <BaseDialog.Body>
-        <div className="space-y-4">
-          <Banner
-            variant="danger"
-            description="Todos os seus dados serão permanentemente apagados."
-          />
-
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            Para confirmar a exclusão definitiva da sua conta, digite a palavra{" "}
-            <span className="font-bold text-rose-600 select-all">
-              {CONFIRMATION_KEYWORD}
-            </span>{" "}
-            no campo abaixo:
+        <div className="space-y-4 pt-1">
+          <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
+            Ao confirmar, todos os seus dados cadastrais, rotas, alunos e registros financeiros serão permanentemente apagados dos nossos servidores.
           </p>
 
-          <Input
-            value={typedConfirmation}
-            onChange={(e) => setTypedConfirmation(e.target.value.toUpperCase())}
-            placeholder='Digite "excluir"'
-            disabled={isDeleting}
-            className="border-slate-300 focus-visible:ring-rose-500 font-semibold tracking-wider uppercase text-center placeholder:normal-case placeholder:font-normal placeholder:tracking-normal"
-            autoFocus
-          />
+          <div className="space-y-2 pt-2">
+            <label className="text-xs font-medium text-[#0a0a0a] block">
+              Para confirmar, digite <span className="font-semibold text-[#0a0a0a] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[6px] border border-[#e5e5e5] tracking-wider">EXCLUIR</span> abaixo:
+            </label>
+            <Input
+              value={typedConfirmation}
+              onChange={(e) => setTypedConfirmation(e.target.value.toUpperCase())}
+              placeholder='Digite "EXCLUIR"'
+              disabled={isDeleting}
+              className="h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a] text-center uppercase tracking-widest font-semibold placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-[#737373] transition-all focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+              autoFocus
+            />
+          </div>
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
@@ -90,12 +86,11 @@ export function ExcluirContaDialog({
           onClick={handleClose}
         />
         <BaseDialog.Action
-          label={isDeleting ? "Confirmando..." : "Confirmar"}
-          variant="primary"
+          label={isDeleting ? "Excluindo..." : "Confirmar Exclusão"}
+          variant="destructive"
           isLoading={isDeleting}
           disabled={!isConfirmed || isDeleting}
           onClick={handleDeleteAccount}
-          className="bg-rose-600 hover:bg-rose-700 shadow-rose-600/20 text-white"
         />
       </BaseDialog.Footer>
     </BaseDialog>

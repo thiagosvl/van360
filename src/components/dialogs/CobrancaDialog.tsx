@@ -4,6 +4,8 @@ import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { CheckCircle2, PlusCircle } from "lucide-react";
 
+import { safeCloseDialog } from "@/hooks";
+
 interface CobrancaDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,6 +37,10 @@ export default function CobrancaDialog({
   availableMonths,
   onCobrancaAdded,
 }: CobrancaDialogProps) {
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
+
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: "create",
     passageiroId,
@@ -46,7 +52,7 @@ export default function CobrancaDialog({
     lockFoiPago,
     onSuccess: () => {
       onCobrancaAdded?.();
-      onClose();
+      handleClose();
     },
   });
 
@@ -54,10 +60,9 @@ export default function CobrancaDialog({
   const dialogIcon = lockFoiPago ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <PlusCircle className="w-5 h-5" />;
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={onClose}>
-      <BaseDialog.Header title={dialogTitle} icon={dialogIcon} onClose={onClose} />
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <BaseDialog.Header title={dialogTitle} icon={dialogIcon} onClose={handleClose} />
       <BaseDialog.Body>
-
         <Form {...form}>
           <form onSubmit={onSubmit} className="space-y-4">
             <CobrancaFormContent
@@ -73,8 +78,8 @@ export default function CobrancaDialog({
         </Form>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={onClose} disabled={isSubmitting} />
-        <BaseDialog.Action label={lockFoiPago ? "Registrar" : "Registrar"} onClick={onSubmit} isLoading={isSubmitting} />
+        <BaseDialog.Action label="Cancelar" variant="secondary" onClick={handleClose} disabled={isSubmitting} />
+        <BaseDialog.Action label="Registrar" onClick={onSubmit} isLoading={isSubmitting} />
       </BaseDialog.Footer>
     </BaseDialog>
   );

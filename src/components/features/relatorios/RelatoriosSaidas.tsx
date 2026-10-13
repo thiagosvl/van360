@@ -73,16 +73,16 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
   };
 
   const getMargemStatus = (m: number) => {
-    if (m > 30) return { label: "Saudável", color: "text-emerald-600 bg-emerald-50" };
-    if (m > 10) return { label: "Atenção", color: "text-amber-600 bg-amber-50" };
-    return { label: "Crítico", color: "text-red-600 bg-red-50" };
+    if (m > 30) return { label: "Saudável", color: "text-emerald-700 bg-emerald-500/10 border-emerald-500/20" };
+    if (m > 10) return { label: "Atenção", color: "text-amber-700 bg-amber-500/10 border-amber-500/20" };
+    return { label: "Crítico", color: "text-rose-700 bg-rose-500/10 border-rose-500/20" };
   };
 
   const status = getMargemStatus(dados.margemOperacional);
 
   return (
     <div className="space-y-4 px-1">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <KPICard
           label="Total de Despesas"
           icon={TrendingDown}
@@ -97,20 +97,24 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           variant={KPICardVariant.OUTLINE}
           value={`${Math.round(dados.margemOperacional)}%`}
           valueClassName={dados.margemOperacional > 0 ? "text-emerald-600" : dados.margemOperacional < 0 ? "text-rose-600" : undefined}
+          countLabel={
+            <span className={cn("px-2 py-0.5 rounded-[18px] text-[10px] font-medium border", status.color)}>
+              {status.label}
+            </span>
+          }
         />
       </div>
 
-      {/* Categorias */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
-        <div className="pt-6 px-6 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-            <TrendingDown className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+        <div className="p-4 sm:p-5 pb-0 flex items-center gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center border border-[#e5e5e5] shrink-0">
+            <TrendingDown className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
           </div>
-          <h3 className="text-[13px] font-bold text-slate-800">
+          <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
             Categorias de Gasto
           </h3>
         </div>
-        <div className="p-4 space-y-3">
+        <div className="p-4 sm:p-5 pt-4 sm:pt-4 space-y-3">
           {dados.topCategorias.map((cat, index) => {
             const Icon = cat.icon;
             const isExpanded = expandedCategories.has(cat.nome);
@@ -119,35 +123,29 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
             return (
               <div
                 key={index}
-                className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-100/50"
+                className="rounded-[18px] border border-[#e5e5e5] overflow-hidden bg-[#fafafa]"
               >
                 <div
                   className={cn(
-                    "group flex items-center justify-between p-3 cursor-pointer transition-colors hover:bg-slate-50",
-                    isExpanded && "bg-slate-50"
+                    "group flex items-center justify-between p-3.5 cursor-pointer transition-colors hover:bg-[#f5f5f5]",
+                    isExpanded && "bg-[#f5f5f5]"
                   )}
                   onClick={() => toggleCategory(cat.nome)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:shadow-md",
-                      cat.bg || "bg-slate-50",
-                      cat.color || "text-[#1a3a5c]",
-                      "border-transparent"
-                    )}>
-                      <Icon className="h-5 w-5 opacity-90" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center border border-[#e5e5e5] bg-white text-[#0a0a0a] shrink-0">
+                      <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[12px] font-medium text-slate-600">
+                      <span className="text-xs font-semibold text-[#0a0a0a]">
                         {cat.nome}
                       </span>
-                      <div className="flex items-center gap-1.5 font-headline font-black text-[#1a3a5c] text-sm">
+                      <div className="flex items-center gap-1.5 font-semibold text-[#0a0a0a] text-sm mt-0.5">
                         {formatCurrency(cat.valor)}
-                        <span className="text-[10px] text-slate-300">•</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-slate-300">
+                  <div className="text-[#737373]">
                     {isExpanded ? (
                       <ChevronDown className="h-4 w-4" />
                     ) : (
@@ -157,36 +155,34 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                 </div>
 
                 {isExpanded && hasVeiculos && (
-                  <div className="px-3 pb-3 border-t border-slate-100/50 bg-white">
-                    <div className="space-y-1 mt-3">
-                      {cat.veiculos.map((v, vIndex) => (
-                        <div
-                          key={vIndex}
-                          className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-[12px] font-bold text-slate-700">
-                              {v.placa !== "-"
-                                ? formatarPlacaExibicao(v.placa)
-                                : v.nome}
+                  <div className="px-3.5 pb-3.5 pt-2 border-t border-[#e5e5e5] bg-white space-y-1.5">
+                    {cat.veiculos.map((v, vIndex) => (
+                      <div
+                        key={vIndex}
+                        className="flex items-center justify-between py-2 px-3 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5]/50"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-[#0a0a0a]">
+                            {v.placa !== "-"
+                              ? formatarPlacaExibicao(v.placa)
+                              : v.nome}
+                          </span>
+                          {v.placa !== "-" && (
+                            <span className="text-[10px] font-medium text-[#737373] mt-0.5">
+                              {v.nome}
                             </span>
-                            {v.placa !== "-" && (
-                              <span className="text-[10px] font-medium text-slate-400 mt-0.5">
-                                {v.nome}
-                              </span>
-                            )}
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-xs text-[#0a0a0a]">
+                            {formatCurrency(v.valor)}
                           </div>
-                          <div className="text-right">
-                            <div className="font-semibold text-[12px] text-slate-600">
-                              {formatCurrency(v.valor)}
-                            </div>
-                            <div className="text-[10px] text-slate-400">
-                              {v.count === 1 ? "1 registro" : `${v.count} registros`}
-                            </div>
+                          <div className="text-[10px] text-[#737373]">
+                            {v.count === 1 ? "1 registro" : `${v.count} registros`}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -194,55 +190,54 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
           })}
 
           {dados.topCategorias.length === 0 && (
-            <div className="text-center py-8 text-slate-500 text-[13px]">
+            <div className="text-center py-8 text-[#737373] text-xs font-medium">
               Nenhuma despesa registrada no mês selecionado.
             </div>
           )}
         </div>
       </div>
 
-      {/* Gastos por Veículo */}
       {dados.gastosPorVeiculo &&
         dados.gastosPorVeiculo.length > 0 &&
         dados.temGastosVinculados && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
-            <div className="pt-6 px-6 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-                <Bus className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+          <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div className="p-4 sm:p-5 pb-0 flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center border border-[#e5e5e5] shrink-0">
+                <Bus className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </div>
-              <h3 className="text-[13px] font-bold text-slate-800">
+              <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
                 Gastos por Veículo
               </h3>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 sm:p-5 pt-4 sm:pt-4 space-y-3">
               {dados.gastosPorVeiculo.map((v, index) => {
                 const vehicleId = v.placa !== "-" ? v.placa : v.nome;
                 const isExpanded = expandedVehicles.has(vehicleId);
                 const hasCategorias = (v as any).categorias && (v as any).categorias.length > 0;
 
                 return (
-                  <div key={index} className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-50/30">
+                  <div key={index} className="rounded-[18px] border border-[#e5e5e5] overflow-hidden bg-[#fafafa]">
                     <div
                       className={cn(
-                        "group flex flex-col p-3 cursor-pointer transition-colors hover:bg-slate-50 space-y-2",
-                        isExpanded && "bg-slate-50"
+                        "group flex flex-col p-3.5 cursor-pointer transition-colors hover:bg-[#f5f5f5] space-y-2",
+                        isExpanded && "bg-[#f5f5f5]"
                       )}
                       onClick={() => toggleVehicle(vehicleId)}
                     >
                       <div className="flex justify-between items-end">
                         <div className="flex flex-col">
-                          <span className="text-[12px] font-medium text-slate-600">
+                          <span className="text-xs font-semibold text-[#0a0a0a]">
                             {vehicleId === v.placa ? formatarPlacaExibicao(v.placa) : v.nome}
                           </span>
-                          <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                          <span className="font-semibold text-sm text-[#0a0a0a] tracking-tight mt-0.5">
                             {formatCurrency(v.valor)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-slate-400">
+                          <span className="text-[11px] font-medium text-[#737373]">
                             {Math.round(v.percentual)}%
                           </span>
-                          <div className="text-slate-300">
+                          <div className="text-[#737373]">
                             {isExpanded ? (
                               <ChevronDown className="h-4 w-4" />
                             ) : (
@@ -253,45 +248,39 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                       </div>
                       <Progress
                         value={Math.max(2, v.percentual)}
-                        className="h-1.5 bg-slate-100 rounded-full"
-                        indicatorClassName="bg-[#1a3a5c] rounded-full"
+                        className="h-1.5 bg-[#e5e5e5] rounded-full"
+                        indicatorClassName="bg-[#0a0a0a] rounded-full"
                       />
                     </div>
 
                     {isExpanded && hasCategorias && (
-                      <div className="px-3 pb-3 border-t border-slate-100/50 bg-white">
-                        <div className="space-y-1 mt-3">
-                          {(v as any).categorias.map((cat: any, cIndex: number) => {
-                            const Icon = cat.icon;
-                            return (
-                              <div
-                                key={cIndex}
-                                className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className={cn(
-                                    "w-7 h-7 rounded-lg flex items-center justify-center border border-transparent/10",
-                                    cat.bg || "bg-slate-50",
-                                    cat.color || "text-[#1a3a5c]"
-                                  )}>
-                                    <Icon className="h-3.5 w-3.5" />
-                                  </div>
-                                  <span className="text-[12px] font-bold text-slate-700">
-                                    {cat.nome}
-                                  </span>
+                      <div className="px-3.5 pb-3.5 pt-2 border-t border-[#e5e5e5] bg-white space-y-1.5">
+                        {(v as any).categorias.map((cat: any, cIndex: number) => {
+                          const Icon = cat.icon;
+                          return (
+                            <div
+                              key={cIndex}
+                              className="flex items-center justify-between py-2 px-3 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5]/50"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-[8px] flex items-center justify-center border border-[#e5e5e5] bg-white text-[#0a0a0a] shrink-0">
+                                  <Icon className="h-3.5 w-3.5" />
                                 </div>
-                                <div className="text-right">
-                                  <div className="font-semibold text-[12px] text-slate-600">
-                                    {formatCurrency(cat.valor)}
-                                  </div>
-                                  <div className="text-[10px] text-slate-400">
-                                    {cat.count === 1 ? "1 registro" : `${cat.count} registros`}
-                                  </div>
+                                <span className="text-xs font-semibold text-[#0a0a0a]">
+                                  {cat.nome}
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-semibold text-xs text-[#0a0a0a]">
+                                  {formatCurrency(cat.valor)}
+                                </div>
+                                <div className="text-[10px] text-[#737373]">
+                                  {cat.count === 1 ? "1 registro" : `${cat.count} registros`}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

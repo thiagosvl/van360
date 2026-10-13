@@ -1,4 +1,5 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { safeCloseDialog } from "@/hooks";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Form } from "@/components/ui/form";
 import { FormEnderecoFields } from "@/components/forms";
@@ -97,17 +98,17 @@ export default function PassageiroEnderecoFormDialog({
   };
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="xl">
+    <BaseDialog open={isOpen} onOpenChange={(open) => !open && safeCloseDialog(onClose)} maxWidth="xl">
       <BaseDialog.Header
         title={`Incluir Endereço`}
         icon={<MapPin className="w-5 h-5" />}
-        onClose={onClose}
+        onClose={() => safeCloseDialog(onClose)}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95 shadow-sm"
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#fafafa] transition-all active:scale-95 shadow-none"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
@@ -126,7 +127,7 @@ export default function PassageiroEnderecoFormDialog({
         <BaseDialog.Action
           variant="secondary"
           label="Cancelar"
-          onClick={onClose}
+          onClick={() => safeCloseDialog(onClose)}
           disabled={isSaving}
         />
         <BaseDialog.Action

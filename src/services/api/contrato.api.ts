@@ -1,10 +1,10 @@
 import { apiClient } from "./client";
-import { Contrato, CreateContratoDTO, ImportContratoDTO } from "@/types/contract";
+import { Contrato, CreateContratoDTO, ImportContratoDTO, ListContratosResponse } from "@/types/contract";
 import { PreviewConfig } from "@/hooks/api/useContratos";
 
 export const contratoApi = {
-  listContratos: async (params?: Record<string, any>) => {
-    const { data } = await apiClient.get<{ data: any[]; pagination: any }>('/contratos', { params });
+  listContratos: async (params?: Record<string, unknown>) => {
+    const { data } = await apiClient.get<ListContratosResponse>('/contratos', { params });
     return data;
   },
 

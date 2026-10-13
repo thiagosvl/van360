@@ -49,8 +49,8 @@ export function ReciboPreviewDialog({
         onClose={() => safeCloseDialog(onClose)}
       />
 
-      <BaseDialog.Body className="p-2.5 min-[360px]:p-3 sm:p-4 bg-slate-100/60 flex flex-col items-center overflow-y-auto">
-        <div className="w-full relative rounded-2xl bg-[#efeae2] p-3 min-[360px]:p-5 border border-slate-200/80 shadow-inner overflow-hidden flex flex-col items-end">
+      <BaseDialog.Body className="p-2.5 min-[360px]:p-3 sm:p-4 bg-[#f5f5f5] flex flex-col items-center overflow-y-auto">
+        <div className="w-full relative rounded-[20px] bg-[#efeae2] p-3 min-[360px]:p-5 border border-[#e5e5e5] shadow-inner overflow-hidden flex flex-col items-end">
           <div
             className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
@@ -87,25 +87,25 @@ export function ReciboPreviewDialog({
                 />
               </svg>
 
-              <div className="w-full bg-white rounded-[8px] p-3 border border-slate-100/80 shadow-xs text-slate-800 flex flex-col min-h-[315px]">
+              <div className="w-full bg-white rounded-[12px] p-3 border border-[#e5e5e5] shadow-xs text-[#0a0a0a] flex flex-col min-h-[315px]">
                 <div className="flex items-start justify-between pb-1">
                   {profile?.logo_url ? (
                     <img
                       src={profile.logo_url}
                       alt="Seu Logo"
-                      className="max-h-8 max-w-[100px] object-contain rounded"
+                      className="h-8 w-8 rounded-full object-cover border border-[#e5e5e5] shadow-2xs"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-slate-50 border border-dashed border-slate-300 flex flex-col items-center justify-center text-center shadow-2xs">
-                      <span className="text-[6.5px] font-bold text-slate-500 uppercase leading-none">
+                    <div className="w-8 h-8 rounded-full bg-[#f5f5f5] border border-dashed border-[#d4d4d4] flex flex-col items-center justify-center text-center shadow-2xs">
+                      <span className="text-[6.5px] font-bold text-[#737373] uppercase leading-none">
                         Seu
                       </span>
-                      <span className="text-[6.5px] font-bold text-slate-500 uppercase leading-none mt-0.5">
+                      <span className="text-[6.5px] font-bold text-[#737373] uppercase leading-none mt-0.5">
                         Logo
                       </span>
                     </div>
                   )}
-                  <span className="text-[6.5px] font-mono text-[#94a3b8] mt-1">
+                  <span className="text-[6.5px] font-mono text-[#737373] mt-1">
                     ID: fe178c09
                   </span>
                 </div>
@@ -124,14 +124,14 @@ export function ReciboPreviewDialog({
                   </div>
                 </div>
 
-                <div className="bg-[#f8fafc] border border-[#f1f5f9] py-2 px-3 rounded-xl text-center mt-3.5 mb-3">
-                  <span className="text-[6.5px] font-semibold text-[#64748b] uppercase tracking-wider block">
+                <div className="bg-[#f5f5f5] border border-[#e5e5e5] py-2 px-3 rounded-[14px] text-center mt-3.5 mb-3">
+                  <span className="text-[6.5px] font-semibold text-[#737373] uppercase tracking-wider block">
                     VALOR PAGO
                   </span>
-                  <span className="text-[18px] font-bold text-[#1e293b] block my-0.5 leading-tight tracking-tight">
+                  <span className="text-[18px] font-bold text-[#0a0a0a] block my-0.5 leading-tight tracking-tight">
                     R$ 140,00
                   </span>
-                  <span className="text-[6.5px] text-[#94a3b8] font-medium block leading-none">
+                  <span className="text-[6.5px] text-[#737373] font-medium block leading-none">
                     PIX
                   </span>
                 </div>
@@ -188,7 +188,7 @@ export function ReciboPreviewDialog({
           </div>
         </div>
 
-        <p className="text-[11px] min-[360px]:text-xs text-slate-500 text-center mt-2.5 min-[360px]:mt-3 max-w-[340px] leading-snug min-[360px]:leading-relaxed">
+        <p className="text-[11px] min-[360px]:text-xs text-muted-foreground text-center mt-2.5 min-[360px]:mt-3 max-w-[340px] leading-snug min-[360px]:leading-relaxed">
           Com o Van360, os recibos são gerados automaticamente e enviados aos pais pelo WhatsApp em um toque.
         </p>
       </BaseDialog.Body>

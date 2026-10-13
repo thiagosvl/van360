@@ -174,6 +174,7 @@ export enum AtividadeEntidadeTipo {
   SAAS_FATURA = "SAAS_FATURA",
   BLOG_POST = "BLOG_POST",
   ROTA = "ROTA",
+  EQUIPE = "EQUIPE",
 }
 
 export enum AtividadeAcao {
@@ -231,6 +232,11 @@ export enum AtividadeAcao {
   ROTA_INICIADA = "ROTA_INICIADA",
   ROTA_CONCLUIDA = "ROTA_CONCLUIDA",
   ROTA_CANCELADA = "ROTA_CANCELADA",
+  EQUIPE_MEMBRO_CRIADO = "EQUIPE_MEMBRO_CRIADO",
+  EQUIPE_MEMBRO_EDITADO = "EQUIPE_MEMBRO_EDITADO",
+  EQUIPE_MEMBRO_STATUS = "EQUIPE_MEMBRO_STATUS",
+  EQUIPE_MEMBRO_EXCLUIDO = "EQUIPE_MEMBRO_EXCLUIDO",
+  EQUIPE_SENHA_RESETADA = "EQUIPE_SENHA_RESETADA",
 
   COBRANCAS_GERADAS = "COBRANCAS_GERADAS",
 
@@ -305,7 +311,8 @@ export enum IndicacaoStatus {
 
 export enum CheckoutPaymentMethod {
   PIX = "pix",
-  CREDIT_CARD = "credit_card"
+  CREDIT_CARD = "credit_card",
+  APPLE_IAP = "apple_iap",
 }
 
 export enum ConfigKey {
@@ -323,6 +330,10 @@ export enum ConfigKey {
   APP_ANDROID_LATEST_VERSION = "app_android_latest_version",
   APP_ANDROID_UPDATE_TITLE = "app_android_update_title",
   APP_ANDROID_UPDATE_MESSAGE = "app_android_update_message",
+  APP_IOS_MIN_VERSION = "app_ios_min_version",
+  APP_IOS_LATEST_VERSION = "app_ios_latest_version",
+  APP_IOS_UPDATE_TITLE = "app_ios_update_title",
+  APP_IOS_UPDATE_MESSAGE = "app_ios_update_message",
 }
 
 export enum CanalAquisicao {
@@ -393,6 +404,7 @@ export enum AdminUserSubTab {
   SOLICITACOES = "solicitacoes",
   CONTRATOS = "contratos",
   INDICACOES = "indicacoes",
+  EQUIPE = "equipe",
 }
 
 export enum TipoChavePix {
@@ -554,6 +566,12 @@ export enum BaasStatusEnum {
   APROVADO = "APROVADO",
   REJEITADO = "REJEITADO",
   BLOQUEADO = "BLOQUEADO",
+}
+
+export enum ModoCobrancaEnum {
+  DESATIVADO = "DESATIVADO",
+  LEMBRETES = "LEMBRETES",
+  AUTOMATICA = "AUTOMATICA",
 }
 
 export enum StatusRepasseEnum {

@@ -27,6 +27,7 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
+					hover: 'hsl(var(--primary-hover))',
 					foreground: 'hsl(var(--primary-foreground))',
 					container: 'hsl(var(--primary-container))',
 					'on-container': 'hsl(var(--on-primary-container))'
@@ -76,6 +77,8 @@ export default {
 				body: ['var(--font-body)', 'sans-serif']
 			},
 			borderRadius: {
+				'3xl': '1.5rem',
+				'2xl': '1.125rem',
 				xl: 'var(--radius-xl)',
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

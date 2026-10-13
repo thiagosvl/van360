@@ -51,7 +51,7 @@ export const useSubscriptionStatus = (userId?: string) => {
       const data = query.state.data as Subscription | undefined;
       return data?.status === SubscriptionStatus.PAST_DUE ? 60000 : 300000;
     },
-    refetchOnWindowFocus: 'always',
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -147,7 +147,7 @@ export const useSubscriptionBilling = (userId?: string) => {
     queryFn: () => subscriptionApi.getInvoices(),
     enabled: !!userId,
     staleTime: 120000,
-    refetchOnWindowFocus: 'always',
+    refetchOnWindowFocus: false,
     select: (data) => {
       if (Array.isArray(data)) {
         return { list: data as SubscriptionInvoice[], total: (data as SubscriptionInvoice[]).length };
@@ -197,9 +197,9 @@ export const useSubscriptionInvoicesPaginated = (params: {
     queryKey: ["subscription-invoices-paginated", params.userId, params.page, params.limit],
     queryFn: () => subscriptionApi.getInvoices({ page: params.page, limit: params.limit }),
     enabled: !!params.userId && (params.enabled ?? true),
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 };
 

@@ -117,17 +117,17 @@ export function QuemUsaRecomendaCard({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={cn(
-        "bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-2xs space-y-3.5 select-none touch-pan-y w-full overflow-hidden",
+        "bg-white rounded-[24px] p-4 sm:p-6 border border-[#e5e5e5] shadow-xs space-y-3.5 select-none touch-pan-y w-full overflow-hidden",
         className
       )}
     >
       <div className="space-y-3">
         <div className="text-center space-y-0.5 pb-0.5">
-          <h3 className="text-sm sm:text-base font-bold text-[#002444] tracking-tight">
+          <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[11.5px] sm:text-xs text-slate-500 leading-snug">
+            <p className="text-[11.5px] sm:text-xs text-[#737373] leading-snug">
               {subtitle}
             </p>
           )}
@@ -144,13 +144,13 @@ export function QuemUsaRecomendaCard({
                     key={i}
                     className={cn(
                       "w-3.5 h-3.5 sm:w-4 sm:h-4",
-                      isFilled ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-300"
+                      isFilled ? "fill-amber-400 text-amber-400" : "fill-[#e5e5e5] text-[#e5e5e5]"
                     )}
                   />
                 );
               })}
             </div>
-            <span className="text-xs font-bold text-slate-700 ml-1.5">
+            <span className="text-xs font-medium text-[#0a0a0a] ml-1.5">
               {currentTestimonial.rating}
             </span>
           </div>
@@ -162,7 +162,7 @@ export function QuemUsaRecomendaCard({
                 e.stopPropagation();
                 handlePrevTestimonial();
               }}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-[10px] border border-[#e5e5e5] bg-[#f5f5f5] flex items-center justify-center text-[#737373] hover:bg-white hover:text-[#0a0a0a] transition-colors cursor-pointer"
               aria-label="Depoimento anterior"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -173,7 +173,7 @@ export function QuemUsaRecomendaCard({
                 e.stopPropagation();
                 handleNextTestimonial();
               }}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-[10px] border border-[#e5e5e5] bg-[#f5f5f5] flex items-center justify-center text-[#737373] hover:bg-white hover:text-[#0a0a0a] transition-colors cursor-pointer"
               aria-label="Próximo depoimento"
             >
               <ChevronRight className="w-4 h-4" />
@@ -198,12 +198,12 @@ export function QuemUsaRecomendaCard({
               : "animate-in fade-in slide-in-from-left-4 duration-300"
           )}
         >
-          <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed min-h-[44px] sm:min-h-[38px] flex items-center">
+          <p className="text-xs sm:text-sm text-[#171717] italic leading-relaxed min-h-[44px] sm:min-h-[38px] flex items-center">
             &quot;{currentTestimonial.quote}&quot;
           </p>
 
-          <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-50 border border-slate-200/80 text-[#002444] flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+          <div className="flex items-center gap-3 pt-2 border-t border-[#e5e5e5]">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#f5f5f5] border border-[#e5e5e5] text-[#0a0a0a] flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
               {currentTestimonial.logo ? (
                 <img
                   src={currentTestimonial.logo}
@@ -212,14 +212,14 @@ export function QuemUsaRecomendaCard({
                   loading="lazy"
                 />
               ) : (
-                <Smile className="w-5 h-5 text-[#002444]" />
+                <Smile className="w-5 h-5 text-[#0a0a0a]" />
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h5 className="text-xs sm:text-sm font-bold text-[#002444]">
+              <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
                 {currentTestimonial.name}
               </h5>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-[#737373]">
                 {currentTestimonial.role}
               </p>
             </div>
@@ -239,7 +239,7 @@ export function QuemUsaRecomendaCard({
             }}
             className={cn(
               "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
-              activeTestimonialIdx === i ? "w-5 bg-[#002444]" : "w-1.5 bg-slate-200"
+              activeTestimonialIdx === i ? "w-5 bg-primary" : "w-1.5 bg-[#e5e5e5]"
             )}
             aria-label={`Ir para depoimento ${i + 1}`}
           />

@@ -1,4 +1,4 @@
-﻿import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -59,25 +59,25 @@ export function CalculatorConsolidatedTab({ calcHook }: CalculatorConsolidatedTa
   } = calculations;
 
   const isProfit = lucroLiquidoMensal >= 0;
-  const cardStyle = "bg-[#131b2e] border border-slate-800/80 shadow-2xl text-slate-100 rounded-[1.5rem]";
+  const cardStyle = "bg-card border border-border shadow-xs text-foreground rounded-xl";
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className={`${cardStyle} border-l-4 border-l-blue-500`}>
+          <Card className={`${cardStyle} border-l-4 border-l-primary`}>
             <CardContent className="p-5 flex flex-col justify-center text-left">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">MRR Projetado (Bruto)</span>
-                <div className="p-1.5 bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20">
+                <span className="text-xs font-medium text-muted-foreground">MRR projetado (bruto)</span>
+                <div className="p-1.5 bg-primary/10 text-primary rounded-md border border-primary/20">
                   <DollarSign className="w-4 h-4" />
                 </div>
               </div>
-              <span className="text-2xl lg:text-3xl font-black text-white tracking-tight">
+              <span className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
                 {formatCurrency(receitaBrutaMensal)}
               </span>
-              <span className="text-xs text-slate-400 mt-2 font-medium">
-                ARR: <strong className="text-blue-400">{formatCurrency(receitaBrutaMensal * 12)}</strong>
+              <span className="text-xs text-muted-foreground mt-2 font-normal">
+                ARR: <strong className="text-primary font-medium">{formatCurrency(receitaBrutaMensal * 12)}</strong>
               </span>
             </CardContent>
           </Card>

@@ -1,12 +1,12 @@
 import { Input } from "@/components/ui/input";
-import { CreditCard, Lock, Calendar, ShieldCheck, User, MapPin, Info, Loader2, AlertCircle } from 'lucide-react';
+import { CreditCard, Lock, Calendar, ShieldCheck, User, MapPin, Info, Loader2, AlertCircle, FileText } from 'lucide-react';
 import { isDevEnv } from '@/utils/detectPlatform';
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { cepService } from "@/services/cepService";
 import { usePaymentProvider } from "@/hooks/business/usePaymentProvider";
 import { InstallmentOption } from "@/types/payment";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export interface CreditCardData {
   number: string;
@@ -319,88 +319,95 @@ export default function CreditCardForm({
     });
   };
 
-  const inputStyles = "w-full px-4 py-3.5 bg-[#e0e3e5] border-none rounded-lg font-inter text-[#191c1e] focus:ring-2 focus:ring-[#002444]/40 transition-all placeholder:text-[#73777f]/60 text-sm";
-  const labelStyles = "block text-[11px] font-bold text-[#545f73] uppercase tracking-wider mb-1.5";
+  const inputStyles = "w-full pl-10 pr-4 h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none transition-all";
+  const labelStyles = "block text-xs font-medium text-[#0a0a0a] mb-1.5";
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {isDevEnv() && (
-        <div className="flex flex-wrap gap-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
-          <span className="w-full text-[10px] font-bold text-slate-500 uppercase">Dev Magic Fill</span>
+        <div className="flex flex-wrap gap-2 p-3 bg-[#f5f5f5] rounded-[18px] border border-[#e5e5e5]">
+          <span className="w-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dev Magic Fill</span>
           <button
             type="button"
             onClick={() => fillMagicData('success')}
-            className="flex-1 px-3 py-1.5 bg-green-100 text-green-700 text-[11px] font-bold rounded hover:bg-green-200 transition-colors"
+            className="flex-1 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-[12px] hover:bg-emerald-100 transition-colors"
           >
-            ✅ Sucesso (.7)
+            Sucesso (.7)
           </button>
           <button
             type="button"
             onClick={() => fillMagicData('error_invalid')}
-            className="flex-1 px-3 py-1.5 bg-red-100 text-red-700 text-[11px] font-bold rounded hover:bg-red-200 transition-colors"
+            className="flex-1 px-3 py-1.5 bg-rose-50 text-rose-700 text-xs font-semibold rounded-[12px] hover:bg-rose-100 transition-colors"
           >
-            ❌ Inválido (.1)
+            Inválido (.1)
           </button>
           <button
             type="button"
             onClick={() => fillMagicData('error_risk')}
-            className="flex-1 px-3 py-1.5 bg-orange-100 text-orange-800 text-[11px] font-bold rounded hover:bg-orange-200 transition-colors"
+            className="flex-1 px-3 py-1.5 bg-amber-50 text-amber-800 text-xs font-semibold rounded-[12px] hover:bg-amber-100 transition-colors"
           >
-            ⚠️ Risco (.2)
+            Risco (.2)
           </button>
         </div>
       )}
 
       {/* Seção 1: Dados do Cartão */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-2">
-          <CreditCard className="w-4 h-4 text-[#002444]" />
-          <h4 className="font-manrope font-bold text-[#002444] text-sm">Informações do Cartão</h4>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pt-1 pb-0.5">
+          <CreditCard className="w-4 h-4 text-primary" />
+          <h4 className="font-semibold text-foreground text-sm">Informações do Cartão</h4>
         </div>
 
         {cardError && (
-          <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl animate-in fade-in duration-300">
-            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-            <p className="text-xs font-medium text-red-700 leading-relaxed">{cardError}</p>
+          <div className="flex items-start gap-2.5 p-3.5 bg-destructive/10 border border-destructive/20 rounded-[18px] animate-in fade-in duration-300">
+            <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+            <p className="text-xs font-medium text-destructive leading-relaxed">{cardError}</p>
           </div>
         )}
 
-        <div className="grid gap-5">
+        <div className="grid gap-3 sm:gap-4">
           <div className="space-y-1">
-            <label className={labelStyles}>Número do Cartão</label>
+            <label className={labelStyles}>
+              Número do Cartão <span className="text-[#e7000b]">*</span>
+            </label>
             <div className="relative group">
+              <CreditCard className="absolute left-3.5 top-3.5 h-4 w-4 text-[#737373] pointer-events-none" />
               <input
                 className={cn(inputStyles, "pr-12")}
                 placeholder="0000 0000 0000 0000"
                 value={maskedNumber}
                 onChange={(e) => handleChange("number", e.target.value)}
               />
-              <CreditCard className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#c3c6cf]" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className={labelStyles}>Nome do Titular</label>
-            <input
-              className={cn(inputStyles, "uppercase")}
-              placeholder="COMO ESTÁ NO CARTÃO"
-              value={formData.name}
-              onChange={(e) => handleChange("name", e.target.value.toUpperCase())}
-            />
+            <label className={labelStyles}>
+              Nome do Titular <span className="text-[#e7000b]">*</span>
+            </label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-[#737373] pointer-events-none" />
+              <input
+                className={cn(inputStyles, "uppercase")}
+                placeholder="COMO ESTÁ NO CARTÃO"
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value.toUpperCase())}
+              />
+            </div>
           </div>
 
           {isUserCnpj && (
-            <div className="space-y-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 animate-in fade-in duration-300">
+            <div className="space-y-2.5 p-3.5 bg-[#f5f5f5] rounded-[18px] border border-[#e5e5e5] animate-in fade-in duration-300">
               <label className={labelStyles}>Titularidade do Cartão</label>
-              <div className="flex gap-1.5 p-1 bg-[#e0e3e5] rounded-lg">
+              <div className="flex gap-1.5 p-1 bg-white rounded-[14px] border border-[#e5e5e5]">
                 <button
                   type="button"
                   onClick={() => handleHolderTypeChange("PF")}
                   className={cn(
-                    "flex-1 py-2 px-3 text-xs font-bold rounded-md transition-all text-center",
+                    "flex-1 py-2 px-3 text-xs font-bold rounded-[10px] transition-all text-center",
                     holderType === "PF"
-                      ? "bg-white text-[#002444] shadow-sm"
-                      : "text-[#545f73] hover:text-[#002444]"
+                      ? "bg-primary text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Cartão Pessoal (CPF)
@@ -409,10 +416,10 @@ export default function CreditCardForm({
                   type="button"
                   onClick={() => handleHolderTypeChange("PJ")}
                   className={cn(
-                    "flex-1 py-2 px-3 text-xs font-bold rounded-md transition-all text-center",
+                    "flex-1 py-2 px-3 text-xs font-bold rounded-[10px] transition-all text-center",
                     holderType === "PJ"
-                      ? "bg-white text-[#002444] shadow-sm"
-                      : "text-[#545f73] hover:text-[#002444]"
+                      ? "bg-primary text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Cartão da Empresa (CNPJ)
@@ -420,82 +427,90 @@ export default function CreditCardForm({
               </div>
 
               {holderType === "PF" ? (
-                <div className="space-y-1 pt-1.5 animate-in fade-in duration-200">
-                  <label className="text-[11px] font-bold text-[#545f73] uppercase tracking-wider">
-                    CPF do Titular do Cartão
+                <div className="space-y-1 pt-1 animate-in fade-in duration-200">
+                  <label className={labelStyles}>
+                    CPF do Titular do Cartão <span className="text-[#e7000b]">*</span>
                   </label>
-                  <input
-                    className={inputStyles}
-                    placeholder="000.000.000-00"
-                    value={maskedHolderDoc}
-                    onChange={(e) => handleHolderDocChange(e.target.value)}
-                    maxLength={14}
-                  />
-                  <p className="text-[10px] text-[#73777f] font-normal leading-tight">
+                  <div className="relative">
+                    <FileText className="absolute left-3.5 top-3.5 h-4 w-4 text-[#737373] pointer-events-none" />
+                    <input
+                      className={inputStyles}
+                      placeholder="000.000.000-00"
+                      value={maskedHolderDoc}
+                      onChange={(e) => handleHolderDocChange(e.target.value)}
+                      maxLength={14}
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground font-normal leading-tight pt-0.5">
                     Informe o CPF de quem é dono deste cartão (você, sócio ou cônjuge).
                   </p>
                 </div>
               ) : (
-                <div className="pt-1 text-[11px] text-[#545f73] leading-relaxed animate-in fade-in duration-200">
-                  Usando CNPJ da sua conta: <strong className="text-[#002444]">{cleanUserDoc.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</strong>
+                <div className="pt-1 text-xs text-muted-foreground leading-relaxed animate-in fade-in duration-200">
+                  Usando CNPJ da sua conta: <strong className="text-foreground">{cleanUserDoc.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</strong>
                 </div>
               )}
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1">
-              <label className={labelStyles}>Validade</label>
-              <input
-                className={inputStyles}
-                placeholder="MM/AA"
-                value={maskedExpiry}
-                onChange={(e) => handleChange("expiry", e.target.value)}
-              />
+              <label className={labelStyles}>
+                Validade <span className="text-[#e7000b]">*</span>
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-[#737373] pointer-events-none" />
+                <input
+                  className={inputStyles}
+                  placeholder="MM/AA"
+                  value={maskedExpiry}
+                  onChange={(e) => handleChange("expiry", e.target.value)}
+                />
+              </div>
             </div>
             <div className="space-y-1">
-              <label className={labelStyles}>CVV</label>
-              <input
-                type="text"
-                name="cvv"
-                id="cvv"
-                className={inputStyles}
-                placeholder="123"
-                value={formData.cvv}
-                onChange={(e) => handleChange("cvv", e.target.value)}
-                autoComplete="off"
-              />
+              <label className={labelStyles}>
+                CVV <span className="text-[#e7000b]">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#737373] pointer-events-none" />
+                <input
+                  type="text"
+                  name="cvv"
+                  id="cvv"
+                  className={inputStyles}
+                  placeholder="123"
+                  value={formData.cvv}
+                  onChange={(e) => handleChange("cvv", e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
             </div>
           </div>
 
           {installmentsList.length > 0 && (
             <div className="space-y-1 animate-in fade-in duration-300">
               <label className={labelStyles}>Opções de Parcelamento</label>
-              <Select
+              <NativeSelect
                 value={String(selectedInstallment)}
-                onValueChange={(valStr) => {
-                  const val = Number(valStr);
+                className="h-11 w-full bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] font-sans text-foreground text-xs sm:text-sm px-3 focus:bg-white focus:border-[#0a0a0a] shadow-none"
+                onChange={(e) => {
+                  const val = Number(e.target.value);
                   const opt = installmentsList.find(o => o.installment === val) || null;
                   setSelectedInstallment(val);
                   setFormData(prev => ({ ...prev, installments: val, installmentOption: opt }));
                 }}
               >
-                <SelectTrigger className={cn(inputStyles, "h-12 w-full focus:ring-2 focus:ring-[#002444]/40 text-sm text-left")}>
-                  <SelectValue placeholder="Selecione as parcelas" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {installmentsList.map((opt) => (
-                    <SelectItem key={opt.installment} value={String(opt.installment)}>
-                      {opt.installment}x de R$ {opt.currency} {opt.has_interest ? '(com juros)' : '(sem juros)'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {installmentsList.map((opt) => (
+                  <option key={opt.installment} value={String(opt.installment)}>
+                    {opt.installment}x de R$ {opt.currency} {opt.has_interest ? '(com juros)' : '(sem juros)'}
+                  </option>
+                ))}
+              </NativeSelect>
             </div>
           )}
         </div>
       </div>
-
     </div>
   );
 }

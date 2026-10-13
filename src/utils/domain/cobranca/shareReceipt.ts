@@ -3,6 +3,12 @@ import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "sonner";
 import { openBrowserLink } from "@/utils/browser";
+import {
+  incrementRatingCounter,
+  hasMinimumMaturity,
+  isEligibleForRatingPrompt,
+  triggerNativeReview,
+} from "@/utils/rating/appRatingTracker";
 
 export interface ShareReceiptData {
   url: string;
@@ -75,6 +81,11 @@ export async function shareReceiptFile(data: ShareReceiptData) {
           files: [savedFile.uri],
           dialogTitle: "Compartilhar Recibo",
         });
+
+        const count = incrementRatingCounter("recibosCompartilhados");
+        if (count === 2 && hasMinimumMaturity() && isEligibleForRatingPrompt()) {
+          void triggerNativeReview(1200);
+        }
         return;
       } catch (nativeError) {
         if (isShareCancelError(nativeError)) {
@@ -88,6 +99,11 @@ export async function shareReceiptFile(data: ShareReceiptData) {
             url,
             dialogTitle: "Compartilhar Recibo",
           });
+
+          const countFallback = incrementRatingCounter("recibosCompartilhados");
+          if (countFallback === 2 && hasMinimumMaturity() && isEligibleForRatingPrompt()) {
+            void triggerNativeReview(1200);
+          }
           return;
         } catch (urlShareError) {
           if (isShareCancelError(urlShareError)) {

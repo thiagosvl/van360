@@ -6,6 +6,7 @@ import {
   PassageiroModalidade,
   PassageiroPeriodo,
   TipoResponsavel,
+  ModoCobrancaEnum,
 } from "./enums";
 
 export interface Responsavel {
@@ -77,6 +78,7 @@ export interface Passageiro {
   data_fim_cobranca?: string;
   cobranca_automatica_ativa?: boolean | null;
   repassar_taxa_pai?: boolean | null;
+  modo_cobranca?: ModoCobrancaEnum | null;
   responsaveis?: PassageiroResponsavel[];
   responsavel_logado_id?: string | null;
 }

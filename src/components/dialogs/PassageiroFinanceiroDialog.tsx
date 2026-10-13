@@ -10,17 +10,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { CalendarDays, DollarSign, Phone, User, Sparkles } from "lucide-react";
+import { CalendarDays, DollarSign, Phone, User } from "lucide-react";
 import { monthOptions, getNowBR } from "@/utils/dateUtils";
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -37,14 +31,14 @@ import {
 } from "@/utils/domain";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
-import { useCobrancasByPassageiro } from "@/hooks/api/useCobrancasByPassageiro";
-import { useLayout } from "@/contexts/LayoutContext";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, ModoCobrancaEnum } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog, useCobrancasByPassageiro } from "@/hooks";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
-import { isUserInBaaSWhitelist } from "@/utils/featureFlagUtils";
+import { useMotoristaFinanceiroUi } from "@/hooks/ui/useMotoristaFinanceiroUi";
+import { PassageiroModoCobrancaField } from "@/components/features/passageiro/form/PassageiroModoCobrancaField";
 
 const passageiroFinanceiroSchema = z
   .object({
@@ -55,8 +49,7 @@ const passageiroFinanceiroSchema = z
     ano_inicio_cobranca: z.string().optional(),
     mes_fim_cobranca: z.string().optional(),
     ano_fim_cobranca: z.string().optional(),
-    cobranca_automatica_ativa: z.string().optional(),
-    repassar_taxa_pai: z.string().optional(),
+    modo_cobranca: z.string().optional(),
     cadastrar_responsavel: z.boolean().default(false),
     nome_responsavel: z.string().optional(),
     telefone_responsavel: z.string().optional(),
@@ -145,17 +138,23 @@ export function PassageiroFinanceiroDialog({
   const { openFirstChargeDialog } = useLayout();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-
-  const isWhitelisted = isUserInBaaSWhitelist({
-    email: user?.email,
-    telefone: profile?.telefone,
-  });
+  const { modoCobranca, cobrancaAtiva } = useMotoristaFinanceiroUi();
 
   const now = getNowBR();
   const currentYear = now.getFullYear();
   const defaultAnoLetivo = passageiro?.ano_letivo ? passageiro.ano_letivo.toString() : getDefaultAnoLetivo();
   const currentMonthStr = useMemo(() => (getNowBR().getMonth() + 1).toString(), []);
   const responsavelFieldsRef = useRef<HTMLDivElement>(null);
+
+  const descricaoResponsavel = useMemo(() => {
+    if (cobrancaAtiva) {
+      return "Necessário para o envio automático das cobranças no WhatsApp.";
+    }
+    if (modoCobranca === ModoCobrancaEnum.LEMBRETES) {
+      return "Necessário para o envio de avisos de vencimento no WhatsApp.";
+    }
+    return "Contato do responsável para comunicação rápida.";
+  }, [cobrancaAtiva, modoCobranca]);
 
   const { data: cobrancasData } = useCobrancasByPassageiro(passageiro?.id, currentYear.toString(), {
     enabled: isOpen && Boolean(passageiro?.id),
@@ -174,8 +173,7 @@ export function PassageiroFinanceiroDialog({
       cadastrar_responsavel: false,
       nome_responsavel: "",
       telefone_responsavel: "",
-      cobranca_automatica_ativa: "HERDAR",
-      repassar_taxa_pai: "HERDAR",
+      modo_cobranca: "",
     },
   });
 
@@ -188,18 +186,6 @@ export function PassageiroFinanceiroDialog({
       const resp = passageiro.responsavel_principal;
       const temTelefoneResp = Boolean(resp?.telefone);
 
-      const cobrancaAutoVal = passageiro.cobranca_automatica_ativa === true
-        ? "ATIVO"
-        : passageiro.cobranca_automatica_ativa === false
-          ? "DESATIVADO"
-          : "HERDAR";
-
-      const repassarTaxaVal = passageiro.repassar_taxa_pai === true
-        ? "REPASSAR"
-        : passageiro.repassar_taxa_pai === false
-          ? "ABSORVER"
-          : "HERDAR";
-
       form.reset({
         isento: !!passageiro.isento,
         valor_cobranca: passageiro.valor_cobranca ? moneyMask(passageiro.valor_cobranca) : "",
@@ -211,8 +197,7 @@ export function PassageiroFinanceiroDialog({
         cadastrar_responsavel: temTelefoneResp,
         nome_responsavel: resp?.nome || "",
         telefone_responsavel: resp?.telefone ? phoneMask(resp.telefone) : "",
-        cobranca_automatica_ativa: cobrancaAutoVal,
-        repassar_taxa_pai: repassarTaxaVal,
+        modo_cobranca: passageiro.modo_cobranca || "",
       });
     }
   }, [isOpen, passageiro, defaultAnoLetivo, form, currentMonthStr]);
@@ -249,20 +234,7 @@ export function PassageiroFinanceiroDialog({
       data_fim_cobranca: data.isento || !data.mes_fim_cobranca
         ? null
         : `${anoTerm}-${String(data.mes_fim_cobranca).padStart(2, "0")}-01`,
-      cobranca_automatica_ativa: isWhitelisted
-        ? (data.cobranca_automatica_ativa === "ATIVO"
-          ? true
-          : data.cobranca_automatica_ativa === "DESATIVADO"
-            ? false
-            : null)
-        : null,
-      repassar_taxa_pai: isWhitelisted
-        ? (data.repassar_taxa_pai === "REPASSAR"
-          ? true
-          : data.repassar_taxa_pai === "ABSORVER"
-            ? false
-            : null)
-        : null,
+      modo_cobranca: data.modo_cobranca ? (data.modo_cobranca as ModoCobrancaEnum) : null,
     };
 
     if (!data.isento && data.cadastrar_responsavel && data.telefone_responsavel) {
@@ -322,7 +294,7 @@ export function PassageiroFinanceiroDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
         title="Ajustar Parcelas"
-        icon={<DollarSign className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<DollarSign className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
 
@@ -333,12 +305,12 @@ export function PassageiroFinanceiroDialog({
               control={form.control}
               name="isento"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs">
+                <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5">
                   <div className="space-y-0.5 pr-4">
-                    <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer">
                       Aluno Isento
                     </FormLabel>
-                    <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                    <div className="text-[11px] sm:text-xs text-[#737373] font-normal leading-relaxed">
                       Ative para filhos, parentes ou cortesias. Nenhuma parcela será gerada.
                     </div>
                   </div>
@@ -346,7 +318,7 @@ export function PassageiroFinanceiroDialog({
                     <Switch
                       checked={!!field.value}
                       onCheckedChange={field.onChange}
-                      className="data-[state=checked]:bg-[#1a3a5c]"
+                      className="data-[state=checked]:bg-primary"
                     />
                   </FormControl>
                 </FormItem>
@@ -364,8 +336,7 @@ export function PassageiroFinanceiroDialog({
                         field={field}
                         label="Valor da Parcela"
                         required
-                        labelClassName="text-slate-700 font-semibold ml-1"
-                        inputClassName="pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                        labelClassName="text-[#0a0a0a] font-medium text-xs"
                       />
                     )}
                   />
@@ -374,79 +345,60 @@ export function PassageiroFinanceiroDialog({
                     control={form.control}
                     name="dia_vencimento"
                     render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Dia do Vencimento <span className="text-red-600">*</span>
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Dia do Vencimento <span className="text-[#e7000b]">*</span>
                         </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <div className="relative">
-                              <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
-                                )}
-                                aria-invalid={!!fieldState.error}
-                              >
-                                <SelectValue placeholder="Dia" />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                            error={!!fieldState.error}
+                          >
+                            <option value="" disabled hidden>Selecionar</option>
                             {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                              <SelectItem key={day} value={day.toString()}>
+                              <option key={day} value={day.toString()}>
                                 Dia {day}
-                              </SelectItem>
+                              </option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-2">
                       <FormField
                         control={form.control}
                         name="mes_inicio_cobranca"
                         render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Início <span className="text-red-600">*</span>
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Início <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                form.trigger("mes_fim_cobranca");
-                              }}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <div className="relative">
-                                  <CalendarDays className="absolute left-3.5 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                  <SelectTrigger
-                                    className={cn(
-                                      "pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                    aria-invalid={!!fieldState.error}
-                                  >
-                                    <SelectValue placeholder="Mês" />
-                                  </SelectTrigger>
-                                </div>
-                              </FormControl>
-                              <SelectContent className="max-h-60 overflow-y-auto">
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  form.trigger("mes_fim_cobranca");
+                                }}
+                                icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                error={!!fieldState.error}
+                              >
+                                <option value="" disabled hidden>Selecionar</option>
                                 {monthOptions.map((m) => (
-                                  <SelectItem key={m.value} value={m.value}>
+                                  <option key={m.value} value={m.value}>
                                     {m.label}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -457,35 +409,31 @@ export function PassageiroFinanceiroDialog({
                         control={form.control}
                         name="ano_inicio_cobranca"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Ano <span className="text-red-600">*</span>
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Ano <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                form.setValue("ano_fim_cobranca", val);
-                                if (parseInt(val, 10) > currentYear) {
-                                  form.setValue("mes_inicio_cobranca", "");
-                                  form.setValue("mes_fim_cobranca", "");
-                                }
-                                form.trigger("mes_fim_cobranca");
-                              }}
-                              value={field.value || (anoInicioOptions[0] || "")}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                  <SelectValue placeholder="Ano" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || (anoInicioOptions[0] || "")}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  field.onChange(val);
+                                  form.setValue("ano_fim_cobranca", val);
+                                  if (parseInt(val, 10) > currentYear) {
+                                    form.setValue("mes_inicio_cobranca", "");
+                                    form.setValue("mes_fim_cobranca", "");
+                                  }
+                                  form.trigger("mes_fim_cobranca");
+                                }}
+                              >
                                 {anoInicioOptions.map((y) => (
-                                  <SelectItem key={y} value={y}>
+                                  <option key={y} value={y}>
                                     {y}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -499,39 +447,28 @@ export function PassageiroFinanceiroDialog({
                         control={form.control}
                         name="mes_fim_cobranca"
                         render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Término <span className="text-red-600">*</span>
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Término <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                form.trigger("mes_fim_cobranca");
-                              }}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <div className="relative">
-                                  <CalendarDays className="absolute left-3.5 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                  <SelectTrigger
-                                    className={cn(
-                                      "pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                    aria-invalid={!!fieldState.error}
-                                  >
-                                    <SelectValue placeholder="Mês" />
-                                  </SelectTrigger>
-                                </div>
-                              </FormControl>
-                              <SelectContent className="max-h-60 overflow-y-auto">
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  form.trigger("mes_fim_cobranca");
+                                }}
+                                icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                error={!!fieldState.error}
+                              >
+                                <option value="" disabled hidden>Selecionar</option>
                                 {monthOptions.map((m) => (
-                                  <SelectItem key={m.value} value={m.value}>
+                                  <option key={m.value} value={m.value}>
                                     {m.label}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -542,30 +479,25 @@ export function PassageiroFinanceiroDialog({
                         control={form.control}
                         name="ano_fim_cobranca"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Ano <span className="text-red-600">*</span>
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Ano <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                form.trigger("mes_fim_cobranca");
-                              }}
-                              value={field.value || (anoFimOptions[0] || "")}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                  <SelectValue placeholder="Ano" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || (anoFimOptions[0] || "")}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  form.trigger("mes_fim_cobranca");
+                                }}
+                              >
                                 {anoFimOptions.map((y) => (
-                                  <SelectItem key={y} value={y}>
+                                  <option key={y} value={y}>
                                     {y}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -582,86 +514,19 @@ export function PassageiroFinanceiroDialog({
                   />
                 )}
 
-                {isWhitelisted && (
-                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 space-y-3">
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
-                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        Cobrança Automática Pix
-                      </span>
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="cobranca_automatica_ativa"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold text-xs ml-1">
-                            Recebimento e Baixa Automática
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || "HERDAR"}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 text-sm">
-                                <SelectValue placeholder="Padrão da Van" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="HERDAR">Padrão da Van (conforme configurado)</SelectItem>
-                              <SelectItem value="ATIVO">Ativado para este aluno</SelectItem>
-                              <SelectItem value="DESATIVADO">Desativado para este aluno</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {form.watch("cobranca_automatica_ativa") !== "DESATIVADO" && (
-                      <FormField
-                        control={form.control}
-                        name="repassar_taxa_pai"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-semibold text-xs ml-1">
-                              Taxa de Serviço da Cobrança
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value || "HERDAR"}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-white border-slate-200 text-sm">
-                                  <SelectValue placeholder="Padrão da Van" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="HERDAR">Padrão da Van (conforme configurado)</SelectItem>
-                                <SelectItem value="REPASSAR">Repassar ao responsável (com acréscimo)</SelectItem>
-                                <SelectItem value="ABSORVER">Absorver taxa (descontar do valor da parcela)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
-                )}
+                <PassageiroModoCobrancaField control={form.control} />
 
                 <FormField
                   control={form.control}
                   name="cadastrar_responsavel"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 shadow-2xs">
+                    <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5">
                       <div className="space-y-0.5 pr-4">
-                        <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer">
                           Cadastrar Responsável
                         </FormLabel>
-                        <div className="text-xs text-slate-500 font-normal leading-relaxed">
-                          Necessário para o envio automático das cobranças no WhatsApp.
+                        <div className="text-[11px] sm:text-xs text-[#737373] font-normal leading-relaxed">
+                          {descricaoResponsavel}
                         </div>
                       </div>
                       <FormControl>
@@ -678,6 +543,7 @@ export function PassageiroFinanceiroDialog({
                               }, 100);
                             }
                           }}
+                          className="data-[state=checked]:bg-primary"
                           aria-label="Cadastrar responsável para cobranças automáticas"
                         />
                       </FormControl>
@@ -688,25 +554,25 @@ export function PassageiroFinanceiroDialog({
                 {form.watch("cadastrar_responsavel") && (
                   <div
                     ref={responsavelFieldsRef}
-                    className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in fade-in duration-200"
+                    className="space-y-3 animate-in fade-in duration-200"
                   >
                     <FormField
                       control={form.control}
                       name="nome_responsavel"
                       render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome do Responsável <span className="text-red-600">*</span>
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Nome do Responsável <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
+                              <User className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 {...field}
                                 placeholder="Nome completo"
                                 className={cn(
-                                  "pl-10 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               />
                             </div>
@@ -720,13 +586,13 @@ export function PassageiroFinanceiroDialog({
                       control={form.control}
                       name="telefone_responsavel"
                       render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            WhatsApp do Responsável <span className="text-red-600">*</span>
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            WhatsApp do Responsável <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400 z-10" />
+                              <Phone className="absolute left-3.5 top-2.5 sm:top-3 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 {...field}
                                 value={field.value || ""}
@@ -734,8 +600,8 @@ export function PassageiroFinanceiroDialog({
                                 placeholder="(11) 99999-9999"
                                 type="tel"
                                 className={cn(
-                                  "pl-10 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-sm font-medium",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none font-medium",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               />
                             </div>

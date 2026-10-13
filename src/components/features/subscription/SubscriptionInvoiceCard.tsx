@@ -34,20 +34,20 @@ export function SubscriptionInvoiceCard({
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:border-slate-300",
+        "bg-white rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden transition-all duration-200 hover:border-[#737373]/30",
         className
       )}
     >
-      <div className="p-4 sm:p-6 flex items-center justify-between gap-4">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="font-bold text-slate-800 text-sm sm:text-base truncate">
+      <div className="p-4 sm:p-5 flex items-center justify-between gap-3">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-medium text-[#0a0a0a] text-sm tracking-tight truncate">
               Plano {planName}
             </span>
             <InvoiceStatusBadge status={invoice.status} />
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal">
             <span>
               {invoice.metodo_pagamento
                 ? PAYMENT_METHOD_LABELS[invoice.metodo_pagamento as CheckoutPaymentMethod] || invoice.metodo_pagamento
@@ -61,11 +61,11 @@ export function SubscriptionInvoiceCard({
         </div>
 
         <div className="flex flex-col items-end shrink-0 text-right">
-          <div className="text-sm sm:text-base font-bold text-primary whitespace-nowrap">
+          <div className="text-sm font-medium text-[#0a0a0a] tracking-tight tabular-nums whitespace-nowrap">
             {formatCurrency(amount)}
           </div>
           {invoice.parcelas && invoice.parcelas > 1 && (
-            <span className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
+            <span className="text-[11px] text-[#737373] font-normal whitespace-nowrap">
               {invoice.parcelas}x de {formatCurrency(invoice.valor_parcela || Math.round((amount / invoice.parcelas) * 100) / 100)}
             </span>
           )}
@@ -73,29 +73,29 @@ export function SubscriptionInvoiceCard({
       </div>
 
       {showActions && (
-        <div className="px-4 pb-4 sm:px-6 sm:pb-5 pt-0">
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0">
           {invoice.pix_copy_paste && invoice.status === SubscriptionInvoiceStatus.PENDING ? (
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
-                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-white hover:bg-primary/90 bg-primary px-4 py-3 rounded-xl border border-primary-400/40 transition-all duration-300 active:scale-95 cursor-pointer"
+                className="w-full sm:flex-1 h-10 flex justify-center items-center gap-2 text-xs sm:text-sm font-medium text-white hover:bg-primary-hover bg-primary px-4 rounded-[18px] transition-all duration-200 active:scale-[0.98] cursor-pointer shadow-xs"
                 onClick={() => onCopyPix?.(invoice.pix_copy_paste!, invoice.id)}
               >
                 {isCopied ? (
                   <>
                     <CopyCheck className="w-4 h-4 animate-in zoom-in duration-200" />
-                    Copiado!
+                    <span>Copiado!</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    Copiar código Pix
+                    <span>Copiar código Pix</span>
                   </>
                 )}
               </button>
               <button
                 type="button"
-                className="w-full sm:flex-1 flex justify-center items-center gap-2 text-[13px] font-bold text-primary hover:bg-primary/10 bg-primary/5 px-4 py-3 rounded-xl border border-primary/10 transition-all active:scale-95 cursor-pointer"
+                className="w-full sm:flex-1 h-10 flex justify-center items-center gap-2 text-xs sm:text-sm font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] bg-white px-4 rounded-[18px] border border-[#e5e5e5] transition-all active:scale-[0.98] cursor-pointer"
                 onClick={() => onRetryPayment?.(invoice)}
               >
                 Trocar forma de pagamento
@@ -104,7 +104,7 @@ export function SubscriptionInvoiceCard({
           ) : (
             <button
               type="button"
-              className="w-full px-4 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm shadow-primary-100 active:scale-95 text-center flex justify-center items-center cursor-pointer"
+              className="w-full h-10 bg-primary text-white text-xs sm:text-sm font-medium rounded-[18px] hover:bg-primary-hover transition-all shadow-xs active:scale-[0.98] text-center flex justify-center items-center cursor-pointer"
               onClick={() => onRetryPayment?.(invoice)}
             >
               Pagar Fatura

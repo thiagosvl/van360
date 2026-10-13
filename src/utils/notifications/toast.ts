@@ -125,7 +125,7 @@ export const toast = {
     return sonnerToast(getToastMessage(message), {
       ...formatted,
       id: options?.id,
-      icon: createElement(Loader2, { className: "h-4 w-4 animate-spin text-slate-600 shrink-0" }),
+      icon: createElement(Loader2, { className: "h-4 w-4 animate-spin text-[#0a0a0a] shrink-0" }),
       duration: options?.duration || 100000,
     });
   },
@@ -138,7 +138,7 @@ export const toast = {
     messages: {
       loading: string;
       success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
+      error: string | ((error: unknown) => string);
     },
     options?: ToastOptions
   ) => {

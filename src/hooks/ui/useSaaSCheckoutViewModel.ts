@@ -259,7 +259,7 @@ export function useSaaSCheckoutViewModel({
 
       const result = await createCheckout.mutateAsync({
         planId: plan.id,
-        paymentMethod: paymentMethod,
+        paymentMethod: paymentMethod as "pix" | "credit_card",
         paymentToken: paymentToken || undefined,
         ...cardInfo
       });

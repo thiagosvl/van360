@@ -2,19 +2,18 @@ import { useState, useEffect } from "react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Banner } from "@/components/ui/Banner";
+import { STORAGE_KEYS } from "@/constants";
 
 interface PixNudgeBannerProps {
   hasPix: boolean;
 }
-
-const STORAGE_KEY = "van360_dismissed_pix_banner";
 
 export const PixNudgeBanner = ({ hasPix }: PixNudgeBannerProps) => {
   const { openWhatsAppCobrancaPreviewDialog } = useLayout();
   const [isDismissed, setIsDismissed] = useState(true);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(STORAGE_KEY);
+    const dismissed = localStorage.getItem(STORAGE_KEYS.DISMISSED_PIX_BANNER);
     if (dismissed !== "true") {
       setIsDismissed(false);
     }
@@ -24,7 +23,7 @@ export const PixNudgeBanner = ({ hasPix }: PixNudgeBannerProps) => {
 
   const handleDismiss = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    localStorage.setItem(STORAGE_KEY, "true");
+    localStorage.setItem(STORAGE_KEYS.DISMISSED_PIX_BANNER, "true");
     setIsDismissed(true);
   };
 

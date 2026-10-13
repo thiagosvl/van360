@@ -26,7 +26,7 @@ export function RouteCompletedStopItem({
   const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
   const isAntecipada = !!parada.ausencia_id || !!parada.is_ausente_antecipada;
 
-  const statusLabel = isAusente ? "AUSENTE" : "CONCLUÍDO";
+  const statusLabel = isAusente ? "Ausente" : "Concluído";
   const subtitleText = isEscolaItem
     ? "Parada na escola"
     : isAusente
@@ -40,18 +40,17 @@ export function RouteCompletedStopItem({
   return (
     <div className="relative w-full">
       {showTopLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2px] bg-[#e5e5e5] z-0" />
       )}
       {showBottomLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2px] bg-[#e5e5e5] z-0" />
       )}
 
-      {/* Ícone Indicador da Timeline (Padronizado: Ausente em Vermelho/Branco, Concluído/Escola Concluída em Verde/Branco) */}
       <div
         className={cn(
           "absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 border-white flex items-center justify-center z-10 shadow-xs transition-colors",
           isAusente
-            ? "bg-rose-500 text-white"
+            ? "bg-[#e7000b] text-white"
             : "bg-emerald-600 text-white"
         )}
       >
@@ -64,15 +63,14 @@ export function RouteCompletedStopItem({
         )}
       </div>
 
-      {/* Card da Parada Concluída Discreto */}
-      <div className="bg-slate-50 border border-slate-200/80 p-2.5 px-3 rounded-xl flex items-center justify-between gap-2.5 text-left min-h-[48px]">
+      <div className="bg-[#fafafa] border border-[#e5e5e5] p-3 rounded-[18px] flex items-center justify-between gap-3 text-left min-h-[48px]">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-800 break-words">
+            <span className="text-xs font-semibold text-[#0a0a0a] break-words">
               {isEscolaItem ? parada.escola?.nome : formatShortName(parada.passageiro?.nome || parada.nome, true)}
             </span>
           </div>
-          <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+          <p className="text-[11px] text-[#737373] font-normal leading-tight mt-0.5">
             {subtitleText}
           </p>
         </div>
@@ -89,31 +87,29 @@ export function RouteCompletedStopItem({
                 onDesfazer();
               }}
               className={cn(
-                "h-7.5 px-2.5 py-1 text-[11px] font-bold bg-white rounded-lg flex items-center gap-1.5 shrink-0 active:scale-95 shadow-2xs",
-                isAusente
-                  ? "border border-rose-200 text-rose-600 hover:bg-rose-50"
-                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                "h-7.5 px-3 py-1 text-xs font-medium bg-white rounded-[18px] border border-[#e5e5e5] text-[#0a0a0a] hover:bg-[#f5f5f5] flex items-center gap-1.5 shrink-0 active:scale-95 shadow-none transition-colors",
+                isAusente && "hover:text-[#e7000b] hover:border-[#e7000b]/20"
               )}
               title={isAusente ? "Desfazer registro de ausência" : "Desfazer conclusão da parada"}
             >
               {isDesfazendo ? (
-                <Loader2 className={cn("w-3.5 h-3.5 animate-spin shrink-0", isAusente ? "text-rose-500" : "text-slate-500")} />
+                <Loader2 className={cn("w-3.5 h-3.5 animate-spin shrink-0", isAusente ? "text-[#e7000b]" : "text-[#0a0a0a]")} />
               ) : (
-                <RotateCcw className={cn("w-3.5 h-3.5 shrink-0", isAusente ? "text-rose-500" : "text-slate-500")} />
+                <RotateCcw className={cn("w-3.5 h-3.5 shrink-0", isAusente ? "text-[#e7000b]" : "text-[#737373]")} />
               )}
               <span>Desfazer</span>
             </Button>
           ) : (
-            <Badge
+            <span
               className={cn(
-                "text-[9px] font-bold border px-1.5 py-0.5 rounded-md shrink-0 leading-none uppercase pointer-events-none select-none shadow-none cursor-default",
+                "inline-flex items-center justify-center text-[11px] font-medium border px-2.5 py-0.5 rounded-[18px] shrink-0 leading-none pointer-events-none select-none shadow-none cursor-default",
                 isAusente
-                  ? "bg-rose-50 text-rose-600 border-rose-200"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  ? "bg-red-50 text-[#e7000b] border-red-200/60"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
               )}
             >
               {statusLabel}
-            </Badge>
+            </span>
           )}
         </div>
       </div>

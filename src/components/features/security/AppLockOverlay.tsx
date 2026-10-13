@@ -42,11 +42,11 @@ export function AppLockOverlay() {
 
       <div className="flex flex-col items-center text-center max-w-sm px-4 space-y-6">
         <div className="relative">
-          <div className="w-24 h-24 rounded-3xl bg-[#1a3a5c]/40 border border-[#2b598a]/30 flex items-center justify-center shadow-2xl backdrop-blur-xl">
-            <Fingerprint className="w-12 h-12 text-sky-400 stroke-[1.8]" />
+          <div className="w-24 h-24 rounded-[24px] bg-[#0b1a2e]/60 border border-[#2563eb]/20 flex items-center justify-center shadow-2xl backdrop-blur-xl">
+            <Fingerprint className="w-12 h-12 text-primary stroke-[1.8]" />
           </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-slate-900 border-2 border-sky-400/50 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-sky-400" />
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#0b1a2e] border-2 border-primary/50 flex items-center justify-center">
+            <Lock className="w-4 h-4 text-primary" />
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export function AppLockOverlay() {
           <h1 className="text-xl font-bold text-white tracking-tight">
             Aplicativo Bloqueado
           </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-white/70 leading-relaxed">
             Confirme sua identidade para acessar seus dados com segurança.
           </p>
         </div>
@@ -63,7 +63,7 @@ export function AppLockOverlay() {
           type="button"
           onClick={() => void unlockApp()}
           disabled={isAuthenticating}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-sky-950/50 flex items-center justify-center gap-2.5 transition-all transform active:scale-[0.98] cursor-pointer disabled:opacity-70"
+          className="w-full py-3.5 px-6 rounded-[18px] bg-primary hover:bg-primary-hover text-white font-semibold text-sm shadow-xs flex items-center justify-center gap-2.5 transition-all transform active:scale-[0.98] cursor-pointer disabled:opacity-70"
         >
           {isAuthenticating ? (
             <>
@@ -81,20 +81,20 @@ export function AppLockOverlay() {
 
       <div className="pb-6">
         {showConfirmSignOut ? (
-          <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl animate-in fade-in zoom-in-95 duration-150">
-            <span className="text-xs text-slate-300">Deseja realmente sair?</span>
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-[14px] animate-in fade-in zoom-in-95 duration-150">
+            <span className="text-xs text-white/70">Deseja realmente sair?</span>
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-xs font-semibold text-rose-400 hover:text-rose-300 cursor-pointer"
+              className="text-xs font-semibold text-[#e7000b] hover:text-[#e7000b]/80 cursor-pointer"
             >
               Sim, sair
             </button>
-            <span className="text-slate-600">|</span>
+            <span className="text-white/20">|</span>
             <button
               type="button"
               onClick={() => setShowConfirmSignOut(false)}
-              className="text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
+              className="text-xs font-medium text-white/60 hover:text-white cursor-pointer"
             >
               Cancelar
             </button>
@@ -103,7 +103,7 @@ export function AppLockOverlay() {
           <button
             type="button"
             onClick={() => setShowConfirmSignOut(true)}
-            className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-rose-400 transition-colors py-2 px-3 rounded-lg hover:bg-white/5 cursor-pointer"
+            className="flex items-center gap-2 text-xs font-medium text-white/60 hover:text-[#e7000b] transition-colors py-2 px-3 rounded-[12px] hover:bg-white/5 cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Sair da conta</span>

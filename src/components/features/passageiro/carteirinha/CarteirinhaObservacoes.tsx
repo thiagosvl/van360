@@ -39,7 +39,6 @@ export const CarteirinhaObservacoes = ({
     }
   }, [isEditing]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (isEditing && textareaRef.current) {
       const textarea = textareaRef.current;
@@ -49,21 +48,23 @@ export const CarteirinhaObservacoes = ({
   }, [isEditing, obsText]);
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-xs overflow-hidden group">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden group">
+      <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileText className="w-4.5 h-4.5 text-[#1a3a5c]" />
-          <h3 className="text-sm font-bold text-[#16314f]">Observações</h3>
+          <FileText className="w-4 h-4 text-[#0a0a0a]" />
+          <h3 className="text-sm font-semibold text-[#0a0a0a]">Observações</h3>
         </div>
 
         {!isEditing && canManage && (
           <Button
-            variant="ghost"
-            size="icon"
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={onStartEdit}
-            className="h-8 w-8 rounded-xl text-slate-300 hover:text-[#1a3a5c] hover:bg-slate-50 transition-all"
+            className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer"
           >
-            <Pencil className="h-3.5 w-3.5" />
+            <Pencil className="h-3 w-3 text-[#737373]" />
+            <span>Editar</span>
           </Button>
         )}
       </div>
@@ -76,24 +77,24 @@ export const CarteirinhaObservacoes = ({
               value={obsText}
               onChange={(e) => onChangeText(e.target.value)}
               placeholder="Escreva suas observações sobre o aluno..."
-              className="w-full resize-none rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1a3a5c]/30 focus:ring-1 focus:ring-[#1a3a5c]/20 px-4 py-3 text-xs font-medium text-slate-700 placeholder:text-slate-400 outline-none transition-all"
+              className="w-full resize-none rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] focus:bg-white px-4 py-3 text-sm font-normal text-[#0a0a0a] placeholder:text-[#737373] outline-none transition-all"
               style={{ minHeight: 80 }}
             />
             <div className="flex items-center gap-3 pt-1">
               <Button
                 onClick={onCancelEdit}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-white border border-slate-100 text-slate-500 hover:text-slate-600 hover:bg-slate-50 shadow-none active:scale-95"
+                className="flex-1 h-10 sm:h-11 rounded-[18px] font-medium text-sm bg-white border border-[#e5e5e5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] shadow-xs active:scale-95"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={onSave}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl font-bold text-[13px] bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 active:scale-95"
+                className="flex-1 h-10 sm:h-11 rounded-[18px] font-medium text-sm bg-primary hover:bg-primary-hover text-white shadow-xs active:scale-95 border-none"
               >
                 {isSaving ? (
-                  <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : "Salvar"}
               </Button>
             </div>
@@ -102,16 +103,16 @@ export const CarteirinhaObservacoes = ({
           <div
             onClick={canManage ? onStartEdit : undefined}
             className={cn(
-              "-mx-2 px-2 py-1 rounded-xl transition-colors",
-              canManage && "cursor-pointer group/obs hover:bg-slate-50"
+              "-mx-2 px-2 py-1 rounded-[12px] transition-colors",
+              canManage && "cursor-pointer group/obs hover:bg-[#f5f5f5]"
             )}
           >
             {observacoes ? (
-              <p className="text-xs font-medium text-slate-500 leading-relaxed italic border-l-2 border-amber-200 pl-3 py-1">
+              <p className="text-xs font-normal text-[#737373] leading-relaxed italic border-l-2 border-amber-300 pl-3 py-1">
                 {observacoes}
               </p>
             ) : (
-              <p className="text-[11px] text-slate-300 italic py-2">
+              <p className="text-[11px] text-[#a3a3a3] italic py-2">
                 {canManage ? "Toque para adicionar observações..." : "Nenhuma observação cadastrada."}
               </p>
             )}

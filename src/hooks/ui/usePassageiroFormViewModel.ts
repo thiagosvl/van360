@@ -6,9 +6,13 @@ import {
   usePassageiro,
   usePassageiroForm,
   useUpdatePassageiro,
-  useVeiculosWithFilters
+  useVeiculosWithFilters,
+  useAppRating,
 } from "@/hooks";
-import { PassageiroFormModes } from "@/types/enums";
+import {
+  PassageiroFormModes,
+  ModoCobrancaEnum,
+} from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
@@ -44,6 +48,7 @@ export function usePassageiroFormViewModel({
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
+  const { trackAlunoCadastradoOuAprovado } = useAppRating();
   const { mutateAsync: lookupResponsavel, isPending: isSearchingResponsavel } = useBuscarResponsavel();
 
   const searchedTermsSet = useRef<Set<string>>(new Set());
@@ -328,6 +333,8 @@ export function usePassageiroFormViewModel({
       purePayload.valor_cobranca = parseCurrencyToNumber(purePayload.valor_cobranca);
     }
 
+    purePayload.modo_cobranca = data.modo_cobranca ? (data.modo_cobranca as ModoCobrancaEnum) : null;
+
     const commonOptions = {
       onSuccess: (responseData?: Passageiro) => {
         const isEdit = mode === PassageiroFormModes.EDIT;
@@ -420,6 +427,9 @@ export function usePassageiroFormViewModel({
           hasCriticalContractChanges
         });
         onClose();
+        if (!isEdit) {
+          void trackAlunoCadastradoOuAprovado();
+        }
       },
       onError: (err: unknown) => {
         const msg = getErrorMessage(err);

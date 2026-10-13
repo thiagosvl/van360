@@ -26,38 +26,40 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
   }, [escolas, search]);
 
   return (
-    <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-left">
-      <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+    <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card text-left">
+      <CardHeader className="p-6 border-b border-border bg-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-purple-400" />
-              Escolas
-              {search.trim() ? (
-                <span>({filtered.length} de {escolas.length})</span>
-              ) : (
-                <span>({escolas.length})</span>
-              )}
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-purple-500" />
+              <span>Escolas</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {search.trim() ? (
+                  `(${filtered.length} de ${escolas.length})`
+                ) : (
+                  `(${escolas.length})`
+                )}
+              </span>
             </CardTitle>
-            <p className="text-[11px] font-medium text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Instituições de ensino cadastradas pelo motorista.
             </p>
           </div>
 
           {escolas.length > 3 && (
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar escola..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-9 h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-purple-500"
+                className="pl-9 pr-9 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-3 text-slate-500 hover:text-white"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -93,23 +95,23 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
               return (
                 <div
                   key={e.id}
-                  className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 flex flex-col justify-between space-y-3 hover:border-purple-500/40 transition-colors shadow-lg"
+                  className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between space-y-3 hover:border-primary/40 transition-colors shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-9 w-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-black text-xs border border-purple-500/20 shrink-0">
+                      <div className="h-9 w-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold text-xs border border-purple-500/20 shrink-0">
                         {e.nome.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <h4
-                          className="text-xs font-bold text-slate-100 line-clamp-2 break-words leading-tight"
+                          className="text-xs font-semibold text-foreground line-clamp-2 break-words leading-tight"
                           title={e.nome}
                         >
                           {e.nome}
                         </h4>
                         {e.contato_nome && (
-                          <p className="text-[10px] text-slate-400 font-medium truncate flex items-center gap-1 mt-0.5">
-                            <User className="h-3 w-3 text-slate-500 shrink-0" />
+                          <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                            <User className="h-3 w-3 text-muted-foreground shrink-0" />
                             <span>{e.contato_nome}</span>
                           </p>
                         )}
@@ -119,12 +121,12 @@ export function AdminUserSchoolsTab({ escolas }: AdminUserSchoolsTabProps) {
                   </div>
 
                   {fullAddress ? (
-                    <div className="text-[11px] text-slate-300 flex items-start gap-1.5 pt-2.5 border-t border-slate-800/60 leading-normal">
-                      <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5" />
+                    <div className="text-xs text-foreground/80 flex items-start gap-1.5 pt-2.5 border-t border-border/60 leading-normal">
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                       <span>{fullAddress}</span>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-500 italic pt-2.5 border-t border-slate-800/60">
+                    <div className="text-xs text-muted-foreground italic pt-2.5 border-t border-border/60">
                       Endereço não informado
                     </div>
                   )}

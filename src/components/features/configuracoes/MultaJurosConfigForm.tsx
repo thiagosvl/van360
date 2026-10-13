@@ -7,13 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/Banner";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
@@ -60,6 +54,7 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
     try {
       await updateFinanceiro({
         ...values,
+        dias_carencia_atraso: 0,
         dias_validade_apos_vencimento: 30,
       });
       toast.success("Configurações de multa e juros salvas com sucesso!");
@@ -76,13 +71,13 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           description="Quando configurados, o aplicativo do banco do pagador calcula multa e juros automaticamente ao ler o QR Code após o vencimento. 100% dos encargos recebidos são repassados diretamente para você."
         />
 
-        <div className="bg-slate-50/70 rounded-xl p-4 border border-slate-200/60 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="bg-[#fafafa] rounded-[18px] p-4 sm:p-5 border border-[#e5e5e5] space-y-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <span className="text-sm font-bold text-[#1a3a5c] block">
+              <span className="text-sm font-medium text-[#0a0a0a] block">
                 Multa por Atraso
               </span>
-              <span className="text-xs text-slate-500 block">
+              <span className="text-xs text-[#737373] block leading-relaxed">
                 Aplicada uma única vez caso o pagamento ocorra após o vencimento.
               </span>
             </div>
@@ -102,24 +97,24 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           </div>
 
           {cobrarMulta && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e5e5]">
               <FormField
                 control={form.control}
                 name="multa_atraso_tipo"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-slate-700">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                       Formato da Multa
                     </FormLabel>
                     <FormControl>
-                      <div className="flex rounded-lg border border-slate-200 p-0.5 bg-white">
+                      <div className="inline-flex p-1 bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] w-full">
                         <button
                           type="button"
                           onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
-                          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
                             field.value === ContractMultaTipo.PERCENTUAL
-                              ? "bg-[#1a3a5c] text-white shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-primary text-primary-foreground shadow-xs"
+                              : "text-[#737373] hover:text-[#0a0a0a]"
                           }`}
                         >
                           Percentual (%)
@@ -127,10 +122,10 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                         <button
                           type="button"
                           onClick={() => field.onChange(ContractMultaTipo.FIXO)}
-                          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
                             field.value === ContractMultaTipo.FIXO
-                              ? "bg-[#1a3a5c] text-white shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-primary text-primary-foreground shadow-xs"
+                              : "text-[#737373] hover:text-[#0a0a0a]"
                           }`}
                         >
                           Valor Fixo (R$)
@@ -145,8 +140,8 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                 control={form.control}
                 name="multa_atraso_valor"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-slate-700">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                       {tipoMulta === ContractMultaTipo.PERCENTUAL ? "Percentual de Multa" : "Valor da Multa"}
                     </FormLabel>
                     <FormControl>
@@ -176,10 +171,10 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                               field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
                             }
                           }}
-                          className="h-10 text-sm font-semibold pr-8"
+                          className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-8 text-[#0a0a0a]"
                         />
                         {tipoMulta === ContractMultaTipo.PERCENTUAL && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373]">
                             %
                           </span>
                         )}
@@ -193,13 +188,13 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           )}
         </div>
 
-        <div className="bg-slate-50/70 rounded-xl p-4 border border-slate-200/60 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="bg-[#fafafa] rounded-[18px] p-4 sm:p-5 border border-[#e5e5e5] space-y-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <span className="text-sm font-bold text-[#1a3a5c] block">
+              <span className="text-sm font-medium text-[#0a0a0a] block">
                 Juros de Mora (por Atraso)
               </span>
-              <span className="text-xs text-slate-500 block">
+              <span className="text-xs text-[#737373] block leading-relaxed">
                 Incidem diariamente durante o período em que a parcela permanecer em aberto.
               </span>
             </div>
@@ -219,24 +214,24 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           </div>
 
           {cobrarJuros && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e5e5]">
               <FormField
                 control={form.control}
                 name="juros_atraso_tipo"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-slate-700">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                       Formato dos Juros
                     </FormLabel>
                     <FormControl>
-                      <div className="flex rounded-lg border border-slate-200 p-0.5 bg-white">
+                      <div className="inline-flex p-1 bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] w-full">
                         <button
                           type="button"
                           onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
-                          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
                             field.value === ContractMultaTipo.PERCENTUAL
-                              ? "bg-[#1a3a5c] text-white shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-primary text-primary-foreground shadow-xs"
+                              : "text-[#737373] hover:text-[#0a0a0a]"
                           }`}
                         >
                           % ao mês
@@ -244,10 +239,10 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                         <button
                           type="button"
                           onClick={() => field.onChange(ContractMultaTipo.FIXO)}
-                          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
                             field.value === ContractMultaTipo.FIXO
-                              ? "bg-[#1a3a5c] text-white shadow-xs"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-primary text-primary-foreground shadow-xs"
+                              : "text-[#737373] hover:text-[#0a0a0a]"
                           }`}
                         >
                           R$ ao dia
@@ -262,8 +257,8 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                 control={form.control}
                 name="juros_atraso_valor"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-slate-700">
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                       {tipoJuros === ContractMultaTipo.PERCENTUAL ? "Taxa Mensal" : "Valor Diário"}
                     </FormLabel>
                     <FormControl>
@@ -293,9 +288,9 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
                               field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
                             }
                           }}
-                          className="h-10 text-sm font-semibold pr-16"
+                          className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-16 text-[#0a0a0a]"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373]">
                           {tipoJuros === ContractMultaTipo.PERCENTUAL ? "% a.m." : "/ dia"}
                         </span>
                       </div>
@@ -308,46 +303,11 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           )}
         </div>
 
-        <div>
-          <FormField
-            control={form.control}
-            name="dias_carencia_atraso"
-            render={({ field }) => (
-              <FormItem className="max-w-md">
-                <FormLabel className="text-xs font-semibold text-slate-700">
-                  Carência para Encargos
-                </FormLabel>
-                <Select
-                  value={String(field.value)}
-                  onValueChange={(val) => field.onChange(Number(val))}
-                  disabled={isUpdating}
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-10 text-sm font-medium">
-                      <SelectValue placeholder="Selecione a carência" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="0">Sem carência (aplica no 1º dia útil seguinte)</SelectItem>
-                    <SelectItem value="1">1 dia de tolerância</SelectItem>
-                    <SelectItem value="2">2 dias de tolerância</SelectItem>
-                    <SelectItem value="3">3 dias de tolerância</SelectItem>
-                    <SelectItem value="5">5 dias de tolerância</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-[11px] text-slate-400 block">
-                  Dias de tolerância antes de começar a calcular a multa e os juros.
-                </span>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex justify-end pt-3 border-t border-slate-100">
+        <div className="flex justify-end pt-4 border-t border-[#e5e5e5]">
           <button
             type="submit"
             disabled={isUpdating}
-            className="h-11 px-6 bg-[#1a3a5c] text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-[#1a3a5c]/90 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            className="h-11 px-6 bg-primary text-primary-foreground text-xs sm:text-sm font-medium rounded-[18px] hover:bg-primary-hover transition-all shadow-xs active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto cursor-pointer"
           >
             {isUpdating ? (
               <>

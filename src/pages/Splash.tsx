@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ROUTES } from "@/constants/routes";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Bus, ChevronRight, Info, LogIn, Sparkles, Users } from "lucide-react";
-import { useLayout } from "@/contexts/LayoutContext";
+import { ArrowLeft, Bus, ChevronRight, LogIn, Sparkles, Users } from "lucide-react";
 
 
 function SplashIllustration({
@@ -33,7 +32,6 @@ export default function Splash() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openShowcaseTransporteEscolarDialog } = useLayout();
 
   const getInitialStep = (): "profile" | "motorista" => {
     if (
@@ -85,89 +83,97 @@ export default function Splash() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [step, setSearchParams]);
 
-  return (
-    <main className="h-[100dvh] w-full bg-[#FBF8F9] overflow-hidden flex flex-col justify-between relative">
+  useEffect(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }, [step]);
 
-      {/* Botão Voltar Circular (Etapa Motorista) */}
+  return (
+    <main className="h-[100dvh] w-full bg-[#fbf9f5] overflow-hidden flex flex-col justify-between relative">
       {step === "motorista" && (
         <button
           type="button"
           onClick={handleBackToProfile}
           aria-label="Voltar para seleção de perfil"
-          className="absolute left-4 top-[max(env(safe-area-inset-top),2.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),3rem)] [@media(max-height:680px)]:top-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm flex items-center justify-center text-[#081A34] hover:bg-white active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
+          className="absolute left-4 top-[max(env(safe-area-inset-top),1.5rem)] [@media(min-height:751px)]:top-[max(env(safe-area-inset-top),2rem)] [@media(max-height:680px)]:top-4 w-10 h-10 rounded-full bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-90 outline-none focus:outline-none focus-visible:outline-none transition-all cursor-pointer z-30 animate-in fade-in zoom-in-95 duration-200"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-700" />
+          <ArrowLeft className="w-5 h-5 text-[#737373]" />
         </button>
       )}
 
-      {/* ================= CONTEÚDO (TOPO) ================= */}
-      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),5.5rem)] [@media(min-height:751px)_and_(max-height:850px)]:!pt-[max(env(safe-area-inset-top),4.5rem)] [@media(min-height:681px)_and_(max-height:750px)]:!pt-[max(env(safe-area-inset-top),3.75rem)] [@media(min-height:581px)_and_(max-height:680px)]:!pt-6 [@media(max-height:580px)]:!pt-3 px-6 z-10">
-
+      <section className="shrink-0 flex flex-col items-center pt-[max(env(safe-area-inset-top),2.75rem)] [@media(min-height:751px)]:!pt-[max(env(safe-area-inset-top),3.25rem)] [@media(max-height:680px)]:!pt-[max(env(safe-area-inset-top),1.5rem)] [@media(max-height:580px)]:!pt-2 px-6 z-10">
         {step === "profile" ? (
           <div className="flex flex-col items-center w-full max-w-[340px] animate-in fade-in zoom-in-95 duration-300">
             <img
               src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8"
+              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8 drop-shadow-xs"
             />
 
-            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
-              <h1 className="font-bold text-[#081A34] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
+            <div className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 text-center">
+              <h1 className="font-bold text-[#0a0a0a] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Quem está acessando?
               </h1>
 
-              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
+              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
                 Selecione uma opção para continuar
               </p>
             </div>
 
-            {/* Cards de Seleção */}
-            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
-              {/* Opção 1: Motorista / Equipe */}
+            <div className="w-full space-y-2 mt-5 [@media(min-height:751px)]:mt-6 [@media(max-height:680px)]:mt-3.5">
               <button
                 type="button"
                 onClick={handleSelectMotorista}
-                className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-slate-300 active:border-[#15469C] active:scale-[0.98] shadow-sm hover:shadow-md outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-xl bg-[#15469C]/10 text-[#15469C] flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
                     <Bus className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Transporte Escolar
                     </span>
-                    <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
                       Motoristas, monitores ou donos de van
                     </p>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
 
-              {/* Opção 2: Pai / Responsável */}
+              <div className="relative flex items-center justify-center py-0.5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#e5e5e5]" />
+                </div>
+                <span className="relative bg-[#fbf9f5] px-3 text-xs text-[#737373] font-medium select-none">
+                  ou
+                </span>
+              </div>
+
               <button
                 type="button"
                 onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=responsavel`, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-slate-300 active:border-amber-500 active:scale-[0.98] shadow-sm hover:shadow-md outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-xl bg-[#15469C]/10 text-[#15469C] flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-[14px] bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 transition-colors">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Pai / Responsável
                     </span>
-                    <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-[#737373] leading-snug mt-0.5">
                       Acessar a carteirinha do seu filho
                     </p>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
               </button>
             </div>
@@ -177,86 +183,74 @@ export default function Splash() {
             <img
               src="/assets/logo-van360.webp"
               alt="Van360"
-              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8"
+              className="h-11 w-auto [@media(min-height:581px)_and_(max-height:750px)]:!h-10 [@media(max-height:580px)]:!h-8 drop-shadow-xs"
             />
 
-            <div className="mt-3.5 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2.5 text-center">
-              <h1 className="font-bold text-[#081A34] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
+            <div className="mt-3 [@media(min-height:581px)_and_(max-height:750px)]:!mt-2 text-center">
+              <h1 className="font-bold text-[#0a0a0a] leading-tight text-[1.75rem] [@media(min-height:751px)]:text-[1.95rem] [@media(max-height:680px)]:text-[1.5rem]">
                 Transporte Escolar
               </h1>
 
-              <p className="mt-1.5 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-slate-500">
+              <p className="mt-1 text-[0.95rem] [@media(max-height:680px)]:text-[0.85rem] text-[#737373]">
                 Você dirige. A gente organiza.
               </p>
             </div>
 
-            {/* Cards de Ação do Motorista */}
-            <div className="w-full space-y-3 mt-8 [@media(min-height:751px)]:mt-10 [@media(max-height:680px)]:mt-5">
-              {/* Opção 1: Já tenho uma conta (Login) */}
+            <div className="w-full space-y-2 mt-5 [@media(min-height:751px)]:mt-6 [@media(max-height:680px)]:mt-3.5">
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
+                  <div className="w-11 h-11 rounded-[14px] bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 transition-colors">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
+                      Criar conta grátis
+                    </span>
+                  </div>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
+                </div>
+              </button>
+
+              <div className="relative flex items-center justify-center py-0.5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#e5e5e5]" />
+                </div>
+                <span className="relative bg-[#fbf9f5] px-3 text-xs text-[#737373] font-medium select-none">
+                  ou
+                </span>
+              </div>
+
               <button
                 type="button"
                 onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}?tipo=motorista`, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-slate-300 active:border-[#15469C] active:scale-[0.98] shadow-sm hover:shadow-md outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
+                className="w-full text-left p-3.5 sm:p-4 rounded-[20px] bg-white border border-[#e5e5e5] hover:border-[#737373] active:scale-[0.98] shadow-xs outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-xl bg-[#15469C]/10 text-[#15469C] flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-[14px] bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 transition-colors">
                     <LogIn className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
+                    <span className="font-bold text-[14px] sm:text-base text-[#0a0a0a] block leading-tight">
                       Já tenho uma conta
                     </span>
                   </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0 ml-1 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-[#737373]" />
                 </div>
-              </button>
-
-              {/* Opção 2: Criar conta grátis (Registro) */}
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.PUBLIC.REGISTER, { state: { fromSplash: true } })}
-                className="w-full text-left p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-slate-300 active:border-emerald-500 active:scale-[0.98] shadow-sm hover:shadow-md outline-none focus:outline-none focus-visible:outline-none transition-all flex items-center justify-between cursor-pointer select-none"
-              >
-                <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="font-bold text-[14px] sm:text-base text-slate-800 block leading-tight">
-                      Criar conta
-                    </span>
-                    <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5">
-                      Cadastrar minha van
-                    </p>
-                  </div>
-                </div>
-                <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ml-1">
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                </div>
-              </button>
-
-              {/* Opção 3: Veja o que o app faz */}
-              <button
-                type="button"
-                onClick={openShowcaseTransporteEscolarDialog}
-                className="w-full text-center py-2.5 px-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/90 border border-slate-200/60 active:scale-[0.98] outline-none transition-all flex items-center justify-center gap-2 cursor-pointer select-none text-[#1a3a5c] group"
-              >
-                <Info className="w-4 h-4 text-[#15469C] group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-xs sm:text-[13px] text-[#1a3a5c]">
-                  Veja o que o app faz
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
         )}
-
       </section>
 
-      {/* ================= ILUSTRAÇÃO (BASE) ================= */}
-      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-3 [@media(max-height:750px)]:mt-2 pointer-events-none select-none">
+      <section className="flex-1 min-h-0 w-full relative overflow-hidden mt-2 pointer-events-none select-none">
         <SplashIllustration
           src="/assets/login-splash.webp"
           alt="Van escolar"
@@ -267,21 +261,9 @@ export default function Splash() {
             w-full
             h-auto
             top-auto
-            
-            /* Padrão para telas altas */
-            bottom-[-20px]
-            
-            /* 1. Telas normais altas */
-            [@media(min-height:751px)_and_(max-height:850px)]:!bottom-[-45px]
-            
-            /* 2. Telas finas como Galaxy S9+ (largura até 340px) ficam perfeitas com -45px independente da altura */
-            [@media(max-width:340px)]:!bottom-[-45px]
-            
-            /* 3. Telas largas e altura média */
-            [@media(min-width:341px)_and_(min-height:681px)_and_(max-height:750px)]:!bottom-[-70px]
-            
-            /* 4. Telas largas e muito curtas como iPhone SE (largura > 340 e altura < 680) */
-            [@media(min-width:341px)_and_(max-height:680px)]:!bottom-[-70px]
+            bottom-[-10px]
+            [@media(min-height:751px)]:!bottom-[-15px]
+            [@media(max-height:680px)]:!bottom-[-20px]
           "
         />
       </section>

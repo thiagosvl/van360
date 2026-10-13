@@ -21,6 +21,7 @@ import { phoneMask } from "@/utils/masks";
 import { ContratoProvider, ContratoStatus, DriverContractConfigStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { obterUrlDocumentoContrato } from "@/utils/domain";
+import { safeCloseDialog } from "@/hooks";
 
 interface AdminUserContractsTabProps {
   user: {
@@ -93,65 +94,67 @@ export function AdminUserContractsTab({
     <div className="space-y-6 text-left">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         <AdminKpiCard
-          title="CONTRATOS EMITIDOS"
+          title="Contratos emitidos"
           value={`${totalContratos}/${totalPassageiros}`}
           subtext={`${pctEmitidos}% dos alunos`}
-          cardBorder="border-sky-500/40 shadow-sky-500/10"
-          iconBg="bg-sky-500/10 text-sky-400 border-sky-500/20"
+          cardBorder="border-border hover:border-primary/50"
+          iconBg="bg-primary/10 text-primary border-primary/20"
           icon={<FileText className="h-5 w-5" />}
         />
 
         <AdminKpiCard
-          title="CONTRATOS ASSINADOS"
+          title="Contratos assinados"
           value={totalAssinados}
           subtext={`${pctAssinados}% assinados`}
-          cardBorder="border-emerald-500/40 shadow-emerald-500/10"
-          iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+          cardBorder="border-border hover:border-emerald-500/50"
+          iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
           icon={<CheckCircle2 className="h-5 w-5" />}
         />
 
         <AdminKpiCard
-          title="CONTRATOS PENDENTES"
+          title="Contratos pendentes"
           value={totalPendentes}
           subtext={`${pctPendentes}% aguardando assinatura`}
-          cardBorder="border-amber-500/40 shadow-amber-500/10"
-          iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
+          cardBorder="border-border hover:border-amber-500/50"
+          iconBg="bg-amber-500/10 text-amber-500 border-amber-500/20"
           icon={<Clock className="h-5 w-5" />}
         />
       </div>
 
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e] text-slate-100">
-        <CardHeader className="p-6 border-b border-slate-800/80 bg-slate-900/40">
+      <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-6 border-b border-border bg-card">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1 text-left">
-              <CardTitle className="text-xs font-headline font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <FileText className="h-4 w-4 text-blue-400" />
-                Status dos Contratos
-                {search.trim() ? (
-                  <span>({filteredPassageiros.length} de {passageiros.length})</span>
-                ) : (
-                  <span>({passageiros.length})</span>
-                )}
+              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span>Status dos contratos</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {search.trim() ? (
+                    `(${filteredPassageiros.length} de ${passageiros.length})`
+                  ) : (
+                    `(${passageiros.length})`
+                  )}
+                </span>
               </CardTitle>
-              <p className="text-[11px] font-medium text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Acompanhamento individual dos contratos de transporte.
               </p>
             </div>
 
             {passageiros.length > 0 && (
               <div className="relative w-full md:w-80">
-                <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por aluno..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-9 h-10 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
+                  className="pl-9 pr-9 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary"
                 />
                 {search && (
                   <button
                     type="button"
                     onClick={() => setSearch("")}
-                    className="absolute right-3 top-3 text-slate-500 hover:text-white"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -176,30 +179,30 @@ export function AdminUserContractsTab({
           ) : (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800/80 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                    <tr className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
                       <th className="py-3.5 px-6">Aluno</th>
                       <th className="py-3.5 px-4">Responsável</th>
                       <th className="py-3.5 px-4">Status</th>
                       <th className="py-3.5 px-6 text-right">Ação</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/40 text-xs">
+                  <tbody className="divide-y divide-border/50 text-xs">
                     {filteredPassageiros.map((p) => {
                       const contrato = contractByPassengerMap.get(p.id);
 
                       return (
-                        <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
+                        <tr key={p.id} className="hover:bg-muted/30 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center font-black text-xs border border-blue-500/20 shrink-0">
+                              <div className="h-9 w-9 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0">
                                 {p.nome.charAt(0).toUpperCase()}
                               </div>
                               <div className="min-w-0">
-                                <span className="font-bold text-slate-100 block truncate">{p.nome}</span>
+                                <span className="font-semibold text-foreground block truncate">{p.nome}</span>
                                 {p.serie_ano && (
-                                  <span className="text-[10px] text-slate-400 block font-medium">
+                                  <span className="text-xs text-muted-foreground block font-medium">
                                     {p.serie_ano}{p.turma ? ` — Turma ${p.turma}` : ""}
                                   </span>
                                 )}
@@ -209,43 +212,43 @@ export function AdminUserContractsTab({
                           <td className="py-4 px-4">
                             {p.responsavel_principal?.nome ? (
                               <div>
-                                <p className="font-medium text-slate-300 truncate">
+                                <p className="font-medium text-foreground truncate">
                                   {formatShortName(p.responsavel_principal.nome, true)}
                                 </p>
                                 {p.responsavel_principal.telefone && (
-                                  <p className="text-[10px] text-slate-400 font-medium font-mono">
+                                  <p className="text-xs text-muted-foreground font-mono">
                                     {phoneMask(p.responsavel_principal.telefone)}
                                   </p>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-slate-500 italic text-[11px]">—</span>
+                              <span className="text-muted-foreground italic text-xs">—</span>
                             )}
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             {contrato ? (
                               contrato.status === ContratoStatus.ASSINADO ? (
                                 contrato.provider === ContratoProvider.IMPORTADO ? (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                                    <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary/15 text-primary border border-primary/30">
+                                    <CheckCircle2 className="h-3 w-3" /> Assinado (importado)
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                                    <CheckCircle2 className="h-3 w-3" /> ASSINADO
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                                    <CheckCircle2 className="h-3 w-3" /> Assinado
                                   </span>
                                 )
                               ) : contrato.status === ContratoStatus.PENDENTE ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                                  <Clock className="h-3 w-3" /> PENDENTE
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                                  <Clock className="h-3 w-3" /> Pendente
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700/80">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-secondary text-foreground border border-border">
                                   {contrato.status}
                                 </span>
                               )
                             ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-500 bg-slate-900 border border-slate-800">
-                                SEM CONTRATO
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-muted-foreground bg-secondary/60 border border-border">
+                                Sem contrato
                               </span>
                             )}
                           </td>
@@ -255,13 +258,13 @@ export function AdminUserContractsTab({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleOpenContractDocument(contrato)}
-                                className="h-8 rounded-xl text-blue-400 hover:bg-slate-800 hover:text-blue-300 px-2.5 flex items-center gap-1.5 ml-auto"
+                                className="h-8 rounded-xl text-primary hover:bg-secondary hover:text-primary px-2.5 flex items-center gap-1.5 ml-auto font-semibold text-xs"
                               >
                                 <ExternalLink className="h-3.5 w-3.5" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider">Ver Contrato</span>
+                                <span>Ver contrato</span>
                               </Button>
                             ) : (
-                              <span className="text-xs text-slate-600">—</span>
+                              <span className="text-xs text-muted-foreground">—</span>
                             )}
                           </td>
                         </tr>
@@ -271,21 +274,21 @@ export function AdminUserContractsTab({
                 </table>
               </div>
 
-              <div className="md:hidden space-y-3">
-                {passageiros.map((p) => {
+              <div className="md:hidden space-y-3 p-4">
+                {filteredPassageiros.map((p) => {
                   const contrato = contractByPassengerMap.get(p.id);
 
                   return (
-                    <div key={p.id} className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-3">
+                    <div key={p.id} className="p-4 bg-card rounded-2xl border border-border space-y-3 shadow-sm">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center font-black text-xs border border-blue-500/20 shrink-0">
+                          <div className="h-8 w-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0">
                             {p.nome.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h5 className="text-xs font-bold text-slate-100">{p.nome}</h5>
+                            <h5 className="text-xs font-semibold text-foreground">{p.nome}</h5>
                             {p.serie_ano && (
-                              <p className="text-[10px] font-medium text-slate-400">
+                              <p className="text-xs text-muted-foreground">
                                 {p.serie_ano}{p.turma ? ` — Turma ${p.turma}` : ""}
                               </p>
                             )}
@@ -294,38 +297,38 @@ export function AdminUserContractsTab({
                         {contrato ? (
                           contrato.status === ContratoStatus.ASSINADO ? (
                             contrato.provider === ContratoProvider.IMPORTADO ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 shrink-0">
-                                <CheckCircle2 className="h-3 w-3" /> ASSINADO (IMPORTADO)
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/15 text-primary border border-primary/30 shrink-0">
+                                <CheckCircle2 className="h-3 w-3" /> Assinado (importado)
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                                <CheckCircle2 className="h-3 w-3" /> ASSINADO
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 shrink-0">
+                                <CheckCircle2 className="h-3 w-3" /> Assinado
                               </span>
                             )
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
-                              <Clock className="h-3 w-3" /> PENDENTE
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 shrink-0">
+                              <Clock className="h-3 w-3" /> Pendente
                             </span>
                           )
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold text-slate-500 bg-slate-900 border border-slate-800 shrink-0">
-                            SEM CONTRATO
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-muted-foreground bg-secondary/60 border border-border shrink-0">
+                            Sem contrato
                           </span>
                         )}
                       </div>
 
                       {contrato && (
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                          <span className="font-mono font-bold text-blue-400">
+                        <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
+                          <span className="font-mono font-semibold text-foreground">
                             {contrato.valor_total ? formatCurrency(Number(contrato.valor_total)) : "—"}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenContractDocument(contrato)}
-                            className="h-7 rounded-xl text-blue-400 hover:bg-slate-800 px-2.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                            className="h-7 rounded-xl text-primary hover:bg-secondary px-2.5 text-xs font-semibold flex items-center gap-1"
                           >
-                            <ExternalLink className="h-3.5 w-3.5" /> Ver Contrato
+                            <ExternalLink className="h-3.5 w-3.5" /> Ver contrato
                           </Button>
                         </div>
                       )}
@@ -341,25 +344,27 @@ export function AdminUserContractsTab({
       {isSignatureModalOpen && user.assinatura_digital_url && (
         <AdminBaseDialog
           open={isSignatureModalOpen}
-          onOpenChange={(open) => !open && setIsSignatureModalOpen(false)}
+          onOpenChange={(open) => {
+            if (!open) safeCloseDialog(() => setIsSignatureModalOpen(false));
+          }}
           maxWidth="md"
         >
           <AdminBaseDialog.Header
-            title="Assinatura Digital do Motorista"
+            title="Assinatura digital do motorista"
             subtitle={`Motorista: ${user.nome}`}
-            icon={<PenTool className="w-5 h-5 text-blue-400" />}
-            onClose={() => setIsSignatureModalOpen(false)}
+            icon={<PenTool className="w-5 h-5 text-primary" />}
+            onClose={() => safeCloseDialog(() => setIsSignatureModalOpen(false))}
           />
           <AdminBaseDialog.Body>
             <div className="space-y-4 text-center py-4">
-              <div className="p-6 bg-white rounded-2xl border border-slate-700 flex items-center justify-center">
+              <div className="p-6 bg-secondary/30 rounded-2xl border border-border flex items-center justify-center">
                 <img
                   src={user.assinatura_digital_url}
                   alt="Assinatura Digital"
                   className="max-h-40 object-contain"
                 />
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Esta é a assinatura digital cadastrada pelo motorista para chancela dos contratos emitidos.
               </p>
             </div>

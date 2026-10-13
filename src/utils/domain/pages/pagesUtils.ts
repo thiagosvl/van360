@@ -1,8 +1,7 @@
 import { ComponentType } from "react";
-import { LucideProps, Car, ChartArea, FileText, GraduationCap, LayoutDashboard, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Sparkles } from "lucide-react";
+import { LucideProps, Car, ChartArea, FileText, GraduationCap, Home, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Compass, Sparkles } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
-import { isNativeIos } from "@/utils/detectPlatform";
 
 export interface PageItem {
   title: string;
@@ -15,7 +14,7 @@ const pagesItems: PageItem[] = [
   {
     title: "Início",
     href: ROUTES.PRIVATE.MOTORISTA.HOME,
-    icon: LayoutDashboard,
+    icon: Home,
   },
   {
     title: "Alunos",
@@ -59,6 +58,11 @@ const pagesItems: PageItem[] = [
     icon: TrendingDown,
     permission: "gastos.visualizar",
   },
+  // {
+  //   title: "Fretamentos e Passeios",
+  //   href: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
+  //   icon: Compass,
+  // },
   {
     title: "Escolas",
     href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
@@ -84,7 +88,7 @@ const pagesItems: PageItem[] = [
     permission: "aniversarios.visualizar",
   },
   {
-    title: isNativeIos() ? "Acesso" : "Assinatura do App",
+    title: "Assinatura",
     href: ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION,
     icon: Rocket,
     permission: "assinatura.gerenciar",

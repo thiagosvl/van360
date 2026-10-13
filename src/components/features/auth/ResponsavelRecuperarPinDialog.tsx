@@ -35,6 +35,7 @@ import { phoneMask } from "@/utils/masks";
 import { responsavelApi } from "@/services/api/responsavel.api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { safeCloseDialog } from "@/hooks";
 
 interface ResponsavelRecuperarPinDialogProps {
   open: boolean;
@@ -106,7 +107,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
     phoneForm.reset();
     otpForm.reset();
     pinForm.reset();
-    onOpenChange(false);
+    safeCloseDialog(() => onOpenChange(false));
   };
 
   const handleSendOtp = useCallback(async (cleanPhone: string, emailIndex: number) => {
@@ -200,9 +201,9 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                   variant="info"
                   icon={
                     emailsEncontrados.length > 1 ? (
-                      <Mail className="w-5 h-5 text-[#1a3a5c]" />
+                      <Mail className="w-5 h-5 text-primary" />
                     ) : (
-                      <KeyRound className="w-5 h-5 text-[#1a3a5c]" />
+                      <KeyRound className="w-5 h-5 text-primary" />
                     )
                   }
                   description={
@@ -213,10 +214,10 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                 />
 
                 {emailsEncontrados.length > 1 ? (
-                  <div className="flex items-center justify-between p-[#0.875rem] rounded-2xl bg-slate-100/70 border border-slate-200/80">
+                  <div className="flex items-center justify-between p-3.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5]">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Phone className="w-4 h-4 text-slate-500 shrink-0" />
-                      <span className="text-sm font-bold text-slate-700 truncate">
+                      <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm font-semibold text-foreground truncate">
                         {phoneForm.getValues("telefone")}
                       </span>
                     </div>
@@ -226,7 +227,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                         setEmailsEncontrados([]);
                         setSelectedEmailIndex(null);
                       }}
-                      className="text-xs font-bold text-[#1a3a5c] hover:underline cursor-pointer ml-2 shrink-0"
+                      className="text-xs font-semibold text-primary hover:underline cursor-pointer ml-2 shrink-0"
                     >
                       Trocar
                     </button>
@@ -235,39 +236,40 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                   <FormField
                     control={phoneForm.control}
                     name="telefone"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-700 font-medium ml-1">
+                        <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                           Telefone (WhatsApp)
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                             <Input
                               {...field}
                               type="tel"
                               placeholder="(00) 00000-0000"
                               onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base font-semibold text-slate-700"
+                              className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                                fieldState.error
+                                  ? "border-[#e7000b] focus:border-[#e7000b]"
+                                  : "border-[#e5e5e5] focus:border-[#2563eb]"
+                              }`}
                             />
                           </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                       </FormItem>
                     )}
                   />
                 )}
 
                 {errorMessage && (
-                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2.5 text-xs font-medium text-red-600 animate-in fade-in duration-200">
-                    <span className="mt-0.5 shrink-0">⚠️</span>
-                    <span className="leading-relaxed">{errorMessage}</span>
-                  </div>
+                  <Banner variant="danger" description={errorMessage} />
                 )}
 
                 {emailsEncontrados.length > 1 && (
                   <div className="space-y-2.5 pt-2">
-                    <FormLabel className="text-slate-700 font-medium ml-1">
+                    <FormLabel className="text-foreground font-medium ml-1">
                       Selecione um e-mail:
                     </FormLabel>
                     <div className="space-y-2.5">
@@ -277,29 +279,29 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                           <div
                             key={em.id}
                             onClick={() => setSelectedEmailIndex(em.id)}
-                            className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                            className={`flex items-center justify-between p-3.5 sm:p-4 rounded-[18px] border transition-all cursor-pointer ${
                               isSelected
-                                ? "border-[#1a3a5c] bg-blue-50/70 ring-2 ring-[#1a3a5c]/15 shadow-sm"
-                                : "border-slate-200/90 bg-white hover:bg-slate-50/80 hover:border-slate-300"
+                                ? "border-primary bg-primary/5 ring-2 ring-primary/15 shadow-xs"
+                                : "border-[#e5e5e5] bg-white hover:bg-[#f5f5f5]"
                             }`}
                           >
                             <div className="flex items-center min-w-0 flex-1 mr-2">
                               <div
-                                className={`flex items-center justify-center w-9 h-9 rounded-xl mr-3 shrink-0 transition-colors ${
-                                  isSelected ? "bg-[#1a3a5c] text-white" : "bg-slate-100 text-slate-500"
+                                className={`flex items-center justify-center w-9 h-9 rounded-[14px] mr-3 shrink-0 transition-colors ${
+                                  isSelected ? "bg-primary text-white" : "bg-[#f5f5f5] text-muted-foreground"
                                 }`}
                               >
                                 <Mail className="w-4 h-4" />
                               </div>
-                              <span className="text-sm font-semibold text-slate-700 tracking-tight truncate">
+                              <span className="text-sm font-semibold text-foreground tracking-tight truncate">
                                 {em.mascarado}
                               </span>
                             </div>
 
                             {isSelected ? (
-                              <CheckCircle2 className="w-5 h-5 text-[#1a3a5c] shrink-0" />
+                              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
                             ) : (
-                              <div className="w-5 h-5 rounded-full border border-slate-300 shrink-0" />
+                              <div className="w-5 h-5 rounded-full border border-[#e5e5e5] shrink-0" />
                             )}
                           </div>
                         );
@@ -319,13 +321,13 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
               <div className="space-y-6 py-2">
                 <Banner
                   variant="info"
-                  icon={<Mail className="w-5 h-5 text-[#1a3a5c]" />}
+                  icon={<Mail className="w-5 h-5 text-primary" />}
                   description={
                     <div className="space-y-1">
-                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                         O código de 6 dígitos foi enviado para o e-mail:
                       </p>
-                      <p className="font-sans font-bold text-[#1a3a5c] text-sm tracking-tight break-all mt-0.5">
+                      <p className="font-sans font-bold text-foreground text-sm tracking-tight break-all mt-0.5">
                         {emailMascarado}
                       </p>
                     </div>
@@ -355,7 +357,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                                 <InputOTPSlot
                                   key={index}
                                   index={index}
-                                  className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-black rounded-xl border-gray-200 bg-gray-50 text-[#1a3a5c] shadow-xs transition-all focus-within:ring-4 focus-within:ring-[#1a3a5c]/10"
+                                  className="h-12 w-9 sm:h-16 sm:w-14 text-xl font-bold rounded-[18px] border-[#e5e5e5] bg-white text-foreground shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary"
                                 />
                               ))}
                             </InputOTPGroup>
@@ -366,7 +368,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="w-full h-10 text-[10px] font-black uppercase text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl gap-2 tracking-wider cursor-pointer"
+                            className="w-full h-10 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[18px] gap-2 tracking-wide cursor-pointer"
                             onClick={() => field.onChange("")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -389,45 +391,49 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
               <div className="space-y-4 py-2">
                 <Banner
                   variant="info"
-                  icon={<ShieldCheck className="w-5 h-5 text-[#1a3a5c]" />}
+                  icon={<ShieldCheck className="w-5 h-5 text-primary" />}
                   description="Código validado com sucesso! Crie a sua nova senha de 4 dígitos para acessar o app."
                 />
 
                 <FormField
                   control={pinForm.control}
                   name="newPin"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium ml-1">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
                         Nova Senha (4 dígitos)
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                           <Input
                             {...field}
                             type={showPin ? "text" : "password"}
                             maxLength={4}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                             placeholder="••••"
-                            className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 transition-all text-base font-semibold text-slate-700 tracking-widest"
+                            className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm font-semibold text-[#0a0a0a] tracking-widest placeholder:tracking-normal placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${
+                              fieldState.error
+                                ? "border-[#e7000b] focus:border-[#e7000b]"
+                                : "border-[#e5e5e5] focus:border-[#2563eb]"
+                            }`}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPin(!showPin)}
-                            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-0 cursor-pointer"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] focus:outline-none transition-colors p-1 cursor-pointer"
                             tabIndex={-1}
                             title={showPin ? "Ocultar senha" : "Exibir senha"}
                           >
                             {showPin ? (
-                              <EyeOff className="h-5 w-5 opacity-60" />
+                              <EyeOff className="h-4 w-4" />
                             ) : (
-                              <Eye className="h-5 w-5 opacity-60" />
+                              <Eye className="h-4 w-4" />
                             )}
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs ml-1 text-[#e7000b]" />
                     </FormItem>
                   )}
                 />
@@ -458,7 +464,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="h-10 w-10 rounded-2xl flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] border border-slate-100 transition-all cursor-pointer"
+              className="h-10 w-10 rounded-[18px] flex items-center justify-center bg-white hover:bg-[#f5f5f5] text-foreground border border-[#e5e5e5] transition-all cursor-pointer shadow-xs"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -474,7 +480,7 @@ export const ResponsavelRecuperarPinDialog: React.FC<ResponsavelRecuperarPinDial
   };
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={loading}>
+    <BaseDialog open={open} onOpenChange={handleClose} lockClose={loading}>
       <BaseDialog.Header
         {...getHeaderProps()}
         showSteps

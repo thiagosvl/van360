@@ -2,35 +2,23 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TipoChavePix } from "@/types/pix";
+import { ModoCobrancaEnum } from "@/types/enums";
 import { pixKeyRefinement } from "@/schemas/pix";
 
 const motoristaFinanceiroFormSchema = z
   .object({
-    cobranca_automatica_ativa: z.boolean(),
+    modo_cobranca: z.nativeEnum(ModoCobrancaEnum),
     enviar_recibo_automatico: z.boolean(),
-    tipo_chave_pix: z.nativeEnum(TipoChavePix).optional().nullable(),
-    chave_pix: z.string().optional().nullable(),
-    repassar_taxa_pais_padrao: z.boolean(),
+    tipo_chave_pix: z.nativeEnum(TipoChavePix, {
+      required_error: "Selecione o tipo de chave Pix.",
+      invalid_type_error: "Selecione o tipo de chave Pix.",
+    }),
+    chave_pix: z
+      .string({ required_error: "Chave Pix é obrigatória." })
+      .trim()
+      .min(1, "Chave Pix é obrigatória."),
   })
   .superRefine((data, ctx) => {
-    if (data.cobranca_automatica_ativa) {
-      if (!data.chave_pix || data.chave_pix.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Chave Pix é obrigatória para ativar o recebimento automático.",
-          path: ["chave_pix"],
-        });
-        return;
-      }
-      if (!data.tipo_chave_pix) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Selecione o tipo de chave Pix.",
-          path: ["tipo_chave_pix"],
-        });
-        return;
-      }
-    }
     pixKeyRefinement(data, ctx);
   });
 
@@ -40,11 +28,10 @@ export function useMotoristaFinanceiroForm(defaultValues?: Partial<MotoristaFina
   return useForm<MotoristaFinanceiroFormData>({
     resolver: zodResolver(motoristaFinanceiroFormSchema),
     defaultValues: {
-      cobranca_automatica_ativa: defaultValues?.cobranca_automatica_ativa ?? false,
+      modo_cobranca: defaultValues?.modo_cobranca ?? ModoCobrancaEnum.DESATIVADO,
       enviar_recibo_automatico: defaultValues?.enviar_recibo_automatico ?? true,
-      tipo_chave_pix: defaultValues?.tipo_chave_pix ?? null,
+      tipo_chave_pix: defaultValues?.tipo_chave_pix ?? undefined,
       chave_pix: defaultValues?.chave_pix ?? "",
-      repassar_taxa_pais_padrao: defaultValues?.repassar_taxa_pais_padrao ?? false,
     },
   });
 }

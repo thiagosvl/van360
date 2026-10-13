@@ -4,18 +4,15 @@ import { useActiveRouteViewModel } from "@/hooks/ui/useActiveRouteViewModel";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { RouteTimelineSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { AlertOctagon } from "lucide-react";
+import { AlertOctagon, ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ActiveRouteExecutionView } from "@/components/features/active-route/ActiveRouteExecutionView";
 import { RouteSuccessOverlay } from "@/components/features/active-route/RouteSuccessOverlay";
 import { RouteExecutionStatus } from "@/types/route";
-
 import { supabase } from "@/integrations/supabase/client";
-
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/utils/notifications/toast";
 import { isRecentLocalMutation, debounceRealtimeSync } from "@/hooks/api/useRouteMutations";
@@ -53,7 +50,7 @@ export default function RouteExecutionPage() {
     isVehicleOccupied,
     occupiedRouteName,
     iniciarMutation,
-    refetch
+    refetch,
   } = useActiveRouteViewModel({ execucaoId: id || "" });
 
   const concludedStops = paradasConcluidas?.length || 0;
@@ -68,16 +65,15 @@ export default function RouteExecutionPage() {
 
   const { sendGpsPing } = useTrackingBroadcast({
     execucaoId: isRouteActive ? execucao?.id || id || null : null,
-    enabled: isRouteActive
+    enabled: isRouteActive,
   });
 
   useBackgroundTracking({
     execucaoId: isRouteActive ? execucao?.id || id || null : null,
     active: isRouteActive,
-    onLocationUpdate: sendGpsPing
+    onLocationUpdate: sendGpsPing,
   });
 
-  // Supabase Realtime Sync para Motorista Auxiliar + Monitor
   useEffect(() => {
     const targetExecId = execucao?.id || id;
     const targetRotaId = (execucao as any)?.rota_id || execucao?.id || id;
@@ -294,15 +290,15 @@ export default function RouteExecutionPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 min-h-[400px]">
-        <AlertOctagon className="w-12 h-12 text-red-500" />
-        <h3 className="text-base font-bold text-[#1a3a5c] font-headline">Erro ao Carregar Corrida</h3>
-        <p className="text-xs text-slate-400 font-semibold max-w-[260px]">
+      <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 min-h-[400px] bg-white border border-[#e5e5e5] rounded-[24px] shadow-xs max-w-md mx-auto my-8">
+        <AlertOctagon className="w-12 h-12 text-[#e7000b]" />
+        <h3 className="text-base font-bold text-[#0a0a0a]">Erro ao Carregar Corrida</h3>
+        <p className="text-xs text-[#737373] font-normal max-w-[260px]">
           Não conseguimos obter as informações desta execução da rota ativa no momento.
         </p>
         <Button
           onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
-          className="bg-[#1a3a5c] hover:bg-[#16314f] text-white rounded-lg font-bold text-xs"
+          className="bg-primary hover:bg-primary-hover text-white rounded-[18px] font-medium text-xs h-10 px-5 border-none shadow-xs"
         >
           Voltar para Rotas
         </Button>
@@ -312,7 +308,7 @@ export default function RouteExecutionPage() {
 
   return (
     <PullToRefreshWrapper onRefresh={refetch}>
-      <div className="min-h-screen bg-surface max-w-2xl mx-auto space-y-6 pb-24">
+      <div className="min-h-screen bg-transparent max-w-2xl mx-auto space-y-4 sm:space-y-5 pb-24 pt-1 sm:pt-2">
         {isRouteActive && !Capacitor.isNativePlatform() && (
           <Banner
             variant="warning"
@@ -340,6 +336,7 @@ export default function RouteExecutionPage() {
             totalStops={totalStops}
             progressPercentage={progressPercentage}
             isPreview={isPreview}
+            onBack={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
             isVehicleOccupied={isVehicleOccupied}
             occupiedRouteName={occupiedRouteName}
             iniciarMutation={iniciarMutation}

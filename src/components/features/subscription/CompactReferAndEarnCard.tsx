@@ -25,14 +25,13 @@ export function CompactReferAndEarnCard({}: CompactReferAndEarnCardProps = {}) {
             </div>
           </div>
           <h4 className={cn(
-            "text-[15px] font-bold tracking-tight leading-none mt-0.5",
+            "text-[15px] font-semibold tracking-tight leading-none mt-0.5",
             "text-white"
           )}>
             Indique e Ganhe <span className="text-[#f59e0b]">{bonusDaysPerReferral} dias grátis</span>
           </h4>
         </div>
 
-        {/* Share Block */}
         <ReferralShareBlock referralLink={referral?.referralLink} variant="compact" darkTheme={true} />
       </div>
     </div>

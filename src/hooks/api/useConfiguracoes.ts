@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export interface ConfiguracoesUsuario {
-  notificar_pais_cobrancas: boolean;
   cobranca_aviso_previo_ativo: boolean;
   cobranca_aviso_previo_whatsapp_ativo?: boolean;
   cobranca_dias_aviso_previo: number | null;
@@ -21,6 +20,7 @@ export interface ConfiguracoesUsuario {
   rastreamento_ativo: boolean;
   rastreamento_modo: "completo" | "apenas_proximo";
   formato_nome_responsavel?: "primeiro_nome" | "completo";
+  exibir_telefone_lista_alunos?: boolean;
   chave_pix: string | null;
   tipo_chave_pix: string | null;
 }
@@ -28,7 +28,6 @@ export interface ConfiguracoesUsuario {
 export type UpdateConfiguracoesInput = Partial<
   Pick<
     ConfiguracoesUsuario,
-    | "notificar_pais_cobrancas"
     | "cobranca_aviso_previo_ativo"
     | "cobranca_dias_aviso_previo"
     | "cobranca_vencimento_hoje_ativo"
@@ -43,6 +42,7 @@ export type UpdateConfiguracoesInput = Partial<
     | "rastreamento_ativo"
     | "rastreamento_modo"
     | "formato_nome_responsavel"
+    | "exibir_telefone_lista_alunos"
   >
 >;
 
@@ -76,14 +76,15 @@ export function useConfiguracoes() {
         });
       }
 
-      if (newConfig.formato_nome_responsavel) {
+      if (newConfig.formato_nome_responsavel !== undefined || newConfig.exibir_telefone_lista_alunos !== undefined) {
         queryClient.setQueriesData({ queryKey: ["profile"] }, (oldProfile: Usuario | undefined) => {
           if (!oldProfile) return oldProfile;
           return {
             ...oldProfile,
             configuracoes: {
               ...(oldProfile.configuracoes || {}),
-              formato_nome_responsavel: newConfig.formato_nome_responsavel,
+              ...(newConfig.formato_nome_responsavel !== undefined ? { formato_nome_responsavel: newConfig.formato_nome_responsavel } : {}),
+              ...(newConfig.exibir_telefone_lista_alunos !== undefined ? { exibir_telefone_lista_alunos: newConfig.exibir_telefone_lista_alunos } : {}),
             },
           };
         });

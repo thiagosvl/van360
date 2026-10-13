@@ -3,16 +3,18 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { MapPin, User } from "lucide-react";
 import { GoogleMapsIcon } from "@/components/icons/GoogleMapsIcon";
 import { WazeIcon } from "@/components/icons/WazeIcon";
-import { RouteNodeType, } from "@/types/route";
+import { RouteNodeType } from "@/types/route";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { TipoResponsavel } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { NavigationApp } from "@/constants";
 import { openExternalNavigation } from "@/utils/browser";
 import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota, formatShortName } from "@/utils/formatters";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 export interface AddressDialogData {
   open: boolean;
@@ -111,40 +113,43 @@ export function AddressDetailsDialog({
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          onClose();
-          if (allResponsaveis[0]?.id) {
-            setSelectedDialogRespTab(allResponsaveis[0].id);
-          }
+          safeCloseDialog(() => {
+            onClose();
+            if (allResponsaveis[0]?.id) {
+              setSelectedDialogRespTab(allResponsaveis[0].id);
+            }
+          });
         }
       }}
       maxWidth="md"
     >
       <BaseDialog.Header
         title="Endereços do Aluno"
-        icon={<MapPin className="w-5 h-5 text-[#1a3a5c]" />}
+        subtitle="Consulte os endereços e pontos de navegação"
+        icon={<MapPin className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => {
-          onClose();
-          if (allResponsaveis[0]?.id) {
-            setSelectedDialogRespTab(allResponsaveis[0].id);
-          }
+          safeCloseDialog(() => {
+            onClose();
+            if (allResponsaveis[0]?.id) {
+              setSelectedDialogRespTab(allResponsaveis[0].id);
+            }
+          });
         }}
       />
 
       <BaseDialog.Body className="space-y-3.5 text-left pt-2 pb-4">
-        {/* Nome e Avatar Inline do Passageiro */}
-        <div className="flex items-center justify-start gap-2.5 py-1 text-left border-b border-slate-100 pb-3">
-          <div className="w-8 h-8 rounded-full bg-[#1a3a5c]/5 border border-[#1a3a5c]/10 flex items-center justify-center text-[#1a3a5c] shrink-0">
+        <div className="flex items-center justify-start gap-2.5 py-1 text-left border-b border-[#e5e5e5] pb-3">
+          <div className="w-8 h-8 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] shrink-0">
             <User className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 block leading-none mb-0.5">Aluno</span>
-            <h3 className="text-sm font-bold text-[#1a3a5c] tracking-tight">
+            <span className="text-[11px] font-normal text-[#737373] block leading-none mb-0.5">Aluno</span>
+            <h3 className="text-sm font-semibold text-[#0a0a0a] tracking-tight">
               {formatShortName(pass?.nome || addressDialogData.title, true)}
             </h3>
           </div>
         </div>
 
-        {/* Tabs de Responsáveis (Principal e Adicionais) */}
         {allResponsaveis.length > 1 && (
           <div className="w-full min-w-0">
             <Tabs
@@ -152,41 +157,45 @@ export function AddressDetailsDialog({
               onValueChange={setSelectedDialogRespTab}
               className="w-full min-w-0"
             >
-              <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {allResponsaveis.map((resp) => {
-                  const tabId = resp.id || resp.responsavel_id || "principal";
-                  const isPrincipal = resp.tipo === TipoResponsavel.PRINCIPAL;
-                  const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || (isPrincipal ? "Responsável Principal" : "Outro Responsável");
-                  return (
-                    <TabsTrigger
-                      key={tabId}
-                      value={tabId}
-                      className="rounded-full border border-slate-200 bg-white text-slate-600 px-4 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
-                    >
-                      <span>{label}</span>
-                      {isPrincipal && <span className="text-[10px] opacity-75 font-normal">(Principal)</span>}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
+              <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] w-full sm:w-fit overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x">
+                <TabsList className="bg-transparent min-h-[36px] sm:min-h-[38px] p-0 gap-1 border-0 w-max sm:w-auto flex">
+                  {allResponsaveis.map((resp) => {
+                    const tabId = resp.id || resp.responsavel_id || "principal";
+                    const isPrincipal = resp.tipo === TipoResponsavel.PRINCIPAL;
+                    const label = formatParentesco(resp.parentesco) || formatFirstName(resp.nome) || (isPrincipal ? "Responsável Principal" : "Outro Responsável");
+                    return (
+                      <TabsTrigger
+                        key={tabId}
+                        value={tabId}
+                        className={cn(
+                          "rounded-[18px] min-h-[30px] sm:min-h-[32px] px-3.5 py-1.5 text-xs font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                          "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs",
+                          "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50"
+                        )}
+                      >
+                        <span>{label}</span>
+                        {isPrincipal && <span className="text-[10px] opacity-75 font-normal">(Principal)</span>}
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </div>
             </Tabs>
           </div>
         )}
 
-        {/* Alerta de Atenção para Responsável Alternativo */}
         {!isPrincipalTab && activeResp && (
           <Banner
             variant="warning"
             title="Aviso de endereço alternativo:"
             description={
               <>
-                Você está visualizando o endereço de <strong className="font-bold">{formatFirstName(activeResp.nome)}</strong> ({parentescoLabel}).
+                Você está visualizando o endereço de <strong className="font-semibold">{formatFirstName(activeResp.nome)}</strong> ({parentescoLabel}).
               </>
             }
           />
         )}
 
-        {/* Card de Endereço Ativo (Com Waze e Google Maps) ou Banner Informativo */}
         {!hasValidAddress ? (
           <Banner
             variant="warning"
@@ -194,29 +203,29 @@ export function AddressDetailsDialog({
             description="Este aluno ainda não possui endereço residencial informado no cadastro."
           />
         ) : (
-          <div className="bg-slate-50/80 border border-slate-100/80 p-4 rounded-2xl space-y-3.5 text-left">
-            <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
+          <div className="bg-[#f5f5f5] border border-[#e5e5e5] p-4 rounded-[20px] space-y-3.5 text-left">
+            <div className="flex items-center justify-between gap-2 border-b border-[#e5e5e5] pb-2.5">
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
-                <span className="text-xs uppercase font-semibold text-slate-500">
+                <MapPin className="w-4 h-4 text-[#0a0a0a]" />
+                <span className="text-xs uppercase font-medium text-[#737373]">
                   Endereço
                 </span>
               </div>
               {activeRespFirstName && (
-                <span className="text-[10px] font-normal tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
+                <span className="text-[10px] font-normal px-2.5 py-0.5 rounded-[18px] bg-white border border-[#e5e5e5] text-[#0a0a0a]">
                   {activeRespFirstName} ({parentescoLabel})
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm font-normal text-[#1a3a5c] leading-relaxed break-words">
+            <p className="text-xs sm:text-sm font-normal text-[#0a0a0a] leading-relaxed break-words">
               {activeAddress}
             </p>
 
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
+            <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-[#e5e5e5]">
               <Button
                 type="button"
                 onClick={() => openNavigation(NavigationApp.GOOGLE_MAPS, activeAddress)}
-                className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
+                className="h-11 border-none bg-[#1A73E8] hover:bg-[#1557b0] text-white font-medium text-xs rounded-[18px] flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
               >
                 <GoogleMapsIcon className="w-4 h-4 shrink-0" />
                 <span>Maps</span>
@@ -224,7 +233,7 @@ export function AddressDetailsDialog({
               <Button
                 type="button"
                 onClick={() => openNavigation(NavigationApp.WAZE, activeAddress)}
-                className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
+                className="h-11 border-none bg-[#33CCFF] hover:bg-[#28b6e6] text-[#000000] font-medium text-xs rounded-[18px] flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] w-full cursor-pointer"
               >
                 <WazeIcon className="w-4 h-4 fill-current text-[#000000] shrink-0" />
                 <span>Waze</span>

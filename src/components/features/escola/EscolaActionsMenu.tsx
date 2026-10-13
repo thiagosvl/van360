@@ -6,7 +6,7 @@ import { NavigateFunction } from "react-router-dom";
 import { EscolaSummary } from "./EscolaSummary";
 
 interface EscolaActionsMenuProps {
-  escola: Escola;
+  escola: Escola & { passageiros_ativos_count?: number };
   navigate: NavigateFunction;
   onEdit: (escola: Escola) => void;
   onToggleAtivo: (escola: Escola) => void;

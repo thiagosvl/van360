@@ -3,6 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { Users, Check, X, User } from "lucide-react";
 import { RouteStopStatus } from "@/types/route";
 import { formatShortName, getInitials } from "@/utils/formatters";
@@ -102,8 +103,8 @@ export function ChamadaRapidaDialog({
 
   const totalGeralAlunos = escolas.reduce((acc, e) => acc + e.alunos.length, 0);
   const headerSubtitle = escolas.length === 1
-    ? escolas[0]?.escolaNome
-    : `${escolas.length} ESCOLAS COM EMBARQUE`;
+    ? (escolas[0]?.escolaNome || "Confira os alunos presentes antes de iniciar o trajeto")
+    : `${escolas.length} escolas com embarque`;
 
   return (
     <BaseDialog
@@ -113,17 +114,17 @@ export function ChamadaRapidaDialog({
       maxWidth="md"
     >
       <BaseDialog.Header
-        title="CHAMADA DE EMBARQUE"
+        title="Chamada de Embarque"
         subtitle={headerSubtitle}
-        icon={<Users className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<Users className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(() => onOpenChange(false))}
       />
 
-      <BaseDialog.Body className="p-3.5 sm:p-5 pt-1.5 space-y-3">
+      <BaseDialog.Body className="p-3.5 sm:p-5 pt-3 space-y-3">
         {escolas.length > 1 && (
           <div className="w-full min-w-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-0">
-              <TabsList className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto h-auto no-scrollbar pb-1 w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <TabsList className="flex gap-1.5 bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] justify-start overflow-x-auto h-auto no-scrollbar w-full min-w-0 flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {escolas.map((esc) => {
                   const cont = contadoresPorEscola[esc.escolaId] || { presentes: 0, total: esc.alunos.length };
 
@@ -131,10 +132,10 @@ export function ChamadaRapidaDialog({
                     <TabsTrigger
                       key={esc.escolaId}
                       value={esc.escolaId}
-                      className="rounded-full border border-slate-200 bg-white text-slate-600 px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:border-[#1a3a5c] transition-all shadow-2xs flex items-center gap-1.5 shrink-0 cursor-pointer"
+                      className="rounded-[18px] border-0 text-[#737373] hover:text-[#0a0a0a] px-3.5 py-1.5 text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=active]:font-semibold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer focus:outline-none focus-visible:ring-0 focus-visible:outline-none"
                     >
                       <span className="whitespace-nowrap">{esc.escolaNome}</span>
-                      <span className="text-[10px] opacity-80 font-normal">
+                      <span className="text-[10px] opacity-75 font-normal">
                         ({cont.presentes}/{cont.total})
                       </span>
                     </TabsTrigger>
@@ -145,14 +146,14 @@ export function ChamadaRapidaDialog({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2.5 w-full">
+        <div className="grid grid-cols-2 gap-2 w-full">
           <Button
             type="button"
             variant="outline"
             onClick={() => handleMarcarLote(RouteStopStatus.EMBARCADO)}
-            className="h-10 text-xs sm:text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border-slate-200/90 rounded-2xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="h-9 text-xs font-semibold text-[#0a0a0a] bg-white hover:bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
           >
-            <Check className="w-4 h-4 stroke-[2.5] text-slate-600 shrink-0" />
+            <Check className="w-3.5 h-3.5 stroke-[2.5] text-[#0a0a0a] shrink-0" />
             <span>Todos Presentes</span>
           </Button>
 
@@ -160,20 +161,20 @@ export function ChamadaRapidaDialog({
             type="button"
             variant="outline"
             onClick={() => handleMarcarLote(RouteStopStatus.AUSENTE)}
-            className="h-10 text-xs sm:text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border-slate-200/90 rounded-2xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="h-9 text-xs font-semibold text-[#0a0a0a] bg-white hover:bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
           >
-            <X className="w-4 h-4 stroke-[2.5] text-slate-600 shrink-0" />
+            <X className="w-3.5 h-3.5 stroke-[2.5] text-[#0a0a0a] shrink-0" />
             <span>Todos Ausentes</span>
           </Button>
         </div>
 
-        <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-0.5 scrollbar-thin">
+        <div className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-0.5 scrollbar-thin">
           {totalGeralAlunos === 0 ? (
-            <p className="text-xs text-slate-400 font-medium py-6 text-center">
+            <p className="text-xs text-[#737373] font-normal py-6 text-center">
               Nenhum aluno voltando cadastrado nesta rota.
             </p>
           ) : activeAlunos.length === 0 ? (
-            <p className="text-xs text-slate-400 font-medium py-6 text-center">
+            <p className="text-xs text-[#737373] font-normal py-6 text-center">
               Nenhum aluno voltando desta escola.
             </p>
           ) : (
@@ -187,30 +188,32 @@ export function ChamadaRapidaDialog({
                   key={aluno.passageiroId}
                   onClick={() => handleToggleAluno(aluno.passageiroId)}
                   className={cn(
-                    "flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl transition-all cursor-pointer select-none border",
+                    "flex items-center justify-between gap-2.5 px-3 py-2 sm:py-2.5 rounded-[16px] transition-all cursor-pointer select-none border active:scale-[0.99]",
                     isPresente
-                      ? "bg-[#e6f4ea] border-emerald-200/70 hover:bg-[#d8ece0]"
-                      : "bg-[#fce8e6] border-rose-200/70 hover:bg-[#fadbd8]"
+                      ? "bg-[#f0fdf4] border-emerald-200/70 hover:bg-[#e6f9ed]"
+                      : "bg-[#fef2f2] border-rose-200/70 hover:bg-[#fee2e2]"
                   )}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <Avatar className="w-9 h-9 border border-black/10 shrink-0">
+                    <Avatar className="w-8 h-8 shrink-0">
                       <AvatarFallback
                         className={cn(
-                          "text-xs font-bold text-white transition-colors",
-                          isPresente ? "bg-emerald-600" : "bg-rose-500"
+                          "text-xs font-semibold transition-colors border",
+                          isPresente
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-200/60"
+                            : "bg-rose-100 text-[#e7000b] border-rose-200/60"
                         )}
                       >
-                        {getInitials(aluno.nome) || <User className="w-4 h-4" />}
+                        {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className="min-w-0 flex-1 text-left">
-                      <span className="text-sm sm:text-base font-bold text-slate-900 truncate leading-snug block">
+                      <span className="text-xs sm:text-[13px] font-semibold text-[#0a0a0a] truncate leading-tight block">
                         {nomeFormatado}
                       </span>
                       {aluno.turma && (
-                        <span className="text-[11px] font-medium text-slate-500 block leading-tight">
+                        <span className="text-[10px] sm:text-[11px] font-normal text-[#737373] block leading-tight mt-0.5">
                           {aluno.turma}
                         </span>
                       )}
@@ -219,20 +222,20 @@ export function ChamadaRapidaDialog({
 
                   <div
                     className={cn(
-                      "w-12 h-7 rounded-full p-1 flex items-center transition-all shrink-0 shadow-2xs",
-                      isPresente ? "bg-emerald-600 justify-end" : "bg-slate-300/80 justify-start"
+                      "w-11 h-6 rounded-full p-0.5 flex items-center transition-all shrink-0 cursor-pointer shadow-2xs",
+                      isPresente ? "bg-emerald-600 justify-end" : "bg-[#e7000b] justify-start"
                     )}
                   >
                     <div
                       className={cn(
                         "w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-xs transition-transform",
-                        isPresente ? "text-emerald-700" : "text-slate-400"
+                        isPresente ? "text-emerald-700" : "text-[#e7000b]"
                       )}
                     >
                       {isPresente ? (
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <Check className="w-3 h-3 stroke-[3]" />
                       ) : (
-                        <X className="w-3.5 h-3.5 stroke-[3]" />
+                        <X className="w-3 h-3 stroke-[3]" />
                       )}
                     </div>
                   </div>

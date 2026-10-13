@@ -83,33 +83,34 @@ export function ActiveRouteCurrentCard({
     ? (formatarEnderecoParcialRota(parada.escola) || "Endereço da escola")
     : (formatarEnderecoParcialRota(pass) || "Sem endereço cadastrado");
 
-  const cardClass = "bg-white p-3.5 sm:p-4 rounded-2xl shadow-md space-y-3 animate-in fade-in zoom-in-95 duration-200 text-left border-2 border-[#1a3a5c] relative z-10";
+  const cardClass = "bg-white p-4 sm:p-5 rounded-[24px] shadow-sm space-y-3.5 animate-in fade-in duration-200 text-left border-2 border-[#0a0a0a] relative z-10";
 
-  let actionLabel = isLastStop ? "CONCLUIR" : "CONFIRMAR";
+  let actionLabel = isLastStop ? "Concluir" : "Confirmar";
   if (parada.sentido === RouteSentido.VOLTANDO && !isEscola) {
-    actionLabel = isLastStop ? "CONCLUIR" : "CONFIRMAR";
+    actionLabel = isLastStop ? "Concluir" : "Confirmar";
   }
 
   return (
     <div ref={activeCardRef} className="relative w-full">
       {showTopLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-0 bottom-1/2 w-[2px] bg-[#e5e5e5] z-0" />
       )}
       {showBottomLine && (
-        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2.5px] bg-slate-200/70 z-0" />
+        <div className="absolute left-[-26px] -translate-x-1/2 top-1/2 bottom-[-24px] w-[2px] bg-[#e5e5e5] z-0" />
       )}
 
-      <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-white flex items-center justify-center font-bold text-[11px] border-2 shadow-md z-10 scale-110 ring-4 bg-[#1a3a5c] border-white ring-[#1a3a5c]/25">
+      <span className="absolute left-[-26px] -translate-x-1/2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-white flex items-center justify-center font-semibold text-[11px] border-2 shadow-xs z-10 scale-110 ring-4 bg-[#0a0a0a] border-white ring-black/10">
         {isEscola ? <School className="w-4 h-4" /> : displayOrdem}
       </span>
 
       <div className={cardClass}>
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5 gap-1">
-          <div className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider shrink-0 bg-[#1a3a5c]/8 px-2 py-0.5 rounded-md border border-[#1a3a5c]/15">
+        <div className="flex items-center justify-between border-b border-[#e5e5e5] pb-3 mb-2 gap-1.5">
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#0a0a0a] shrink-0 bg-[#f5f5f5] px-2.5 py-0.5 rounded-[18px] border border-[#e5e5e5]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="truncate">{isLastStop ? "Atual" : "Atual"}</span>
+            <span>Atual</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-1.5 ml-auto shrink-0">
+
+          <div className="flex items-center gap-1.5 ml-auto shrink-0">
             {!isEscola && (
               <Button
                 type="button"
@@ -125,13 +126,13 @@ export function ActiveRouteCurrentCard({
                     tipoNo: RouteNodeType.PASSAGEIRO,
                     sentido: parada.sentido,
                     escolaNome: parada.passageiro?.escola?.nome,
-                    passageiro: parada.passageiro
+                    passageiro: parada.passageiro,
                   });
                 }}
-                className="h-8 w-8 rounded-lg border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="h-8 w-8 rounded-[12px] border border-[#e5e5e5] bg-[#f5f5f5] hover:bg-[#ebebeb] text-[#0a0a0a] flex items-center justify-center shrink-0 cursor-pointer shadow-none active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 title={temEnderecoValido ? "Ver endereço e detalhes da parada" : "Endereço não cadastrado"}
               >
-                <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                <MapPin className="w-4 h-4 text-[#0a0a0a]" />
               </Button>
             )}
 
@@ -147,35 +148,35 @@ export function ActiveRouteCurrentCard({
                 !validarMovimentoPermitido(execucaoTipo, index, "down", totalPendentesReal, paradasConcluidas);
 
               return (
-                <div className="flex items-center gap-1 border border-slate-200/80 rounded-lg max-[338px]:px-0 px-2 py-1 bg-slate-50/80 shrink-0 shadow-2xs h-9">
+                <div className="flex items-center gap-1 border border-[#e5e5e5] rounded-[14px] px-1.5 py-0.5 bg-[#f5f5f5] shrink-0 h-8">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     disabled={isUpDisabled || isAnyActionBusy}
-                    className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-400 opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center p-0"
+                    className="h-7 w-7 rounded-[10px] text-[#737373] opacity-20 shrink-0 cursor-not-allowed flex items-center justify-center p-0"
                     title="Subir parada (já está ativa)"
                   >
                     {isUpReordering ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                     ) : (
-                      <ArrowUp className="w-4 h-4 stroke-[2.25]" />
+                      <ArrowUp className="w-3.5 h-3.5 stroke-[2.25]" />
                     )}
                   </Button>
-                  <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                  <div className="w-px h-4 bg-[#e5e5e5] my-auto shrink-0" />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     disabled={isDownDisabled || isAnyActionBusy}
                     onClick={() => onMoveParada(index, "down")}
-                    className="h-8 w-8 sm:w-8.5 rounded-lg text-slate-600 hover:bg-slate-200/80 active:bg-slate-300 disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors"
+                    className="h-7 w-7 rounded-[10px] text-[#0a0a0a] hover:bg-white active:bg-white disabled:opacity-20 shrink-0 flex items-center justify-center p-0 transition-colors cursor-pointer"
                     title="Descer parada ativa"
                   >
                     {isDownReordering ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                     ) : (
-                      <ArrowDown className="w-4 h-4 stroke-[2.25]" />
+                      <ArrowDown className="w-3.5 h-3.5 stroke-[2.25]" />
                     )}
                   </Button>
                   {onOpenReordenarSheet && (() => {
@@ -183,7 +184,7 @@ export function ActiveRouteCurrentCard({
                     const isSheetReorderingThisCard = reorderingSheetStopId === parada.id;
                     return (
                       <>
-                        <div className="w-px h-5 bg-slate-200/80 my-auto shrink-0" />
+                        <div className="w-px h-4 bg-[#e5e5e5] my-auto shrink-0" />
                         <Button
                           type="button"
                           variant="ghost"
@@ -191,17 +192,17 @@ export function ActiveRouteCurrentCard({
                           disabled={!canReorder || isAnyActionBusy}
                           onClick={() => canReorder && !isAnyActionBusy && onOpenReordenarSheet(parada)}
                           className={cn(
-                            "h-8 w-8 sm:w-8.5 rounded-lg shrink-0 flex items-center justify-center p-0 transition-colors",
+                            "h-7 w-7 rounded-[10px] shrink-0 flex items-center justify-center p-0 transition-colors",
                             canReorder && !isAnyActionBusy
-                              ? "text-[#1a3a5c] hover:bg-slate-200/80 active:bg-slate-300 cursor-pointer"
-                              : "text-slate-400 opacity-20 cursor-not-allowed"
+                              ? "text-[#0a0a0a] hover:bg-white active:bg-white cursor-pointer"
+                              : "text-[#737373] opacity-20 cursor-not-allowed"
                           )}
                           title={canReorder ? "Reordenar posição da parada ativa" : "Nenhuma posição alternativa disponível"}
                         >
                           {isSheetReorderingThisCard ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-[#1a3a5c]" />
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                           ) : (
-                            <ListOrdered className="w-4 h-4 stroke-[2.25]" />
+                            <ListOrdered className="w-3.5 h-3.5 stroke-[2.25]" />
                           )}
                         </Button>
                       </>
@@ -215,33 +216,33 @@ export function ActiveRouteCurrentCard({
 
         {isEscola ? (
           <div className="space-y-3.5">
-            <div className="space-y-1.5 text-left w-full">
+            <div className="space-y-1 text-left w-full">
               <div className="flex items-center gap-2.5 min-w-0">
-                <School className="w-5 h-5 text-[#1a3a5c] shrink-0" />
-                <h2 className="text-base font-bold text-[#1a3a5c] font-headline leading-snug break-words">
+                <School className="w-5 h-5 text-[#0a0a0a] shrink-0" />
+                <h2 className="text-base font-bold text-[#0a0a0a] leading-snug break-words">
                   {parada.escola?.nome}
                 </h2>
               </div>
               {activeAddressStr && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 text-left pl-7.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <div className="flex items-center gap-1.5 text-xs font-normal text-[#737373] text-left pl-7.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                   <span className="break-words">{activeAddressStr}</span>
                 </div>
               )}
             </div>
 
             <Tabs defaultValue={alunosParaEmbarcar.length > 0 ? "embarques" : "desembarques"} className="w-full mt-3">
-              <div className="bg-slate-100/80 p-1 rounded-lg">
-                <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 h-8">
+              <div className="bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5]">
+                <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 min-h-[38px] border-0">
                   <TabsTrigger
                     value="embarques"
-                    className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs text-slate-500 py-1"
+                    className="rounded-[18px] text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 py-1.5 px-3 cursor-pointer"
                   >
                     Embarques ({alunosParaEmbarcar.length})
                   </TabsTrigger>
                   <TabsTrigger
                     value="desembarques"
-                    className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs text-slate-500 py-1"
+                    className="rounded-[18px] text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 py-1.5 px-3 cursor-pointer"
                   >
                     Desembarques ({alunosParaDesembarcar.length})
                   </TabsTrigger>
@@ -250,7 +251,7 @@ export function ActiveRouteCurrentCard({
 
               <TabsContent value="embarques" className="mt-2.5 space-y-1.5 focus-visible:outline-none">
                 {alunosParaEmbarcar.length === 0 ? (
-                  <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-lg border border-slate-100">
+                  <p className="text-xs text-[#737373] font-normal py-3 text-center bg-[#fafafa] rounded-[14px] border border-[#e5e5e5]">
                     Nenhum embarque nesta parada
                   </p>
                 ) : (
@@ -269,10 +270,10 @@ export function ActiveRouteCurrentCard({
                             const isABordo = aluno.status === RouteStopStatus.EMBARCADO;
 
                             return (
-                              <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                              <div key={aluno.id} className="flex items-center justify-between bg-[#fafafa] p-2.5 rounded-[14px] border border-[#e5e5e5]">
                                 <div className="flex items-center gap-2 min-w-0 pr-2">
-                                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                  <span className="text-xs font-medium text-[#1a3a5c]">
+                                  <User className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                                  <span className="text-xs font-medium text-[#0a0a0a]">
                                     {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                                   </span>
                                 </div>
@@ -281,18 +282,18 @@ export function ActiveRouteCurrentCard({
                                     type="button"
                                     onClick={() => onConfirmFalta(aluno.id, aluno.passageiro?.nome || aluno.nome)}
                                     disabled={isLoading}
-                                    className="h-8 px-2.5 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-lg shadow-2xs cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95"
+                                    className="h-7.5 px-2.5 bg-white border border-[#e7000b]/20 hover:bg-[#e7000b]/10 text-[#e7000b] font-medium text-xs rounded-[12px] shadow-none cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95"
                                   >
-                                    <UserMinus className="w-3 h-3 text-rose-500" />
+                                    <UserMinus className="w-3 h-3 text-[#e7000b]" />
                                     <span>AUSENTE</span>
                                   </Button>
                                 ) : isABordo ? (
-                                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Embarcado">
+                                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs" title="Embarcado">
                                     <Check className="w-3 h-3 stroke-[3]" />
                                   </span>
                                 ) : (
-                                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
-                                    AUSENTE
+                                  <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] border border-red-200/60 bg-red-50 text-[#e7000b] shrink-0 leading-none">
+                                    Ausente
                                   </span>
                                 )}
                               </div>
@@ -305,7 +306,7 @@ export function ActiveRouteCurrentCard({
                               variant="ghost"
                               size="sm"
                               onClick={() => setIsEmbarquesExpanded((prev) => !prev)}
-                              className="w-full h-8 text-xs font-bold text-[#1a3a5c] hover:bg-slate-100/80 rounded-lg flex items-center justify-center gap-1.5 transition-all mt-1 cursor-pointer"
+                              className="w-full h-8 text-xs font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[14px] flex items-center justify-center gap-1.5 transition-all mt-1 cursor-pointer"
                             >
                               <span>
                                 {isEmbarquesExpanded
@@ -324,7 +325,7 @@ export function ActiveRouteCurrentCard({
 
               <TabsContent value="desembarques" className="mt-2.5 space-y-1.5 focus-visible:outline-none">
                 {alunosParaDesembarcar.length === 0 ? (
-                  <p className="text-xs text-slate-400 font-medium py-3 text-center bg-slate-50/50 rounded-lg border border-slate-100">
+                  <p className="text-xs text-[#737373] font-normal py-3 text-center bg-[#fafafa] rounded-[14px] border border-[#e5e5e5]">
                     Nenhum desembarque nesta parada
                   </p>
                 ) : (
@@ -334,24 +335,24 @@ export function ActiveRouteCurrentCard({
                     const isConcluido = aluno.status === RouteStopStatus.EMBARCADO && !!aluno.visitado_em;
 
                     return (
-                      <div key={aluno.id} className="flex items-center justify-between bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                      <div key={aluno.id} className="flex items-center justify-between bg-[#fafafa] p-2.5 rounded-[14px] border border-[#e5e5e5]">
                         <div className="flex items-center gap-2 min-w-0 pr-2">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="text-xs font-medium text-[#1a3a5c]">
+                          <User className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                          <span className="text-xs font-medium text-[#0a0a0a]">
                             {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
                           </span>
                         </div>
                         {isConcluido ? (
-                          <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs" title="Desembarcado">
+                          <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs" title="Desembarcado">
                             <Check className="w-3 h-3 stroke-[3]" />
                           </span>
                         ) : isABordo ? (
-                          <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-emerald-200/60 bg-emerald-50 text-emerald-700 shrink-0 leading-none">
-                            EMBARCADO
+                          <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] border border-emerald-200/60 bg-emerald-50 text-emerald-700 shrink-0 leading-none">
+                            Embarcado
                           </span>
                         ) : isAusente ? (
-                          <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md border border-rose-100 bg-rose-50 text-rose-600 shrink-0 leading-none">
-                            AUSENTE
+                          <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] border border-red-200/60 bg-red-50 text-[#e7000b] shrink-0 leading-none">
+                            Ausente
                           </span>
                         ) : null}
                       </div>
@@ -364,29 +365,29 @@ export function ActiveRouteCurrentCard({
         ) : (
           <div className="flex flex-col gap-1 text-left min-w-0">
             <div className="flex items-center justify-between gap-2 w-full">
-              <span className="text-[#1a3a5c] font-bold text-base sm:text-lg tracking-tight block">
+              <span className="text-[#0a0a0a] font-bold text-base sm:text-lg tracking-tight block">
                 {formatShortName(parada.passageiro?.nome || parada.nome, true)}
               </span>
             </div>
 
             {currentAddressStr && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mt-0.5 text-left">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal mt-0.5 text-left">
+                <MapPin className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                 <span className="break-words">{currentAddressStr}</span>
               </div>
             )}
           </div>
         )}
 
-        <div className="pt-1.5">
+        <div className="pt-2">
           {!isEscola ? (
-            <div className="flex items-center gap-2 w-full min-w-0">
+            <div className="flex items-center gap-2.5 w-full min-w-0">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isLoading || isAnyActionBusy}
                 onClick={() => onConfirmFalta(parada.id, parada.passageiro?.nome || "")}
-                className="h-10 border-rose-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 shadow-2xs rounded-xl text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 bg-white px-2.5 shrink-0 min-w-0"
+                className="h-11 border border-[#e7000b]/20 text-[#e7000b] hover:bg-[#e7000b]/10 shadow-none rounded-[18px] text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-white px-3 shrink-0 min-w-0"
                 title="Marcar como ausente hoje"
               >
                 {isLoading ? (
@@ -394,43 +395,43 @@ export function ActiveRouteCurrentCard({
                 ) : (
                   <UserMinus className="w-3.5 h-3.5 shrink-0" />
                 )}
-                <span>AUSENTE</span>
+                <span>Ausente</span>
               </Button>
 
               <Button
                 type="button"
                 onClick={onConfirmEmbarqueDialog}
                 disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
-                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5  whitespace-nowrap overflow-hidden"
+                className="h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-[18px] shadow-xs transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3 border-none whitespace-nowrap overflow-hidden"
               >
                 {isStepping || isFinalizing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 ) : isLastStop ? (
                   <>
-                    <CheckCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="">{actionLabel}</span>
+                    <CheckCheck className="w-4 h-4 shrink-0" />
+                    <span>{actionLabel}</span>
                   </>
                 ) : (
                   <>
-                    <UserCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="">{actionLabel}</span>
+                    <UserCheck className="w-4 h-4 shrink-0" />
+                    <span>{actionLabel}</span>
                   </>
                 )}
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 w-full min-w-0">
+            <div className="flex items-center gap-2.5 w-full min-w-0">
               {alunosParaEmbarcar.length > 0 && onOpenChamadaDialog && (
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
                   onClick={onOpenChamadaDialog}
-                  className="h-10 border-[#1a3a5c]/30 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 font-bold max-[320px]:text-[10px] text-[11px] sm:text-xs rounded-xl shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 px-3 shrink-0 transition-all active:scale-[0.98]"
+                  className="h-11 border border-[#e5e5e5] text-[#0a0a0a] bg-white hover:bg-[#f5f5f5] font-medium text-xs rounded-[18px] shadow-xs cursor-pointer flex items-center justify-center gap-1.5 px-3.5 shrink-0 transition-all active:scale-[0.98]"
                   title="Fazer chamada dos alunos para embarque"
                 >
-                  <Users className="w-4 h-4 text-[#1a3a5c]" />
-                  <span>CHAMADA</span>
+                  <Users className="w-4 h-4 text-[#0a0a0a]" />
+                  <span>Chamada</span>
                 </Button>
               )}
 
@@ -438,19 +439,19 @@ export function ActiveRouteCurrentCard({
                 type="button"
                 onClick={onDirectStep}
                 disabled={isLoading || isStepping || isFinalizing || isAnyActionBusy}
-                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold font-bold max-[320px]:text-[10px] text-[11px] sm:text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3"
+                className="h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-[18px] shadow-xs transition-all active:scale-[0.98] cursor-pointer flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3 border-none"
               >
                 {isStepping || isFinalizing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 ) : isLastStop ? (
                   <>
-                    <CheckCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="">CONCLUIR ROTA</span>
+                    <CheckCheck className="w-4 h-4 shrink-0" />
+                    <span>Concluir Rota</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-3.5 h-3.5 shrink-0 fill-current" />
-                    <span className="">CONTINUAR</span>
+                    <Play className="w-4 h-4 shrink-0 fill-current" />
+                    <span>Continuar</span>
                   </>
                 )}
               </Button>

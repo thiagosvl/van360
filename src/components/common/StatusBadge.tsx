@@ -25,8 +25,8 @@ export function StatusBadge({
     return status ? (
       <span
         className={cn(
-          "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
-          "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100",
+          "inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium normal-case tracking-normal border transition-colors",
+          "bg-emerald-50 text-emerald-700 border-emerald-200/60",
           className
         )}
       >
@@ -35,8 +35,8 @@ export function StatusBadge({
     ) : (
       <span
         className={cn(
-          "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
-          "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100",
+          "inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium normal-case tracking-normal border transition-colors",
+          "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]",
           className
         )}
       >
@@ -51,7 +51,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold normal-case tracking-normal border transition-colors",
+        "inline-flex items-center justify-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium normal-case tracking-normal border transition-colors",
         colorClass,
         className
       )}

@@ -44,10 +44,10 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
     const anualVal = mode === "caixa" ? item.anualCaixa : item.anual;
 
     return (
-      <div className="bg-[#0f172a] text-slate-100 p-3.5 rounded-xl border border-slate-700 shadow-2xl text-xs space-y-2 text-left min-w-[200px]">
-        <div className="border-b border-slate-700/80 pb-1.5 flex items-center justify-between">
-          <p className="font-bold text-white text-sm">{item.labelMes}</p>
-          <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full font-semibold">
+      <div className="bg-card text-foreground p-3.5 rounded-2xl border border-border shadow-xl text-xs space-y-2 text-left min-w-[200px]">
+        <div className="border-b border-border/40 pb-1.5 flex items-center justify-between">
+          <p className="font-semibold text-foreground text-sm">{item.labelMes}</p>
+          <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">
             {item.quantidadeRenovacoes} renovações
           </span>
         </div>
@@ -58,7 +58,7 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
               <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
               Plano Mensal:
             </span>
-            <span className="font-bold">{formatCurrency(mensalVal)}</span>
+            <span className="font-medium">{formatCurrency(mensalVal)}</span>
           </div>
 
           <div className="flex justify-between items-center text-sky-400">
@@ -66,7 +66,7 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
               <span className="w-2 h-2 rounded-full bg-sky-500 inline-block" />
               Plano Anual:
             </span>
-            <span className="font-bold">{formatCurrency(anualVal)}</span>
+            <span className="font-medium">{formatCurrency(anualVal)}</span>
           </div>
 
           {item.trialPotencial > 0 && (
@@ -75,14 +75,14 @@ function CustomTooltip({ active, payload, label, mode }: CustomTooltipProps) {
                 <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
                 Potencial Trial:
               </span>
-              <span className="font-bold">{formatCurrency(item.trialPotencial)}</span>
+              <span className="font-medium">{formatCurrency(item.trialPotencial)}</span>
             </div>
           )}
         </div>
 
-        <div className="border-t border-slate-700/80 pt-1.5 flex justify-between items-center text-white font-bold text-xs">
+        <div className="border-t border-border/40 pt-1.5 flex justify-between items-center text-foreground font-semibold text-xs">
           <span>{mode === "caixa" ? "Caixa Estimado:" : "Total Previsto:"}</span>
-          <span className="text-amber-400 font-extrabold">{formatCurrency(total)}</span>
+          <span className="text-amber-400 font-bold">{formatCurrency(total)}</span>
         </div>
       </div>
     );
@@ -102,12 +102,12 @@ function HistoricoTooltip({ active, payload }: HistoricoTooltipProps) {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
     return (
-      <div className="bg-[#0f172a] text-slate-100 p-3 rounded-xl border border-slate-700 shadow-2xl text-xs space-y-1 text-left min-w-[180px]">
-        <p className="font-bold text-white text-sm">{item.labelMes}</p>
-        <p className="text-emerald-400 font-black text-sm">
+      <div className="bg-card text-foreground p-3 rounded-2xl border border-border shadow-xl text-xs space-y-1 text-left min-w-[180px]">
+        <p className="font-semibold text-foreground text-sm">{item.labelMes}</p>
+        <p className="text-emerald-400 font-bold text-sm">
           {formatCurrency(item.valor)}
         </p>
-        <p className="text-slate-400 text-[11px]">
+        <p className="text-muted-foreground text-[11px]">
           {item.quantidadeFaturas} fatura{item.quantidadeFaturas !== 1 ? "s" : ""} paga{item.quantidadeFaturas !== 1 ? "s" : ""}
         </p>
       </div>
@@ -127,25 +127,25 @@ export function AdminRevenueProjectionChart({
   const totalHistorico = historico.reduce((acc, h) => acc + h.valor, 0);
 
   return (
-    <Card className="border border-slate-800/80 bg-[#131b2e] rounded-2xl shadow-xl overflow-hidden text-left">
-      <CardHeader className="p-4 sm:p-5 border-b border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <Card className="border border-border bg-card rounded-3xl shadow-xs overflow-hidden text-left">
+      <CardHeader className="p-5 sm:p-6 pb-3 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <CardTitle className="text-sm sm:text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
               {viewType === "projecao" ? (
                 <>
-                  <CalendarRange className="h-5 w-5 text-blue-400" />
-                  <span>Projeção de Receita (Próximos 12 Meses)</span>
+                  <CalendarRange className="h-4 w-4 text-primary" />
+                  <span>Projeção de receita (próximos 12 meses)</span>
                 </>
               ) : (
                 <>
-                  <History className="h-5 w-5 text-emerald-400" />
-                  <span>Histórico de Faturamento Realizado (Mês a Mês)</span>
+                  <History className="h-4 w-4 text-emerald-400" />
+                  <span>Histórico de faturamento realizado (mês a mês)</span>
                 </>
               )}
             </CardTitle>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {viewType === "historico"
               ? `Total recebido nos últimos ${historico.length} meses: ${formatCurrency(totalHistorico)} (faturas pagas).`
               : mode === "caixa"
@@ -155,51 +155,51 @@ export function AdminRevenueProjectionChart({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border">
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setViewType("projecao")}
-              className={`h-8 px-3 text-xs rounded-lg font-bold transition-all ${
+              className={`h-8 px-3 text-xs rounded-xl font-medium transition-all ${
                 viewType === "projecao"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
-              Projeção Futura
+              Projeção futura
             </Button>
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setViewType("historico")}
-              className={`h-8 px-3 text-xs rounded-lg font-bold transition-all ${
+              className={`h-8 px-3 text-xs rounded-xl font-medium transition-all ${
                 viewType === "historico"
-                  ? "bg-emerald-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <History className="h-3.5 w-3.5 mr-1.5" />
-              Histórico Realizado
+              Histórico realizado
             </Button>
           </div>
 
           {viewType === "projecao" && (
-            <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border">
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={() => setMode("caixa")}
-                className={`h-8 px-2.5 text-xs rounded-lg font-bold transition-all ${
+                className={`h-8 px-2.5 text-xs rounded-xl font-medium transition-all ${
                   mode === "caixa"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-card text-foreground shadow-xs border border-border/80"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Coins className="h-3.5 w-3.5 mr-1" />
+                <Coins className="h-3.5 w-3.5 mr-1 text-primary" />
                 Caixa (D+{diasRetencaoCartao})
               </Button>
               <Button
@@ -207,13 +207,13 @@ export function AdminRevenueProjectionChart({
                 size="sm"
                 variant="ghost"
                 onClick={() => setMode("vencimento")}
-                className={`h-8 px-2.5 text-xs rounded-lg font-bold transition-all ${
+                className={`h-8 px-2.5 text-xs rounded-xl font-medium transition-all ${
                   mode === "vencimento"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-card text-foreground shadow-xs border border-border/80"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Clock className="h-3.5 w-3.5 mr-1" />
+                <Clock className="h-3.5 w-3.5 mr-1 text-primary" />
                 Vencimento
               </Button>
             </div>
@@ -221,23 +221,23 @@ export function AdminRevenueProjectionChart({
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-5 sm:p-6">
         <div className="h-[320px] sm:h-[360px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             {viewType === "historico" ? (
               <BarChart data={historico} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                   dataKey="labelMes"
-                  stroke="#64748b"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  axisLine={{ stroke: "#334155" }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
                   tickLine={false}
                 />
                 <YAxis
-                  stroke="#64748b"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  axisLine={{ stroke: "#334155" }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
                   tickLine={false}
                   tickFormatter={(v) => (v >= 1000 ? `R$ ${(v / 1000).toFixed(1)}k` : `R$ ${v}`)}
                 />
@@ -246,24 +246,24 @@ export function AdminRevenueProjectionChart({
                   verticalAlign="top"
                   align="right"
                   wrapperStyle={{ paddingBottom: 16, fontSize: 12 }}
-                  formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
+                  formatter={(value) => <span className="text-foreground font-medium">{value}</span>}
                 />
                 <Bar dataKey="valor" name="Faturamento Realizado (R$)" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
             ) : (
               <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                   dataKey="labelMes"
-                  stroke="#64748b"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  axisLine={{ stroke: "#334155" }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
                   tickLine={false}
                 />
                 <YAxis
-                  stroke="#64748b"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  axisLine={{ stroke: "#334155" }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
                   tickLine={false}
                   tickFormatter={(v) => (v >= 1000 ? `R$ ${(v / 1000).toFixed(1)}k` : `R$ ${v}`)}
                 />
@@ -272,7 +272,7 @@ export function AdminRevenueProjectionChart({
                   verticalAlign="top"
                   align="right"
                   wrapperStyle={{ paddingBottom: 16, fontSize: 12 }}
-                  formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
+                  formatter={(value) => <span className="text-foreground font-medium">{value}</span>}
                 />
                 <Bar dataKey={mode === "caixa" ? "mensalCaixa" : "mensal"} name="Mensal" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
                 <Bar dataKey={mode === "caixa" ? "anualCaixa" : "anual"} name="Anual" stackId="a" fill="#0284c7" radius={[0, 0, 0, 0]} />

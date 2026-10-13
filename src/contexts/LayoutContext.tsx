@@ -10,10 +10,45 @@ import { RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO } from "@/t
 import type { AdminUserPassengerItem } from "@/services/api/admin.api";
 import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 import type { RenovacaoPassageiroItem, RenovacaoKPIs } from "@/types/renovacao";
+import type { FretamentoDetalhes, FretamentoParticipante } from "@/services/api/fretamento.api";
+import type { WizardModalidade } from "@/hooks/ui/useConfigurarCobrancaWizardViewModel";
+import type { PreviewCobrancaModalidade } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
 import {
   createContext,
   useContext,
 } from "react";
+
+export interface OpenFretamentoFormProps {
+  editingItem?: FretamentoDetalhes | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenPasseioFormProps {
+  editingItem?: FretamentoDetalhes | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenNovoFretamentoOuPasseioProps {
+  onSelectFretamento: () => void;
+  onSelectPasseio: () => void;
+}
+
+export interface OpenRegistrarPagamentoFretamentoProps {
+  fretamento: FretamentoDetalhes;
+  onSuccess?: () => void;
+}
+
+export interface OpenAdicionarParticipantePasseioProps {
+  fretamento: FretamentoDetalhes;
+  onSuccess?: () => void;
+}
+
+export interface OpenRegistrarPagamentoParticipanteProps {
+  fretamentoId: string;
+  passeioTitulo?: string;
+  participante: FretamentoParticipante;
+  onSuccess?: () => void;
+}
 
 export interface OpenConfirmationDialogProps {
   title: string;
@@ -69,10 +104,11 @@ export interface OpenPassageiroTransporteProps {
 }
 
 export interface OpenGastoFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (gasto?: Gasto, keepOpen?: boolean) => void;
   gastoToEdit?: Gasto | null;
-  veiculos?: { id: string; placa: string }[];
+  veiculos?: { id: string; placa: string; modelo?: string | null }[];
   usuarioId?: string;
+  allowBatchCreation?: boolean;
 }
 
 export interface OpenEscolaFormProps {
@@ -190,7 +226,8 @@ export interface OpenGerarContratoValidadorDialogProps {
   onSuccess: (
     passageiroId: string,
     bypassed?: boolean,
-    updatedValues?: { valorMensal?: number; diaVencimento?: number }
+    updatedValues?: { valorMensal?: number; diaVencimento?: number },
+    updatedPassageiro?: Passageiro
   ) => void;
 }
 
@@ -334,6 +371,31 @@ export interface OpenWhatsAppCobrancaPreviewDialogProps {
   passageiroNome?: string;
   userChavePix?: string | null;
   showPixSetupAction?: boolean;
+  modalidade?: PreviewCobrancaModalidade;
+}
+
+export interface OpenEditarPixDialogProps {
+  onSuccess?: () => void | Promise<void>;
+}
+
+export interface OpenConfigurarCobrancaWizardProps {
+  modalidade: WizardModalidade;
+  aplicar_a_todos?: boolean;
+  onSuccess?: () => void;
+}
+
+export interface DetalhesExcecoesDivergentes {
+  desativado?: number;
+  lembretes?: number;
+  automatica?: number;
+}
+
+export interface OpenConfirmarMudancaModoVanProps {
+  quantidadeExcecoes: number;
+  novoModoLabel: string;
+  detalhesExcecoes?: DetalhesExcecoesDivergentes;
+  onConfirmar: (aplicarATodos: boolean) => Promise<void> | void;
+  onCancel?: () => void;
 }
 
 export interface OpenWhatsAppContratoPreviewDialogProps {
@@ -402,6 +464,21 @@ export interface LayoutContextType {
   closeRegistrarAusenciaDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
   openGerenciarCategoriasDialog: (props?: { usuarioId?: string }) => void;
+
+  // Fretamentos e Passeios
+  openFretamentoFormDialog: (props?: OpenFretamentoFormProps) => void;
+  closeFretamentoFormDialog: () => void;
+  openPasseioFormDialog: (props?: OpenPasseioFormProps) => void;
+  closePasseioFormDialog: () => void;
+  openNovoFretamentoOuPasseioDialog: (props?: OpenNovoFretamentoOuPasseioProps) => void;
+  closeNovoFretamentoOuPasseioDialog: () => void;
+  openRegistrarPagamentoFretamentoDialog: (props: OpenRegistrarPagamentoFretamentoProps) => void;
+  closeRegistrarPagamentoFretamentoDialog: () => void;
+  openAdicionarParticipantePasseioDialog: (props: OpenAdicionarParticipantePasseioProps) => void;
+  closeAdicionarParticipantePasseioDialog: () => void;
+  openRegistrarPagamentoParticipanteDialog: (props: OpenRegistrarPagamentoParticipanteProps) => void;
+  closeRegistrarPagamentoParticipanteDialog: () => void;
+
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
@@ -450,7 +527,11 @@ export interface LayoutContextType {
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
-  openEditarPixDialog: () => void;
+  openEditarPixDialog: (props?: OpenEditarPixDialogProps) => void;
+  openConfigurarCobrancaWizardDialog: (props: OpenConfigurarCobrancaWizardProps) => void;
+  closeConfigurarCobrancaWizardDialog: () => void;
+  openConfirmarMudancaModoVanDialog: (props: OpenConfirmarMudancaModoVanProps) => void;
+  closeConfirmarMudancaModoVanDialog: () => void;
   openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
   openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
   openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;

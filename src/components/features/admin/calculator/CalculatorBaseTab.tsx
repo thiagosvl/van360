@@ -1,4 +1,4 @@
-﻿import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -73,24 +73,24 @@ export function CalculatorBaseTab({ calcHook }: CalculatorBaseTabProps) {
   } = calculations;
 
   const isProfit = lucroLiquidoMensal >= 0;
-  const cardStyle = "bg-[#131b2e] border border-slate-800/80 shadow-2xl text-slate-100 rounded-[1.5rem]";
+  const cardStyle = "bg-card border border-border shadow-xs text-foreground rounded-xl";
 
   return (
     <div className="space-y-8">
-      <div className="bg-slate-900/90 border border-blue-500/30 rounded-[1.5rem] p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-card border border-primary/30 rounded-xl p-5 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+            <div className="p-2.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
               <Database className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-headline font-black text-lg text-white">Baseline Real da Produção</h3>
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[11px]">
-                  Online & Sincronizado
+                <h3 className="font-semibold text-base text-foreground">Baseline real da produção</h3>
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-medium">
+                  Online & sincronizado
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Métricas reais sincronizadas com o banco de dados.
               </p>
             </div>

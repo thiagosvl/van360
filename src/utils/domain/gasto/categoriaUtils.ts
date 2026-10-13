@@ -10,13 +10,13 @@ export const CATEGORIA_COLOR_PALETTE: Record<string, { color: string; bg: string
   cyan: { color: "text-cyan-600", bg: "bg-cyan-100", border: "border-cyan-200" },
   green: { color: "text-green-600", bg: "bg-green-100", border: "border-green-200" },
   indigo: { color: "text-indigo-600", bg: "bg-indigo-100", border: "border-indigo-200" },
-  gray: { color: "text-gray-600", bg: "bg-gray-100", border: "border-gray-200" },
+  gray: { color: "text-[#737373]", bg: "bg-[#f5f5f5]", border: "border-[#e5e5e5]" },
   purple: { color: "text-purple-600", bg: "bg-purple-100", border: "border-purple-200" },
   pink: { color: "text-pink-600", bg: "bg-pink-100", border: "border-pink-200" },
-  slate: { color: "text-slate-600", bg: "bg-slate-100", border: "border-slate-200" }
+  slate: { color: "text-[#737373]", bg: "bg-[#f5f5f5]", border: "border-[#e5e5e5]" }
 };
 
-const SYSTEM_ICONS: Record<string, any> = {
+const SYSTEM_ICONS: Record<string, LucideIcons.LucideIcon> = {
   combustivel: LucideIcons.Fuel,
   manutencao: LucideIcons.Wrench,
   impostos: LucideIcons.FileText,
@@ -52,7 +52,7 @@ export function getCategoriaMetadata(slug: string, categoriasDaApi?: GastoCatego
     };
   }
 
-  const systemDefaults: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+  const systemDefaults: Record<string, { icon: LucideIcons.LucideIcon; color: string; bg: string; label: string }> = {
     [GastoCategoria.COMBUSTIVEL]: { icon: LucideIcons.Fuel, color: "text-orange-600", bg: "bg-orange-100", label: "Combustível" },
     [GastoCategoria.MANUTENCAO]: { icon: LucideIcons.Wrench, color: "text-blue-600", bg: "bg-blue-100", label: "Manutenção" },
     [GastoCategoria.IMPOSTOS]: { icon: LucideIcons.FileText, color: "text-red-600", bg: "bg-red-100", label: "Impostos" },
@@ -60,7 +60,7 @@ export function getCategoriaMetadata(slug: string, categoriasDaApi?: GastoCatego
     [GastoCategoria.LAVAGEM]: { icon: LucideIcons.Cog, color: "text-cyan-600", bg: "bg-cyan-100", label: "Lavagem" },
     [GastoCategoria.ALIMENTACAO]: { icon: LucideIcons.Wallet, color: "text-green-600", bg: "bg-green-100", label: "Alimentação" },
     [GastoCategoria.SEGURO]: { icon: LucideIcons.ClipboardCheck, color: "text-indigo-600", bg: "bg-indigo-100", label: "Seguro" },
-    [GastoCategoria.OUTROS]: { icon: LucideIcons.HelpCircle, color: "text-gray-600", bg: "bg-gray-100", label: "Outros" },
+    [GastoCategoria.OUTROS]: { icon: LucideIcons.HelpCircle, color: "text-[#737373]", bg: "bg-[#f5f5f5]", label: "Outros" },
   };
 
   const sysMeta = systemDefaults[slug];
@@ -70,7 +70,7 @@ export function getCategoriaMetadata(slug: string, categoriasDaApi?: GastoCatego
       icon: sysMeta.icon,
       color: sysMeta.color,
       bg: sysMeta.bg,
-      border: "border-gray-200"
+      border: "border-[#e5e5e5]"
     };
   }
 
@@ -78,8 +78,8 @@ export function getCategoriaMetadata(slug: string, categoriasDaApi?: GastoCatego
   return {
     label: labelFallback,
     icon: LucideIcons.Tag,
-    color: "text-gray-600",
-    bg: "bg-gray-100",
-    border: "border-gray-200"
+    color: "text-[#737373]",
+    bg: "bg-[#f5f5f5]",
+    border: "border-[#e5e5e5]"
   };
 }

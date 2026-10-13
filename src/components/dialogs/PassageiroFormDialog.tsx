@@ -135,7 +135,7 @@ export default function PassengerFormDialog({
           const el = container.querySelector(`#${tab.id}`) as HTMLElement | null;
           if (el) {
             const elRect = el.getBoundingClientRect();
-            if (elRect.top - containerRect.top <= 140) {
+            if (elRect.top - containerRect.top <= 80) {
               currentSection = tab.id;
             }
           }
@@ -168,7 +168,7 @@ export default function PassengerFormDialog({
       const containerRect = container.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();
       const relativeTop = targetRect.top - containerRect.top + container.scrollTop;
-      const offsetMargin = 65;
+      const offsetMargin = 16;
 
       container.scrollTo({
         top: Math.max(0, relativeTop - offsetMargin),
@@ -199,14 +199,38 @@ export default function PassengerFormDialog({
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[18px] h-10 w-10 border border-[#e5e5e5] cursor-pointer"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
+
+      {mode === PassageiroFormModes.EDIT && !refreshing && (
+        <div
+          ref={tabsListRef}
+          className="bg-white px-5 sm:px-6 py-2.5 border-b border-[#e5e5e5] flex gap-1.5 justify-start overflow-x-auto h-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0"
+        >
+          {EDIT_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              data-tab-id={tab.id}
+              type="button"
+              onClick={() => handleTabClick(tab.id)}
+              className={cn(
+                "rounded-[18px] px-3.5 py-1.5 text-xs font-medium transition-all shrink-0 whitespace-nowrap cursor-pointer active:scale-95 border",
+                activeTab === tab.id
+                  ? "bg-primary/10 text-primary border-primary/20 font-semibold"
+                  : "bg-[#f5f5f5] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#eeeeee] border-transparent"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <BaseDialog.Body containerRef={bodyRef}>
         {refreshing ? (
@@ -214,71 +238,35 @@ export default function PassengerFormDialog({
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <>
-            {mode === PassageiroFormModes.EDIT && (
-              <div
-                ref={tabsListRef}
-                className="sticky top-0 z-30 bg-white -mt-2 pt-3 pb-3 mb-4 -mx-6 px-6 border-b border-slate-100 flex gap-2 justify-start overflow-x-auto h-auto no-scrollbar scrollbar-none shrink-0 shadow-2xs"
-              >
-                {EDIT_TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    data-tab-id={tab.id}
-                    type="button"
-                    onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-2xs shrink-0 whitespace-nowrap active:scale-95",
-                      activeTab === tab.id
-                        ? "bg-[#1a3a5c] text-[#ffffff] border-[#1a3a5c]"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-8 pb-6"
-              >
-                <Banner
-                  variant="info"
-                  description="Seus dados estão 100% seguros e privados. Ficam salvos apenas para a organização da sua van."
-                  className="mb-4"
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+              className="space-y-8 pb-6"
+            >
+              <section>
+                <PassageiroFormDadosCadastrais
+                  profile={profile}
+                  escolas={escolas}
+                  veiculos={veiculos}
+                  hideAtivo={mode !== PassageiroFormModes.EDIT}
                 />
-                <section>
-                  <PassageiroFormDadosCadastrais
-                    profile={profile}
-                    escolas={escolas}
-                    veiculos={veiculos}
-                    hideAtivo={mode !== PassageiroFormModes.EDIT}
-                  />
-                </section>
+              </section>
 
-                <hr className="border-slate-100" />
+              <section>
+                <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
+              </section>
 
-                <section>
-                  <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
-                </section>
+              <section>
+                <PassageiroFormFinanceiro
+                  editingPassageiro={editingPassageiro}
+                />
+              </section>
 
-                <hr className="border-slate-100" />
-
-                <section>
-                  <PassageiroFormFinanceiro
-                    editingPassageiro={editingPassageiro}
-                  />
-                </section>
-
-                <hr className="border-slate-100" />
-
-                <section>
-                  <PassageiroFormEndereco />
-                </section>
-              </form>
-            </Form>
-          </>
+              <section>
+                <PassageiroFormEndereco />
+              </section>
+            </form>
+          </Form>
         )}
       </BaseDialog.Body>
 

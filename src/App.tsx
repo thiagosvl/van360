@@ -18,6 +18,7 @@ import { lazyLoad } from "@/utils/lazyLoad";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import { NativeUpdateDialog } from "@/components/dialogs/NativeUpdateDialog";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
@@ -30,6 +31,7 @@ import { AppLockController } from "@/components/layout/AppLockController";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { AppLockProvider } from "@/contexts/AppLockProvider";
 import { useAttribution } from "@/hooks/business/useAttribution";
+import { IAPController } from "@/components/layout/IAPController";
 
 const PushNotificationController = () => {
   usePushNotifications();
@@ -71,8 +73,12 @@ const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
+const Fretamentos = lazyLoad(() => import("./pages/Fretamentos"));
+const PasseioDetalhes = lazyLoad(() => import("./pages/PasseioDetalhes"));
+const PasseioInscricaoPublica = lazyLoad(() => import("./pages/PasseioInscricaoPublica"));
 const Conta = lazyLoad(() => import("./pages/Conta"));
 const Contratos = lazyLoad(() => import("./pages/Contratos"));
+const ConfigurarModeloContrato = lazyLoad(() => import("./pages/ConfigurarModeloContrato"));
 const Rotas = lazyLoad(() => import("./pages/Rotas"));
 const MinhaEquipe = lazyLoad(() => import("./pages/MinhaEquipe"));
 const ConfigurarRota = lazyLoad(() => import("./pages/ConfigurarRota"));
@@ -80,6 +86,7 @@ const Renovacoes = lazyLoad(() => import("./pages/Renovacoes"));
 const RouteExecutionPage = lazyLoad(() => import("./pages/RouteExecutionPage"));
 const RouteDetailsPage = lazyLoad(() => import("./pages/RouteDetailsPage"));
 const Aniversariantes = lazyLoad(() => import("./pages/Aniversariantes"));
+const MenuPage = lazyLoad(() => import("./pages/MenuPage"));
 const Subscription = lazyLoad(() => import("./pages/subscription/SubscriptionPage"));
 const ExternalCheckoutBridge = lazyLoad(() => import("./pages/subscription/ExternalCheckoutBridge"));
 const ImpersonateBridgePage = lazyLoad(() => import("./pages/admin/ImpersonateBridgePage"));
@@ -131,6 +138,22 @@ const App = () => {
     isMandatory?: boolean;
     storeUrl?: string;
   }>({ isOpen: false });
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+
+    const stateListener = CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) {
+        StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+      }
+    });
+
+    return () => {
+      stateListener.then((sub) => sub.remove()).catch(() => {});
+    };
+  }, []);
 
   useEffect(() => {
     const runUpdater = async () => {
@@ -346,6 +369,7 @@ const App = () => {
                   <BackButtonController />
                   <PushNotificationController />
                   <AttributionController />
+                  <IAPController />
                   <ScrollToTop />
                 <Suspense fallback={<InitialLoading />}>
                   <Routes>
@@ -408,6 +432,11 @@ const App = () => {
                     />
 
                     <Route
+                      path={ROUTES.PUBLIC.PASSEIO_PUBLICO}
+                      element={<PasseioInscricaoPublica />}
+                    />
+
+                    <Route
                       path={ROUTES.PUBLIC.SPLASH}
                       element={
                         <AppGate>
@@ -466,6 +495,7 @@ const App = () => {
                     >
                       <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Subscription />} />
                       <Route path={ROUTES.PRIVATE.MOTORISTA.ACCOUNT} element={<Conta />} />
+                      <Route path={ROUTES.PRIVATE.MOTORISTA.MENU} element={<MenuPage />} />
 
                       <Route element={<SubscriptionGuard><Outlet /></SubscriptionGuard>}>
                         <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
@@ -485,7 +515,10 @@ const App = () => {
                         <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CHARTERS} element={<Fretamentos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CHARTER_DETAILS} element={<PasseioDetalhes />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                        <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP} element={<ConfigurarModeloContrato />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTES} element={<Rotas />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.TEAM} element={<MinhaEquipe />} />
                         <Route path={ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP} element={<ConfigurarRota />} />

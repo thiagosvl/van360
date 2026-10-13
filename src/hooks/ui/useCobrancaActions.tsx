@@ -8,7 +8,8 @@ import {
   useSession,
   safeCloseDialog,
 } from "@/hooks";
-import { CobrancaStatus, AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
+import { CobrancaStatus, AtividadeAcao, AtividadeEntidadeTipo, ModoCobrancaEnum } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import { useActivityTracker } from "@/hooks/business/useActivityTracker";
@@ -69,10 +70,10 @@ export function useCobrancaOperations({
   const handleToggleLembretes = useCallback(async () => {
     const desativar = !cobranca.desativar_lembretes;
     openConfirmationDialog({
-      title: desativar ? "Desativar lembretes aos pais?" : "Ativar lembretes aos pais?",
+      title: desativar ? "Desativar lembretes da parcela?" : "Ativar lembretes da parcela?",
       description: desativar
-        ? "Os lembretes automáticos desta parcela serão pausados e voltarão a ser reenviados para os pais, caso seja necessário."
-        : "Os lembretes automáticos desta parcela serão reativados e voltarão a ser reenviados para os pais, caso seja necessário.",
+        ? "O responsável não receberá mais lembretes automáticos de cobrança sobre esta parcela."
+        : "O responsável voltará a receber lembretes automáticos de cobrança sobre esta parcela.",
       variant: desativar ? "warning" : "default",
       confirmText: desativar ? "Desativar" : "Ativar",
       onConfirm: async () => {
@@ -220,6 +221,13 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onRestaurarCobranca,
   } = props;
 
+  const { financeiro } = useMotoristaFinanceiroApi();
+  const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
+  const modoEfetivo = cobranca.passageiro?.modo_cobranca || modoVan;
+  const temLembretesHabilitados =
+    !cobranca.passageiro?.isento &&
+    modoEfetivo !== ModoCobrancaEnum.DESATIVADO;
+
   const {
     handleToggleLembretes,
     handleDesfazerPagamento,
@@ -249,6 +257,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         });
       }
 
+      if (onEnviarCobranca) {
+        projActions.push({
+          label: "Enviar Cobrança",
+          icon: <WhatsAppIcon className="h-4 w-4" />,
+          onClick: onEnviarCobranca,
+          swipeColor: "bg-[#25D366]",
+          hasSeparatorAfter: true,
+        });
+      }
+
       if (onEditarCobranca) {
         projActions.push({
           label: "Editar",
@@ -258,28 +276,30 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
             setTimeout(() => onEditarCobranca(), 10);
           },
           disabled: isActionLoading,
-          swipeColor: "bg-blue-600",
+          swipeColor: "bg-[#0a0a0a]",
           hasSeparatorAfter: true,
         });
       }
 
-      const desativar = cobranca.desativar_lembretes ?? false;
-      projActions.push({
-        label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
-        icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
-        onClick: handleToggleLembretes,
-        disabled: isActionLoading,
-        isLoading: isTogglingNotificacoes,
-        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
-        hasSeparatorAfter: true,
-      });
+      if (temLembretesHabilitados) {
+        const desativar = cobranca.desativar_lembretes ?? false;
+        projActions.push({
+          label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
+          icon: desativar ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />,
+          onClick: handleToggleLembretes,
+          disabled: isActionLoading,
+          isLoading: isTogglingNotificacoes,
+          swipeColor: desativar ? "bg-[#0a0a0a]" : "bg-[#737373]",
+          hasSeparatorAfter: true,
+        });
+      }
 
       if (onVerCarteirinha) {
         projActions.push({
           label: "Ver Carteirinha",
           icon: <User className="h-4 w-4" />,
           onClick: onVerCarteirinha,
-          swipeColor: "bg-indigo-600",
+          swipeColor: "bg-[#0a0a0a]",
           hasSeparatorAfter: true,
         });
       }
@@ -291,7 +311,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         disabled: isActionLoading,
         isLoading: isDeleting,
         variant: "destructive",
-        swipeColor: "bg-red-500",
+        swipeColor: "bg-[#e7000b]",
       });
 
       return projActions;
@@ -434,7 +454,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (!isPago && onEnviarCobranca && isMobilePlatform()) {
+    if (!isPago && onEnviarCobranca) {
       actions.push({
         label: "Enviar Cobrança",
         icon: <WhatsAppIcon className="h-4 w-4" />,
@@ -453,12 +473,12 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           setTimeout(() => onEditarCobranca(), 10);
         },
         disabled: disableEditarCobranca(cobranca) || isActionLoading,
-        swipeColor: "bg-blue-600",
+        swipeColor: "bg-[#0a0a0a]",
         hasSeparatorAfter: true,
       });
     }
 
-    if (!isPago) {
+    if (!isPago && temLembretesHabilitados) {
       const desativar = cobranca.desativar_lembretes ?? false;
       actions.push({
         label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
@@ -466,7 +486,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         onClick: handleToggleLembretes,
         disabled: isActionLoading,
         isLoading: isTogglingNotificacoes,
-        swipeColor: desativar ? "bg-indigo-600" : "bg-slate-600",
+        swipeColor: desativar ? "bg-[#0a0a0a]" : "bg-[#737373]",
         hasSeparatorAfter: true,
       });
     }
@@ -476,7 +496,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Ver Carteirinha",
         icon: <User className="h-4 w-4" />,
         onClick: onVerCarteirinha,
-        swipeColor: "bg-indigo-600",
+        swipeColor: "bg-[#0a0a0a]",
         hasSeparatorAfter: true,
       });
     }
@@ -488,8 +508,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         onClick: props.onExcluirCobranca,
         disabled: disableExcluirCobranca(cobranca) || isActionLoading,
         isDestructive: true,
-        swipeColor: "bg-red-600",
-        className: "text-red-600 font-bold",
+        swipeColor: "bg-[#e7000b]",
+        className: "text-[#e7000b] font-bold",
         isLoading: isDeleting,
       });
     }
@@ -497,6 +517,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     return actions;
   }, [
     cobranca,
+    temLembretesHabilitados,
     onVerCarteirinha,
     onRegistrarPagamento,
     onEditarCobranca,

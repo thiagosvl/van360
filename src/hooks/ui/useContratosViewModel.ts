@@ -7,6 +7,7 @@ import {
   obterUrlDocumentoContrato,
   gerarNomeArquivoContrato,
   shareContratoFile,
+  downloadContratoFile,
 } from "@/utils/domain";
 import {
   useContratos,
@@ -32,23 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
-import { Capacitor } from "@capacitor/core";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
-
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
+import { toast } from "@/utils/notifications/toast";
 
 export function useContratosViewModel() {
   const queryClient = useQueryClient();
@@ -57,7 +42,6 @@ export function useContratosViewModel() {
     setPageTitle,
     openConfirmationDialog,
     closeConfirmationDialog,
-    openContractSetupDialog,
     openConfirmarGerarContratoDialog,
     openGerarContratoValidadorDialog,
     openImportarContratoDialog,
@@ -125,9 +109,16 @@ export function useContratosViewModel() {
     });
   }, [setSearchParams]);
 
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, debouncedSearch, anoLetivo]);
+
   const contratosFilters = useMemo(
-    () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo }),
-    [activeTab, debouncedSearch, anoLetivo]
+    () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo, page, limit }),
+    [activeTab, debouncedSearch, anoLetivo, page, limit]
   );
 
   const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs(
@@ -148,8 +139,18 @@ export function useContratosViewModel() {
       newParams.set("tab", val);
       return newParams;
     });
-    refetchKPIs();
-  }, [setSearchParams, refetchKPIs]);
+    setPage(1);
+  }, [setSearchParams]);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    if (typeof window !== "undefined") {
+      const anchor = document.getElementById("contratos-tabs-anchor");
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, []);
 
   const deleteMutation = useDeleteContrato();
   const substituirMutation = useSubstituirContrato();
@@ -166,30 +167,14 @@ export function useContratosViewModel() {
   const isContratoAtivo = statusConfig === StatusConfiguracaoContrato.ATIVO;
 
   const handleOpenContractSetup = useCallback(() => {
-    openContractSetupDialog({
-      forceOpen: true,
-      onSuccess: (usarContratos) => {
-        if (usarContratos) {
-          refetchKPIs();
-          refetchContratos();
-        }
-      }
-    });
-  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
+    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
+  }, [navigate]);
 
   const handleToggleContracts = useCallback(async (active: boolean) => {
     if (!profile?.id) return;
 
     if (active && !profile.assinatura_digital_url) {
-      openContractSetupDialog({
-        onSuccess: (usarContratos) => {
-          if (usarContratos) {
-            refreshProfile();
-            refetchKPIs();
-            refetchContratos();
-          }
-        }
-      });
+      navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
       return;
     }
 
@@ -205,8 +190,7 @@ export function useContratosViewModel() {
         try {
           await usuarioApi.atualizarUsuario(profile.id!, {
             config_contrato: {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ...(profile.config_contrato as any || {}),
+              ...(profile.config_contrato ?? {}),
               usar_contratos: active,
             }
           });
@@ -221,27 +205,15 @@ export function useContratosViewModel() {
         }
       }
     });
-  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile, openContractSetupDialog]);
+  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile, navigate]);
 
   const handleActivateContracts = useCallback(() => {
-    openContractSetupDialog({
-      onSuccess: (usarContratos) => {
-        if (usarContratos) {
-          refetchKPIs();
-          refetchContratos();
-        }
-      }
-    });
-  }, [openContractSetupDialog, refetchKPIs, refetchContratos]);
+    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
+  }, [navigate]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
   }, [navigate]);
-
-  const handleCopiarLink = useCallback((token: string) => {
-    const url = `${BASE_DOMAIN}/assinar/${token}`;
-    navigator.clipboard.writeText(url);
-  }, []);
 
   const handleVisualizarLink = useCallback((token: string) => {
     openBrowserLink(`${BASE_DOMAIN}/assinar/${token}`);
@@ -264,25 +236,12 @@ export function useContratosViewModel() {
     });
   }, [openConfirmationDialog, deleteMutation, closeConfirmationDialog]);
 
-  const isMobile = useIsMobile();
-  const handleEnviarWhatsApp = useCallback((item: any) => {
-    // Para contratos pendentes, sempre usamos o link do portal de assinatura
+  const handleEnviarWhatsApp = useCallback((item: ContratoListItem) => {
     const token = item.token_acesso || item.id;
     const finalLink = `${BASE_DOMAIN}/assinar/${token}`;
 
-    if (!isMobile) {
-      navigator.clipboard.writeText(finalLink);
-      toast.success("Link para assinatura copiado!");
-      return;
-    }
-
     const respObj = item.passageiro?.responsavel_principal || item.responsavel_principal;
-    const telefone = respObj?.telefone || item.dados_contrato?.telefoneResponsavel;
-
-    if (!telefone) {
-      toast.error("Telefone do responsável inválido ou não informado.");
-      return;
-    }
+    const telefone = respObj?.telefone || (item.dados_contrato as Record<string, unknown> | undefined)?.telefoneResponsavel as string | undefined;
 
     const url = buildContratoWhatsAppUrl({
       telefoneResponsavel: telefone,
@@ -292,7 +251,7 @@ export function useContratosViewModel() {
     });
 
     openBrowserLink(url);
-  }, [isMobile, openBrowserLink]);
+  }, []);
 
   const handleSubstituir = useCallback((id: string, item?: ContratoListItem) => {
     const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
@@ -336,20 +295,22 @@ export function useContratosViewModel() {
     openGerarContratoValidadorDialog({
       passageiroId,
       initialPassageiro: rawPassageiro,
-      onSuccess: (_id, _bypassed, updatedValues) => {
-        const valorMensal = updatedValues?.valorMensal ?? (Number(rawPassageiro?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
-        const diaVencimento = updatedValues?.diaVencimento ?? (Number(rawPassageiro?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
-
-        const passageiroResolvido = rawPassageiro || ({
+      onSuccess: (_id, _bypassed, updatedValues, updatedPassageiro) => {
+        const passageiroResolvido = updatedPassageiro || queryClient.getQueryData<Passageiro>(["passageiro", passageiroId]) || rawPassageiro || ({
           id: passageiroId,
           nome: item?.nome || "Aluno",
           responsavel_principal: item?.responsavel_principal,
         } as Passageiro);
 
+        const valorMensal = updatedValues?.valorMensal ?? (Number(passageiroResolvido?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
+        const diaVencimento = updatedValues?.diaVencimento ?? (Number(passageiroResolvido?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
+
         openConfirmarGerarContratoDialog({
           passageiro: passageiroResolvido,
           valorMensal,
           diaVencimento,
+          dataInicio: passageiroResolvido?.data_inicio_transporte || undefined,
+          dataFim: passageiroResolvido?.data_fim_transporte || undefined,
           isSubstituicao: false,
         });
       }
@@ -438,30 +399,12 @@ export function useContratosViewModel() {
           throw new Error("Identificador não encontrado");
         }
 
-        if (Capacitor.isNativePlatform()) {
-          const base64Data = await blobToBase64(blob);
-          const savedFile = await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Cache,
-          });
-
-          await Share.share({
-            title: `Download Contrato - ${nomeAluno}`,
-            files: [savedFile.uri],
-            dialogTitle: "Download do Contrato",
-          });
-        } else {
-          const downloadUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = downloadUrl;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(downloadUrl);
-          toast.success("Download iniciado com sucesso!");
-        }
+        await downloadContratoFile({
+          blob,
+          url: urlContrato,
+          filename: fileName,
+          title: `Download Contrato - ${nomeAluno}`,
+        });
       } catch (err: unknown) {
         const errorMsg = String((err as { message?: string })?.message || "").toLowerCase();
         const isCancel =
@@ -518,7 +461,17 @@ export function useContratosViewModel() {
     handleTabChange,
     kpis,
     contratos: contratosRes?.list || [],
+    page,
+    setPage,
+    limit,
+    setLimit,
+    totalRecords: contratosRes?.total ?? 0,
+    totalPages: contratosRes?.pagination?.totalPages ?? Math.max(1, Math.ceil((contratosRes?.total ?? 0) / limit)),
+    handlePageChange,
+    pagination: contratosRes?.pagination,
     isLoading: isLoadingContratos || isLoadingKPIs,
+    isLoadingKPIs,
+    isLoadingContratos,
     isActionLoading,
     isDownloading,
     isContratoAtivo,
@@ -542,7 +495,6 @@ export function useContratosViewModel() {
     setFilters,
     actions: {
       onVerPassageiro: handleVerPassageiro,
-      onCopiarLink: handleCopiarLink,
       onEnviarWhatsApp: handleEnviarWhatsApp,
       onCompartilharWhatsApp: handleCompartilharContrato,
       onDownload: handleDownloadContrato,

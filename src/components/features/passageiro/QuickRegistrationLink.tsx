@@ -6,7 +6,6 @@ import {
   Check,
   Copy,
   Loader2,
-  Smartphone,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -55,16 +54,16 @@ export function QuickRegistrationLink({
       const success = await copyToClipboard(message);
       if (success) {
         setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 2000);
       } else {
         toast.error("sistema.erro.falhaCopiar", {
           description: "Não foi possível copiar o link.",
         });
       }
     } finally {
-      setTimeout(() => {
-        setIsCopying(false);
-        setIsCopied(false);
-      }, 3500);
+      setIsCopying(false);
     }
   };
 
@@ -86,14 +85,14 @@ export function QuickRegistrationLink({
     } finally {
       setTimeout(() => {
         setIsSharingWhatsApp(false);
-      }, 3500);
+      }, 1000);
     }
   };
 
   return (
     <div
       className={cn(
-        "relative mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col lg:flex-row items-stretch lg:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500",
+        "relative bg-emerald-500/[0.08] border border-emerald-500/20 rounded-[18px] p-3.5 sm:p-4 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 animate-in fade-in slide-in-from-top-2 duration-500",
         className
       )}
     >
@@ -102,23 +101,24 @@ export function QuickRegistrationLink({
           type="button"
           onClick={onDismiss}
           aria-label="Fechar aviso"
-          className="absolute -top-2 -right-2 sm:-top-2.5 sm:-right-2.5 w-6 h-6 rounded-full bg-white border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all active:scale-90 z-20 cursor-pointer"
+          className="absolute -top-2 -right-2 sm:-top-2.5 sm:-right-2.5 w-6 h-6 rounded-full bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] transition-all active:scale-90 z-20 cursor-pointer"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       )}
-      <div className="flex-1 space-y-1.5 min-w-0">
-        <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
-            <Smartphone className="h-4 w-4" />
-          </div>
-          <p className="text-[13px] font-bold text-emerald-950 tracking-tight leading-snug">
-            Deixe os pais preencherem o cadastro do aluno!
+
+      <div className="flex items-center gap-3 sm:gap-3.5 flex-1 min-w-0">
+        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-[14px] bg-emerald-500/15 text-emerald-700 border border-emerald-500/20 flex items-center justify-center shrink-0">
+          <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:h-5 fill-current" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] tracking-tight leading-snug">
+            Deixe que os pais cadastrem os alunos!
+          </p>
+          <p className="text-xs leading-relaxed text-[#737373] mt-0.5">
+            Os responsáveis preenchem o cadastro e os dados aparecem no seu aplicativo.
           </p>
         </div>
-        <p className="text-[11px] leading-relaxed text-emerald-800">
-          Os responsáveis preenchem o cadastro e os dados aparecem no seu aplicativo. Depois, você só precisa definir o valor e o dia do vencimento.
-        </p>
       </div>
 
       <div className="flex gap-2 w-full lg:w-auto shrink-0">
@@ -126,13 +126,13 @@ export function QuickRegistrationLink({
           onClick={handleShareWhatsApp}
           disabled={isSharingWhatsApp}
           className={cn(
-            "h-11 px-5 bg-[#25D366] hover:bg-[#20b858] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shadow-green-200/50 w-full flex md:hidden justify-center items-center gap-2 active:scale-95 cursor-pointer",
+            "h-9 sm:h-10 px-4 bg-[#25D366] hover:bg-[#20b858] text-white text-sm font-base rounded-[18px] transition-all shadow-xs active:scale-[0.98] w-full flex md:hidden justify-center items-center gap-2 cursor-pointer",
             isSharingWhatsApp && "opacity-75 cursor-not-allowed pointer-events-none"
           )}
         >
           {isSharingWhatsApp ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
               <span>Abrindo...</span>
             </>
           ) : (
@@ -149,27 +149,27 @@ export function QuickRegistrationLink({
           }}
           disabled={isCopying || isCopied}
           className={cn(
-            "h-11 px-4 text-[13px] font-bold rounded-xl transition-all shadow-sm hidden md:flex lg:flex-none justify-center items-center gap-2 active:scale-95 cursor-pointer outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
+            "h-9 px-4 text-xs font-semibold rounded-[18px] transition-all shadow-xs hidden md:flex lg:flex-none justify-center items-center gap-2 active:scale-[0.98] cursor-pointer outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             isCopied
-              ? "bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-not-allowed pointer-events-none"
+              ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-not-allowed pointer-events-none"
               : isCopying
                 ? "bg-white text-emerald-700 border border-emerald-200 opacity-75 cursor-not-allowed pointer-events-none"
-                : "bg-white text-emerald-700 border border-emerald-200 hover:bg-white hover:border-emerald-300 hover:text-emerald-800"
+                : "bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
           )}
         >
           {isCopying ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin text-emerald-700" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-700" />
               <span>Copiando...</span>
             </>
           ) : isCopied ? (
             <>
-              <Check className="h-4 w-4 text-emerald-700" />
+              <Check className="h-3.5 w-3.5 text-emerald-700" />
               <span>Copiado!</span>
             </>
           ) : (
             <>
-              <Copy className="h-4 w-4" />
+              <Copy className="h-3.5 w-3.5" />
               <span>Copiar link de cadastro</span>
             </>
           )}

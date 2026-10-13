@@ -23,13 +23,13 @@ export function useContratos(
     },
     enabled: options?.enabled !== false,
     placeholderData: keepPreviousData,
-    staleTime: 3000,
+    staleTime: 30 * 1000,
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     select: (data) => ({
       list: data.data ?? [],
       pagination: data.pagination,
-      total: data.data?.length ?? 0,
+      total: data.pagination?.total ?? data.data?.length ?? 0,
     }),
   });
 }
@@ -41,9 +41,9 @@ export function useContratosKPIs(ano?: number, options?: UseContratosOptions) {
       return await contratoApi.getKPIs(ano ? { ano } : undefined);
     },
     enabled: options?.enabled !== false,
-    staleTime: 3000,
+    staleTime: 30 * 1000,
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 }
 

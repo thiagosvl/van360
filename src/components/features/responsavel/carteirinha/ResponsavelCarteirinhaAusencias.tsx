@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Loader2, Calendar, Bus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Banner } from "@/components/ui/Banner";
 import { ResponsavelCarteirinhaData, ResponsavelAusenciaItem } from "@/types/responsavel";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -11,6 +12,16 @@ import { safeCloseDialog } from "@/hooks";
 import { toast } from "sonner";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
 import { STORAGE_KEYS } from "@/constants";
+import { cn } from "@/lib/utils";
+
+interface GrupoAusenciaResponsavel {
+  dataStr: string;
+  dateObj: Date;
+  dataLabel: string;
+  isHoje: boolean;
+  isAmanha: boolean;
+  ausencias: ResponsavelAusenciaItem[];
+}
 
 interface ResponsavelCarteirinhaAusenciasProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -34,6 +45,7 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
   const removerAusenciaMutation = useRemoverAusenciaResponsavelMutation();
 
   const rotas = carteirinha.rotas || [];
+  const hasRotas = rotas.length > 0;
 
   const todayStr = useMemo(() => {
     const d = new Date();
@@ -48,11 +60,59 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
 
   const rotasMap = useMemo(() => {
     const map = new Map<string, string>();
-    (carteirinha.rotas || []).forEach((r) => {
+    rotas.forEach((r) => {
       map.set(r.id, r.nome);
     });
     return map;
-  }, [carteirinha.rotas]);
+  }, [rotas]);
+
+  const gruposAusencias = useMemo<GrupoAusenciaResponsavel[]>(() => {
+    const map = new Map<string, ResponsavelAusenciaItem[]>();
+    for (const item of ausenciasFuturas) {
+      const existing = map.get(item.data_ausencia);
+      if (existing) {
+        existing.push(item);
+      } else {
+        map.set(item.data_ausencia, [item]);
+      }
+    }
+
+    const d = new Date();
+    const todayYMD = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowYMD = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    const grupos: GrupoAusenciaResponsavel[] = [];
+    for (const [dataStr, items] of map.entries()) {
+      const dateObj = parseISO(dataStr);
+      const isHoje = dataStr === todayYMD;
+      const isAmanha = dataStr === tomorrowYMD;
+
+      let dataLabel: string;
+      if (isHoje) {
+        dataLabel = "Hoje";
+      } else if (isAmanha) {
+        dataLabel = "Amanhã";
+      } else {
+        const diaSemana = format(dateObj, "EEE", { locale: ptBR });
+        const diaSemanaCap = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1).replace(".", "");
+        const diaMes = format(dateObj, "dd/MM");
+        dataLabel = `${diaSemanaCap}, ${diaMes}`;
+      }
+
+      grupos.push({
+        dataStr,
+        dateObj,
+        dataLabel,
+        isHoje,
+        isAmanha,
+        ausencias: items,
+      });
+    }
+
+    return grupos;
+  }, [ausenciasFuturas]);
 
   const handleExcluirAusencia = (ausencia: ResponsavelAusenciaItem) => {
     const dateFormatted = format(parseISO(ausencia.data_ausencia), "dd/MM/yyyy");
@@ -60,7 +120,7 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
     if (openConfirmationDialog) {
       openConfirmationDialog({
         title: "Remover Registro de Ausência?",
-        description: `Tem certeza que deseja remover a notificação de ausência do dia ${dateFormatted}?`,
+        description: `Tem certeza que deseja remover o agendamento de ausência do dia ${dateFormatted}?`,
         confirmText: "Confirmar",
         cancelText: "Cancelar",
         variant: "warning",
@@ -90,71 +150,104 @@ export const ResponsavelCarteirinhaAusencias: React.FC<ResponsavelCarteirinhaAus
   };
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-6 text-left space-y-4">
+    <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs p-5 sm:p-6 text-left space-y-4">
       <div className="flex items-center justify-between text-left min-h-[32px]">
-        <h3 className="text-base font-bold text-[#16314f]">Ausências</h3>
+        <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">Ausências</h3>
 
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setIsAddDialogOpen(true)}
-          className="h-8 rounded-lg border font-bold text-xs flex items-center gap-1.5 px-3 transition-all border-slate-200 bg-white hover:bg-slate-50 text-[#1a3a5c] shadow-sm hover:shadow cursor-pointer"
+          disabled={!hasRotas}
+          onClick={() => {
+            if (!hasRotas) return;
+            setIsAddDialogOpen(true);
+          }}
+          className="h-8 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-3.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-3 h-3" /> Registrar
         </Button>
       </div>
 
-      {ausenciasFuturas.length === 0 ? (
-        <div className="p-4 bg-slate-50/70 border border-slate-100 rounded-xl text-center space-y-2">
-          <p className="text-xs text-slate-500 font-medium">
+      {!hasRotas && (
+        <Banner
+          variant="warning"
+          description="Este aluno não está vinculado a nenhuma rota, portanto não é possível registrar ausências."
+        />
+      )}
+
+      {gruposAusencias.length === 0 ? (
+        <div className="p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] text-center space-y-2">
+          <p className="text-xs text-[#737373] font-medium">
             Nenhuma ausência futura agendada para este aluno.
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {ausenciasFuturas.map((ausencia) => {
-            const dateObj = parseISO(ausencia.data_ausencia);
-            const formattedDate = format(dateObj, "dd/MM/yyyy");
-            const dayOfWeek = format(dateObj, "EEEE", { locale: ptBR });
-            const isDeletingThis = deletingId === ausencia.id;
-            const rotaNome = ausencia.rota?.nome || (ausencia.rota_id ? rotasMap.get(ausencia.rota_id) : null) || "Rota vinculada";
-
-            return (
-              <div
-                key={ausencia.id}
-                className="p-3 bg-slate-50/80 border border-slate-200/70 rounded-xl flex items-center justify-between gap-3 transition-all hover:bg-slate-100/60"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-800">{formattedDate}</span>
-                    <span className="text-[10px] font-semibold capitalize text-slate-500">
-                      • {dayOfWeek}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
-                    {rotaNome}
-                  </p>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={isDeletingThis}
-                  onClick={() => handleExcluirAusencia(ausencia)}
-                  className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0 cursor-pointer"
-                  title="Remover registro de ausência"
-                >
-                  {isDeletingThis ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
+        <div className="space-y-3.5 pt-1">
+          {gruposAusencias.map((grupo) => (
+            <div
+              key={grupo.dataStr}
+              className="space-y-2 pb-3.5 border-b border-[#e5e5e5]/60 last:border-b-0 last:pb-0"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Calendar
+                  className={cn(
+                    "w-3.5 h-3.5 shrink-0",
+                    grupo.isHoje || grupo.isAmanha
+                      ? "text-primary"
+                      : "text-[#737373]"
                   )}
-                </Button>
+                />
+                <span
+                  className={cn(
+                    "text-xs leading-none",
+                    grupo.isHoje || grupo.isAmanha
+                      ? "font-bold text-primary"
+                      : "font-semibold text-[#0a0a0a]"
+                  )}
+                >
+                  {grupo.dataLabel}
+                </span>
               </div>
-            );
-          })}
+
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {grupo.ausencias.map((ausencia) => {
+                  const isDeletingThis = deletingId === ausencia.id;
+                  const rotaNome =
+                    ausencia.rota?.nome ||
+                    (ausencia.rota_id ? rotasMap.get(ausencia.rota_id) : null) ||
+                    "Rota vinculada";
+
+                  return (
+                    <div
+                      key={ausencia.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] text-xs text-[#0a0a0a] transition-all hover:border-[#d4d4d4]"
+                    >
+                      <Bus className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                      <span className="font-medium text-xs truncate max-w-[190px]">
+                        {rotaNome}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={isDeletingThis}
+                        onClick={() => handleExcluirAusencia(ausencia)}
+                        className="h-5 w-5 -mr-1 ml-0.5 rounded-full text-[#737373] hover:text-[#e7000b] hover:bg-rose-100/60 transition-colors cursor-pointer shrink-0"
+                        title="Remover ausência desta rota"
+                      >
+                        {isDeletingThis ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <X className="w-3 h-3 stroke-[2.5]" />
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

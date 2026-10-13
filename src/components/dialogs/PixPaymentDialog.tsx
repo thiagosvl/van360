@@ -37,7 +37,7 @@ export default function PixPaymentDialog({
 
   useEffect(() => {
     if (qrcode && !imagem_qrcode) {
-      QRCode.toDataURL(qrcode, { width: 400, margin: 2 })
+      QRCode.toDataURL(qrcode, { width: 400, margin: 2, color: { dark: "#0b1a2e" } })
         .then(url => setGeneratedQrCode(url))
         .catch(err => console.error("Erro ao gerar QR Code:", err));
     }
@@ -81,42 +81,42 @@ export default function PixPaymentDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && safeCloseDialog(onClose)}>
       <BaseDialog.Header
         title="Pagamento Assinatura"
-        icon={<QrCode className="w-5 h-5 opacity-80" />}
+        icon={<QrCode className="w-5 h-5 text-foreground" />}
+        onClose={() => safeCloseDialog(onClose)}
       />
       <BaseDialog.Body>
         <div className="flex flex-col items-center space-y-6 py-4">
           <div className="text-center space-y-1">
-            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Valor a pagar</p>
-            <h2 className="text-3xl font-black text-[#1a3a5c]">{formatCurrency(valor)}</h2>
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Valor a pagar</p>
+            <h2 className="text-3xl font-black text-foreground">{formatCurrency(valor)}</h2>
           </div>
 
-          <div className="bg-white p-4 rounded-3xl border-4 border-slate-50 shadow-xl shadow-slate-200/50">
+          <div className="bg-white p-4 rounded-[20px] border border-[#e5e5e5] shadow-xs">
             {(imagem_qrcode || generatedQrCode) ? (
-              <img src={imagem_qrcode || generatedQrCode} alt="QR Code Pix" className="w-64 h-64 scale-110" />
+              <img src={imagem_qrcode || generatedQrCode} alt="QR Code Pix" className="w-60 h-60 sm:w-64 sm:h-64" />
             ) : (
-              <div className="w-64 h-64 bg-slate-50 flex items-center justify-center rounded-2xl border border-dashed border-slate-200">
-                <QrCode className="w-12 h-12 text-slate-300 animate-pulse" />
+              <div className="w-60 h-60 sm:w-64 sm:h-64 bg-[#f5f5f5] flex items-center justify-center rounded-[18px] border border-dashed border-[#e5e5e5]">
+                <QrCode className="w-12 h-12 text-muted-foreground animate-pulse" />
               </div>
             )}
           </div>
 
           <div className="w-full space-y-3">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest text-center">
               Escaneie o código no app do seu banco
             </p>
 
-            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mt-2 space-y-3">
-              <p className="text-[10px] font-bold text-slate-500 uppercase text-center leading-relaxed">
+            <div className="bg-[#f5f5f5] p-4 rounded-[18px] border border-[#e5e5e5] mt-2 space-y-3">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase text-center leading-relaxed">
                 Ou use o código Pix Copia e Cola abaixo:
               </p>
               <div className="flex gap-2">
-                <div className="bg-white border border-slate-100 rounded-xl px-4 py-2 text-[11px] font-medium text-slate-600 flex-1 truncate select-all">
+                <div className="bg-white border border-[#e5e5e5] rounded-[14px] px-4 py-2.5 text-xs font-mono text-foreground flex-1 truncate select-all shadow-xs">
                   {qrcode}
                 </div>
                 <Button
-                  variant="outline"
                   size="icon"
-                  className="shrink-0 rounded-xl bg-white shadow-sm border-slate-200 hover:border-[#1a3a5c] hover:text-[#1a3a5c] transition-all"
+                  className="shrink-0 rounded-[14px] bg-primary text-white hover:bg-primary-hover shadow-xs transition-all"
                   onClick={handleCopy}
                 >
                   <Copy className="w-4 h-4" />
@@ -126,36 +126,36 @@ export default function PixPaymentDialog({
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-              <RefreshCw className={isVerifying ? "w-3 h-3 animate-spin" : "w-3 h-3"} />
+            <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+              <RefreshCw className={isVerifying ? "w-3 h-3 text-muted-foreground animate-spin" : "w-3 h-3 text-muted-foreground"} />
               Verificando pagamento automaticamente...
             </div>
             <button
               onClick={() => handleVerify()}
               disabled={isVerifying}
-              className="text-[10px] font-black uppercase text-[#1a3a5c] hover:underline"
+              className="text-[10px] font-bold uppercase text-foreground hover:underline"
             >
               Verificar agora
             </button>
           </div>
         </div>
       </BaseDialog.Body>
-      <BaseDialog.Footer>
-        <div className="flex w-full justify-between items-center px-6 pb-6">
-          {onSwitchPaymentMethod && (
-            <button
-              onClick={onSwitchPaymentMethod}
-              className="text-xs font-bold text-slate-400 hover:text-[#1a3a5c] transition-colors"
-            >
-              Alterar forma de pagamento
-            </button>
-          )}
-          <BaseDialog.Action
-            label="Fechar"
-            variant="secondary"
-            onClick={() => safeCloseDialog(onClose)}
-          />
-        </div>
+      <BaseDialog.Footer className="bg-[#f5f5f5]/80 border-t border-[#e5e5e5] flex items-center justify-between p-4 sm:px-6">
+        {onSwitchPaymentMethod ? (
+          <button
+            onClick={onSwitchPaymentMethod}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Alterar forma de pagamento
+          </button>
+        ) : (
+          <div />
+        )}
+        <BaseDialog.Action
+          label="Fechar"
+          variant="outline"
+          onClick={() => safeCloseDialog(onClose)}
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

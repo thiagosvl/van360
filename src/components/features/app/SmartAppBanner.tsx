@@ -26,19 +26,20 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
     <section className="px-1">
       <div
         className={cn(
-          "bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden relative p-5 sm:p-6 text-center flex flex-col items-center transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+          "bg-white rounded-[24px] shadow-xs border border-[#e5e5e5] p-5 sm:p-6 lg:p-7 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 text-center sm:text-left transition-all duration-300 animate-in fade-in slide-in-from-top-2",
           className
         )}
       >
-        <h3 className="font-bold text-[#1a3a5c] text-[16px] sm:text-[17px] tracking-tight">
-          Baixe o nosso App
-        </h3>
+        <div className="space-y-1 flex-1 min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight leading-snug">
+            Baixe o nosso App
+          </h3>
+          <p className="text-xs sm:text-sm text-[#737373] font-normal leading-relaxed max-w-xl">
+            O aplicativo é leve e te envia notificações sobre a sua van. Acesse também pelo computador ou tablet.
+          </p>
+        </div>
 
-        <p className="text-xs text-slate-500 font-normal mt-1 max-w-md leading-relaxed">
-          O aplicativo é leve e te envia notificações sobre a sua van. Você também pode acessar pelo computador ou tablet.
-        </p>
-
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 shrink-0">
           {isEligibleAndroid && (
             <a
               href={PLAY_STORE_URL}

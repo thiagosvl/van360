@@ -34,11 +34,11 @@ export function AdminSolicitacaoAccessDetails({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="text-[11px] text-slate-500 italic cursor-default select-none">
+          <span className="text-[11px] text-muted-foreground italic cursor-default select-none">
             Não registrado
           </span>
         </TooltipTrigger>
-        <TooltipContent className="bg-slate-900 border-slate-800 text-slate-300 text-xs">
+        <TooltipContent className="bg-popover border-border text-popover-foreground text-xs">
           Solicitação anterior à implementação do rastreamento de acesso.
         </TooltipContent>
       </Tooltip>
@@ -104,8 +104,8 @@ export function AdminSolicitacaoAccessDetails({
           type="button"
           className={
             variant === "mobile"
-              ? "flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 transition-colors text-left"
-              : "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-200 transition-colors group cursor-pointer"
+              ? "flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-secondary/60 hover:bg-secondary border border-border text-foreground transition-colors text-left"
+              : "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-secondary/50 hover:bg-secondary border border-border text-foreground transition-colors group cursor-pointer"
           }
           title="Clique para ver os detalhes técnicos de acesso"
         >
@@ -113,37 +113,37 @@ export function AdminSolicitacaoAccessDetails({
             className="h-3.5 w-3.5 shrink-0"
             style={{ color: dispConfig.color }}
           />
-          <span className="text-[11px] font-semibold text-slate-200 truncate max-w-[130px]">
+          <span className="text-xs font-medium text-foreground truncate max-w-[130px]">
             {dispConfig.label}
           </span>
-          <Info className="h-3 w-3 text-slate-500 group-hover:text-blue-400 shrink-0 ml-0.5 transition-colors" />
+          <Info className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0 ml-0.5 transition-colors" />
         </button>
       </PopoverTrigger>
 
       <PopoverContent
         align={variant === "mobile" ? "start" : "end"}
-        className="w-80 p-4 bg-[#111927] border-slate-700/80 text-slate-200 rounded-2xl shadow-2xl space-y-3.5 text-left"
+        className="w-80 p-4 bg-popover border-border text-popover-foreground rounded-2xl shadow-xl space-y-3.5 text-left"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+        <div className="flex items-center justify-between gap-2 border-b border-border pb-2.5">
           <div className="flex items-center gap-2 min-w-0">
             <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border border-slate-700/50"
+              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border border-border"
               style={{ backgroundColor: `${dispConfig.color}20` }}
             >
               <DispIcon className="h-4 w-4" style={{ color: dispConfig.color }} />
             </div>
             <div className="min-w-0">
-              <h5 className="text-xs font-headline font-black text-slate-100 truncate">
-                Detalhes do Acesso
+              <h5 className="text-xs font-semibold text-foreground truncate">
+                Detalhes do acesso
               </h5>
-              <p className="text-[10px] text-slate-400 font-medium">
+              <p className="text-[10px] text-muted-foreground">
                 {formattedDateTime}
               </p>
             </div>
           </div>
           <Badge
             variant="outline"
-            className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[10px] font-semibold px-2 py-0.5 border"
             style={{
               color: dispConfig.color,
               borderColor: `${dispConfig.color}40`,
@@ -155,12 +155,12 @@ export function AdminSolicitacaoAccessDetails({
         </div>
 
         {ip && (
-          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-secondary/50 border border-border">
             <div className="min-w-0">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
                 Endereço IP
               </span>
-              <span className="text-xs font-mono font-bold text-blue-400 truncate block">
+              <span className="text-xs font-mono font-bold text-primary truncate block">
                 {ip}
               </span>
             </div>
@@ -169,56 +169,56 @@ export function AdminSolicitacaoAccessDetails({
               variant="ghost"
               size="sm"
               onClick={handleCopyIp}
-              className="h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg shrink-0"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg shrink-0"
               title="Copiar IP"
             >
-              {copiedIp ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedIp ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
             </Button>
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 text-[11px]">
-          <div className="p-2 rounded-xl bg-slate-900/50 border border-slate-800/80">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
-              Sistema Operacional
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="p-2 rounded-xl bg-secondary/40 border border-border">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
+              Sistema operacional
             </span>
-            <span className="font-semibold text-slate-200 truncate block mt-0.5">
+            <span className="font-medium text-foreground truncate block mt-0.5">
               {so || "Não detectado"}
             </span>
           </div>
-          <div className="p-2 rounded-xl bg-slate-900/50 border border-slate-800/80">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
+          <div className="p-2 rounded-xl bg-secondary/40 border border-border">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
               Navegador
             </span>
-            <span className="font-semibold text-slate-200 truncate block mt-0.5">
+            <span className="font-medium text-foreground truncate block mt-0.5">
               {navegador || "Não detectado"}
             </span>
           </div>
         </div>
 
         {screen && (
-          <div className="flex items-center justify-between text-[11px] px-2 py-1.5 rounded-lg bg-slate-900/40 border border-slate-800/60">
-            <span className="text-[10px] font-medium text-slate-400">Resolução de Tela:</span>
-            <span className="font-mono text-[10px] text-slate-300 font-semibold">{screen}</span>
+          <div className="flex items-center justify-between text-xs px-2 py-1.5 rounded-lg bg-secondary/30 border border-border/60">
+            <span className="text-[10px] text-muted-foreground">Resolução de tela:</span>
+            <span className="font-mono text-[10px] text-foreground font-medium">{screen}</span>
           </div>
         )}
 
         {(referrer || utm) && (
-          <div className="p-2 rounded-xl bg-slate-900/50 border border-slate-800/80 space-y-1">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
-              Origem da Visita
+          <div className="p-2 rounded-xl bg-secondary/40 border border-border space-y-1">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
+              Origem da visita
             </span>
             {referrer && (
-              <p className="text-[10px] text-slate-300 font-mono truncate" title={referrer}>
-                <span className="text-slate-500">Ref: </span>
+              <p className="text-[10px] text-foreground font-mono truncate" title={referrer}>
+                <span className="text-muted-foreground">Ref: </span>
                 {referrer}
               </p>
             )}
             {utm && Object.keys(utm).length > 0 && (
-              <p className="text-[10px] text-emerald-400 font-mono">
+              <p className="text-[10px] text-emerald-500 font-mono">
                 {utm.source && <span className="font-bold">{utm.source}</span>}
-                {utm.medium && <span className="text-slate-400"> / {utm.medium}</span>}
-                {utm.campaign && <span className="text-slate-500"> ({utm.campaign})</span>}
+                {utm.medium && <span className="text-muted-foreground"> / {utm.medium}</span>}
+                {utm.campaign && <span className="text-muted-foreground"> ({utm.campaign})</span>}
               </p>
             )}
           </div>
@@ -227,18 +227,18 @@ export function AdminSolicitacaoAccessDetails({
         {userAgent && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                 User-Agent
               </span>
               <button
                 type="button"
                 onClick={handleCopyUa}
-                className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
               >
                 {copiedUa ? (
                   <>
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    <span className="text-emerald-400">Copiado</span>
+                    <Check className="h-3 w-3 text-emerald-500" />
+                    <span className="text-emerald-500">Copiado</span>
                   </>
                 ) : (
                   <>
@@ -248,7 +248,7 @@ export function AdminSolicitacaoAccessDetails({
                 )}
               </button>
             </div>
-            <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-850 text-[10px] font-mono text-slate-400 max-h-20 overflow-y-auto break-all select-all leading-tight">
+            <div className="p-2 rounded-xl bg-background border border-border text-[10px] font-mono text-muted-foreground max-h-20 overflow-y-auto break-all select-all leading-tight">
               {userAgent}
             </div>
           </div>

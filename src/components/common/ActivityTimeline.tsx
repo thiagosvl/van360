@@ -139,7 +139,7 @@ const getActionStyles = (acao: string | AtividadeAcao) => {
 
   return {
     icon: <Clock className="w-3.5 h-3.5" />,
-    color: "text-gray-600 bg-gray-50 border-gray-100",
+    color: "text-[#737373] bg-[#f5f5f5] border-[#e5e5e5]",
   };
 };
 
@@ -153,7 +153,7 @@ const getEntityDotColor = (tipo: AtividadeEntidadeTipo | string) => {
     case AtividadeEntidadeTipo.GASTO: return "bg-rose-500 shadow-rose-200";
     case AtividadeEntidadeTipo.CONTRATO: return "bg-blue-500 shadow-blue-200";
     case AtividadeEntidadeTipo.ROTA: return "bg-teal-500 shadow-teal-200";
-    default: return "bg-gray-400 shadow-gray-200";
+    default: return "bg-[#737373] shadow-black/10";
   }
 };
 
@@ -186,10 +186,10 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
       <div className={cn("space-y-4", className)}>
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex gap-4">
-            <Skeleton className="w-3 h-3 rounded-full mt-1.5" />
+            <Skeleton className="w-3 h-3 rounded-full mt-1.5 bg-[#f5f5f5]" />
             <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-3/4 rounded-lg" />
-              <Skeleton className="h-3 w-1/4 rounded-lg" />
+              <Skeleton className="h-4 w-3/4 rounded-[8px] bg-[#f5f5f5]" />
+              <Skeleton className="h-3 w-1/4 rounded-[6px] bg-[#f5f5f5]" />
             </div>
           </div>
         ))}
@@ -208,8 +208,8 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
 
   if (!atividades || atividades.length === 0) {
     return (
-      <div className={cn("flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-gray-100 rounded-[2rem]", className)}>
-        <Clock className="w-10 h-10 mb-3 text-gray-200" />
+      <div className={cn("flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-[#e5e5e5] rounded-[24px]", className)}>
+        <Clock className="w-10 h-10 mb-3 text-[#e5e5e5]" />
         <p className="text-sm text-foreground/50 font-medium">Nenhuma atividade registrada.</p>
       </div>
     );
@@ -225,7 +225,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
 
       <div className="relative pl-6 space-y-1">
         {/* Continuous timeline line */}
-        <div className="absolute left-[7px] top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100" />
+        <div className="absolute left-[7px] top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-[#e5e5e5]/50 via-[#e5e5e5] to-[#e5e5e5]/50" />
 
         <AnimatePresence initial={false}>
           {displayAtividades?.map((atividade, index) => {
@@ -259,13 +259,13 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
 
                   {/* Content Card */}
                   <div className={cn(
-                    "group flex flex-col gap-1.5 p-2.5 rounded-2xl transition-all duration-300",
-                    "bg-white border border-gray-100/50 hover:border-gray-200/80 hover:shadow-soft-xl"
+                    "group flex flex-col gap-1.5 p-3 rounded-[18px] transition-all duration-300",
+                    "bg-white border border-[#e5e5e5] hover:border-[#d4d4d4] hover:shadow-xs"
                   )}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         <div className={cn(
-                          "mt-0.5 p-1.5 rounded-xl border transition-colors",
+                          "mt-0.5 p-1.5 rounded-[12px] border transition-colors",
                           styles.color
                         )}>
                           {styles.icon}
@@ -290,7 +290,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                       atividade.meta.status
                     ) && (
                       <div className="mt-1 ml-9 overflow-hidden">
-                        <div className="p-2.5 rounded-xl bg-gray-50/50 border border-gray-100/50 space-y-1.5">
+                        <div className="p-2.5 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] space-y-1.5">
                           {atividade.meta.valor && (
                             <div className="flex items-center gap-1.5">
                               <span className="text-[10px] font-semibold text-foreground/60 uppercase tracking-tighter">Valor</span>
@@ -322,7 +322,7 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                               <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Alterações</span>
                               <div className="flex flex-wrap gap-1">
                                 {atividade.meta.campos.map((campo: string) => (
-                                  <span key={campo} className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-100/50 text-amber-900 border border-amber-200/50 font-medium">
+                                  <span key={campo} className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-amber-100/50 text-amber-900 border border-amber-200/50 font-medium">
                                     {campo}
                                   </span>
                                 ))}

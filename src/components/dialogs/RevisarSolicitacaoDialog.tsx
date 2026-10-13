@@ -3,6 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { MoneyInput, FormEnderecoFields } from "@/components/forms";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/TimeInput";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -12,13 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { PrePassageiro } from "@/types/prePassageiro";
@@ -26,7 +21,6 @@ import { Passageiro } from "@/types/passageiro";
 import { Button } from "@/components/ui/button";
 import {
   Car,
-  Clock,
   Compass,
   Contact,
   DollarSign,
@@ -40,6 +34,7 @@ import {
   DoorClosed,
   ChevronDown,
   Wand2,
+  X,
 } from "lucide-react";
 import {
   generos,
@@ -176,34 +171,35 @@ export function RevisarSolicitacaoDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="3xl">
       <BaseDialog.Header
         title="Revisar Cadastro"
-        icon={<UserCheck className="w-5 h-5 text-[#1a3a5c]" />}
+        icon={<UserCheck className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
         leftAction={isDevEnv() && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-[#1a3a5c] hover:bg-slate-50 rounded-xl h-11 w-11 shadow-sm border border-slate-100"
+            className="text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-[18px] h-10 w-10 border border-[#e5e5e5] cursor-pointer"
             onClick={handleFillMock}
             title="Preencher com dados fictícios"
           >
-            <Wand2 className="h-5 w-5" />
+            <Wand2 className="h-4 w-4" />
           </Button>
         )}
       />
 
       <BaseDialog.Body containerRef={bodyRef}>
-
         <Form {...form}>
-          <form id="revisar-solicitacao-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
-            <div className="space-y-5">
-              <div className="text-sm font-bold tracking-wide uppercase text-slate-500">
+          <form id="revisar-solicitacao-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-5">
+            <div className="space-y-4">
+              <div className="text-xs font-semibold tracking-wider uppercase text-[#737373]">
                 Para você preencher
               </div>
 
-              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 space-y-5">
-                <div className="flex items-center gap-2.5 text-base font-bold text-[#1a3a5c]">
-                  <DollarSign className="w-4 h-4 text-[#1a3a5c]" />
+              <div className="rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] bg-[#fafafa] p-4 sm:p-5 space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-white flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                    <DollarSign className="w-4 h-4" />
+                  </div>
                   Parcelas
                 </div>
 
@@ -211,12 +207,12 @@ export function RevisarSolicitacaoDialog({
                   control={form.control}
                   name="isento"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl bg-white border border-slate-200/80 p-4 shadow-2xs">
+                    <FormItem className="flex flex-row items-center justify-between rounded-[18px] bg-white border border-[#e5e5e5] p-3.5 sm:p-4 shadow-2xs">
                       <div className="space-y-0.5 pr-4">
-                        <FormLabel className="text-slate-800 font-bold text-sm cursor-pointer">
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer">
                           Aluno Isento
                         </FormLabel>
-                        <div className="text-xs text-slate-500 font-normal leading-relaxed">
+                        <div className="text-xs text-[#737373] font-normal leading-relaxed">
                           Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
                         </div>
                       </div>
@@ -224,7 +220,7 @@ export function RevisarSolicitacaoDialog({
                         <Switch
                           checked={!!field.value}
                           onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-[#1a3a5c]"
+                          className="data-[state=checked]:bg-primary"
                         />
                       </FormControl>
                     </FormItem>
@@ -233,7 +229,7 @@ export function RevisarSolicitacaoDialog({
 
                 {!isIsento && (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                       <FormField
                         control={form.control}
                         name="valor_cobranca"
@@ -242,8 +238,7 @@ export function RevisarSolicitacaoDialog({
                             field={field}
                             label="Valor da Parcela"
                             required
-                            labelClassName="text-slate-700 font-semibold ml-1"
-                            inputClassName="pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5"
+                            inputClassName="bg-white"
                           />
                         )}
                       />
@@ -253,39 +248,32 @@ export function RevisarSolicitacaoDialog({
                         name="dia_vencimento"
                         render={({ field, fieldState }) => (
                           <FormItem className="col-span-1">
-                            <FormLabel className="text-slate-700 font-semibold ml-1">
-                              Dia do Vencimento <span className="text-red-600">*</span>
+                            <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                              Dia do Vencimento <span className="text-[#e7000b]">*</span>
                             </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || undefined}>
-                              <FormControl>
-                                <div className="relative">
-                                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                  <SelectTrigger
-                                    className={cn(
-                                      "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                      fieldState.error && "border-red-500"
-                                    )}
-                                    aria-invalid={!!fieldState.error}
-                                  >
-                                    <SelectValue placeholder="Selecione o dia" />
-                                  </SelectTrigger>
-                                </div>
-                              </FormControl>
-                              <SelectContent className="max-h-60 overflow-y-auto">
+                            <FormControl>
+                              <NativeSelect
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                error={!!fieldState.error}
+                                className="bg-white"
+                              >
+                                <option value="">Selecionar</option>
                                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                  <SelectItem key={day} value={day.toString()}>
+                                  <option key={day} value={day.toString()}>
                                     Dia {day}
-                                  </SelectItem>
+                                  </option>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </NativeSelect>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                       <div className="grid grid-cols-3 gap-2">
                         <div className="col-span-2">
                           <FormField
@@ -293,38 +281,28 @@ export function RevisarSolicitacaoDialog({
                             name="mes_inicio_cobranca"
                             render={({ field, fieldState }) => (
                               <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                  Início da Cobrança <span className="text-red-600">*</span>
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                  Início da Cobrança <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select
-                                  onValueChange={(val) => {
-                                    field.onChange(val);
-                                    form.trigger("mes_fim_cobranca");
-                                  }}
-                                  value={field.value || undefined}
-                                >
-                                  <FormControl>
-                                    <div className="relative">
-                                      <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                      <SelectTrigger
-                                        className={cn(
-                                          "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                          fieldState.error && "border-red-500"
-                                        )}
-                                        aria-invalid={!!fieldState.error}
-                                      >
-                                        <SelectValue placeholder="Mês" />
-                                      </SelectTrigger>
-                                    </div>
-                                  </FormControl>
-                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                <FormControl>
+                                  <NativeSelect
+                                    value={field.value || ""}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      form.trigger("mes_fim_cobranca");
+                                    }}
+                                    icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                    error={!!fieldState.error}
+                                    className="bg-white"
+                                  >
+                                    <option value="">Mês</option>
                                     {monthOptions.map((m) => (
-                                      <SelectItem key={m.value} value={m.value}>
+                                      <option key={m.value} value={m.value}>
                                         {m.label}
-                                      </SelectItem>
+                                      </option>
                                     ))}
-                                  </SelectContent>
-                                </Select>
+                                  </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -336,34 +314,31 @@ export function RevisarSolicitacaoDialog({
                             name="ano_inicio_cobranca"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                  Ano <span className="text-red-600">*</span>
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                  Ano <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select
-                                  onValueChange={(val) => {
-                                    field.onChange(val);
-                                    form.setValue("ano_fim_cobranca", val);
-                                    if (parseInt(val, 10) > new Date().getFullYear()) {
-                                      form.setValue("mes_inicio_cobranca", "");
-                                      form.setValue("mes_fim_cobranca", "");
-                                    }
-                                    form.trigger("mes_fim_cobranca");
-                                  }}
-                                  value={field.value || (anoInicioOptions[0] || "")}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                      <SelectValue placeholder="Ano" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
+                                <FormControl>
+                                  <NativeSelect
+                                    value={field.value || (anoInicioOptions[0] || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      field.onChange(val);
+                                      form.setValue("ano_fim_cobranca", val);
+                                      if (parseInt(val, 10) > new Date().getFullYear()) {
+                                        form.setValue("mes_inicio_cobranca", "");
+                                        form.setValue("mes_fim_cobranca", "");
+                                      }
+                                      form.trigger("mes_fim_cobranca");
+                                    }}
+                                    className="bg-white"
+                                  >
                                     {anoInicioOptions.map((y) => (
-                                      <SelectItem key={y} value={y}>
+                                      <option key={y} value={y}>
                                         {y}
-                                      </SelectItem>
+                                      </option>
                                     ))}
-                                  </SelectContent>
-                                </Select>
+                                  </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -378,35 +353,25 @@ export function RevisarSolicitacaoDialog({
                             name="mes_fim_cobranca"
                             render={({ field, fieldState }) => (
                               <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                  Término da Cobrança <span className="text-red-600">*</span>
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                  Término da Cobrança <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value || undefined}
-                                >
-                                  <FormControl>
-                                    <div className="relative">
-                                      <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                      <SelectTrigger
-                                        className={cn(
-                                          "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                          fieldState.error && "border-red-500"
-                                        )}
-                                        aria-invalid={!!fieldState.error}
-                                      >
-                                        <SelectValue placeholder="Mês" />
-                                      </SelectTrigger>
-                                    </div>
-                                  </FormControl>
-                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                <FormControl>
+                                  <NativeSelect
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                                    error={!!fieldState.error}
+                                    className="bg-white"
+                                  >
+                                    <option value="">Mês</option>
                                     {monthOptions.map((m) => (
-                                      <SelectItem key={m.value} value={m.value}>
+                                      <option key={m.value} value={m.value}>
                                         {m.label}
-                                      </SelectItem>
+                                      </option>
                                     ))}
-                                  </SelectContent>
-                                </Select>
+                                  </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -418,29 +383,25 @@ export function RevisarSolicitacaoDialog({
                             name="ano_fim_cobranca"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-slate-700 font-semibold ml-1">
-                                  Ano <span className="text-red-600">*</span>
+                                <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                                  Ano <span className="text-[#e7000b]">*</span>
                                 </FormLabel>
-                                <Select
-                                  onValueChange={(val) => {
-                                    field.onChange(val);
-                                    form.trigger("mes_fim_cobranca");
-                                  }}
-                                  value={field.value || (anoFimOptions[0] || "")}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base">
-                                      <SelectValue placeholder="Ano" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
+                                <FormControl>
+                                  <NativeSelect
+                                    value={field.value || (anoFimOptions[0] || "")}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      form.trigger("mes_fim_cobranca");
+                                    }}
+                                    className="bg-white"
+                                  >
                                     {anoFimOptions.map((y) => (
-                                      <SelectItem key={y} value={y}>
+                                      <option key={y} value={y}>
                                         {y}
-                                      </SelectItem>
+                                      </option>
                                     ))}
-                                  </SelectContent>
-                                </Select>
+                                  </NativeSelect>
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -459,59 +420,52 @@ export function RevisarSolicitacaoDialog({
                 )}
               </div>
 
-              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 space-y-5">
-                <div className="flex items-center gap-2.5 text-base font-bold text-[#1a3a5c]">
-                  <Car className="w-4 h-4 text-[#1a3a5c]" />
+              <div className="rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] bg-[#fafafa] p-4 sm:p-5 space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-white flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                    <Car className="w-4 h-4" />
+                  </div>
                   Veículo e Escola
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                   <FormField
                     control={form.control}
                     name="veiculo_id"
                     render={({ field, fieldState }) => (
                       <FormItem className="col-span-1">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Veículo <span className="text-red-600">*</span>
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Veículo <span className="text-[#e7000b]">*</span>
                         </FormLabel>
-                        <Select
-                          value={field.value || undefined}
-                          onValueChange={(val) => {
-                            if (val === "add-new-vehicle") {
-                              handleAddNewVehicle();
-                              return;
-                            }
-                            field.onChange(val);
-                          }}
-                          disabled={isLoadingVeiculos}
-                        >
-                          <FormControl>
-                            <div className="relative">
-                              <Car className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              >
-                                <SelectValue placeholder={isLoadingVeiculos ? "Carregando..." : "Selecione o veículo"} />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "add-new-vehicle") {
+                                handleAddNewVehicle();
+                                return;
+                              }
+                              field.onChange(val);
+                            }}
+                            disabled={isLoadingVeiculos}
+                            icon={<Car className="h-4 w-4 text-[#737373]" />}
+                            error={!!fieldState.error}
+                            className="bg-white"
+                          >
+                            <option value="">
+                              {isLoadingVeiculos ? "Carregando..." : "Selecione o veículo"}
+                            </option>
                             {veiculosList.map((veiculo) => (
-                              <SelectItem key={veiculo.id} value={veiculo.id}>
+                              <option key={veiculo.id} value={veiculo.id}>
                                 {formatarPlacaExibicao(veiculo.placa)} {veiculo.modelo ? `- ${veiculo.modelo}` : ""}
-                              </SelectItem>
+                              </option>
                             ))}
-                            <SelectItem
-                              value="add-new-vehicle"
-                              className="font-semibold text-[#1a3a5c] cursor-pointer"
-                            >
+                            <option value="add-new-vehicle">
                               + Cadastrar Veículo
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                            </option>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -522,47 +476,38 @@ export function RevisarSolicitacaoDialog({
                     name="escola_id"
                     render={({ field, fieldState }) => (
                       <FormItem className="col-span-1">
-                        <FormLabel className="text-slate-700 font-semibold ml-1">
-                          Escola <span className="text-red-600">*</span>
+                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                          Escola <span className="text-[#e7000b]">*</span>
                         </FormLabel>
-                        <Select
-                          value={field.value || undefined}
-                          onValueChange={(val) => {
-                            if (val === "add-new-school") {
-                              handleAddNewSchool();
-                              return;
-                            }
-                            field.onChange(val);
-                          }}
-                          disabled={isLoadingEscolas}
-                        >
-                          <FormControl>
-                            <div className="relative">
-                              <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <SelectTrigger
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              >
-                                <SelectValue placeholder={isLoadingEscolas ? "Carregando..." : "Selecione a escola"} />
-                              </SelectTrigger>
-                            </div>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
+                        <FormControl>
+                          <NativeSelect
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "add-new-school") {
+                                handleAddNewSchool();
+                                return;
+                              }
+                              field.onChange(val);
+                            }}
+                            disabled={isLoadingEscolas}
+                            icon={<School className="h-4 w-4 text-[#737373]" />}
+                            error={!!fieldState.error}
+                            className="bg-white"
+                          >
+                            <option value="">
+                              {isLoadingEscolas ? "Carregando..." : "Selecione a escola"}
+                            </option>
                             {escolasList.map((escola) => (
-                              <SelectItem key={escola.id} value={escola.id}>
+                              <option key={escola.id} value={escola.id}>
                                 {escola.nome}
-                              </SelectItem>
+                              </option>
                             ))}
-                            <SelectItem
-                              value="add-new-school"
-                              className="font-semibold text-[#1a3a5c] cursor-pointer"
-                            >
+                            <option value="add-new-school">
                               + Cadastrar Escola
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                            </option>
+                          </NativeSelect>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -575,55 +520,54 @@ export function RevisarSolicitacaoDialog({
               ref={collapsibleRef}
               open={isDadosResponsavelOpen}
               onOpenChange={handleToggleDadosResponsavel}
-              className="rounded-2xl border border-slate-200/80 bg-slate-50/50 overflow-hidden"
+              className="rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] bg-[#fafafa] overflow-hidden"
             >
               <CollapsibleTrigger asChild>
                 <button
                   type="button"
-                  className="w-full p-5 flex items-center justify-between text-left hover:bg-slate-100/60 transition-colors"
+                  className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-[#f5f5f5] transition-colors cursor-pointer"
                 >
                   <div className="space-y-0.5">
-                    <div className="text-sm font-bold tracking-wide uppercase text-slate-700">
-                      O que o pai preencheu
-                    </div>
-                    <div className="text-xs text-slate-500 font-normal">
-                      Aluno, Turno, Responsável e Endereço para conferência
+                    <div className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                      O que o responsável preencheu
                     </div>
                   </div>
                   <ChevronDown
                     className={cn(
-                      "w-5 h-5 text-slate-400 transition-transform duration-200",
+                      "w-4 h-4 text-[#737373] transition-transform duration-200",
                       isDadosResponsavelOpen && "transform rotate-180"
                     )}
                   />
                 </button>
               </CollapsibleTrigger>
 
-              <CollapsibleContent className="px-5 pb-5 pt-1 space-y-6 border-t border-slate-200/60">
-                <div className="space-y-4 pt-4">
-                  <div className="flex items-center gap-2.5 text-base font-bold text-[#1a3a5c]">
-                    <User className="w-4 h-4 text-[#1a3a5c]" />
+              <CollapsibleContent className="px-4 sm:px-5 pb-6 pt-1 space-y-8 border-t border-[#e5e5e5]">
+                <div className="space-y-4 pt-3">
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                      <User className="w-4 h-4" />
+                    </div>
                     Identificação do Aluno
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="nome"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome do Aluno <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Nome do Aluno <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Digite o nome completo"
                                 {...field}
                                 className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               />
                             </div>
@@ -638,31 +582,25 @@ export function RevisarSolicitacaoDialog({
                       name="ano_letivo"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Ano Letivo <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Ano Letivo <span className="text-[#e7000b]">*</span>
                           </FormLabel>
-                          <div className="relative">
-                            <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60 z-10" />
-                            <Select value={field.value || undefined} onValueChange={field.onChange}>
-                              <FormControl>
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Selecione o ano" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {anoLetivoOptions.map((ano) => (
-                                  <SelectItem key={ano} value={ano}>
-                                    {ano}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                              error={!!fieldState.error}
+                              className="bg-white"
+                            >
+                              <option value="">Selecionar</option>
+                              {anoLetivoOptions.map((ano) => (
+                                <option key={ano} value={ano}>
+                                  {ano}
+                                </option>
+                              ))}
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -673,31 +611,25 @@ export function RevisarSolicitacaoDialog({
                       name="periodo"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Período
                           </FormLabel>
-                          <Select value={field.value || undefined} onValueChange={field.onChange}>
-                            <FormControl>
-                              <div className="relative">
-                                <Sun className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Selecione o período" />
-                                </SelectTrigger>
-                              </div>
-                            </FormControl>
-                            <SelectContent>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              icon={<Sun className="h-4 w-4 text-[#737373]" />}
+                              error={!!fieldState.error}
+                              className="bg-white"
+                            >
+                              <option value="">Selecionar</option>
                               {periodos.map((tipo) => (
-                                <SelectItem key={tipo.value} value={tipo.value}>
+                                <option key={tipo.value} value={tipo.value}>
                                   {tipo.label}
-                                </SelectItem>
+                                </option>
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -708,31 +640,25 @@ export function RevisarSolicitacaoDialog({
                       name="modalidade"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Modalidade
                           </FormLabel>
-                          <Select value={field.value || undefined} onValueChange={field.onChange}>
-                            <FormControl>
-                              <div className="relative">
-                                <Compass className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                    fieldState.error && "border-red-500"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Selecione a modalidade" />
-                                </SelectTrigger>
-                              </div>
-                            </FormControl>
-                            <SelectContent>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              icon={<Compass className="h-4 w-4 text-[#737373]" />}
+                              error={!!fieldState.error}
+                              className="bg-white"
+                            >
+                              <option value="">Selecionar</option>
                               {modalidades.map((m) => (
-                                <SelectItem key={m.value} value={m.value}>
+                                <option key={m.value} value={m.value}>
                                   {m.label}
-                                </SelectItem>
+                                </option>
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -743,7 +669,7 @@ export function RevisarSolicitacaoDialog({
                       name="data_nascimento"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Data de Nascimento
                           </FormLabel>
                           <FormControl>
@@ -756,8 +682,8 @@ export function RevisarSolicitacaoDialog({
                               value={field.value || ""}
                               onChange={(e) => field.onChange(dateMask(e.target.value))}
                               className={cn(
-                                "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                fieldState.error && "border-red-500"
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                             />
                           </FormControl>
@@ -771,28 +697,24 @@ export function RevisarSolicitacaoDialog({
                       name="genero"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Gênero
                           </FormLabel>
-                          <Select value={field.value || undefined} onValueChange={field.onChange}>
-                            <FormControl>
-                              <SelectTrigger
-                                className={cn(
-                                  "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              >
-                                <SelectValue placeholder="Selecione o gênero" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
+                          <FormControl>
+                            <NativeSelect
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              error={!!fieldState.error}
+                              className="bg-white"
+                            >
+                              <option value="">Selecionar</option>
                               {generos.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
+                                <option key={option.value} value={option.value}>
                                   {option.label}
-                                </SelectItem>
+                                </option>
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -803,17 +725,17 @@ export function RevisarSolicitacaoDialog({
                       name="turma"
                       render={({ field }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Turma
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <School className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <School className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Ex: 5º Ano A"
                                 {...field}
                                 value={field.value || ""}
-                                className="pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                                className="pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]"
                               />
                             </div>
                           </FormControl>
@@ -827,17 +749,17 @@ export function RevisarSolicitacaoDialog({
                       name="sala"
                       render={({ field }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Sala
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <DoorClosed className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <DoorClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Ex: 12"
                                 {...field}
                                 value={field.value || ""}
-                                className="pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                                className="pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]"
                               />
                             </div>
                           </FormControl>
@@ -851,17 +773,17 @@ export function RevisarSolicitacaoDialog({
                       name="nome_professor"
                       render={({ field }) => (
                         <FormItem className="col-span-1 sm:col-span-2">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Professor(a)
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <UserCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <UserCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Ex: Cláudia"
                                 {...field}
                                 value={field.value || ""}
-                                className="pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                                className="pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]"
                               />
                             </div>
                           </FormControl>
@@ -875,22 +797,17 @@ export function RevisarSolicitacaoDialog({
                       name="horario_entrada"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Horário de Entrada
                           </FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <Input
-                                type="time"
-                                {...field}
-                                value={field.value || ""}
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              />
-                            </div>
+                            <TimeInput
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(val) => field.onChange(val)}
+                              className="bg-white"
+                              error={!!fieldState.error}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -902,22 +819,17 @@ export function RevisarSolicitacaoDialog({
                       name="horario_saida"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Horário de Saída
                           </FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Clock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
-                              <Input
-                                type="time"
-                                {...field}
-                                value={field.value || ""}
-                                className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              />
-                            </div>
+                            <TimeInput
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(val) => field.onChange(val)}
+                              className="bg-white"
+                              error={!!fieldState.error}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -929,7 +841,7 @@ export function RevisarSolicitacaoDialog({
                       name="data_inicio_transporte"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Início do Transporte
                           </FormLabel>
                           <FormControl>
@@ -942,8 +854,8 @@ export function RevisarSolicitacaoDialog({
                               value={field.value || ""}
                               onChange={(e) => field.onChange(dateMask(e.target.value))}
                               className={cn(
-                                "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                fieldState.error && "border-red-500"
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                             />
                           </FormControl>
@@ -957,7 +869,7 @@ export function RevisarSolicitacaoDialog({
                       name="data_fim_transporte"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Término do Transporte
                           </FormLabel>
                           <FormControl>
@@ -970,8 +882,8 @@ export function RevisarSolicitacaoDialog({
                               value={field.value || ""}
                               onChange={(e) => field.onChange(dateMask(e.target.value))}
                               className={cn(
-                                "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                fieldState.error && "border-red-500"
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                             />
                           </FormControl>
@@ -985,7 +897,7 @@ export function RevisarSolicitacaoDialog({
                       name="observacoes"
                       render={({ field }) => (
                         <FormItem className="col-span-1 sm:col-span-2">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             Cuidados e Observações
                           </FormLabel>
                           <FormControl>
@@ -993,7 +905,7 @@ export function RevisarSolicitacaoDialog({
                               placeholder="Alergias, recomendações médicas ou observações gerais..."
                               {...field}
                               value={field.value || ""}
-                              className="min-h-[90px] rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base"
+                              className="min-h-[90px] rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]"
                             />
                           </FormControl>
                           <FormMessage />
@@ -1003,32 +915,32 @@ export function RevisarSolicitacaoDialog({
                   </div>
                 </div>
 
-                <hr className="border-slate-200/60" />
-
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2.5 text-base font-bold text-[#1a3a5c]">
-                    <Contact className="w-4 h-4 text-[#1a3a5c]" />
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                      <Contact className="w-4 h-4" />
+                    </div>
                     Responsável Financeiro
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="nome_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Nome do Responsável <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Nome do Responsável <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 placeholder="Nome completo do responsável"
                                 {...field}
                                 className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               />
                             </div>
@@ -1043,28 +955,27 @@ export function RevisarSolicitacaoDialog({
                       name="parentesco_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Parentesco do Responsável
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Parentesco
                           </FormLabel>
-                          <Select value={field.value || undefined} onValueChange={field.onChange}>
-                            <FormControl>
-                              <SelectTrigger
-                                className={cn(
-                                  "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base text-left",
-                                  fieldState.error && "border-red-500"
-                                )}
-                              >
-                                <SelectValue placeholder="Selecione o parentesco" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
+                          <FormControl>
+                            <NativeSelect
+                              {...field}
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              className={cn(
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
+                              )}
+                            >
+                              <option value="">Selecionar</option>
                               {parentescos.map((p) => (
-                                <SelectItem key={p.value} value={p.value}>
+                                <option key={p.value} value={p.value}>
                                   {p.label}
-                                </SelectItem>
+                                </option>
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </NativeSelect>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1075,12 +986,12 @@ export function RevisarSolicitacaoDialog({
                       name="telefone_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Telefone (WhatsApp) <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Telefone (WhatsApp) <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Phone className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 type="text"
                                 inputMode="numeric"
@@ -1089,8 +1000,8 @@ export function RevisarSolicitacaoDialog({
                                 {...field}
                                 onChange={(e) => field.onChange(phoneMask(e.target.value))}
                                 className={cn(
-                                  "pl-12 h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                  fieldState.error && "border-red-500"
+                                  "pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                  fieldState.error && "border-[#e7000b]"
                                 )}
                               />
                             </div>
@@ -1105,7 +1016,7 @@ export function RevisarSolicitacaoDialog({
                       name="cpf_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                             CPF do Responsável
                           </FormLabel>
                           <FormControl>
@@ -1118,8 +1029,8 @@ export function RevisarSolicitacaoDialog({
                               value={field.value || ""}
                               onChange={(e) => field.onChange(cpfMask(e.target.value))}
                               className={cn(
-                                "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                fieldState.error && "border-red-500"
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                             />
                           </FormControl>
@@ -1133,8 +1044,8 @@ export function RevisarSolicitacaoDialog({
                       name="email_responsavel"
                       render={({ field, fieldState }) => (
                         <FormItem className="col-span-1 sm:col-span-2">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            E-mail do Responsável
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            E-mail
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -1143,8 +1054,8 @@ export function RevisarSolicitacaoDialog({
                               {...field}
                               value={field.value || ""}
                               className={cn(
-                                "h-12 rounded-xl bg-white border-slate-200 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/5 text-base",
-                                fieldState.error && "border-red-500"
+                                "h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]",
+                                fieldState.error && "border-[#e7000b]"
                               )}
                             />
                           </FormControl>
@@ -1155,15 +1066,15 @@ export function RevisarSolicitacaoDialog({
                   </div>
                 </div>
 
-                <hr className="border-slate-200/60" />
-
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2.5 text-base font-bold text-[#1a3a5c]">
-                    <MapPin className="w-4 h-4 text-[#1a3a5c]" />
+                  <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                      <MapPin className="w-4 h-4" />
+                    </div>
                     Endereço Principal
                   </div>
 
-                  <FormEnderecoFields required={false} />
+                  <FormEnderecoFields required={false} inputClassName="bg-white" />
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -1171,7 +1082,7 @@ export function RevisarSolicitacaoDialog({
         </Form>
       </BaseDialog.Body>
 
-      <BaseDialog.Footer className="justify-end gap-3">
+      <BaseDialog.Footer className="justify-end gap-2.5">
         <BaseDialog.Action
           type="button"
           label="Cancelar"

@@ -1,52 +1,51 @@
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain";
+import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Users2,
-} from "lucide-react";
-import { StatusBadge } from "@/components/common/StatusBadge";
 
 interface VeiculoSummaryProps {
-  veiculo: Veiculo;
+  veiculo: Veiculo & { passageiros_ativos_count?: number };
 }
 
 export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
   return (
-    <div className="flex flex-col p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-[20px] border border-slate-200/60 dark:border-zinc-800 shadow-sm transition-all text-left w-full min-w-0 overflow-hidden">
+    <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
+      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none">
+          Veículo
+        </span>
 
-      {/* LINHA 1: Overline Categoria + Status Badge */}
-      <div className="flex justify-between items-center mb-2 w-full min-w-0 gap-2">
-        <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider leading-none shrink-0">
-          VEÍCULO
-        </p>
-
-        <div className={cn(
-          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0"
-        )}>
-          <StatusBadge
-            status={veiculo.ativo}
-          />
+        <div
+          className={cn(
+            "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
+            veiculo.ativo
+              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+              : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
+          )}
+        >
+          {veiculo.ativo ? "Ativo" : "Inativo"}
         </div>
       </div>
 
-      {/* LINHA 2: Placa em Destaque */}
-      <div className="flex items-start gap-2 mt-0.5 w-full min-w-0">
-        <h1 className="text-base sm:text-lg font-bold text-[#1a3a5c] dark:text-zinc-100 leading-snug break-words w-full min-w-0">
-          {formatarPlacaExibicao(veiculo.placa)}
-        </h1>
-      </div>
+      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight break-words w-full min-w-0 mt-0.5">
+        {formatarPlacaExibicao(veiculo.placa)}
+      </h2>
 
-      {/* Subtítulo: Marca e Modelo */}
-      <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 uppercase mt-1 leading-snug line-clamp-2 break-words w-full min-w-0">
+      <p className="text-xs font-normal text-[#737373] mt-0.5 leading-snug line-clamp-2 break-words w-full min-w-0">
         {veiculo.marca} {veiculo.modelo}
       </p>
 
-      {/* LINHA 3: Footer com Passageiros */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60 dark:border-zinc-800/80 w-full min-w-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Users2 className="h-4 w-4 text-slate-400 shrink-0" />
-          <span className="text-[11px] sm:text-[12px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wide truncate">
-            {veiculo.passageiros_ativos_count ?? 0} {(veiculo.passageiros_ativos_count ?? 0) === 1 ? "ALUNO ATIVO" : "ALUNOS ATIVOS"}
+      <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
+        <div className="flex items-center gap-1.5 min-w-0 text-[#737373]">
+          <Users2 className="h-3.5 w-3.5 shrink-0" />
+          <span className="text-xs font-normal text-[#737373] truncate">
+            Alunos ativos
+          </span>
+        </div>
+
+        <div className="flex items-center shrink-0">
+          <span className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight leading-none">
+            {veiculo.passageiros_ativos_count ?? 0}
           </span>
         </div>
       </div>

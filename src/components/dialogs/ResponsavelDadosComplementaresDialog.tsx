@@ -198,22 +198,22 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
     <BaseDialog open={open} onOpenChange={() => { }} lockClose={true} maxWidth={needsAddress ? "xl" : "md"}>
       <BaseDialog.Header
         title="Atualização Cadastral"
-        icon={<UserCheck className="w-5 h-5" />}
+        icon={<UserCheck className="w-5 h-5 text-[#0a0a0a]" />}
       />
 
       <BaseDialog.Body>
         <Form {...form}>
-          <form id="form-dados-complementares" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-2 text-left">
+          <form id="form-dados-complementares" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 py-2 text-left">
             <Banner
               variant="warning"
               title="Por favor, complete as informações pendentes do seu cadastro para continuar."
             />
 
             {needsPersonalData && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                    <UserCheck className="w-4.5 h-4.5" />
+              <section className="space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                    <UserCheck className="w-4 h-4" />
                   </div>
                   Dados Pessoais
                 </div>
@@ -225,24 +225,24 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
                       name="cpf"
                       render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Seu CPF <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Seu CPF <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <IdCard className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <IdCard className="absolute left-4 top-3 h-4 w-4 text-[#737373]" />
                               <Input
                                 {...field}
                                 value={field.value || ""}
                                 type="text"
                                 placeholder="000.000.000-00"
                                 onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                                className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
+                                className="pl-11 h-10 sm:h-11 text-sm rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-[#0a0a0a] font-normal"
                                 disabled={loading}
                               />
                             </div>
                           </FormControl>
-                          <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
+                          <FormMessage className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5" />
                         </FormItem>
                       )}
                     />
@@ -254,23 +254,23 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
                       name="email"
                       render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                          <FormLabel className="text-slate-700 font-semibold ml-1">
-                            Seu E-mail <span className="text-red-600">*</span>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                            Seu E-mail <span className="text-[#e7000b]">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                              <Mail className="absolute left-4 top-3 h-4 w-4 text-[#737373]" />
                               <Input
                                 {...field}
                                 value={field.value || ""}
                                 type="email"
                                 placeholder="seu.email@exemplo.com"
-                                className="pl-12 h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:border-[#1a3a5c] focus:ring-4 focus:ring-[#1a3a5c]/10 text-slate-700 font-medium"
+                                className="pl-11 h-10 sm:h-11 text-sm rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-[#0a0a0a] font-normal"
                                 disabled={loading}
                               />
                             </div>
                           </FormControl>
-                          <FormMessage className="text-xs text-red-500 font-medium ml-1 mt-1.5" />
+                          <FormMessage className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5" />
                         </FormItem>
                       )}
                     />
@@ -279,15 +279,11 @@ export const ResponsavelDadosComplementaresDialog: React.FC<ResponsavelDadosComp
               </section>
             )}
 
-            {needsPersonalData && needsAddress && (
-              <hr className="border-slate-100" />
-            )}
-
             {needsAddress && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-3 text-base font-semibold text-slate-800 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm flex-shrink-0">
-                    <MapPin className="w-4.5 h-4.5" />
+              <section className="space-y-4">
+                <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                  <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                    <MapPin className="w-4 h-4" />
                   </div>
                   Endereço
                 </div>

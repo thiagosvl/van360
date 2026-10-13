@@ -1,27 +1,14 @@
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionSheet, ActionSheetItem } from "@/components/common/ActionSheet";
 import { Input } from "@/components/ui/input";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import { ContratoTab } from "@/types/enums";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, Search, Settings, Loader2, FileText, CheckCircle2, PauseCircle, UploadCloud } from "lucide-react";
-import { memo, useState } from "react";
-import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { memo, useMemo, useState } from "react";
 
 interface ContratosToolbarProps {
   busca: string;
@@ -32,6 +19,7 @@ interface ContratosToolbarProps {
   countAssinados?: number;
   anoLetivo?: number;
   onChangeAnoLetivo?: (ano: number) => void;
+  isLoadingKPIs?: boolean;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
   onImportarContrato?: () => void;
@@ -51,6 +39,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   countAssinados,
   anoLetivo,
   onChangeAnoLetivo,
+  isLoadingKPIs = false,
   onOpenConfig,
   onOpenPreview,
   onImportarContrato,
@@ -60,307 +49,143 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   isToggling = false,
   isPreviewLoading = false,
 }: ContratosToolbarProps) {
-  const [openDrawer, setOpenDrawer] = useState(false);
-  const [openPopover, setOpenPopover] = useState(false);
-  const isMobile = useIsMobile();
+  const [openOptions, setOpenOptions] = useState(false);
+
+  const contractActions: ActionSheetItem[] = useMemo(() => [
+    ...(onImportarContrato
+      ? [
+        {
+          label: "Importar Contrato Assinado",
+          description: "Vincular contrato já assinado",
+          icon: UploadCloud,
+          onClick: onImportarContrato,
+          disabled: isDesativado || isToggling,
+        },
+      ]
+      : []),
+    {
+      label: "Ver Modelo de Contrato",
+      icon: isPreviewLoading ? Loader2 : Eye,
+      isLoading: isPreviewLoading,
+      onClick: onOpenPreview,
+      disabled: !isContratoConfigurado || isPreviewLoading,
+    },
+    {
+      label: "Personalizar Meu Contrato",
+      description: "Cláusulas, multas e assinatura",
+      icon: FileText,
+      onClick: onOpenConfig,
+      disabled: isToggling,
+    },
+    {
+      label: !isDesativado
+        ? "Desativar Uso"
+        : isContratoConfigurado
+          ? "Reativar Uso"
+          : "Ajustar e Começar a Usar",
+      icon: isToggling
+        ? Loader2
+        : !isDesativado
+          ? PauseCircle
+          : CheckCircle2,
+      isLoading: isToggling,
+      onClick: () => onToggleContratos(isDesativado),
+      disabled: isToggling,
+      isDestructive: !isDesativado,
+    },
+  ], [
+    onImportarContrato,
+    isDesativado,
+    isToggling,
+    isPreviewLoading,
+    onOpenPreview,
+    isContratoConfigurado,
+    onOpenConfig,
+    onToggleContratos,
+  ]);
 
   return (
-    <div className="flex flex-col gap-6 mb-8">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
-        {/* Tabs - Estilo Corretor */}
-        <div className="bg-slate-200/50 p-1 rounded-[1.25rem] w-full sm:w-fit overflow-x-auto scrollbar-hide">
-          <TabsList className="bg-transparent min-h-[40px] p-0 gap-1 border-0 w-max sm:w-auto">
-            <TabsTrigger
-              value={ContratoTab.SEM_CONTRATO}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              {formatContratoStatus(ContratoTab.SEM_CONTRATO)}
-              {countSemContrato !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.SEM_CONTRATO ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countSemContrato}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value={ContratoTab.PENDENTES}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              Assinaturas Pendentes
-              {countPendentes !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.PENDENTES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countPendentes}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value={ContratoTab.ASSINADOS}
-              className={cn(
-                "rounded-[1rem] px-5 h-full font-headline font-bold text-[13px] transition-all duration-300",
-                "data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm",
-                "data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-              )}
-            >
-              Assinados
-              {countAssinados !== undefined && (
-                <span className={cn(
-                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
-                  activeTab === ContratoTab.ASSINADOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
-                )}>
-                  {countAssinados}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
-        </div>
+    <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5">
+        <AppTabNav
+          activeTab={activeTab}
+          items={[
+            {
+              value: ContratoTab.SEM_CONTRATO,
+              label: formatContratoStatus(ContratoTab.SEM_CONTRATO),
+              badge: countSemContrato,
+              badgeLoading: isLoadingKPIs,
+            },
+            {
+              value: ContratoTab.PENDENTES,
+              label: "Assinaturas Pendentes",
+              badge: countPendentes,
+              badgeLoading: isLoadingKPIs,
+            },
+            {
+              value: ContratoTab.ASSINADOS,
+              label: "Assinados",
+              badge: countAssinados,
+              badgeLoading: isLoadingKPIs,
+            },
+          ]}
+        />
 
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto">
           {anoLetivo && onChangeAnoLetivo && (
             <AnoLetivoSelect
               ano={anoLetivo}
               onChangeAno={onChangeAnoLetivo}
-              className="shrink-0 h-12"
+              className="shrink-0 h-10 sm:h-11"
             />
           )}
-
-          {/* Busca */}
           <div className="relative group flex-grow xl:w-80">
-            <Search className={cn(
-              "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
-              busca ? "text-amber-500" : "text-slate-400 group-focus-within:text-[#1a3a5c]"
-            )} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373] pointer-events-none transition-colors group-focus-within:text-[#0a0a0a] group-hover:text-[#0a0a0a]" />
             <Input
               type="search"
-              placeholder="Buscar por aluno ou responsável..."
+              placeholder="Buscar aluno ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all border-none"
+              className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
             />
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            {onImportarContrato && (
-              <Button
-                type="button"
-                onClick={onImportarContrato}
-                title="Vincular contrato já assinado ao cadastro de um aluno"
-                className="hidden sm:inline-flex h-12 px-4 rounded-xl bg-[#1a3a5c] hover:bg-[#152e4a] text-white font-bold text-sm shadow-sm gap-2 shrink-0 active:scale-95 transition-all"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Importar Contrato Assinado</span>
-              </Button>
-            )}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              onClick={onOpenConfig}
+              disabled={isToggling}
+              title="Configurar modelo de contrato, cláusulas e assinatura digital"
+              className="hidden sm:inline-flex h-10 sm:h-11 px-4 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground font-medium text-sm gap-2 shrink-0 transition-all shadow-xs border border-transparent cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-primary-foreground" />
+              <span>Configurar Modelo</span>
+            </Button>
 
-            {!isMobile && (
-              <DropdownMenu open={openPopover} onOpenChange={setOpenPopover}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "h-12 w-12 px-0 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 hover:bg-slate-50 relative shrink-0",
-                      openPopover ? "ring-2 ring-[#1a3a5c] ring-offset-2" : ""
-                    )}
-                  >
-                    {isToggling ? (
-                      <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                    ) : (
-                      <Settings className={cn(
-                        "w-5 h-5 transition-colors",
-                        isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
-                      )} />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-slate-100 shadow-xl space-y-1">
-                  <DropdownMenuItem
-                    disabled={isDesativado || isToggling}
-                    onClick={onOpenConfig}
-                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
-                  >
-                    <FileText className="w-4 h-4 opacity-70" />
-                    Configurar Modelo de Contrato
-                  </DropdownMenuItem>
+            <Button
+              type="button"
+              variant="outline"
+              title="Mais opções de contratos"
+              onClick={() => setOpenOptions(true)}
+              className={cn(
+                "h-10 sm:h-11 w-10 sm:w-11 p-0 bg-white hover:bg-[#f5f5f5] hover:border-[#737373]/50 active:scale-[0.98] text-[#0a0a0a] border border-[#e5e5e5] rounded-[18px] transition-all shrink-0 cursor-pointer shadow-xs",
+                openOptions ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]" : ""
+              )}
+            >
+              {isToggling ? (
+                <Loader2 className="w-4 h-4 text-[#737373] animate-spin" />
+              ) : (
+                <Settings className="w-4 h-4 text-[#0a0a0a]" />
+              )}
+            </Button>
 
-                  <DropdownMenuItem
-                    disabled={isToggling}
-                    onClick={() => onToggleContratos(isDesativado)}
-                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer font-medium text-slate-700"
-                  >
-                    {isToggling ? <Loader2 className="w-4 h-4 animate-spin" /> : (!isDesativado ? <PauseCircle className="w-4 h-4 opacity-70 text-red-500" /> : <CheckCircle2 className="w-4 h-4 opacity-70" />)}
-                    {!isDesativado ? <span className="text-red-500">Desativar Uso</span> : <span>{isContratoConfigurado ? "Reativar Uso" : "Ativar Uso"}</span>}
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem
-                    disabled={!isContratoConfigurado || isPreviewLoading}
-                    onClick={onOpenPreview}
-                    className="flex items-center gap-2 h-10 px-3 rounded-xl cursor-pointer text-[#1a3a5c] font-medium"
-                  >
-                    {isPreviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4 opacity-70" />}
-                    Visualizar Contrato Modelo
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-
-            {isMobile && (
-              <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
-                <DrawerTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "h-12 w-12 px-0 bg-white border border-slate-100 shadow-sm transition-all active:scale-95 hover:bg-slate-50 relative shrink-0",
-                      openDrawer ? "ring-2 ring-[#1a3a5c] ring-offset-2" : ""
-                    )}
-                  >
-                    {isToggling ? (
-                      <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                    ) : (
-                      <Settings className={cn(
-                        "w-5 h-5 transition-colors",
-                        isDesativado ? "text-slate-400 group-hover:text-[#1a3a5c]" : "text-[#1a3a5c]"
-                      )} />
-                    )}
-                  </Button>
-                </DrawerTrigger>
-
-                <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-[calc(2rem+var(--safe-area-bottom))]">
-                  <DrawerHeader className="text-left mb-2 px-8 pt-6">
-                    <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">
-                      Opções de Contrato
-                    </DrawerTitle>
-                    <DrawerDescription className="text-xs font-medium text-gray-400">
-                      Gerencie o comportamento global da geração de contratos da sua van.
-                    </DrawerDescription>
-                  </DrawerHeader>
-
-                  <div className="flex-1 overflow-y-auto px-4 pb-10 mt-2">
-                    <div className="flex flex-col gap-1">
-
-                      <button
-                        onClick={() => {
-                          setOpenDrawer(false);
-                          onOpenConfig();
-                        }}
-                        disabled={isDesativado || isToggling}
-                        className={cn(
-                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                          isDesativado
-                            ? "opacity-40 grayscale pointer-events-none text-slate-400"
-                            : "text-[#1a3a5c] active:bg-slate-50"
-                        )}
-                      >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
-                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                            <FileText />
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Configurar Modelo de Contrato</span>
-                          <span className="text-[11px] text-slate-400 font-medium truncate">Cláusulas e regras padrão da sua van</span>
-                        </div>
-                      </button>
-
-                      {onImportarContrato && (
-                        <button
-                          onClick={() => {
-                            setOpenDrawer(false);
-                            onImportarContrato();
-                          }}
-                          disabled={isDesativado || isToggling}
-                          className={cn(
-                            "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                            isDesativado
-                              ? "opacity-40 grayscale pointer-events-none text-slate-400"
-                              : "text-[#1a3a5c] active:bg-slate-50"
-                          )}
-                        >
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
-                            <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                              <UploadCloud />
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                            <span className="font-bold text-sm tracking-tight truncate">Importar Contrato Assinado</span>
-                            <span className="text-[11px] text-slate-400 font-medium truncate">Vincular documento assinado a um aluno</span>
-                          </div>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          onToggleContratos(isDesativado);
-                          setOpenDrawer(false);
-                        }}
-                        disabled={isToggling}
-                        className={cn(
-                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                          !isDesativado
-                            ? "text-red-500 active:bg-slate-50"
-                            : "text-[#1a3a5c] active:bg-slate-50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50",
-                          !isDesativado ? "text-red-500" : "text-slate-500"
-                        )}>
-                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                            {isToggling ? (
-                              <Loader2 className="animate-spin" />
-                            ) : !isDesativado ? (
-                              <PauseCircle />
-                            ) : (
-                              <CheckCircle2 />
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">
-                            {!isDesativado ? "Desativar Uso de Contratos" : (isContratoConfigurado ? "Reativar Uso de Contratos" : "Ativar Uso de Contratos")}
-                          </span>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setOpenDrawer(false);
-                          onOpenPreview();
-                        }}
-                        disabled={!isContratoConfigurado || isPreviewLoading}
-                        className={cn(
-                          "w-full flex items-center justify-start gap-3 h-14 px-4 rounded-2xl transition-all active:scale-[0.98] outline-none",
-                          !isContratoConfigurado
-                            ? "opacity-40 grayscale pointer-events-none text-slate-400"
-                            : "text-[#1a3a5c] active:bg-slate-50"
-                        )}
-                      >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-slate-50 text-slate-500">
-                          <div className="h-5 w-5 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
-                            {isPreviewLoading ? <Loader2 className="animate-spin" /> : <Eye />}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                          <span className="font-bold text-sm tracking-tight truncate">Visualizar Contrato Modelo</span>
-                        </div>
-                      </button>
-
-                    </div>
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            )}
+            <ActionSheet
+              open={openOptions}
+              onOpenChange={setOpenOptions}
+              title="Opções de Contrato"
+              description="Gerencie as diretrizes e modelos de contratos da sua operação."
+              actions={contractActions}
+            />
           </div>
         </div>
       </div>

@@ -110,13 +110,13 @@ export function AdminUserReferralTab({
 
   return (
     <div className="space-y-6 text-left">
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="p-6 pb-2">
-          <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-            <Share2 className="h-4 w-4 text-purple-400" />
-            LINK DE INDICAÇÃO DESTE MOTORISTA
+      <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-6 pb-2 border-b border-border bg-card">
+          <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Share2 className="h-4 w-4 text-purple-500" />
+            <span>Link de indicação deste motorista</span>
           </CardTitle>
-          <p className="text-[11px] font-medium text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Link exclusivo do motorista para cópia rápida e envio pelo WhatsApp.
           </p>
         </CardHeader>
@@ -126,22 +126,22 @@ export function AdminUserReferralTab({
               <Input
                 readOnly
                 value={referralLink}
-                className="bg-slate-900/90 border-slate-800 text-slate-200 font-mono text-xs h-11 pr-10 rounded-xl focus-visible:ring-blue-500"
+                className="bg-secondary/50 border-input text-foreground font-mono text-xs h-11 pr-10 rounded-xl focus-visible:ring-primary"
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleCopyOnlyUrl}
-                className="absolute right-1 top-1 bottom-1 h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                className="absolute right-1 top-1 bottom-1 h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
                 title="Copiar apenas o link"
               >
-                {copiedUrl ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiedUrl ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
 
             <Button
               onClick={handleShareWhatsApp}
-              className="w-full sm:w-auto h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20b858] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer shadow-lg shadow-green-900/20 active:scale-95"
+              className="w-full sm:w-auto h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20b858] text-white font-semibold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer shadow-sm active:scale-95"
             >
               <WhatsAppIcon className="h-4 w-4 fill-current" />
               <span>WhatsApp</span>
@@ -150,21 +150,21 @@ export function AdminUserReferralTab({
             <Button
               onClick={handleCopyMessage}
               className={cn(
-                "w-full sm:w-auto h-11 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer active:scale-95 shadow-lg",
+                "w-full sm:w-auto h-11 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer active:scale-95 shadow-sm",
                 copiedMessage
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
               )}
             >
               {copiedMessage ? (
                 <>
-                  <Check className="h-4 w-4 text-emerald-400" />
+                  <Check className="h-4 w-4 text-emerald-500" />
                   <span>Copiado!</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  <span>Copiar Mensagem</span>
+                  <span>Copiar mensagem</span>
                 </>
               )}
             </Button>
@@ -172,83 +172,83 @@ export function AdminUserReferralTab({
         </CardContent>
       </Card>
 
-      <Card className="border border-slate-800/80 shadow-2xl rounded-[2rem] overflow-hidden bg-[#131b2e]">
-        <CardHeader className="p-6 pb-2">
-          <CardTitle className="text-xs font-headline font-black text-slate-300 uppercase tracking-widest">
-            MÉTRICAS DE INDICAÇÕES FEITAS POR ESTE MOTORISTA
+      <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-6 pb-2 border-b border-border bg-card">
+          <CardTitle className="text-base font-semibold text-foreground">
+            Métricas de indicações feitas por este motorista
           </CardTitle>
-          <p className="text-[11px] font-medium text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Resumo de conversões e bônus acumulados por {user.nome}
           </p>
         </CardHeader>
         <CardContent className="p-6 pt-4 space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <AdminKpiCard
-              title="CADASTROS VIA INDICAÇÃO"
+              title="Cadastros via indicação"
               value={total}
               subtext={`${pending} em teste (trial)`}
-              cardBorder="border-purple-500/40 shadow-purple-500/10"
-              iconBg="bg-purple-500/10 text-purple-400 border-purple-500/20"
+              cardBorder="border-border hover:border-purple-500/50"
+              iconBg="bg-purple-500/10 text-purple-500 border-purple-500/20"
               icon={<Share2 className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="CONVERTIDOS EM ASSINANTES"
+              title="Convertidos em assinantes"
               value={completed}
               subtext="Pagaram a 1ª mensalidade"
-              cardBorder="border-emerald-500/40 shadow-emerald-500/10"
-              iconBg="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              cardBorder="border-border hover:border-emerald-500/50"
+              iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
               icon={<CheckCircle2 className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="TAXA DE CONVERSÃO"
+              title="Taxa de conversão"
               value={`${taxaConversao}%`}
               subtext={`${completed} de ${total} indicados convertidos`}
-              cardBorder="border-blue-500/40 shadow-blue-500/10"
-              iconBg="bg-blue-500/10 text-blue-400 border-blue-500/20"
+              cardBorder="border-border hover:border-primary/50"
+              iconBg="bg-primary/10 text-primary border-primary/20"
               icon={<UserPlus className="h-5 w-5" />}
             />
 
             <AdminKpiCard
-              title="BÔNUS GERADO"
+              title="Bônus gerado"
               value={`${diasBonusConcedidos} Dias`}
               subtext={
                 diasBonusConcedidos === 0
                   ? "0 meses grátis acumulados"
                   : `~${Math.round(diasBonusConcedidos / 30)} meses grátis ao motorista`
               }
-              cardBorder="border-amber-500/40 shadow-amber-500/10"
-              iconBg="bg-amber-500/10 text-amber-400 border-amber-500/20"
+              cardBorder="border-border hover:border-amber-500/50"
+              iconBg="bg-amber-500/10 text-amber-500 border-amber-500/20"
               icon={<Gift className="h-5 w-5" />}
             />
           </div>
 
           {referredUsers.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-slate-800/80">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Motoristas Indicados por Ele ({referredUsers.length})
+            <div className="space-y-3 pt-4 border-t border-border">
+              <h4 className="text-xs font-semibold text-foreground">
+                Motoristas indicados por ele ({referredUsers.length})
               </h4>
               <div className="grid gap-2">
                 {referredUsers.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-between text-xs"
+                    className="p-3.5 rounded-2xl border border-border bg-card flex items-center justify-between text-xs shadow-sm"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       {item.indicado?.id ? (
                         <Link
                           to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.indicado.id}`}
-                          className="font-bold text-white hover:text-blue-400 hover:underline transition-colors truncate block"
+                          className="font-semibold text-foreground hover:text-primary transition-colors truncate block"
                         >
                           {item.indicado.nome}
                         </Link>
                       ) : (
-                        <p className="font-bold text-white truncate">
-                          {item.indicado?.nome || "Motorista Indicado"}
+                        <p className="font-semibold text-foreground truncate">
+                          {item.indicado?.nome || "Motorista indicado"}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         {item.indicado?.telefone && (
                           <span className="font-mono">{phoneMask(item.indicado.telefone)}</span>
                         )}
@@ -258,12 +258,12 @@ export function AdminUserReferralTab({
                     </div>
                     <div>
                       {item.status === IndicacaoStatus.COMPLETED ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                           Convertido
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          Em Teste
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                          Em teste
                         </span>
                       )}
                     </div>

@@ -52,20 +52,20 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
   return (
     <div className="w-full flex items-center gap-2 max-w-full overflow-hidden py-1 select-none">
       {showYear && (
-        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-full px-2.5 py-1 shadow-sm shrink-0 h-8">
+        <div className="flex items-center gap-0.5 bg-white border border-[#e5e5e5] rounded-[18px] px-2 py-0.5 shrink-0 h-9">
           <button
             type="button"
             disabled={disabled}
             onClick={() => onNavigate(mes, ano - 1)}
             className={cn(
-              "p-0.5 text-slate-500 hover:text-[#1a3a5c] transition-colors rounded-full hover:bg-slate-100",
+              "p-1 text-[#737373] hover:text-[#0a0a0a] transition-colors rounded-[10px] hover:bg-[#f5f5f5]",
               disabled && "opacity-50 cursor-not-allowed"
             )}
             title="Ano anterior"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-          <span className="text-xs font-bold text-[#1a3a5c] px-0.5 select-none tracking-tight">
+          <span className="text-xs font-semibold text-[#0a0a0a] px-1 select-none tracking-tight">
             {ano}
           </span>
           <button
@@ -73,7 +73,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
             disabled={disabled}
             onClick={() => onNavigate(mes, ano + 1)}
             className={cn(
-              "p-0.5 text-slate-500 hover:text-[#1a3a5c] transition-colors rounded-full hover:bg-slate-100",
+              "p-1 text-[#737373] hover:text-[#0a0a0a] transition-colors rounded-[10px] hover:bg-[#f5f5f5]",
               disabled && "opacity-50 cursor-not-allowed"
             )}
             title="Próximo ano"
@@ -85,7 +85,7 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
 
       <div
         ref={scrollContainerRef}
-        className="flex gap-2 bg-transparent p-0 justify-start overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden h-auto pb-0.5 w-full scroll-smooth"
+        className="flex gap-1.5 bg-transparent p-0 justify-start overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden h-auto pb-0.5 w-full scroll-smooth"
       >
         {MESES.map((nomeMes, index) => {
           const monthNum = index + 1;
@@ -99,10 +99,10 @@ export function DateNavigation({ mes, ano, onNavigate, disabled, showYear = true
               disabled={disabled}
               onClick={() => onNavigate(monthNum, ano)}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all shadow-sm whitespace-nowrap shrink-0 h-8 flex items-center justify-center",
+                "rounded-[18px] px-3.5 py-1 text-xs font-medium transition-all whitespace-nowrap shrink-0 h-9 flex items-center justify-center cursor-pointer",
                 isSelected
-                  ? "bg-[#1a3a5c] text-white border-[#1a3a5c]"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+                  ? "bg-primary/10 text-primary border border-primary/20 font-semibold shadow-2xs"
+                  : "bg-white text-[#737373] hover:text-[#0a0a0a] hover:bg-[#fafafa] border border-[#e5e5e5]",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >

@@ -65,7 +65,7 @@ function CobrancaShowcaseContent({
         <p>
           Por favor, efetue o pagamento para manter o transporte em dia.
         </p>
-        <p className="italic text-[#54656f] text-[11px] min-[360px]:text-[12px] leading-[15px] min-[360px]:leading-[16px]">
+        <p className="italic text-[#54656f] text-[10px] min-[360px]:text-[12px] leading-[15px] min-[360px]:leading-[16px]">
           Caso já tenha efetuado o pagamento, por favor desconsidere esta mensagem.
         </p>
       </WhatsAppMessageContainer>
@@ -75,18 +75,18 @@ function CobrancaShowcaseContent({
         onValueChange={(val) => onPixModeChange(val as "com_pix" | "sem_pix")}
         className="w-full max-w-[260px] min-[360px]:max-w-[280px] xl:max-w-[300px] mt-2.5 mx-auto sm:mx-0 xl:mx-auto"
       >
-        <TabsList className="grid grid-cols-2 w-full bg-transparent p-0 h-auto gap-1 border-0">
-          <TabsTrigger
-            value="com_pix"
-            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-lg transition-all text-slate-500 hover:text-slate-700 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-700 data-[state=active]:font-semibold data-[state=active]:shadow-none border border-transparent data-[state=active]:border-slate-200/70 cursor-pointer"
-          >
-            Com Chave Pix
-          </TabsTrigger>
+        <TabsList className="grid grid-cols-2 w-full bg-[#f5f5f5] p-1 rounded-[14px] border border-[#e5e5e5] h-auto gap-1">
           <TabsTrigger
             value="sem_pix"
-            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-lg transition-all text-slate-500 hover:text-slate-700 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-700 data-[state=active]:font-semibold data-[state=active]:shadow-none border border-transparent data-[state=active]:border-slate-200/70 cursor-pointer"
+            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-[10px] transition-all text-[#737373] hover:text-[#0a0a0a] data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:font-semibold data-[state=active]:shadow-xs border border-transparent data-[state=active]:border-[#e5e5e5] cursor-pointer"
           >
             Sem Chave Pix
+          </TabsTrigger>
+          <TabsTrigger
+            value="com_pix"
+            className="text-[11.5px] min-[360px]:text-xs font-medium py-1 px-2.5 rounded-[10px] transition-all text-[#737373] hover:text-[#0a0a0a] data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:font-semibold data-[state=active]:shadow-xs border border-transparent data-[state=active]:border-[#e5e5e5] cursor-pointer"
+          >
+            Com Chave Pix
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -107,7 +107,7 @@ function ReciboShowcaseContent({
 }: ReciboContentProps) {
   return (
     <div className="w-full flex flex-col items-center sm:items-start xl:items-center animate-in fade-in duration-200">
-      <div className="w-full max-w-[310px] xl:max-w-[320px] mx-auto sm:mx-0 xl:mx-auto relative rounded-[24px] bg-[#efeae2] p-2.5 min-[360px]:p-3 border border-slate-200/90 shadow-inner overflow-hidden flex flex-col items-start min-h-[350px] xl:min-h-[440px] justify-start">
+      <div className="w-full max-w-[310px] xl:max-w-[320px] mx-auto sm:mx-0 xl:mx-auto relative rounded-[24px] bg-[#efeae2] p-2.5 min-[360px]:p-3 border border-[#e5e5e5] shadow-inner overflow-hidden flex flex-col items-start min-h-[350px] xl:min-h-[440px] justify-start">
         <div
           className="absolute inset-0 pointer-events-none bg-cover bg-center"
           style={{
@@ -139,7 +139,7 @@ function ReciboShowcaseContent({
             />
           </svg>
 
-          <div className="w-full bg-[#f8fafc] rounded-[8px] p-2.5 sm:p-3 border border-slate-100 shadow-xs text-slate-800 flex flex-col min-h-[295px]">
+          <div className="w-full bg-[#f5f5f5] rounded-[8px] p-2.5 sm:p-3 border border-[#e5e5e5] shadow-xs text-[#0a0a0a] flex flex-col min-h-[295px]">
             <div className="flex items-start justify-between pb-1">
               {logoUrl ? (
                 <img
@@ -148,16 +148,16 @@ function ReciboShowcaseContent({
                   className="max-h-8 max-w-[90px] object-contain rounded"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-slate-50 border border-dashed border-slate-300 flex flex-col items-center justify-center text-center shadow-2xs">
-                  <span className="text-[6.5px] font-bold text-slate-500 uppercase leading-none">
+                <div className="w-8 h-8 rounded-full bg-[#f5f5f5] border border-dashed border-[#d4d4d4] flex flex-col items-center justify-center text-center shadow-2xs">
+                  <span className="text-[6.5px] font-bold text-[#737373] uppercase leading-none">
                     Seu
                   </span>
-                  <span className="text-[6.5px] font-bold text-slate-500 uppercase leading-none mt-0.5">
+                  <span className="text-[6.5px] font-bold text-[#737373] uppercase leading-none mt-0.5">
                     Logo
                   </span>
                 </div>
               )}
-              <span className="text-[6.5px] font-mono text-[#94a3b8] mt-1">
+              <span className="text-[6.5px] font-mono text-[#737373] mt-1">
                 ID: fe178c09
               </span>
             </div>
@@ -275,7 +275,7 @@ export function WhatsAppShowcaseEmulator({
   layoutMode = "grid_on_desktop",
 }: WhatsAppShowcaseEmulatorProps) {
   const [activeTab, setActiveTab] = useState<ShowcaseTabType>(initialTab);
-  const [pixMode, setPixMode] = useState<"com_pix" | "sem_pix">("com_pix");
+  const [pixMode, setPixMode] = useState<"com_pix" | "sem_pix">("sem_pix");
   const tabsListRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -362,7 +362,7 @@ export function WhatsAppShowcaseEmulator({
               <div className="w-7 h-7 rounded-full bg-emerald-50 text-[#008069] flex items-center justify-center border border-emerald-100/80 shadow-2xs">
                 <BellRing className="w-3.5 h-3.5" />
               </div>
-              <h4 className="font-bold text-[#1a3a5c] text-[14.5px] tracking-tight">
+              <h4 className="font-bold text-foreground text-[14.5px] tracking-tight">
                 Cobrança Automática
               </h4>
             </div>
@@ -379,7 +379,7 @@ export function WhatsAppShowcaseEmulator({
               <div className="w-7 h-7 rounded-full bg-emerald-50 text-[#008069] flex items-center justify-center border border-emerald-100/80 shadow-2xs">
                 <Receipt className="w-3.5 h-3.5" />
               </div>
-              <h4 className="font-bold text-[#1a3a5c] text-[14.5px] tracking-tight">
+              <h4 className="font-bold text-foreground text-[14.5px] tracking-tight">
                 Recibos
               </h4>
             </div>
@@ -395,7 +395,7 @@ export function WhatsAppShowcaseEmulator({
               <div className="w-7 h-7 rounded-full bg-emerald-50 text-[#008069] flex items-center justify-center border border-emerald-100/80 shadow-2xs">
                 <FileText className="w-3.5 h-3.5" />
               </div>
-              <h4 className="font-bold text-[#1a3a5c] text-[14.5px] tracking-tight">
+              <h4 className="font-bold text-foreground text-[14.5px] tracking-tight">
                 Contratos
               </h4>
             </div>
@@ -425,7 +425,7 @@ export function WhatsAppShowcaseEmulator({
                     key={tab.id}
                     value={tab.id}
                     data-tab-id={tab.id}
-                    className="rounded-full border border-slate-200/90 bg-white text-slate-600 px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-[#008069] data-[state=active]:text-white data-[state=active]:border-[#008069] transition-all shadow-2xs flex items-center gap-1.5 shrink-0 select-none cursor-pointer"
+                    className="rounded-full border border-[#e5e5e5] bg-white text-[#737373] px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-[#008069] data-[state=active]:text-white data-[state=active]:border-[#008069] transition-all shadow-2xs flex items-center gap-1.5 shrink-0 select-none cursor-pointer"
                   >
                     <Icon className="w-3.5 h-3.5 shrink-0" />
                     <span>{tab.label}</span>
@@ -476,7 +476,7 @@ export function WhatsAppShowcaseEmulator({
               aria-label={`Ir para ${tab.label}`}
               className={cn(
                 "h-1.5 rounded-full transition-all cursor-pointer",
-                activeTab === tab.id ? "w-6 bg-[#008069]" : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                activeTab === tab.id ? "w-6 bg-[#008069]" : "w-1.5 bg-[#e5e5e5] hover:bg-[#d4d4d4]"
               )}
             />
           ))}

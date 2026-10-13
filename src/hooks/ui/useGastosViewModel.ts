@@ -210,6 +210,7 @@ export function useGastosViewModel() {
         gastoToEdit: gasto,
         veiculos: veiculosDropdown,
         usuarioId: profile?.id,
+        allowBatchCreation: !gasto,
       });
     },
     [openGastoFormDialog, veiculosDropdown, profile?.id]

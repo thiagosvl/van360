@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
+import { AdminPeriodFilter } from "@/components/ui/AdminPeriodFilter";
 import { toast } from "@/utils/notifications/toast";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
 import { formatRelativeTime, formatDateTimeToBR } from "@/utils/formatters/date";
@@ -70,6 +71,13 @@ interface NotificationLogsListProps {
   onFiltersChange?: (newFilters: NotificationFiltersState) => void;
   hideDriverColumn?: boolean;
   enableSelection?: boolean;
+  startDate?: string;
+  endDate?: string;
+  onPeriodChange?: (start: string, end: string) => void;
+  showPeriodFilter?: boolean;
+  searchPlaceholder?: string;
+  onResetAllFilters?: () => void;
+  isPeriodActive?: boolean;
 }
 
 function renderChannelBadge(canal: string) {
@@ -115,7 +123,7 @@ function renderChannelBadge(canal: string) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-secondary text-secondary-foreground border border-border">
       <span>{canal}</span>
     </span>
   );
@@ -157,8 +165,8 @@ function renderStatusBadge(status: string) {
   }
   if (norm === NotificationStatusEnum.CANCELLED) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-700/30 text-slate-400 border border-slate-700/60">
-        <XCircle className="h-3 w-3 text-slate-400" />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-muted/60 text-muted-foreground border border-border">
+        <XCircle className="h-3 w-3 text-muted-foreground" />
         <span>Cancelado</span>
       </span>
     );
@@ -178,6 +186,13 @@ export function NotificationLogsList({
   onFiltersChange,
   hideDriverColumn = true,
   enableSelection = true,
+  startDate,
+  endDate,
+  onPeriodChange,
+  showPeriodFilter = false,
+  searchPlaceholder,
+  onResetAllFilters,
+  isPeriodActive = false,
 }: NotificationLogsListProps) {
   const [selectedNotification, setSelectedNotification] = useState<AdminNotificationLogItem | null>(null);
   const [copied, setCopied] = useState(false);
@@ -339,63 +354,42 @@ export function NotificationLogsList({
   return (
     <>
       <div className="space-y-4">
-        {/* BARRA DE FILTROS */}
-        <div className="space-y-3 bg-slate-900/50 p-3 sm:p-4 rounded-2xl border border-slate-800/80">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            {/* TABS DE CATEGORIAS */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0 -mx-1 px-1 touch-pan-x">
-              {NOTIFICATION_CATEGORY_TABS.map((tab) => {
-                const isActive = activeFilters.categoria === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => updateFilters({ categoria: tab.key })}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
-                      isActive
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                        : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* BUSCA TEXTUAL */}
-            <div className="relative w-full lg:w-72">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+        <div className="space-y-3 bg-secondary/40 p-3 sm:p-4 rounded-2xl border border-border/80">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+            <div className="relative flex-1 lg:max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
-                placeholder="Buscar aluno, evento, contato..."
+                placeholder={
+                  searchPlaceholder ||
+                  (hideDriverColumn
+                    ? "Buscar aluno, evento, contato..."
+                    : "Buscar motorista, aluno, evento ou contato...")
+                }
                 value={activeFilters.search}
                 onChange={(e) => updateFilters({ search: e.target.value })}
-                className="pl-9 pr-9 h-9 rounded-xl bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-blue-500"
+                className="pl-9 pr-9 h-9 w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary transition-colors"
               />
               {activeFilters.search && (
                 <button
                   type="button"
                   onClick={() => updateFilters({ search: "" })}
-                  className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
-          </div>
 
-          {/* FILTROS SECUNDÁRIOS: CANAL, STATUS E LIMPAR */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-800/60">
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-              <div className="w-full sm:w-44">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto">
+              <div className="w-full sm:w-40">
                 <Select
                   value={activeFilters.canal}
                   onValueChange={(val) => updateFilters({ canal: val })}
                 >
-                  <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                  <SelectTrigger className="h-9 w-full rounded-lg bg-background border border-border text-foreground text-sm focus-visible:ring-0">
                     <SelectValue placeholder="Canal" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                  <SelectContent className="bg-popover border-border text-popover-foreground">
                     <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Canais</SelectItem>
                     <SelectItem value={NotificationChannelEnum.WABA}>WhatsApp (WABA)</SelectItem>
                     <SelectItem value={NotificationChannelEnum.EVOLUTION}>WhatsApp (Evolution)</SelectItem>
@@ -407,15 +401,15 @@ export function NotificationLogsList({
                 </Select>
               </div>
 
-              <div className="w-full sm:w-44">
+              <div className="w-full sm:w-40">
                 <Select
                   value={activeFilters.status}
                   onValueChange={(val) => updateFilters({ status: val })}
                 >
-                  <SelectTrigger className="h-8 rounded-xl bg-slate-900 border-slate-800 text-xs text-slate-200">
+                  <SelectTrigger className="h-9 w-full rounded-lg bg-background border border-border text-foreground text-sm focus-visible:ring-0">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
+                  <SelectContent className="bg-popover border-border text-popover-foreground">
                     <SelectItem value={NOTIFICATION_FILTER_ALL}>Todos os Status</SelectItem>
                     <SelectItem value={NotificationStatusEnum.SENT}>Entregue</SelectItem>
                     <SelectItem value={NotificationStatusEnum.FAILED}>Falhou</SelectItem>
@@ -426,27 +420,61 @@ export function NotificationLogsList({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {hasActiveFilters && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-                className="h-8 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 px-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto"
-              >
-                <FilterX className="h-3.5 w-3.5 text-rose-400" />
-                <span>Limpar Filtros</span>
-              </Button>
-            )}
+              {showPeriodFilter && onPeriodChange && (
+                <div className="w-full sm:w-auto shrink-0">
+                  <AdminPeriodFilter
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={onPeriodChange}
+                    defaultPreset="hoje"
+                  />
+                </div>
+              )}
+
+              {(hasActiveFilters || isPeriodActive) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleResetFilters();
+                    if (onResetAllFilters) onResetAllFilters();
+                  }}
+                  className="h-9 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 border border-border px-3 flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0"
+                >
+                  <FilterX className="h-3.5 w-3.5" />
+                  <span>Limpar Filtros</span>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-border/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0 -mx-1 px-1 touch-pan-x">
+            {NOTIFICATION_CATEGORY_TABS.map((tab) => {
+              const isActive = activeFilters.categoria === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => updateFilters({ categoria: tab.key })}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                      : "bg-background text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-border"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-            <span className="text-xs font-semibold text-slate-400">Carregando histórico de notificações...</span>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="text-xs font-medium text-muted-foreground">Carregando histórico de notificações...</span>
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="py-12">
@@ -462,10 +490,10 @@ export function NotificationLogsList({
           </div>
         ) : (
           <>
-        <div className="hidden lg:block overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/30">
+        <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+              <tr className="border-b border-border/80 bg-muted/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 {enableSelection && (
                   <th className="py-3.5 px-3 w-10 text-center">
                     <Checkbox
@@ -501,7 +529,7 @@ export function NotificationLogsList({
                 <th className="py-3.5 px-5 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 text-xs">
+            <tbody className="divide-y divide-border/60 text-xs">
 
               {filteredNotifications.map((item) => {
                 const meta = getEventMeta(item.evento);
@@ -514,7 +542,7 @@ export function NotificationLogsList({
                 const valorCobranca = item.payload?.valor as number | undefined;
 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-800/30 transition-colors group">
+                  <tr key={item.id} className="hover:bg-secondary/40 transition-colors group">
                     {enableSelection && (
                       <td className="py-3.5 px-3 text-center">
                         <Checkbox
@@ -532,29 +560,30 @@ export function NotificationLogsList({
                         />
                       </td>
                     )}
+
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shrink-0 ${meta.iconBg}`}>
                           <Icon className={`h-5 w-5 ${meta.iconColor}`} />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-slate-100 group-hover:text-blue-400 transition-colors leading-tight">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
                             {meta.title}
                           </p>
-                          <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-400 font-medium mt-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-muted-foreground font-medium mt-0.5">
                             {nomeAluno && (
                               <span>
-                                Aluno: <strong className="text-slate-300 font-semibold">{nomeAluno}</strong>
+                                Aluno: <strong className="text-foreground font-semibold">{nomeAluno}</strong>
                               </span>
                             )}
                             {valorCobranca !== undefined && Number(valorCobranca) > 0 && (
                               <>
-                                <span className="text-slate-600">•</span>
-                                <span className="text-emerald-400 font-semibold">{formatCurrency(Number(valorCobranca))}</span>
+                                <span className="text-muted-foreground/60">•</span>
+                                <span className="text-emerald-500 font-semibold">{formatCurrency(Number(valorCobranca))}</span>
                               </>
                             )}
-                            <span className="text-slate-600">•</span>
-                            <span className="font-mono text-[10px] text-slate-500 uppercase">{item.evento}</span>
+                            <span className="text-muted-foreground/60">•</span>
+                            <span className="font-mono text-[10px] text-muted-foreground uppercase">{item.evento}</span>
                           </div>
                         </div>
                       </div>
@@ -567,23 +596,23 @@ export function NotificationLogsList({
                             {item.usuario_id ? (
                               <Link
                                 to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
-                                className="font-bold text-blue-400 hover:text-blue-300 hover:underline block truncate max-w-[150px]"
+                                className="font-semibold text-primary hover:underline block truncate max-w-[150px]"
                               >
                                 {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Motorista" })}
                               </Link>
                             ) : (
-                              <span className="font-bold text-slate-200 block truncate max-w-[150px]">
+                              <span className="font-semibold text-foreground block truncate max-w-[150px]">
                                 {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Motorista" })}
                               </span>
                             )}
                             {(item.usuarios?.telefone || item.payload?.telefoneMotorista) && (
-                              <p className="text-[10px] font-mono text-slate-400">
+                              <p className="text-[10px] font-mono text-muted-foreground">
                                 {phoneMask((item.usuarios?.telefone || item.payload?.telefoneMotorista) as string)}
                               </p>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 italic text-xs">—</span>
+                          <span className="text-muted-foreground italic text-xs">—</span>
                         )}
                       </td>
                     )}
@@ -591,14 +620,14 @@ export function NotificationLogsList({
                     <td className="py-3.5 px-4">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[9px] font-black uppercase tracking-wider border ${audience.badgeStyle}`}>
+                          <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[9px] font-semibold uppercase tracking-wider border ${audience.badgeStyle}`}>
                             {audience.label}
                           </span>
-                          <span className="font-semibold text-slate-200 truncate">
+                          <span className="font-semibold text-foreground truncate">
                             {audience.primaryName}
                           </span>
                         </div>
-                        <p className="text-[11px] font-mono text-slate-400 font-medium mt-0.5">
+                        <p className="text-[11px] font-mono text-muted-foreground font-medium mt-0.5">
                           {formattedContact}
                         </p>
                       </div>
@@ -612,7 +641,7 @@ export function NotificationLogsList({
                       <div>
                         {renderStatusBadge(item.status)}
                         {item.tentativas > 0 && (
-                          <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                          <span className="text-[10px] text-muted-foreground font-mono block mt-0.5">
                             {item.tentativas}/{item.max_tentativas} {item.tentativas === 1 ? "tentativa" : "tentativas"}
                           </span>
                         )}
@@ -621,10 +650,10 @@ export function NotificationLogsList({
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div>
-                        <span className="font-semibold text-slate-300 block text-xs">
+                        <span className="font-medium text-foreground block text-xs">
                           {formatRelativeTime(item.created_at)}
                         </span>
-                        <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                        <span className="text-[10px] text-muted-foreground font-mono block mt-0.5">
                           {formatDateTimeToBR(item.created_at, { includeTime: true })}
                         </span>
                       </div>
@@ -633,12 +662,12 @@ export function NotificationLogsList({
                     <td className="py-3.5 px-5 text-right whitespace-nowrap">
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/40 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 px-3 flex items-center gap-1.5 ml-auto text-xs font-bold transition-all"
+                        className="h-8 rounded-lg bg-background border border-border hover:bg-primary/10 hover:text-primary text-muted-foreground px-3 flex items-center gap-1.5 ml-auto text-xs font-medium transition-all"
                         onClick={() => setSelectedNotification(item)}
                       >
-                        <Eye className="h-3.5 w-3.5 text-blue-400" />
+                        <Eye className="h-3.5 w-3.5 text-primary" />
                         <span>Inspecionar</span>
                       </Button>
                     </td>
@@ -663,9 +692,9 @@ export function NotificationLogsList({
             return (
               <div
                 key={item.id}
-                className="p-3.5 sm:p-4 bg-slate-900/90 rounded-2xl border border-slate-800/90 shadow-lg space-y-3 text-left"
+                className="p-3.5 sm:p-4 bg-card rounded-2xl border border-border shadow-xs space-y-3 text-left"
               >
-                <div className="flex items-start justify-between gap-2.5 border-b border-slate-800/80 pb-3">
+                <div className="flex items-start justify-between gap-2.5 border-b border-border/80 pb-3">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     {enableSelection && (
                       <div className="pt-0.5 shrink-0">
@@ -685,10 +714,10 @@ export function NotificationLogsList({
                       <Icon className={`h-4 w-4 ${meta.iconColor}`} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-headline font-bold text-slate-100 leading-tight truncate">
+                      <h4 className="text-xs font-headline font-semibold text-foreground leading-tight truncate">
                         {meta.title}
                       </h4>
-                      <p className="text-[10px] font-mono text-slate-500 uppercase mt-0.5 truncate">
+                      <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5 truncate">
                         {item.evento}
                       </p>
                     </div>
@@ -700,14 +729,14 @@ export function NotificationLogsList({
                 </div>
 
                 {(nomeAluno || valorCobranca !== undefined) && (
-                  <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-xs">
+                  <div className="bg-secondary/40 p-2.5 rounded-xl border border-border flex items-center justify-between text-xs">
                     {nomeAluno && (
-                      <span className="font-medium text-slate-300">
-                        Aluno: <strong className="text-white">{nomeAluno}</strong>
+                      <span className="font-medium text-muted-foreground">
+                        Aluno: <strong className="text-foreground">{nomeAluno}</strong>
                       </span>
                     )}
                     {valorCobranca !== undefined && Number(valorCobranca) > 0 && (
-                      <span className="font-bold text-emerald-400">
+                      <span className="font-semibold text-emerald-500">
                         {formatCurrency(Number(valorCobranca))}
                       </span>
                     )}
@@ -715,17 +744,17 @@ export function NotificationLogsList({
                 )}
 
                 {!hideDriverColumn && (item.usuarios || item.usuario_id || item.payload?.nomeMotorista) && (
-                  <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Motorista:</span>
+                  <div className="bg-secondary/40 p-2.5 rounded-xl border border-border flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Motorista:</span>
                     {item.usuario_id ? (
                       <Link
                         to={`${ROUTES.PRIVATE.ADMIN.USERS}/${item.usuario_id}`}
-                        className="font-bold text-blue-400 hover:underline truncate max-w-[200px]"
+                        className="font-semibold text-primary hover:underline truncate max-w-[200px]"
                       >
                         {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "Ver Motorista" })}
                       </Link>
                     ) : (
-                      <span className="font-semibold text-slate-200 truncate max-w-[200px]">
+                      <span className="font-semibold text-foreground truncate max-w-[200px]">
                         {getDriverDisplayName(item.usuarios || { nomeMotorista: item.payload?.nomeMotorista as string }, { shortName: true, fallback: "—" })}
                       </span>
                     )}
@@ -734,39 +763,39 @@ export function NotificationLogsList({
 
                 <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">
+                    <span className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wider block">
                       Destinatário ({audience.label})
                     </span>
-                    <p className="font-semibold text-slate-200 truncate">
+                    <p className="font-semibold text-foreground truncate">
                       {audience.primaryName}
                     </p>
-                    <p className="text-[11px] font-mono text-slate-400">
+                    <p className="text-[11px] font-mono text-muted-foreground">
                       {formattedContact}
                     </p>
                   </div>
 
                   <div className="space-y-1 text-right">
-                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">
+                    <span className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wider block">
                       Canal de Envio
                     </span>
                     <div className="flex justify-end pt-0.5">
                       {renderChannelBadge(item.canal)}
                     </div>
-                    <span className="text-[10px] text-slate-500 block pt-1">
+                    <span className="text-[10px] text-muted-foreground block pt-1">
                       {formatRelativeTime(item.created_at)}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/60">
+                <div className="pt-2 border-t border-border/60">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="w-full h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:text-blue-400 hover:bg-slate-700/60 text-xs font-bold flex items-center justify-center gap-1.5"
+                    className="w-full h-8 rounded-lg bg-background border border-border text-foreground hover:text-primary hover:bg-primary/10 text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
                     onClick={() => setSelectedNotification(item)}
                   >
-                    <Eye className="h-3.5 w-3.5 text-blue-400" />
+                    <Eye className="h-3.5 w-3.5 text-primary" />
                     <span className="sm:hidden">Inspecionar</span>
                     <span className="hidden sm:inline">Inspecionar Detalhes Técnicos</span>
                   </Button>
@@ -780,10 +809,10 @@ export function NotificationLogsList({
       </div>
 
       {enableSelection && selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700/80 shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-popover/95 border border-border shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-ping" />
-            <span className="text-xs font-bold text-slate-200 whitespace-nowrap">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-ping" />
+            <span className="text-xs font-semibold text-popover-foreground whitespace-nowrap">
               {selectedIds.size} {selectedIds.size === 1 ? "selecionada" : "selecionadas"}
             </span>
           </div>
@@ -793,7 +822,7 @@ export function NotificationLogsList({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="h-8 text-xs font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl"
+              className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg"
               disabled={bulkRetryMutation.isPending}
             >
               Limpar
@@ -803,7 +832,7 @@ export function NotificationLogsList({
               size="sm"
               onClick={handleRetryBulkSelected}
               disabled={bulkRetryMutation.isPending}
-              className="h-8 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-900/30"
+              className="h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg flex items-center gap-1.5 shadow-xs"
             >
               {bulkRetryMutation.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -828,50 +857,50 @@ export function NotificationLogsList({
           <AdminBaseDialog.Header
             title="Detalhes da Notificação"
             subtitle={`Evento: ${selectedNotification.evento}`}
-            icon={<Bell className="w-5 h-5 text-blue-400" />}
+            icon={<Bell className="w-5 h-5 text-primary" />}
             onClose={() => setSelectedNotification(null)}
           />
 
           <AdminBaseDialog.Body>
             <div className="space-y-5">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Status</span>
+                <div className="p-3 bg-secondary/40 rounded-xl border border-border space-y-1">
+                  <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Status</span>
                   <div>{renderStatusBadge(selectedNotification.status)}</div>
                 </div>
 
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Canal</span>
+                <div className="p-3 bg-secondary/40 rounded-xl border border-border space-y-1">
+                  <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Canal</span>
                   <div>{renderChannelBadge(selectedNotification.canal)}</div>
                 </div>
 
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Tentativas</span>
-                  <span className="text-xs font-mono font-bold text-slate-200">
+                <div className="p-3 bg-secondary/40 rounded-xl border border-border space-y-1">
+                  <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Tentativas</span>
+                  <span className="text-xs font-mono font-semibold text-foreground">
                     {selectedNotification.tentativas} de {selectedNotification.max_tentativas}
                   </span>
                 </div>
 
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Data de Criação</span>
-                  <span className="text-[11px] font-mono text-slate-300 font-semibold block truncate">
+                <div className="p-3 bg-secondary/40 rounded-xl border border-border space-y-1">
+                  <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Data de Criação</span>
+                  <span className="text-[11px] font-mono text-foreground font-semibold block truncate">
                     {formatDateTimeToBR(selectedNotification.created_at, { includeTime: true })}
                   </span>
                 </div>
               </div>
 
               {!hideDriverColumn && (selectedNotification.usuarios || selectedNotification.usuario_id) && (
-                <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div className="p-3.5 bg-secondary/40 rounded-xl border border-border flex items-center justify-between">
                   <div>
-                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Motorista Associado</span>
-                    <span className="text-xs font-bold text-slate-200">
+                    <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Motorista Associado</span>
+                    <span className="text-xs font-semibold text-foreground">
                       {getDriverDisplayName(selectedNotification.usuarios, { shortName: true, fallback: "Motorista" })}
                     </span>
                     {selectedNotification.usuarios?.apelido && selectedNotification.usuarios.nome && (
-                      <p className="text-xs text-slate-400">Nome: {selectedNotification.usuarios.nome}</p>
+                      <p className="text-xs text-muted-foreground">Nome: {selectedNotification.usuarios.nome}</p>
                     )}
                     {selectedNotification.usuarios?.telefone && (
-                      <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                      <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
                         {phoneMask(selectedNotification.usuarios.telefone)}
                       </p>
                     )}
@@ -879,7 +908,7 @@ export function NotificationLogsList({
                   {selectedNotification.usuario_id && (
                     <Link
                       to={`${ROUTES.PRIVATE.ADMIN.USERS}/${selectedNotification.usuario_id}`}
-                      className="text-xs font-bold text-blue-400 hover:text-blue-300 hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline"
                     >
                       Ver perfil
                     </Link>
@@ -888,17 +917,17 @@ export function NotificationLogsList({
                 </div>
               )}
 
-              <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 bg-secondary/40 rounded-xl border border-border flex items-center justify-between">
                 <div>
-                  <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Destinatário Real</span>
-                  <span className="text-xs font-mono font-bold text-slate-200">
+                  <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Destinatário Real</span>
+                  <span className="text-xs font-mono font-semibold text-foreground">
                     {formatRecipientContact(selectedNotification.destinatario, selectedNotification.canal)}
                   </span>
                 </div>
                 {selectedNotification.provider_message_id && (
                   <div className="text-right">
-                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">Provider Message ID</span>
-                    <span className="text-[10px] font-mono text-slate-400 truncate max-w-[200px] block">
+                    <span className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider block">Provider Message ID</span>
+                    <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[200px] block">
                       {selectedNotification.provider_message_id}
                     </span>
                   </div>
@@ -906,11 +935,11 @@ export function NotificationLogsList({
               </div>
 
               {selectedNotification.erro_mensagem && (
-                <div className="p-3.5 bg-rose-500/10 rounded-xl border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="p-3.5 bg-destructive/10 rounded-xl border border-destructive/20 flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-xs font-bold text-rose-300 block">Mensagem de Erro:</span>
-                    <p className="text-xs font-mono text-rose-200 mt-0.5 break-all">
+                    <span className="text-xs font-semibold text-destructive block">Mensagem de Erro:</span>
+                    <p className="text-xs font-mono text-destructive mt-0.5 break-all">
                       {selectedNotification.erro_mensagem}
                     </p>
                   </div>
@@ -919,22 +948,22 @@ export function NotificationLogsList({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     Payload Completo (Variáveis Enviadas)
                   </span>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={handleCopyPayload}
-                    className="h-7 text-xs font-bold text-blue-400 hover:text-blue-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 flex items-center gap-1.5"
+                    className="h-7 text-xs font-medium text-foreground bg-secondary/60 hover:bg-secondary rounded-lg px-2.5 flex items-center gap-1.5 border-border"
                   >
-                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copied ? "Copiado!" : "Copiar JSON"}</span>
                   </Button>
                 </div>
 
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-72 overflow-y-auto font-mono text-xs text-slate-300 leading-relaxed shadow-inner">
+                <div className="bg-muted/40 p-4 rounded-xl border border-border max-h-72 overflow-y-auto font-mono text-xs text-foreground leading-relaxed shadow-inner">
                   <pre className="whitespace-pre-wrap break-all">
                     {JSON.stringify(selectedNotification.payload, null, 2)}
                   </pre>

@@ -1,19 +1,23 @@
 import { useEffect, useState, useMemo } from "react";
 import { Route, Plus, X, School, Home, Check, AlertTriangle, MapPin } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
+import type { ItineraryItem } from "@/hooks/ui/useConfigurarRotaViewModel";
+import type { Passageiro } from "@/types/passageiro";
+import type { Escola } from "@/types/escola";
 
 interface AdicionarParadaDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   insertTarget: "top" | "bottom" | number;
-  itinerario: any[];
-  passageirosList: any[];
-  escolasList: any[];
+  itinerario: ItineraryItem[];
+  passageirosList: Passageiro[];
+  escolasList: Escola[];
   selectedEscolaId?: string;
   onSelectEscolaId?: (id: string) => void;
   onAddPassageiro: (id: string) => void;
@@ -24,7 +28,6 @@ interface AdicionarParadaDialogProps {
 export function AdicionarParadaDialog({
   isOpen,
   onOpenChange,
-  insertTarget,
   itinerario,
   passageirosList,
   escolasList,
@@ -86,47 +89,52 @@ export function AdicionarParadaDialog({
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[calc(100vw-24px)] sm:w-full mx-auto rounded-3xl bg-white p-4 sm:p-5 shadow-2xl border-none max-h-[82vh] sm:max-h-[80vh] flex flex-col overflow-hidden">
-        <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c]">
-              <Route className="w-4.5 h-4.5 stroke-[2.2px]" />
-            </div>
-            <div className="text-left">
-              <DialogTitle className="text-sm sm:text-base font-extrabold text-[#1a3a5c] uppercase tracking-tight">
-                Adicionar Parada
-              </DialogTitle>
-              <DialogDescription className="sr-only">
-                Selecione um aluno ou escola para adicionar ao itinerário
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && safeCloseDialog(() => onOpenChange(false))}
+      maxWidth="md"
+      description="Selecione um aluno ou escola para adicionar ao itinerário"
+    >
+      <BaseDialog.Header
+        title="Adicionar Parada"
+        icon={<Route className="w-4 h-4" />}
+        onClose={() => safeCloseDialog(() => onOpenChange(false))}
+      />
 
-        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "passageiros" | "escolas")} className="w-full flex-1 min-h-0 flex flex-col mt-2.5 overflow-hidden">
-          <TabsList className="grid grid-cols-2 w-full bg-slate-100 p-1 rounded-xl h-9 shrink-0">
-            <TabsTrigger value="passageiros" className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs">
+      <BaseDialog.Body className="p-4 sm:p-5 flex flex-col min-h-0 max-h-[70vh] overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => setActiveTab(val as "passageiros" | "escolas")}
+          className="w-full flex-1 min-h-0 flex flex-col overflow-hidden"
+        >
+          <TabsList className="grid grid-cols-2 w-full bg-[#f5f5f5] p-1 rounded-[22px] border border-[#e5e5e5] min-h-[38px] sm:min-h-[42px] shrink-0">
+            <TabsTrigger
+              value="passageiros"
+              className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer"
+            >
               Alunos ({filteredPassageiros.length})
             </TabsTrigger>
-            <TabsTrigger value="escolas" className="rounded-lg text-xs font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-[#1a3a5c] data-[state=active]:shadow-2xs">
+            <TabsTrigger
+              value="escolas"
+              className="rounded-[18px] px-4 py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-white/50 cursor-pointer"
+            >
               Escolas ({filteredEscolas.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="passageiros" className="flex-1 min-h-0 flex flex-col space-y-2 mt-2 focus-visible:outline-none focus-visible:ring-0 overflow-hidden">
+          <TabsContent value="passageiros" className="flex-1 min-h-0 flex flex-col space-y-2 mt-3 focus-visible:outline-none focus-visible:ring-0 overflow-hidden">
             <div className="relative shrink-0">
               <Input
                 placeholder="Buscar aluno..."
                 value={searchAlunos}
                 onChange={(e) => setSearchAlunos(e.target.value)}
-                className="h-8.5 text-xs rounded-lg bg-slate-50/50 pr-8"
+                className="h-10 sm:h-11 text-sm font-normal rounded-[18px] bg-white border border-[#e5e5e5] pr-8 text-[#0a0a0a] placeholder:text-[#737373] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a]"
               />
               {searchAlunos && (
                 <button
                   type="button"
                   onClick={() => setSearchAlunos("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -134,15 +142,15 @@ export function AdicionarParadaDialog({
             </div>
 
             {escolasList.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar -mx-1 px-1 shrink-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar -mx-1 px-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEffectiveEscolaId("TODAS")}
                   className={cn(
-                    "px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer border",
+                    "px-3 py-1 rounded-[18px] text-[11px] font-medium shrink-0 transition-all cursor-pointer border",
                     effectiveEscolaId === "TODAS"
-                      ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
-                      : "bg-slate-100 text-slate-600 border-slate-200/70 hover:bg-slate-200/80"
+                      ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-xs"
+                      : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#ebebeb]"
                   )}
                 >
                   Todas
@@ -155,17 +163,17 @@ export function AdicionarParadaDialog({
                       type="button"
                       onClick={() => setEffectiveEscolaId(esc.id)}
                       className={cn(
-                        "px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer border flex items-center gap-1",
+                        "px-3 py-1 rounded-[18px] text-[11px] font-medium shrink-0 transition-all cursor-pointer border flex items-center gap-1.5",
                         isSelected
-                          ? "bg-[#1a3a5c] text-white border-[#1a3a5c] shadow-2xs"
-                          : "bg-slate-100 text-slate-600 border-slate-200/70 hover:bg-slate-200/80"
+                          ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-xs"
+                          : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#ebebeb]"
                       )}
                     >
-                      <span className="">{esc.nome}</span>
+                      <span>{esc.nome}</span>
                       <span
                         className={cn(
-                          "text-[9px] px-1 py-0.2 rounded-full font-semibold",
-                          isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                          "text-[9px] px-1.5 py-0.5 rounded-full font-medium",
+                          isSelected ? "bg-white/20 text-white" : "bg-[#e5e5e5] text-[#0a0a0a]"
                         )}
                       >
                         {esc.totalAlunos}
@@ -177,43 +185,43 @@ export function AdicionarParadaDialog({
             )}
 
             {filteredPassageiros.length === 0 ? (
-              <p className="text-xs text-slate-400 font-medium text-center py-6">
+              <p className="text-xs text-[#737373] font-normal text-center py-8">
                 Nenhum aluno encontrado
               </p>
             ) : (
               <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin overscroll-contain">
                 {filteredPassageiros.map((p) => {
                   const estaAdicionado = itinerario.some((item) => item.passageiro_id === p.id);
-                  const addrObj = p.responsavel_principal?.logradouro ? p.responsavel_principal : p;
-                  const temEnderecoCompleto = !!(addrObj.logradouro && addrObj.numero);
-                  const passAddressStr = formatarEnderecoParcialRota(addrObj);
+                  const resp = p.responsavel_principal;
+                  const temEnderecoCompleto = !!(resp?.logradouro && resp?.numero);
+                  const passAddressStr = formatarEnderecoParcialRota(resp || p);
 
                   if (temEnderecoCompleto) {
                     return (
                       <div
                         key={p.id}
-                        className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50 text-left min-h-[52px]"
+                        className="bg-white border border-[#e5e5e5] p-3 rounded-[18px] flex items-center justify-between gap-3 transition-colors hover:bg-[#fafafa] text-left min-h-[52px]"
                       >
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-xs font-bold text-[#1a3a5c] truncate">
+                            <span className="text-xs font-semibold text-[#0a0a0a] truncate">
                               {formatShortName(p.nome, true)}
                             </span>
                             {p.turma && (
-                              <span className="text-slate-400 font-semibold text-[10px] inline-flex items-center gap-1 shrink-0">
-                                <span className="text-[7.5px] opacity-40">•</span>
+                              <span className="text-[#737373] font-normal text-[10px] inline-flex items-center gap-1 shrink-0">
+                                <span className="opacity-40">•</span>
                                 {p.turma}
                               </span>
                             )}
                           </div>
                           {p.escola?.nome && (
-                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
-                              <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#737373]">
+                              <School className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                               <span className="break-words leading-snug">{p.escola.nome}</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
-                            <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#737373]">
+                            <Home className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                             <span className="break-words leading-snug">{passAddressStr || "Endereço cadastrado"}</span>
                           </div>
                         </div>
@@ -223,7 +231,7 @@ export function AdicionarParadaDialog({
                           onClick={() => onAddPassageiro(p.id)}
                           disabled={estaAdicionado}
                           title={estaAdicionado ? "Aluno já adicionado" : "Adicionar aluno"}
-                          className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30 cursor-pointer flex items-center justify-center"
+                          className="h-8 w-8 rounded-[12px] bg-primary hover:bg-primary-hover text-white p-0 shrink-0 shadow-xs disabled:opacity-30 cursor-pointer flex items-center justify-center border-none"
                         >
                           {estaAdicionado ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                         </Button>
@@ -234,28 +242,28 @@ export function AdicionarParadaDialog({
                   return (
                     <div
                       key={p.id}
-                      className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50 text-left min-h-[52px]"
+                      className="bg-white border border-[#e5e5e5] p-3 rounded-[18px] flex items-center justify-between gap-3 transition-colors hover:bg-[#fafafa] text-left min-h-[52px]"
                     >
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="text-xs font-bold text-[#1a3a5c] truncate">
+                          <span className="text-xs font-semibold text-[#0a0a0a] truncate">
                             {formatShortName(p.nome, true)}
                           </span>
                           {p.turma && (
-                            <span className="text-slate-400 font-semibold text-[10px] inline-flex items-center gap-1 shrink-0">
-                              <span className="text-[7.5px] opacity-40">•</span>
+                            <span className="text-[#737373] font-normal text-[10px] inline-flex items-center gap-1 shrink-0">
+                              <span className="opacity-40">•</span>
                               {p.turma}
                             </span>
                           )}
                         </div>
                         {p.escola?.nome && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 mt-0.5 text-left">
-                            <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#737373]">
+                            <School className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                             <span className="break-words leading-snug">{p.escola.nome}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-2 mt-1 text-left flex-wrap">
-                          <div className="flex items-center gap-1 text-[11px] font-base text-amber-700">
+                          <div className="flex items-center gap-1 text-[11px] font-medium text-amber-700">
                             <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
                             <span>Sem endereço</span>
                           </div>
@@ -263,7 +271,7 @@ export function AdicionarParadaDialog({
                             <button
                               type="button"
                               onClick={() => onOpenCadastrarEndereco(p.id)}
-                              className="text-[11px] font-bold text-[#1a3a5c] hover:underline cursor-pointer transition-colors"
+                              className="text-[11px] font-medium text-primary hover:underline cursor-pointer transition-colors"
                             >
                               Cadastrar endereço
                             </button>
@@ -277,7 +285,7 @@ export function AdicionarParadaDialog({
                         onClick={() => onAddPassageiro(p.id)}
                         disabled={estaAdicionado}
                         title={estaAdicionado ? "Aluno já adicionado" : "Adicionar à rota sem endereço"}
-                        className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
+                        className="h-8 w-8 rounded-[12px] bg-primary hover:bg-primary-hover text-white p-0 shrink-0 shadow-xs disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors border-none"
                       >
                         {estaAdicionado ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                       </Button>
@@ -288,19 +296,19 @@ export function AdicionarParadaDialog({
             )}
           </TabsContent>
 
-          <TabsContent value="escolas" className="flex-1 min-h-0 flex flex-col space-y-2 mt-2 focus-visible:outline-none focus-visible:ring-0 overflow-hidden">
+          <TabsContent value="escolas" className="flex-1 min-h-0 flex flex-col space-y-2 mt-3 focus-visible:outline-none focus-visible:ring-0 overflow-hidden">
             <div className="relative shrink-0">
               <Input
                 placeholder="Buscar escola..."
                 value={searchEscolas}
                 onChange={(e) => setSearchEscolas(e.target.value)}
-                className="h-8.5 text-xs rounded-lg bg-slate-50/50 pr-8"
+                className="h-10 text-xs rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] pr-8 text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a]"
               />
               {searchEscolas && (
                 <button
                   type="button"
                   onClick={() => setSearchEscolas("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -308,7 +316,7 @@ export function AdicionarParadaDialog({
             </div>
 
             {filteredEscolas.length === 0 ? (
-              <p className="text-xs text-slate-400 font-medium text-center py-6">
+              <p className="text-xs text-[#737373] font-normal text-center py-8">
                 Nenhuma escola encontrada
               </p>
             ) : (
@@ -318,15 +326,15 @@ export function AdicionarParadaDialog({
                   return (
                     <div
                       key={e.id}
-                      className="bg-slate-50/60 border border-slate-100 p-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors hover:bg-slate-50 text-left min-h-[52px]"
+                      className="bg-white border border-[#e5e5e5] p-3 rounded-[18px] flex items-center justify-between gap-3 transition-colors hover:bg-[#fafafa] text-left min-h-[52px]"
                     >
                       <div className="min-w-0 flex-1 space-y-0.5">
-                        <h4 className="text-xs font-bold text-[#1a3a5c] break-words">
+                        <h4 className="text-xs font-semibold text-[#0a0a0a] break-words">
                           {e.nome}
                         </h4>
                         {escAddressStr && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 text-left">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#737373] text-left">
+                            <MapPin className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                             <span className="break-words leading-snug">{escAddressStr}</span>
                           </div>
                         )}
@@ -337,7 +345,7 @@ export function AdicionarParadaDialog({
                         size="sm"
                         onClick={() => onAddEscola(e.id)}
                         title="Adicionar escola"
-                        className="h-8 w-8 rounded-lg bg-[#1a3a5c] hover:bg-[#11263d] text-white p-0 shrink-0 shadow-sm cursor-pointer flex items-center justify-center"
+                        className="h-8 w-8 rounded-[12px] bg-primary hover:bg-primary-hover text-white p-0 shrink-0 shadow-xs cursor-pointer flex items-center justify-center border-none"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -348,7 +356,7 @@ export function AdicionarParadaDialog({
             )}
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+      </BaseDialog.Body>
+    </BaseDialog>
   );
 }

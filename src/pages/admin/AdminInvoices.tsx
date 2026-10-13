@@ -22,10 +22,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { AdminKpiCard } from "@/components/ui/AdminKpiCard";
 import { AdminEmptyState } from "@/components/ui/AdminEmptyState";
+import { AdminPeriodFilter } from "@/components/ui/AdminPeriodFilter";
 import { Banner } from "@/components/ui/Banner";
 import { InvoiceStatusBadge } from "@/components/ui/InvoiceStatusBadge";
 import { SubscriptionStatusBadge } from "@/components/ui/SubscriptionStatusBadge";
@@ -163,14 +171,14 @@ export default function AdminInvoices() {
     return [
       {
         key: "open",
-        title: "A RECEBER EM ABERTO",
+        title: "A receber em aberto",
         value: moneyMask(stats?.totalAbertoValor ?? 0),
         subtext: `${stats?.totalAbertoQtd ?? 0} faturas pendentes`,
         cardBorder:
           statusFilter === "open"
-            ? "border-blue-500 shadow-blue-500/20 ring-2 ring-blue-500/80"
-            : "border-blue-500/40 shadow-blue-500/10",
-        iconBg: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+            ? "border-primary shadow-xs ring-2 ring-primary/80"
+            : "border-border shadow-xs",
+        iconBg: "bg-primary/10 text-primary border-primary/20",
         icon: <Clock className="h-5 w-5" />,
         isSelected: statusFilter === "open",
         onClick: () => {
@@ -180,14 +188,14 @@ export default function AdminInvoices() {
       },
       {
         key: "vencidas",
-        title: "EM ATRASO (VENCIDAS)",
+        title: "Em atraso (vencidas)",
         value: moneyMask(stats?.totalVencidasValor ?? 0),
         subtext: `${stats?.totalVencidasQtd ?? 0} faturas vencidas`,
         cardBorder:
           statusFilter === "vencidas"
-            ? "border-rose-500 shadow-rose-500/20 ring-2 ring-rose-500/80"
-            : "border-rose-500/40 shadow-rose-500/10",
-        iconBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+            ? "border-destructive shadow-xs ring-2 ring-destructive/80"
+            : "border-destructive/30 shadow-xs",
+        iconBg: "bg-destructive/10 text-destructive border-destructive/20",
         icon: <AlertTriangle className="h-5 w-5" />,
         isSelected: statusFilter === "vencidas",
         onClick: () => {
@@ -197,14 +205,14 @@ export default function AdminInvoices() {
       },
       {
         key: "hoje",
-        title: "VENCEM HOJE",
+        title: "Vencem hoje",
         value: moneyMask(stats?.vencemHojeValor ?? 0),
         subtext: `${stats?.vencemHojeQtd ?? 0} faturas hoje`,
         cardBorder:
           statusFilter === "hoje"
-            ? "border-amber-500 shadow-amber-500/20 ring-2 ring-amber-500/80"
-            : "border-amber-500/40 shadow-amber-500/10",
-        iconBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+            ? "border-amber-500 shadow-xs ring-2 ring-amber-500/80"
+            : "border-amber-500/30 shadow-xs",
+        iconBg: "bg-amber-500/10 text-amber-500 border-amber-500/20",
         icon: <Receipt className="h-5 w-5" />,
         isSelected: statusFilter === "hoje",
         onClick: () => {
@@ -214,14 +222,14 @@ export default function AdminInvoices() {
       },
       {
         key: "proximos7dias",
-        title: "PRÓXIMOS 7 DIAS",
+        title: "Próximos 7 dias",
         value: moneyMask(stats?.proximos7DiasValor ?? 0),
         subtext: `${stats?.proximos7DiasQtd ?? 0} faturas a vencer`,
         cardBorder:
           statusFilter === "proximos7dias"
-            ? "border-sky-500 shadow-sky-500/20 ring-2 ring-sky-500/80"
-            : "border-sky-500/40 shadow-sky-500/10",
-        iconBg: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+            ? "border-sky-500 shadow-xs ring-2 ring-sky-500/80"
+            : "border-sky-500/30 shadow-xs",
+        iconBg: "bg-sky-500/10 text-sky-500 border-sky-500/20",
         icon: <ShieldCheck className="h-5 w-5" />,
         isSelected: statusFilter === "proximos7dias",
         onClick: () => {
@@ -231,14 +239,14 @@ export default function AdminInvoices() {
       },
       {
         key: "pago_mes",
-        title: "RECEBIDO NO MÊS",
+        title: "Recebido no mês",
         value: moneyMask(stats?.pagoMesValor ?? 0),
         subtext: `${stats?.pagoMesQtd ?? 0} faturas quitadas`,
         cardBorder:
           statusFilter === SubscriptionInvoiceStatus.PAID
-            ? "border-emerald-500 shadow-emerald-500/20 ring-2 ring-emerald-500/80"
-            : "border-emerald-500/40 shadow-emerald-500/10",
-        iconBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+            ? "border-emerald-500 shadow-xs ring-2 ring-emerald-500/80"
+            : "border-emerald-500/30 shadow-xs",
+        iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
         icon: <CheckCircle className="h-5 w-5" />,
         isSelected: statusFilter === SubscriptionInvoiceStatus.PAID,
         onClick: () => {
@@ -253,18 +261,18 @@ export default function AdminInvoices() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black font-headline text-white tracking-tight flex items-center gap-2.5">
-            <Receipt className="h-7 w-7 text-blue-400" />
+          <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground tracking-tight flex items-center gap-2.5">
+            <Receipt className="h-6 w-6 text-primary" />
             Faturas
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Gestão operacional de cobranças de assinaturas e recebíveis pré-pagos
           </p>
         </div>
       </div>
 
       {stats && stats.totalVencidasQtd > 0 && (
-        <Banner variant="warning" className="border-rose-500/30 bg-rose-500/10 text-rose-300">
+        <Banner variant="warning" className="border-destructive/30 bg-destructive/10 text-destructive">
           Há {stats.totalVencidasQtd} fatura(s) em atraso totalizando {moneyMask(stats.totalVencidasValor)} aguardando baixa ou contato.
         </Banner>
       )}
@@ -289,11 +297,11 @@ export default function AdminInvoices() {
         ))}
       </div>
 
-      <Card className="border-slate-800/80 bg-[#131b2e]/60 shadow-xl backdrop-blur-md rounded-2xl overflow-hidden">
+      <Card className="border border-border bg-card shadow-xs rounded-3xl overflow-hidden">
         <CardContent className="p-4 sm:p-5 space-y-4">
           <div className="flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Buscar por motorista, apelido, telefone ou email..."
                 value={search}
@@ -301,7 +309,7 @@ export default function AdminInvoices() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-10 pr-9 h-11 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-sm focus-visible:ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="pl-9 pr-9 h-9 w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary transition-colors"
               />
               {search && (
                 <button
@@ -310,9 +318,9 @@ export default function AdminInvoices() {
                     setSearch("");
                     setPage(1);
                   }}
-                  className="absolute right-3 top-3 p-1 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -327,10 +335,10 @@ export default function AdminInvoices() {
                     setStatusFilter(f.value);
                     setPage(1);
                   }}
-                  className={`rounded-xl text-xs font-bold whitespace-nowrap h-9 px-3 transition-all ${
+                  className={`rounded-lg text-xs font-medium whitespace-nowrap h-9 px-3 transition-all ${
                     statusFilter === f.value
-                      ? "bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/30"
-                      : "border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
                 >
                   {f.label}
@@ -339,84 +347,60 @@ export default function AdminInvoices() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-              <select
-                value={metodoFilter}
-                onChange={(e) => {
-                  setMetodoFilter(e.target.value);
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/40">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full sm:w-auto">
+              <Select
+                value={metodoFilter || "all"}
+                onValueChange={(val) => {
+                  setMetodoFilter(val === "all" ? "" : val);
                   setPage(1);
                 }}
-                className="bg-slate-900/90 border border-slate-800 text-slate-200 text-xs h-9 rounded-xl px-3 outline-none focus:border-blue-500 w-full sm:w-auto"
               >
-                {METODO_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-9 w-full sm:w-[160px] bg-background border border-border text-foreground text-sm rounded-lg focus-visible:ring-0">
+                  <SelectValue placeholder="Método" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border text-popover-foreground">
+                  <SelectItem value="all">Todos os Métodos</SelectItem>
+                  <SelectItem value={CheckoutPaymentMethod.PIX}>Pix</SelectItem>
+                  <SelectItem value={CheckoutPaymentMethod.CREDIT_CARD}>Cartão de Crédito</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <select
-                value={tipoFilter}
-                onChange={(e) => {
-                  setTipoFilter(e.target.value);
+              <Select
+                value={tipoFilter || "all"}
+                onValueChange={(val) => {
+                  setTipoFilter(val === "all" ? "" : val);
                   setPage(1);
                 }}
-                className="bg-slate-900/90 border border-slate-800 text-slate-200 text-xs h-9 rounded-xl px-3 outline-none focus:border-blue-500 w-full sm:w-auto"
               >
-                {TIPO_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-9 w-full sm:w-[170px] bg-background border border-border text-foreground text-sm rounded-lg focus-visible:ring-0">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border text-popover-foreground">
+                  <SelectItem value="all">Todos os Tipos</SelectItem>
+                  <SelectItem value="conversao_trial">Conversão Trial (Manual)</SelectItem>
+                  <SelectItem value="renovacao">Renovação de Assinatura</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-slate-400 text-xs w-full sm:w-auto">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
-                <span className="font-bold uppercase tracking-wider text-[10px]">Vencimento:</span>
-              </div>
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
-                <Input
-                  type="date"
-                  value={dataInicio}
-                  onChange={(e) => {
-                    setDataInicio(e.target.value);
-                    setPage(1);
-                  }}
-                  className="bg-slate-900/90 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-32 focus-visible:ring-0"
-                />
-                <Input
-                  type="date"
-                  value={dataFim}
-                  onChange={(e) => {
-                    setDataFim(e.target.value);
-                    setPage(1);
-                  }}
-                  className="bg-slate-900/90 border-slate-800 text-white text-xs h-9 rounded-xl w-full sm:w-32 focus-visible:ring-0"
-                />
-                {(dataInicio || dataFim) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setDataInicio("");
-                      setDataFim("");
-                      setPage(1);
-                    }}
-                    className="col-span-2 sm:col-span-1 h-8 px-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl"
-                  >
-                    Limpar
-                  </Button>
-                )}
-              </div>
+            <div className="w-full sm:w-auto">
+              <AdminPeriodFilter
+                defaultPreset="tudo"
+                startDate={dataInicio}
+                endDate={dataFim}
+                onChange={(start, end) => {
+                  setDataInicio(start);
+                  setDataFim(end);
+                  setPage(1);
+                }}
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="border-slate-800/80 bg-[#131b2e]/60 shadow-xl backdrop-blur-md rounded-2xl overflow-hidden">
+      <Card className="border border-border bg-card shadow-xs rounded-3xl overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-20 text-center space-y-3">
@@ -433,32 +417,32 @@ export default function AdminInvoices() {
             </div>
           ) : (
             <>
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto [scrollbar-width:thin]">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-slate-800/80 bg-slate-900/40">
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <tr className="border-b border-border/60">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground">
                         Motorista
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground text-center">
                         Conta
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        Tipo & Plano
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground">
+                        Tipo & plano
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground">
                         Método
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground">
                         Vencimento
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground text-right">
                         Valor
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground text-center">
                         Status
                       </th>
-                      <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">
+                      <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground text-right">
                         Ações
                       </th>
                     </tr>
@@ -475,7 +459,7 @@ export default function AdminInvoices() {
                       return (
                         <tr
                           key={f.id}
-                          className="border-b border-slate-800/40 hover:bg-slate-800/40 transition-colors"
+                          className="border-b border-border/40 hover:bg-secondary/40 transition-colors"
                         >
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
@@ -489,7 +473,7 @@ export default function AdminInvoices() {
                                       alt: f.usuario.nome,
                                     })
                                   }
-                                  className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer"
+                                  className="h-10 w-10 rounded-xl bg-card border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                                 >
                                   <img
                                     src={f.usuario.logo_url}
@@ -499,19 +483,19 @@ export default function AdminInvoices() {
                                   />
                                 </div>
                               ) : (
-                                <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0 text-slate-400 font-bold text-xs uppercase shadow-sm">
+                                <div className="h-10 w-10 rounded-xl bg-secondary border border-border flex items-center justify-center shrink-0 text-muted-foreground font-semibold text-xs shadow-xs">
                                   {(f.usuario.apelido || f.usuario.nome || "M").slice(0, 2)}
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="text-sm font-black text-slate-100 truncate max-w-[200px]">
+                                <p className="text-sm font-semibold text-foreground truncate max-w-[200px]">
                                   {f.usuario.apelido || f.usuario.nome}
                                 </p>
-                                <p className="text-[11px] font-medium text-slate-400 mt-0.5 truncate max-w-[200px]">
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">
                                   {f.usuario.nome}
                                 </p>
                                 {f.usuario.telefone && (
-                                  <p className="text-[10px] text-slate-500 font-mono">
+                                  <p className="text-[11px] text-muted-foreground/80 font-mono">
                                     {phoneMask(f.usuario.telefone)}
                                   </p>
                                 )}
@@ -525,33 +509,33 @@ export default function AdminInvoices() {
 
                           <td className="py-3.5 px-4">
                             <div>
-                              <p className="text-xs font-bold text-slate-200">
+                              <p className="text-xs font-semibold text-foreground">
                                 {f.plano?.nome || "Plano Mensal"}
                               </p>
                               <span
                                 className={cn(
-                                  "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider mt-0.5",
+                                  "inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium mt-0.5",
                                   f.tipo_fatura === "conversao_trial"
                                     ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                                    : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                    : "bg-primary/10 text-primary border border-primary/20"
                                 )}
                               >
                                 {f.tipo_fatura === "conversao_trial"
-                                  ? "Conversão Trial"
+                                  ? "Conversão trial"
                                   : "Renovação"}
                               </span>
                             </div>
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <span className="text-xs text-slate-300 flex items-center gap-1.5">
+                            <span className="text-xs text-foreground/80 flex items-center gap-1.5">
                               {f.metodo_pagamento === CheckoutPaymentMethod.CREDIT_CARD ? (
-                                <CreditCard className="h-3.5 w-3.5 text-blue-400" />
+                                <CreditCard className="h-3.5 w-3.5 text-primary" />
                               ) : (
-                                <QrCode className="h-3.5 w-3.5 text-emerald-400" />
+                                <QrCode className="h-3.5 w-3.5 text-emerald-500" />
                               )}
                               {PAYMENT_METHOD_LABELS[f.metodo_pagamento as CheckoutPaymentMethod] ||
-                                f.metodo_pagamento.toUpperCase()}
+                                f.metodo_pagamento}
                             </span>
                           </td>
 
@@ -559,23 +543,23 @@ export default function AdminInvoices() {
                             <div className="space-y-0.5">
                               <span
                                 className={cn(
-                                  "text-xs font-bold block",
+                                  "text-xs font-semibold block font-mono",
                                   isVencida
-                                    ? "text-rose-400"
+                                    ? "text-destructive"
                                     : isHoje
-                                    ? "text-amber-400"
-                                    : "text-slate-300"
+                                    ? "text-amber-500"
+                                    : "text-foreground/80"
                                 )}
                               >
                                 {formatSafeBrazilianDate(f.data_vencimento)}
                               </span>
                               {isVencida && (
-                                <span className="inline-block text-[9px] font-black uppercase text-rose-400">
+                                <span className="inline-block text-[10px] font-medium text-destructive">
                                   Em atraso
                                 </span>
                               )}
                               {isHoje && (
-                                <span className="inline-block text-[9px] font-black uppercase text-amber-400">
+                                <span className="inline-block text-[10px] font-medium text-amber-500">
                                   Vence hoje
                                 </span>
                               )}
@@ -583,7 +567,7 @@ export default function AdminInvoices() {
                           </td>
 
                           <td className="py-3.5 px-4 text-right">
-                            <span className="text-sm font-black text-white">
+                            <span className="text-sm font-semibold text-foreground font-mono">
                               {moneyMask(f.valor)}
                             </span>
                           </td>
@@ -601,7 +585,7 @@ export default function AdminInvoices() {
                                   variant="ghost"
                                   title="Copiar código Pix"
                                   onClick={() => handleCopyPix(f.pix_copy_paste!)}
-                                  className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                                  className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-xl"
                                 >
                                   <Copy className="h-4 w-4" />
                                 </Button>
@@ -612,13 +596,13 @@ export default function AdminInvoices() {
                                   type="button"
                                   size="icon"
                                   variant="ghost"
-                                  title="Registrar pagamento (Dar baixa)"
+                                  title="Registrar pagamento (dar baixa)"
                                   disabled={
                                     confirmPaymentMutation.isPending ||
                                     deleteInvoiceMutation.isPending
                                   }
                                   onClick={() => handleConfirmPayment(f)}
-                                  className="h-8 w-8 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                                  className="h-8 w-8 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl"
                                 >
                                   <CheckCircle2 className="h-4 w-4" />
                                 </Button>
@@ -634,7 +618,7 @@ export default function AdminInvoices() {
                                     `${ROUTES.PRIVATE.ADMIN.USERS}/${f.usuario_id}?tab=cobrancas`
                                   )
                                 }
-                                className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-primary/10 rounded-xl"
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -649,7 +633,7 @@ export default function AdminInvoices() {
                                   confirmPaymentMutation.isPending
                                 }
                                 onClick={() => handleDeleteInvoice(f)}
-                                className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -662,7 +646,7 @@ export default function AdminInvoices() {
                 </table>
               </div>
 
-              <div className="md:hidden divide-y divide-slate-800/80">
+              <div className="md:hidden space-y-3 p-4">
                 {invoices.map((f) => {
                   const vencimentoYmd = f.data_vencimento ? f.data_vencimento.slice(0, 10) : "";
                   const isAberto =
@@ -672,7 +656,7 @@ export default function AdminInvoices() {
                   const isHoje = isAberto && vencimentoYmd === todayIso;
 
                   return (
-                    <div key={f.id} className="p-4 space-y-3">
+                    <div key={f.id} className="p-4 bg-secondary/30 rounded-2xl border border-border/80 space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           {f.usuario.logo_url?.trim() ? (
@@ -685,7 +669,7 @@ export default function AdminInvoices() {
                                   alt: f.usuario.nome,
                                 })
                               }
-                              className="h-10 w-10 rounded-xl bg-white border border-slate-700/50 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm"
+                              className="h-10 w-10 rounded-xl bg-card border border-border p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs cursor-pointer"
                             >
                               <img
                                 src={f.usuario.logo_url}
@@ -695,15 +679,15 @@ export default function AdminInvoices() {
                               />
                             </div>
                           ) : (
-                            <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0 text-slate-400 font-bold text-xs uppercase shadow-sm">
+                            <div className="h-10 w-10 rounded-xl bg-secondary border border-border flex items-center justify-center shrink-0 text-muted-foreground font-semibold text-xs shadow-xs">
                               {(f.usuario.apelido || f.usuario.nome || "M").slice(0, 2)}
                             </div>
                           )}
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-black text-slate-100 truncate">
+                            <p className="text-sm font-semibold text-foreground truncate">
                               {f.usuario.apelido || f.usuario.nome}
                             </p>
-                            <p className="text-[11px] font-medium text-slate-400 truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                               {f.usuario.nome}
                             </p>
                           </div>
@@ -715,35 +699,35 @@ export default function AdminInvoices() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs">
+                      <div className="grid grid-cols-2 gap-2 p-3 bg-secondary/50 rounded-xl border border-border/60 text-xs">
                         <div>
-                          <p className="text-[10px] text-slate-500 uppercase font-semibold">Plano</p>
-                          <p className="font-bold text-slate-200 truncate">
+                          <p className="text-[11px] text-muted-foreground font-medium">Plano</p>
+                          <p className="font-semibold text-foreground truncate">
                             {f.plano?.nome || "Plano Mensal"}
                           </p>
-                          <span className="text-[9px] text-blue-400 font-medium">
-                            {f.tipo_fatura === "conversao_trial" ? "Conversão Trial" : "Renovação"}
+                          <span className="text-[10px] text-primary font-medium">
+                            {f.tipo_fatura === "conversao_trial" ? "Conversão trial" : "Renovação"}
                           </span>
                         </div>
 
                         <div className="text-right">
-                          <p className="text-[10px] text-slate-500 uppercase font-semibold">Valor</p>
-                          <p className="text-sm font-black text-white">{moneyMask(f.valor)}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
+                          <p className="text-[11px] text-muted-foreground font-medium">Valor</p>
+                          <p className="text-sm font-semibold text-foreground font-mono">{moneyMask(f.valor)}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
                             {f.metodo_pagamento === CheckoutPaymentMethod.CREDIT_CARD ? "Cartão" : "Pix"}
                           </p>
                         </div>
 
-                        <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                          <span className="text-[10px] text-slate-400">Vencimento:</span>
+                        <div className="col-span-2 pt-2 border-t border-border/60 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Vencimento:</span>
                           <span
                             className={cn(
-                              "font-bold",
+                              "font-semibold font-mono text-xs",
                               isVencida
-                                ? "text-rose-400"
+                                ? "text-destructive"
                                 : isHoje
-                                ? "text-amber-400"
-                                : "text-slate-300"
+                                ? "text-amber-500"
+                                : "text-foreground"
                             )}
                           >
                             {formatSafeBrazilianDate(f.data_vencimento)}
@@ -776,7 +760,7 @@ export default function AdminInvoices() {
                               confirmPaymentMutation.isPending || deleteInvoiceMutation.isPending
                             }
                             onClick={() => handleConfirmPayment(f)}
-                            className="h-8 px-2.5 text-xs text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 rounded-xl font-bold"
+                            className="h-8 px-2.5 text-xs text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10 rounded-xl font-medium"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                             Baixa
@@ -790,7 +774,7 @@ export default function AdminInvoices() {
                           onClick={() =>
                             navigate(`${ROUTES.PRIVATE.ADMIN.USERS}/${f.usuario_id}?tab=cobrancas`)
                           }
-                          className="h-8 px-2.5 text-xs text-blue-400 hover:bg-blue-500/10 rounded-xl"
+                          className="h-8 px-2.5 text-xs text-primary hover:bg-primary/10 rounded-xl"
                         >
                           <Eye className="h-3.5 w-3.5 mr-1" />
                           Detalhes
@@ -804,7 +788,7 @@ export default function AdminInvoices() {
                             deleteInvoiceMutation.isPending || confirmPaymentMutation.isPending
                           }
                           onClick={() => handleDeleteInvoice(f)}
-                          className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -814,7 +798,7 @@ export default function AdminInvoices() {
                 })}
               </div>
 
-              <div className="p-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+              <div className="p-4 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>
                   Mostrando {invoices.length} de {total} faturas (Página {page} de {totalPages})
                 </span>
@@ -824,7 +808,7 @@ export default function AdminInvoices() {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-8 px-3"
+                    className="border-border bg-background text-foreground hover:bg-secondary rounded-lg h-9 px-3 text-xs"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
@@ -834,7 +818,7 @@ export default function AdminInvoices() {
                     size="sm"
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-8 px-3"
+                    className="border-border bg-background text-foreground hover:bg-secondary rounded-lg h-9 px-3 text-xs"
                   >
                     Próximo
                     <ChevronRight className="h-4 w-4 ml-1" />

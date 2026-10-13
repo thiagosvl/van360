@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ConfiguracoesToggleTabSkeleton } from "@/components/skeletons";
 import { useConfiguracoes } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/config/permissions";
@@ -28,38 +28,34 @@ export const MinhasNotificacoesTab = memo(function MinhasNotificacoesTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-56 w-full rounded-2xl" />
-      </div>
-    );
+    return <ConfiguracoesToggleTabSkeleton cardCount={1} rowCount={2} />;
   }
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 md:p-6 shadow-xs space-y-5">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-slate-100 text-[#1a3a5c] flex items-center justify-center shrink-0 border border-slate-200/80">
-            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <Smartphone className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-[#1a3a5c]">
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
               Alertas do Aplicativo
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500">
+            <p className="text-xs text-[#737373] mt-0.5">
               Lembretes operacionais enviados via notificação no seu celular
             </p>
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100 space-y-3.5 pt-1">
+        <div className="divide-y divide-[#e5e5e5] space-y-4 pt-1">
           {canViewFinancials && (
             <div className="flex items-center justify-between gap-3 pt-1 first:pt-0">
               <div className="space-y-0.5 min-w-0 pr-1">
-                <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
+                <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
                   Lembrete de pagamentos e parcelas
                 </h3>
-                <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                   Notificação semanal para você acompanhar os pagamentos e dar baixa nas parcelas recebidas.
                 </p>
               </div>
@@ -80,13 +76,12 @@ export const MinhasNotificacoesTab = memo(function MinhasNotificacoesTab() {
             </div>
           )}
 
-          {/* Item 2: Aniversários */}
-          <div className="flex items-center justify-between gap-3 pt-3.5">
+          <div className="flex items-center justify-between gap-3 pt-4">
             <div className="space-y-0.5 min-w-0 pr-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
+              <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
                 Lembrete de aniversariantes da semana
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
                 Notificação semanal para você se lembrar de parabenizar os alunos que fazem aniversário.
               </p>
             </div>

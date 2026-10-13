@@ -61,9 +61,9 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
   }
 
   return (
-    <div ref={containerRef} className={cn("relative w-full sm:max-w-md", className)}>
-      <div className="relative flex items-center">
-        <Search className="absolute left-3 h-4 w-4 text-slate-500 pointer-events-none" />
+    <div ref={containerRef} className={cn("relative w-full", className)}>
+      <div className="relative flex items-center w-full">
+        <Search className="absolute left-3.5 h-4 w-4 text-slate-500 pointer-events-none" />
         <Input
           type="text"
           value={search}
@@ -81,8 +81,8 @@ export function AdminUserQuickSwitcher({ currentUserId, className }: AdminUserQu
               setIsOpen(false);
             }
           }}
-          placeholder="Trocar de motorista... (nome, telefone ou ID)"
-          className="pl-9 pr-9 h-10 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs sm:text-sm focus-visible:ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          placeholder="Buscar motorista... (nome, telefone ou ID)"
+          className="w-full pl-10 pr-10 h-10 rounded-xl bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs sm:text-sm focus-visible:ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
           role="combobox"
           aria-expanded={isOpen}
           aria-controls={listboxId}

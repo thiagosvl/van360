@@ -151,6 +151,16 @@ export function useAdminUserEscolas(id: string, options?: { enabled?: boolean })
   });
 }
 
+export function useAdminUserEquipe(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "users", id, "equipe"],
+    queryFn: () => adminUserApi.getUserEquipe(id),
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAdminUserReferral(id: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["admin", "users", id, "referral"],

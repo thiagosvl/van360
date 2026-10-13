@@ -1,17 +1,24 @@
+import React, { ReactNode } from "react";
+import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-interface UnifiedEmptyStateProps {
+export type UnifiedEmptyStateActionVariant = "tonal" | "neutral" | "primary";
+
+export interface UnifiedEmptyStateAction {
+  label: string;
+  onClick: (e?: React.MouseEvent) => void;
+  icon?: LucideIcon;
+  variant?: UnifiedEmptyStateActionVariant;
+  className?: string;
+}
+
+export interface UnifiedEmptyStateProps {
   icon: LucideIcon;
   title: string;
   description: string | ReactNode;
-  action?: {
-    label: string;
-    onClick: () => void;
-    icon?: LucideIcon;
-  };
+  action?: UnifiedEmptyStateAction;
   className?: string;
   iconClassName?: string;
 }
@@ -24,23 +31,58 @@ export function UnifiedEmptyState({
   className,
   iconClassName,
 }: UnifiedEmptyStateProps) {
+  const variant = action?.variant || "tonal";
+
+  const getVariantStyles = () => {
+    switch (variant) {
+      case "primary":
+        return "bg-primary hover:bg-primary-hover text-primary-foreground font-semibold border-none shadow-xs";
+      case "neutral":
+        return "bg-white dark:bg-card text-[#0a0a0a] dark:text-foreground border border-[#e5e5e5] dark:border-border hover:bg-[#fafafa] dark:hover:bg-accent/80 hover:border-[#737373]/40 font-medium shadow-xs";
+      case "tonal":
+      default:
+        return "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/15 shadow-2xs font-medium";
+    }
+  };
+
   return (
-    <Card className={`border-dashed border-gray-200 bg-gray-50/50 ${className || ""}`}>
-      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="h-16 w-16 rounded-full shadow-sm border border-gray-100 flex items-center justify-center mb-4">
-          <Icon className={`h-8 w-8 text-gray-400 ${iconClassName || ""}`} />
+    <Card
+      className={cn(
+        "rounded-[24px] border border-[#e5e5e5] bg-white shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)]",
+        className
+      )}
+    >
+      <CardContent className="flex flex-col items-center justify-center py-10 sm:py-12 text-center p-6 sm:p-8">
+        <div className="w-14 h-14 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center mb-4 text-[#0a0a0a]">
+          <Icon className={cn("w-7 h-7 text-[#0a0a0a]", iconClassName)} />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-        <div className="text-sm text-gray-500 mb-6 max-w-xs mx-auto leading-relaxed">
+        <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight mb-1.5">
+          {title}
+        </h3>
+        <div className="text-xs sm:text-sm text-[#737373] max-w-sm mx-auto leading-relaxed mb-6">
           {description}
         </div>
         {action && (
           <Button
-            className="border-none bg-[#1a3a5c] hover:bg-[#16314f] text-white hover:text-white font-bold text-sm h-12 md:h-14 rounded-2xl px-4 md:px-6 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+            type="button"
             onClick={action.onClick}
+            className={cn(
+              "h-9 sm:h-10 rounded-[18px] text-xs sm:text-sm px-4 sm:px-5 transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-2 group",
+              getVariantStyles(),
+              action.className
+            )}
           >
-            {action.icon && <action.icon className="w-3.5 h-3.5 mr-2 opacity-80 text-white" />}
-            {action.label}
+            {action.icon && (
+              <action.icon
+                className={cn(
+                  "w-4 h-4 shrink-0 transition-colors",
+                  variant === "neutral"
+                    ? "text-[#737373] dark:text-muted-foreground"
+                    : "text-current"
+                )}
+              />
+            )}
+            <span>{action.label}</span>
           </Button>
         )}
       </CardContent>

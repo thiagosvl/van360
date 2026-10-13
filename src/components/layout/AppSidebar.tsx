@@ -8,7 +8,6 @@ import { useSession } from "@/hooks/business/useSession";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
-import { isNativeIos } from "@/utils/detectPlatform";
 import { toast } from "sonner";
 
 interface AppSidebarProps {
@@ -30,7 +29,6 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
     ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
     : pagesItems
   ).filter((item) => {
-    if (isNativeIos() && item.href === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION) return false;
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
     return can(item.permission);
@@ -52,26 +50,22 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
               onClick={(e) => {
                 if (isItemBlocked) {
                   e.preventDefault();
-                  toast.warning(
-                    isNativeIos()
-                      ? "Acesso suspenso. Entre em contato com o suporte para reativar seu acesso."
-                      : "Acesso suspenso. Contrate um plano para reativar suas funcionalidades."
-                  );
+                  toast.warning("Acesso suspenso. Contrate um plano para reativar suas funcionalidades.");
                   return;
                 }
                 onLinkClick?.();
               }}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3.5 rounded-2xl px-4 transition-colors",
+                  "flex items-center gap-3.5 rounded-[18px] px-4 transition-colors",
                   isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]",
                   isItemBlocked
-                    ? "opacity-40 cursor-not-allowed hover:bg-transparent text-slate-500"
+                    ? "opacity-40 cursor-not-allowed hover:bg-transparent text-white/30"
                     : isActive
                       ? "bg-white/10 text-white font-bold shadow-xs"
                       : isMobile
-                        ? "text-slate-200 font-medium hover:bg-white/5 hover:text-white"
-                        : "text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
+                        ? "text-white/85 font-medium hover:bg-white/5 hover:text-white"
+                        : "text-white/60 font-medium hover:bg-white/5 hover:text-white"
                 )
               }
             >
@@ -81,18 +75,18 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
                     className={cn(
                       "h-5 w-5 shrink-0 transition-colors",
                       isItemBlocked
-                        ? "text-slate-500"
+                        ? "text-white/30"
                         : isActive
                           ? "text-white"
                           : isMobile
-                            ? "text-slate-200"
-                            : "text-slate-400"
+                            ? "text-white/85"
+                            : "text-white/60"
                     )}
                   />
                   <span className="truncate">{item.title}</span>
 
                   {isItemBlocked ? (
-                    <Lock className="ml-auto h-3.5 w-3.5 text-slate-500 shrink-0" />
+                    <Lock className="ml-auto h-3.5 w-3.5 text-white/40 shrink-0" />
                   ) : null}
                 </>
               )}
@@ -100,7 +94,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
           );
         })}
 
-        {isGestor && !isSubscriptionBlocked && !isNativeIos() && (
+        {isGestor && !isSubscriptionBlocked && (
           <button
             type="button"
             onClick={() => {
@@ -108,7 +102,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
               openReferAndEarnDialog();
             }}
             className={cn(
-              "w-full flex items-center gap-3.5 text-left rounded-2xl px-4 text-amber-400 font-semibold transition-colors hover:bg-white/5 hover:text-amber-300",
+              "w-full flex items-center gap-3.5 text-left rounded-[18px] px-4 text-amber-400 font-semibold transition-colors hover:bg-white/5 hover:text-amber-300 cursor-pointer",
               isMobile ? "py-3 sm:py-3.5 text-[15px] sm:text-[16px]" : "py-2.5 text-[15px]"
             )}
           >
@@ -125,9 +119,9 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
                 onLinkClick?.();
                 openPersonalizarMenuDialog();
               }}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-[18px] text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
             >
-              <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500" />
+              <SlidersHorizontal className="h-3.5 w-3.5 text-white/50" />
               <span>Personalizar atalhos de navegação</span>
             </button>
           </div>

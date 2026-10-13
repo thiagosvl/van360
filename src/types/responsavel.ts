@@ -1,4 +1,5 @@
 import { Responsavel } from "./passageiro";
+import { ContratoStatus, CobrancaStatus } from "./enums";
 
 export interface ResponsavelPassageiro {
   id: string;
@@ -23,7 +24,7 @@ export interface ResponsavelCobrancaItem {
   valor: number;
   valor_pago?: number | null;
   tipo_pagamento?: string | null;
-  status: string;
+  status: CobrancaStatus;
   data_vencimento: string;
   recibo_url?: string | null;
   desativar_lembretes?: boolean;
@@ -42,8 +43,11 @@ export interface ResponsavelAusenciaItem {
 }
 
 export interface RegistrarAusenciaPayload {
-  data_ausencia: string;
+  data_ausencia?: string;
+  data_inicio?: string;
+  data_fim?: string;
   rota_id?: string;
+  rotas_ids?: string[];
   periodo?: string;
   motivo?: string;
 }
@@ -51,7 +55,7 @@ export interface RegistrarAusenciaPayload {
 
 export interface ResponsavelContratoItem {
   id: string;
-  status: string;
+  status: ContratoStatus;
   minuta_url?: string | null;
   contrato_final_url?: string | null;
   documento_url?: string | null;

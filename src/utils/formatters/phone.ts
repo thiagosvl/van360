@@ -11,3 +11,8 @@ export function formatarTelefone(telefone: string): string {
 
 export const formatPhone = formatarTelefone;
 
+export function formatarTelefoneExibicao(telefone?: string | null): string {
+  if (!telefone || !telefone.trim()) return "Telefone não informado";
+  return formatarTelefone(telefone);
+}
+

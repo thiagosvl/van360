@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Banner } from "@/components/ui/Banner";
+import { RotaMultiSelect } from "@/components/ui/RotaMultiSelect";
+import { PeriodoAusenciaCampos } from "@/components/ui/PeriodoAusenciaCampos";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav, AppTabItem } from "@/components/ui/AppTabNav";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useProximasAusencias, useRoutes, useBuscarAlunos, useRegistrarAusenciaMutation, AusenciaFuturaItem } from "@/hooks/api/useRoutes";
@@ -51,6 +55,8 @@ interface RotaGroupInDia {
 interface DiaGroupItem {
   dataStr: string;
   dataLabel: string;
+  isHoje: boolean;
+  isAmanha: boolean;
   rotas: RotaGroupInDia[];
   totalAlunos: number;
 }
@@ -58,6 +64,8 @@ interface DiaGroupItem {
 interface DiaGroupInRota {
   dataStr: string;
   dataLabel: string;
+  isHoje: boolean;
+  isAmanha: boolean;
   alunos: AlunoAusenciaNode[];
 }
 
@@ -68,12 +76,27 @@ interface RotaGroupItem {
   totalAlunos: number;
 }
 
-function formatarDataAusencia(dataStr: string): string {
+function formatarDataAusencia(dataStr: string): { label: string; isHoje: boolean; isAmanha: boolean } {
   const d = parseLocalDate(dataStr);
+  const dataItemStr = toPersistenceString(d);
+
+  const now = getNowBR();
+  const todayStr = toPersistenceString(now);
+  if (dataItemStr === todayStr) {
+    return { label: "Hoje", isHoje: true, isAmanha: false };
+  }
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = toPersistenceString(tomorrow);
+  if (dataItemStr === tomorrowStr) {
+    return { label: "Amanhã", isHoje: false, isAmanha: true };
+  }
+
   const diaSemana = getShortWeekDayBR(d);
   const dia = d.getDate().toString().padStart(2, "0");
   const mes = (d.getMonth() + 1).toString().padStart(2, "0");
-  return `${diaSemana}, ${dia}/${mes}`;
+  return { label: `${diaSemana}, ${dia}/${mes}`, isHoje: false, isAmanha: false };
 }
 
 export function ProximasAusenciasDialog({
@@ -85,6 +108,14 @@ export function ProximasAusenciasDialog({
   const [activeTab, setActiveTab] = useState<TabMode>("dia");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
+  const tabItems = useMemo<AppTabItem<TabMode>[]>(
+    () => [
+      { value: "dia", label: "Por Dia" },
+      { value: "rota", label: "Por Rota" },
+    ],
+    []
+  );
+
   const { user } = useSession();
   const { donoContaId } = useProfile(user?.id);
   const { formatoNomeResponsavel } = useAppPreferences();
@@ -92,14 +123,17 @@ export function ProximasAusenciasDialog({
 
   const queryClient = useQueryClient();
 
-  const [formRotaId, setFormRotaId] = useState(lockedRotaId || "");
+  const [selectedRotasIds, setSelectedRotasIds] = useState<string[]>(lockedRotaId ? [lockedRotaId] : []);
+  const [alunoRotas, setAlunoRotas] = useState<Route[]>([]);
   const [formPassageiroId, setFormPassageiroId] = useState("");
   const [alunoSelecionado, setAlunoSelecionado] = useState<{ id: string; nome: string } | null>(null);
   const [searchAluno, setSearchAluno] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoadingRotasAluno, setIsLoadingRotasAluno] = useState(false);
-  const [formDataAusencia, setFormDataAusencia] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [keepOpen, setKeepOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const alunoSearchContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -129,7 +163,7 @@ export function ProximasAusenciasDialog({
     enabled: open && !lockedRotaId && !!usuarioId,
   });
 
-  const activeRotaIdForSearch = lockedRotaId || formRotaId || undefined;
+  const activeRotaIdForSearch = lockedRotaId || undefined;
   const { data: alunosEncontrados = [], isLoading: isLoadingAlunos } = useBuscarAlunos({
     search: debouncedSearch,
     rotaId: activeRotaIdForSearch,
@@ -148,21 +182,36 @@ export function ProximasAusenciasDialog({
     enabled: open,
   });
 
-  const isCarregandoAusencias = isLoading || isFetching;
+  const isCarregandoAusencias = isLoading && ausencias.length === 0;
+
+  const rotasDisponiveis = useMemo(() => {
+    if (lockedRotaId) return [];
+    if (alunoRotas.length > 0) return alunoRotas;
+    return (rotasList as Route[]) || [];
+  }, [lockedRotaId, alunoRotas, rotasList]);
 
   useEffect(() => {
     if (open) {
-      setFormRotaId(lockedRotaId || "");
+      setSelectedRotasIds(lockedRotaId ? [lockedRotaId] : []);
+      setAlunoRotas([]);
       setFormPassageiroId("");
       setAlunoSelecionado(null);
       setSearchAluno("");
       setDebouncedSearch("");
       setIsDropdownOpen(false);
-      setFormDataAusencia("");
+      setDataInicio("");
+      setDataFim("");
+      setKeepOpen(false);
       setFormErrors({});
       setIsRegisterOpen(false);
     }
   }, [open, lockedRotaId]);
+
+  useEffect(() => {
+    if (open && !lockedRotaId && alunoRotas.length === 1 && selectedRotasIds.length === 0) {
+      setSelectedRotasIds([alunoRotas[0].id]);
+    }
+  }, [open, lockedRotaId, alunoRotas, selectedRotasIds.length]);
 
   const handleSelectAluno = async (aluno: { id: string; nome: string }) => {
     setFormPassageiroId(aluno.id);
@@ -171,19 +220,22 @@ export function ProximasAusenciasDialog({
     setIsDropdownOpen(false);
     setFormErrors((prev) => ({ ...prev, passageiroId: "" }));
 
-    if (!lockedRotaId && !formRotaId) {
+    if (lockedRotaId) {
+      setSelectedRotasIds([lockedRotaId]);
+    } else {
       try {
         setIsLoadingRotasAluno(true);
         const rotasDoAluno = await routeApi.listRotasByPassageiro(aluno.id);
-        if (rotasDoAluno && rotasDoAluno.length > 0) {
-          const primeiraRota = rotasDoAluno[0].rota || rotasDoAluno[0];
-          if (primeiraRota?.id) {
-            setFormRotaId(primeiraRota.id);
-            setFormErrors((prev) => ({ ...prev, rotaId: "" }));
-          }
+        const listaRotas: Route[] = (rotasDoAluno || []).map((r: any) => r.rota || r);
+        setAlunoRotas(listaRotas);
+        if (listaRotas.length === 1) {
+          setSelectedRotasIds([listaRotas[0].id]);
+          setFormErrors((prev) => ({ ...prev, rotas: "" }));
+        } else {
+          setSelectedRotasIds([]);
         }
       } catch {
-        // silencioso
+        setAlunoRotas([]);
       } finally {
         setIsLoadingRotasAluno(false);
       }
@@ -196,38 +248,64 @@ export function ProximasAusenciasDialog({
     setSearchAluno("");
     setDebouncedSearch("");
     setIsDropdownOpen(false);
+    if (!lockedRotaId) {
+      setSelectedRotasIds([]);
+      setAlunoRotas([]);
+    }
   };
 
   const handleSalvarAusencia = async () => {
-    const activeRotaId = lockedRotaId || formRotaId;
     const errors: Record<string, string> = {};
-    if (!activeRotaId) errors.rotaId = "Selecione uma rota";
     if (!formPassageiroId) errors.passageiroId = "Selecione um aluno";
-    if (!formDataAusencia) errors.dataAusencia = "Informe a data";
+    if (selectedRotasIds.length === 0) errors.rotas = "Selecione ao menos uma rota";
+    if (!dataInicio) errors.dataInicio = "Informe a data da ausência";
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
+    const dataFimFinal = dataFim || dataInicio;
+
     try {
       await registrarMutation.mutateAsync({
         passageiro_id: formPassageiroId,
-        rota_id: activeRotaId,
-        data_ausencia: formDataAusencia,
+        rotas_ids: selectedRotasIds,
+        data_inicio: dataInicio,
+        data_fim: dataFimFinal,
       });
 
-      toast.success("Ausência registrada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
-      setFormPassageiroId("");
-      setAlunoSelecionado(null);
-      setSearchAluno("");
-      setDebouncedSearch("");
-      setFormDataAusencia("");
+      toast.success(
+        keepOpen
+          ? "Ausência registrada! Selecione a próxima data."
+          : "Ausência registrada com sucesso!"
+      );
+
+      await queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
+      selectedRotasIds.forEach((rId) => {
+        queryClient.invalidateQueries({ queryKey: ["route-ausencias", rId] });
+        queryClient.invalidateQueries({ queryKey: ["route-passageiro-ausencias", rId] });
+      });
+      queryClient.invalidateQueries({ queryKey: ["route-execution"] });
+
+      setDataInicio("");
+      setDataFim("");
       setFormErrors({});
-      setIsRegisterOpen(false);
-    } catch {
-      toast.error("Erro ao registrar ausência.");
+
+      if (!keepOpen) {
+        setFormPassageiroId("");
+        setAlunoSelecionado(null);
+        setSearchAluno("");
+        setDebouncedSearch("");
+        if (!lockedRotaId) {
+          setSelectedRotasIds([]);
+          setAlunoRotas([]);
+        }
+        setIsRegisterOpen(false);
+      }
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj?.response?.data?.message || "Erro ao registrar ausência.");
     }
   };
 
@@ -275,9 +353,12 @@ export function ProximasAusenciasDialog({
           });
         });
 
+        const infoData = formatarDataAusencia(dataStr);
         resultado.push({
           dataStr,
-          dataLabel: formatarDataAusencia(dataStr),
+          dataLabel: infoData.label,
+          isHoje: infoData.isHoje,
+          isAmanha: infoData.isAmanha,
           rotas,
           totalAlunos: totalNoDia,
         });
@@ -309,9 +390,12 @@ export function ProximasAusenciasDialog({
         .sort(([dataA], [dataB]) => dataA.localeCompare(dataB))
         .forEach(([dataStr, alunos]) => {
           totalNaRota += alunos.length;
+          const infoData = formatarDataAusencia(dataStr);
           dias.push({
             dataStr,
-            dataLabel: formatarDataAusencia(dataStr),
+            dataLabel: infoData.label,
+            isHoje: infoData.isHoje,
+            isAmanha: infoData.isAmanha,
             alunos,
           });
         });
@@ -329,43 +413,34 @@ export function ProximasAusenciasDialog({
   }, [parsedItems]);
 
   const renderAlunoCard = (aluno: AlunoAusenciaNode) => {
-    const respName = aluno.responsavelNome ? formatNomeResponsavelExibicao(aluno.responsavelNome, formatoNomeResponsavel) : null;
-
     return (
       <div
         key={aluno.id}
-        className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs flex items-center gap-3 transition-all"
+        className="bg-white border border-[#e5e5e5] rounded-[18px] p-3 shadow-xs flex items-center gap-3 transition-all"
       >
-        <Avatar className="w-8 h-8 shrink-0 border border-slate-200/60">
-          <AvatarFallback className="text-[10px] font-bold bg-[#1a3a5c]/10 text-[#1a3a5c]">
+        <Avatar className="w-8 h-8 shrink-0 border border-[#e5e5e5]">
+          <AvatarFallback className="text-[10px] font-semibold bg-[#f5f5f5] text-[#0a0a0a]">
             {getInitials(aluno.nome) || <User className="w-3.5 h-3.5" />}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-              {formatShortName(aluno.nome, true)}
-            </span>
-            {aluno.turma && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 shrink-0">
-                {aluno.turma}
-              </span>
-            )}
-          </div>
+          <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
+            {formatShortName(aluno.nome, true)}
+          </span>
 
-          {(respName || aluno.escolaNome) && (
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium truncate mt-0.5">
-              {respName && (
-                <>
-                  <span className="truncate text-slate-500">
-                    {respName}
-                  </span>
-                  {aluno.escolaNome && <span className="text-slate-300">•</span>}
-                </>
+          {(aluno.turma || aluno.escolaNome) && (
+            <div className="flex items-center gap-1.5 text-[11px] text-[#737373] font-normal truncate mt-1">
+              {aluno.turma && (
+                <span className="truncate text-[#737373]">
+                  {aluno.turma}
+                </span>
+              )}
+              {aluno.turma && aluno.escolaNome && (
+                <span className="text-[#d4d4d4]">•</span>
               )}
               {aluno.escolaNome && (
-                <span className="truncate text-slate-400">
+                <span className="truncate text-[#737373]">
                   {aluno.escolaNome}
                 </span>
               )}
@@ -384,8 +459,6 @@ export function ProximasAusenciasDialog({
     ? `Ausências registradas para a rota "${lockedRotaNome}"`
     : "Ausências futuras registradas para suas rotas";
 
-  const hojeFormatado = toPersistenceString(getNowBR());
-
   return (
     <BaseDialog open={open} onOpenChange={onOpenChange} maxWidth="md" description={dialogDescription}>
       <BaseDialog.Header
@@ -395,60 +468,34 @@ export function ProximasAusenciasDialog({
       />
 
       <BaseDialog.Body className="p-4 sm:p-6 space-y-4">
-        {/* Accordion / Colapso de Registrar Ausência no topo */}
-        <div className="border border-slate-200/90 rounded-2xl p-3 bg-slate-50/70 transition-all">
+        <div className="border border-[#e5e5e5] rounded-[24px] p-3.5 bg-white shadow-xs transition-all">
           <button
             type="button"
             onClick={() => setIsRegisterOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between text-xs sm:text-sm font-bold text-[#1a3a5c] cursor-pointer"
+            className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#0a0a0a] cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shadow-2xs">
+              <div className="w-7 h-7 rounded-[10px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center border border-[#e5e5e5]">
                 <UserPlus className="w-4 h-4" />
               </div>
               <span>Registrar Ausência</span>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+            <div className="flex items-center gap-1.5 text-[#737373] text-xs">
               <span>{isRegisterOpen ? "Fechar" : "Nova"}</span>
               <ChevronDown className={cn("w-4 h-4 transition-transform", isRegisterOpen && "rotate-180")} />
             </div>
           </button>
 
           {isRegisterOpen && (
-            <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-              {!lockedRotaId && (
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-700">Rota</Label>
-                  <Select
-                    value={formRotaId}
-                    onValueChange={(val) => {
-                      setFormRotaId(val);
-                      setFormPassageiroId("");
-                      setFormErrors((prev) => ({ ...prev, rotaId: "" }));
-                    }}
-                    disabled={isLoadingRotas}
-                  >
-                    <SelectTrigger className={cn("h-10 text-xs rounded-xl bg-white text-slate-800 font-medium", formErrors.rotaId && "border-red-500")}>
-                      <SelectValue placeholder="Selecione a rota" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      {rotasList.map((r: Route) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formErrors.rotaId && <p className="text-[11px] text-red-500">{formErrors.rotaId}</p>}
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700">Aluno</Label>
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5] space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-medium text-[#737373]">
+                  Aluno <span className="text-[#e7000b]">*</span>
+                </Label>
                 <div ref={alunoSearchContainerRef} className="relative">
                   <input
                     type="text"
-                    placeholder="Digite o nome..."
+                    placeholder="Digite o nome do aluno..."
                     value={searchAluno}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -456,6 +503,10 @@ export function ProximasAusenciasDialog({
                       if (alunoSelecionado && val !== alunoSelecionado.nome) {
                         setAlunoSelecionado(null);
                         setFormPassageiroId("");
+                        if (!lockedRotaId) {
+                          setSelectedRotasIds([]);
+                          setAlunoRotas([]);
+                        }
                       }
                       setIsDropdownOpen(val.trim().length > 0);
                     }}
@@ -465,39 +516,39 @@ export function ProximasAusenciasDialog({
                       }
                     }}
                     className={cn(
-                      "w-full h-10 pl-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c] placeholder:text-slate-400 placeholder:font-normal transition-colors",
-                      formErrors.passageiroId && "border-red-500"
+                      "w-full h-11 pl-3.5 pr-9 rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] text-sm text-[#0a0a0a] font-normal focus:outline-none focus:bg-white focus:border-[#0a0a0a] placeholder:text-[#737373] transition-colors",
+                      formErrors.passageiroId && "border-[#e7000b]"
                     )}
                   />
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     {isLoadingAlunos || isLoadingRotasAluno ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#737373]" />
                     ) : alunoSelecionado ? (
                       <button
                         type="button"
                         onClick={handleClearAluno}
-                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                        className="text-[#737373] hover:text-[#0a0a0a] cursor-pointer p-0.5"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     ) : (
-                      <Search className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                      <Search className="w-3.5 h-3.5 text-[#737373] pointer-events-none" />
                     )}
                   </div>
 
                   {isDropdownOpen && !alunoSelecionado && searchAluno.trim().length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute left-0 right-0 top-full mt-1.5 p-1 bg-white border border-[#e5e5e5] rounded-[18px] shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-[#f5f5f5] animate-in fade-in slide-in-from-top-1 duration-150">
                       {searchAluno.trim().length < 3 ? (
-                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                        <div className="p-3 text-[11px] text-[#737373] text-center font-normal">
                           Digite pelo menos 3 letras para buscar...
                         </div>
                       ) : isLoadingAlunos ? (
-                        <div className="p-3 text-[11px] text-slate-500 text-center flex items-center justify-center gap-2">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a3a5c]" />
+                        <div className="p-3 text-[11px] text-[#737373] text-center flex items-center justify-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0a0a0a]" />
                           <span>Buscando alunos...</span>
                         </div>
                       ) : alunosEncontrados.length === 0 ? (
-                        <div className="p-3 text-[11px] text-slate-400 text-center font-medium">
+                        <div className="p-3 text-[11px] text-[#737373] text-center font-normal">
                           Nenhum aluno encontrado{activeRotaIdForSearch ? " nesta rota" : ""}.
                         </div>
                       ) : (
@@ -514,36 +565,36 @@ export function ProximasAusenciasDialog({
                                 handleSelectAluno(aluno);
                               }}
                               className={cn(
-                                "w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 cursor-pointer",
-                                isSelected && "bg-slate-100 font-bold text-[#1a3a5c]"
+                                "w-full text-left px-3 py-2 text-xs rounded-[14px] hover:bg-[#f5f5f5] transition-colors flex items-center justify-between gap-2 cursor-pointer",
+                                isSelected && "bg-[#f5f5f5] font-semibold text-[#0a0a0a]"
                               )}
                             >
                               <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="truncate font-semibold text-slate-800">
+                                  <span className="truncate font-semibold text-[#0a0a0a]">
                                     {formatShortName(aluno.nome, true)}
                                   </span>
                                   {aluno.turma && (
-                                    <span className="text-[10px] text-slate-500 font-medium px-1.5 py-0.2 rounded bg-slate-100 border border-slate-200/50 shrink-0">
+                                    <span className="text-[10px] text-[#737373] font-medium px-1.5 py-0.2 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] shrink-0">
                                       {aluno.turma}
                                     </span>
                                   )}
                                 </div>
                                 {(respName || aluno.escola_nome) && (
-                                  <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                  <div className="flex items-center gap-1 text-[10px] text-[#737373] font-normal truncate mt-0.5">
                                     {respName && (
                                       <>
-                                        <span className="text-slate-500 truncate">{respName}</span>
-                                        {aluno.escola_nome && <span className="text-slate-300">•</span>}
+                                        <span className="text-[#737373] truncate">{respName}</span>
+                                        {aluno.escola_nome && <span className="text-[#d4d4d4]">•</span>}
                                       </>
                                     )}
                                     {aluno.escola_nome && (
-                                      <span className="truncate text-slate-400">{aluno.escola_nome}</span>
+                                      <span className="truncate text-[#737373]">{aluno.escola_nome}</span>
                                     )}
                                   </div>
                                 )}
                               </div>
-                              {isSelected && <Check className="w-3.5 h-3.5 text-[#1a3a5c] shrink-0" />}
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#0a0a0a] shrink-0" />}
                             </button>
                           );
                         })
@@ -551,39 +602,85 @@ export function ProximasAusenciasDialog({
                     </div>
                   )}
                 </div>
-                {formErrors.passageiroId && <p className="text-[11px] text-red-500">{formErrors.passageiroId}</p>}
+                {formErrors.passageiroId && <p className="text-[11px] text-[#e7000b] font-medium">{formErrors.passageiroId}</p>}
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700">Data da Ausência</Label>
-                <input
-                  type="date"
-                  min={hojeFormatado}
-                  value={formDataAusencia}
-                  onChange={(e) => {
-                    setFormDataAusencia(e.target.value);
-                    setFormErrors((prev) => ({ ...prev, dataAusencia: "" }));
-                  }}
-                  className={cn(
-                    "w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#1a3a5c]",
-                    formErrors.dataAusencia && "border-red-500"
-                  )}
+              {alunoSelecionado && !isLoadingRotasAluno && alunoRotas.length === 0 && !lockedRotaId && (
+                <Banner
+                  variant="warning"
+                  description="Este aluno não está vinculado a nenhuma rota ativa."
                 />
-                {formErrors.dataAusencia && <p className="text-[11px] text-red-500">{formErrors.dataAusencia}</p>}
+              )}
+
+              {!lockedRotaId && (
+                <div className="space-y-1.5">
+                  <Label className="text-[13px] font-medium text-[#737373]">
+                    Rotas <span className="text-[#e7000b]">*</span>
+                  </Label>
+                  <RotaMultiSelect
+                    rotas={rotasDisponiveis}
+                    selectedIds={selectedRotasIds}
+                    onChange={(ids) => {
+                      setSelectedRotasIds(ids);
+                      if (formErrors.rotas) setFormErrors((prev) => ({ ...prev, rotas: "" }));
+                    }}
+                    disabled={isLoadingRotas || isLoadingRotasAluno || rotasDisponiveis.length === 0}
+                    hasError={Boolean(formErrors.rotas)}
+                    placeholder={
+                      !alunoSelecionado
+                        ? "Selecione o aluno primeiro"
+                        : rotasDisponiveis.length === 0
+                        ? "Nenhuma rota disponível"
+                        : "Selecione a(s) rota(s)"
+                    }
+                  />
+                  {formErrors.rotas && <p className="text-[11px] text-[#e7000b] font-medium">{formErrors.rotas}</p>}
+                </div>
+              )}
+
+              <PeriodoAusenciaCampos
+                dataInicio={dataInicio}
+                dataFim={dataFim}
+                onDataInicioChange={(data) => {
+                  setDataInicio(data);
+                  if (formErrors.dataInicio) setFormErrors((prev) => ({ ...prev, dataInicio: "" }));
+                }}
+                onDataFimChange={(data) => {
+                  setDataFim(data);
+                  if (formErrors.dataFim) setFormErrors((prev) => ({ ...prev, dataFim: "" }));
+                }}
+                errors={{
+                  dataInicio: formErrors.dataInicio,
+                  dataFim: formErrors.dataFim,
+                }}
+              />
+
+              <div className="flex items-center gap-2.5 pt-0.5 px-0.5">
+                <Checkbox
+                  id="keepOpenProximasAusencias"
+                  checked={keepOpen}
+                  onCheckedChange={(checked) => setKeepOpen(Boolean(checked))}
+                />
+                <label
+                  htmlFor="keepOpenProximasAusencias"
+                  className="text-[13px] text-[#737373] hover:text-[#0a0a0a] font-medium cursor-pointer select-none"
+                >
+                  Cadastrar outra em seguida
+                </label>
               </div>
 
               <Button
                 type="button"
                 onClick={handleSalvarAusencia}
                 disabled={registrarMutation.isPending}
-                className="w-full h-10 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                className="w-full h-11 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-[18px] transition-all active:scale-95 cursor-pointer shadow-xs flex items-center justify-center gap-2 border-none"
               >
                 {registrarMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 ) : (
                   <UserPlus className="w-4 h-4 shrink-0" />
                 )}
-                <span>Salvar</span>
+                <span>Salvar Ausência</span>
               </Button>
             </div>
           )}
@@ -595,22 +692,14 @@ export function ProximasAusenciasDialog({
             onValueChange={(val) => setActiveTab(val as TabMode)}
             className="w-full"
           >
-            <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
-              <TabsList className="grid grid-cols-2 w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0">
-                <TabsTrigger
-                  value="dia"
-                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-                >
-                  Por Dia
-                </TabsTrigger>
-                <TabsTrigger
-                  value="rota"
-                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
-                >
-                  Por Rota
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            <AppTabNav
+              items={tabItems}
+              activeTab={activeTab}
+              layout="fill"
+              className="w-full"
+              listClassName="w-full grid grid-cols-2"
+              triggerClassName="w-full"
+            />
           </Tabs>
         )}
 
@@ -618,22 +707,22 @@ export function ProximasAusenciasDialog({
           {isCarregandoAusencias ? (
             <div className="space-y-4 py-2">
               <div className="space-y-2">
-                <Skeleton className="h-5 w-28 rounded-lg" />
-                <div className="pl-3.5 ml-1 border-l-2 border-slate-100 space-y-2">
-                  <Skeleton className="h-11 w-full rounded-xl" />
-                  <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="h-5 w-28 rounded-[12px]" />
+                <div className="pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-2">
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Skeleton className="h-5 w-28 rounded-lg" />
-                <div className="pl-3.5 ml-1 border-l-2 border-slate-100 space-y-2">
-                  <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="h-5 w-28 rounded-[12px]" />
+                <div className="pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-2">
+                  <Skeleton className="h-12 w-full rounded-[18px]" />
                 </div>
               </div>
             </div>
           ) : isError ? (
             <div className="py-8 text-center space-y-2">
-              <p className="text-xs sm:text-sm font-medium text-rose-500">
+              <p className="text-xs sm:text-sm font-medium text-[#e7000b]">
                 Ocorreu um erro ao carregar as ausências. Tente novamente mais tarde.
               </p>
             </div>
@@ -642,21 +731,29 @@ export function ProximasAusenciasDialog({
               icon={CalendarCheck2}
               title="Nenhuma ausência futura"
               description="Todos os alunos estão confirmados para os próximos dias de rota."
-              className="my-2 border-slate-200/80 bg-slate-50/50"
-              iconClassName="text-emerald-500"
             />
           ) : lockedRotaId ? (
             <div className="space-y-4">
               {treePorDia.map((grupoDia) => (
                 <div key={grupoDia.dataStr} className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#1a3a5c] shrink-0" />
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className={cn(
+                      "w-2 h-2 rounded-full shrink-0",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "bg-primary"
+                        : "bg-[#0a0a0a]"
+                    )} />
+                    <span className={cn(
+                      "text-xs sm:text-sm",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "font-bold text-primary"
+                        : "font-semibold text-[#0a0a0a]"
+                    )}>
                       {grupoDia.dataLabel}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-1 border-l-2 border-slate-200/80 space-y-1.5">
+                  <div className="relative pl-3.5 ml-1 border-l-2 border-[#e5e5e5] space-y-1.5">
                     {grupoDia.rotas.flatMap((r) => r.alunos).map(renderAlunoCard)}
                   </div>
                 </div>
@@ -667,19 +764,29 @@ export function ProximasAusenciasDialog({
               {treePorDia.map((grupoDia) => (
                 <div key={grupoDia.dataStr} className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
-                      <Calendar className="w-3.5 h-3.5" />
+                    <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
+                      <Calendar className={cn(
+                        "w-3.5 h-3.5",
+                        grupoDia.isHoje || grupoDia.isAmanha
+                          ? "text-primary"
+                          : "text-[#0a0a0a]"
+                      )} />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className={cn(
+                      "text-xs sm:text-sm",
+                      grupoDia.isHoje || grupoDia.isAmanha
+                        ? "font-bold text-primary"
+                        : "font-semibold text-[#0a0a0a]"
+                    )}>
                       {grupoDia.dataLabel}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-3 border-l-2 border-slate-200/80 space-y-3">
+                  <div className="relative pl-3.5 ml-3 border-l-2 border-[#e5e5e5] space-y-3">
                     {grupoDia.rotas.map((rota) => (
                       <div key={rota.rotaId} className="space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-semibold">
-                          <Bus className="w-3 h-3 text-[#1a3a5c] shrink-0" />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] text-[11px] font-medium">
+                          <Bus className="w-3 h-3 text-[#0a0a0a] shrink-0" />
                           <span className="truncate max-w-[220px] sm:max-w-none">{rota.rotaNome}</span>
                         </div>
 
@@ -697,20 +804,31 @@ export function ProximasAusenciasDialog({
               {treePorRota.map((grupoRota) => (
                 <div key={grupoRota.rotaId} className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-[#1a3a5c]/10 text-[#1a3a5c] flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-[8px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center shrink-0">
                       <Bus className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                    <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate">
                       {grupoRota.rotaNome}
                     </span>
                   </div>
 
-                  <div className="relative pl-3.5 ml-3 border-l-2 border-slate-200/80 space-y-3">
+                  <div className="relative pl-3.5 ml-3 border-l-2 border-[#e5e5e5] space-y-3">
                     {grupoRota.dias.map((dia) => (
                       <div key={dia.dataStr} className="space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-semibold">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{dia.dataLabel}</span>
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[18px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] text-[11px] font-medium">
+                          <Calendar className={cn(
+                            "w-3.5 h-3.5",
+                            dia.isHoje || dia.isAmanha
+                              ? "text-primary"
+                              : "text-[#0a0a0a]"
+                          )} />
+                          <span className={cn(
+                            dia.isHoje || dia.isAmanha
+                              ? "font-bold text-primary"
+                              : "text-[#0a0a0a]"
+                          )}>
+                            {dia.dataLabel}
+                          </span>
                         </div>
 
                         <div className="space-y-1.5 pl-2">

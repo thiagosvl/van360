@@ -1,6 +1,7 @@
 import { apiClient } from "../client";
 import { ContratoProvider, DriverContractConfigStatus, WhatsappStatus, IndicacaoStatus, DispositivoCadastro, AtribuicaoCategoria } from "@/types/enums";
 import { MetadadosCadastroData } from "@/types/usuario";
+import { MotoristaConfiguracaoFinanceira } from "@/types/admin-repasse";
 
 export interface AdminDashboardStats {
   totalMotoristas: number;
@@ -245,7 +246,44 @@ export interface AdminUserReferralData {
   }>;
 }
 
+export interface AdminUserEquipeItem {
+  id: string;
+  nome: string;
+  apelido: string | null;
+  razao_social: string | null;
+  email: string;
+  telefone: string;
+  cpfcnpj: string;
+  tipo: string;
+  ativo: boolean;
+  conta_pai_id: string;
+  veiculo_id: string | null;
+  created_at: string;
+  veiculos?: {
+    id: string;
+    placa: string;
+    marca: string | null;
+    modelo: string;
+  } | null;
+}
+
 export interface AdminUserDetailsResponse extends AdminUserReferralData {
+  gestor?: {
+    id: string;
+    nome: string;
+    apelido: string | null;
+    telefone: string | null;
+    email: string | null;
+    logo_url: string | null;
+    tipo: string;
+  } | null;
+  veiculo_vinculado?: {
+    id: string;
+    placa: string;
+    modelo: string;
+    marca: string | null;
+  } | null;
+  equipe?: AdminUserEquipeItem[];
   user: {
     id: string;
     nome: string;
@@ -253,9 +291,12 @@ export interface AdminUserDetailsResponse extends AdminUserReferralData {
     apelido: string | null;
     email: string;
     cpfcnpj: string;
+    cpf_responsavel?: string | null;
     telefone: string;
     ativo: boolean;
     tipo: string;
+    conta_pai_id?: string | null;
+    veiculo_id?: string | null;
     created_at: string;
     updated_at: string;
     data_nascimento: string | null;
@@ -290,6 +331,7 @@ export interface AdminUserDetailsResponse extends AdminUserReferralData {
     contratosPendentesCount?: number;
     valorTotalContratos?: number;
     statusConfiguracaoContrato?: DriverContractConfigStatus;
+    equipeCount?: number;
   };
   passageiros?: AdminUserPassengerItem[];
   prePassageiros?: AdminUserPendingRequestItem[];
@@ -359,10 +401,25 @@ export interface AdminUserDetailsResponse extends AdminUserReferralData {
     ativo: boolean;
   }>;
   configuracoes?: {
+    usuario_id?: string;
     cobranca_aviso_previo_whatsapp_ativo?: boolean;
     cobranca_aviso_previo_ativo?: boolean;
     cobranca_dias_aviso_previo?: number | null;
+    cobranca_vencimento_hoje_ativo?: boolean;
+    cobranca_atraso_3_dias_ativo?: boolean;
+    cobranca_atraso_5_dias_ativo?: boolean;
+    cobranca_atraso_7_dias_ativo?: boolean;
+    notificar_inicio_rota?: boolean;
+    notificar_proxima_parada?: boolean;
+    notificar_conclusao_parada?: boolean;
+    notificar_motorista_parcelas?: boolean;
+    notificar_motorista_aniversarios?: boolean;
+    rastreamento_ativo?: boolean;
+    rastreamento_modo?: "completo" | "apenas_proximo" | string;
+    formato_nome_responsavel?: "primeiro_nome" | "completo" | string;
+    exibir_telefone_lista_alunos?: boolean;
   } | null;
+  configuracao_financeira?: MotoristaConfiguracaoFinanceira | null;
 }
 
 export interface UpdateUserPayload {
@@ -372,9 +429,27 @@ export interface UpdateUserPayload {
   email?: string;
   telefone?: string;
   cpfcnpj?: string;
+  cpf_responsavel?: string | null;
   ativo?: boolean;
   data_nascimento?: string | null;
   cobranca_aviso_previo_whatsapp_ativo?: boolean;
+  configuracoes?: {
+    cobranca_aviso_previo_ativo?: boolean;
+    cobranca_dias_aviso_previo?: number | null;
+    cobranca_vencimento_hoje_ativo?: boolean;
+    cobranca_atraso_3_dias_ativo?: boolean;
+    cobranca_atraso_5_dias_ativo?: boolean;
+    cobranca_atraso_7_dias_ativo?: boolean;
+    notificar_inicio_rota?: boolean;
+    notificar_proxima_parada?: boolean;
+    notificar_conclusao_parada?: boolean;
+    notificar_motorista_parcelas?: boolean;
+    notificar_motorista_aniversarios?: boolean;
+    rastreamento_ativo?: boolean;
+    rastreamento_modo?: "completo" | "apenas_proximo";
+    formato_nome_responsavel?: "primeiro_nome" | "completo";
+    exibir_telefone_lista_alunos?: boolean;
+  };
 }
 
 export interface UpdateSubscriptionPayload {
@@ -691,6 +766,9 @@ export const adminUserApi = {
 
   getUserEscolas: (id: string) =>
     apiClient.get<AdminUserSchoolItem[]>(`${BASE}/users/${id}/escolas`).then(r => r.data),
+
+  getUserEquipe: (id: string) =>
+    apiClient.get<AdminUserEquipeItem[]>(`${BASE}/users/${id}/equipe`).then(r => r.data),
 
   getUserReferral: (id: string) =>
     apiClient.get<AdminUserReferralData>(`${BASE}/users/${id}/referral`).then(r => r.data),

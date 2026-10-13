@@ -341,13 +341,26 @@ export function useFinalizarExecucao() {
 export function useRegistrarAusenciaMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { passageiro_id: string; rota_id: string; data_ausencia: string }) => {
+    mutationFn: (data: {
+      passageiro_id: string;
+      rota_id?: string;
+      rotas_ids?: string[];
+      data_ausencia?: string;
+      data_inicio?: string;
+      data_fim?: string;
+      sentido?: string | null;
+    }) => {
       markLocalMutation();
       return routeApi.createAusencia(data);
     },
     onSuccess: (_, variables) => {
       markLocalMutation();
-      if (variables.rota_id) {
+      if (variables.rotas_ids && variables.rotas_ids.length > 0) {
+        variables.rotas_ids.forEach((rId) => {
+          queryClient.invalidateQueries({ queryKey: ["route-detail", rId] });
+          queryClient.invalidateQueries({ queryKey: ["route-ausencias", rId] });
+        });
+      } else if (variables.rota_id) {
         queryClient.invalidateQueries({ queryKey: ["route-detail", variables.rota_id] });
         queryClient.invalidateQueries({ queryKey: ["route-ausencias", variables.rota_id] });
       } else {
@@ -356,6 +369,7 @@ export function useRegistrarAusenciaMutation() {
       if (variables.passageiro_id) {
         queryClient.invalidateQueries({ queryKey: ["passageiro-ausencias", variables.passageiro_id] });
       }
+      queryClient.invalidateQueries({ queryKey: ["route-ausencias-futuras"] });
       queryClient.invalidateQueries({ queryKey: ["execucoes-list"] });
       queryClient.invalidateQueries({ queryKey: ["routes-list"] });
       queryClient.invalidateQueries({ queryKey: ["route-execution"] });

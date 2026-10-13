@@ -122,7 +122,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col">
       <AppNavbar role={role} />
 
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-[#0b1a2e] bg-[#0b1a2e] shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
@@ -135,7 +135,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
             className={cn(
               "h-12 w-12 rounded-full flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
               profile?.logo_url
-                ? "bg-white border border-white/10 p-[3px]"
+                ? "bg-white border border-white/20"
                 : "bg-white/10 border border-white/5 p-2"
             )}
           >
@@ -143,8 +143,8 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               src={profile?.logo_url || "/assets/logo-van360.webp"}
               alt={profile?.logo_url ? displayName : "Van360"}
               className={cn(
-                "h-full w-full object-contain",
-                !profile?.logo_url && "brightness-0 invert"
+                "h-full w-full rounded-full",
+                profile?.logo_url ? "object-cover" : "object-contain brightness-0 invert"
               )}
             />
           </div>
@@ -153,7 +153,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               {displayName}
             </span>
             <div className="flex items-center">
-              <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
+              <span className="text-[12px] text-white/60 font-medium">{statusLabel}</span>
             </div>
           </div>
         </button>
@@ -164,9 +164,9 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
           <button
             type="button"
             onClick={handleConfirmSignOut}
-            className="w-full flex items-center gap-3.5 rounded-2xl px-4 py-2.5 text-[14px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer group"
+            className="w-full flex items-center gap-3.5 rounded-[18px] px-4 py-2.5 text-[14px] font-medium text-white/60 hover:text-[#e7000b] hover:bg-[#e7000b]/10 transition-colors cursor-pointer group"
           >
-            <LogOut className="h-5 w-5 shrink-0 text-slate-400 group-hover:text-rose-400 transition-colors" />
+            <LogOut className="h-5 w-5 shrink-0 text-white/60 group-hover:text-[#e7000b] transition-colors" />
             <span className="truncate">Sair da conta</span>
           </button>
         </div>
@@ -174,7 +174,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
 
       <main
         className={cn(
-          "pt-[calc(5.5rem+var(--safe-area-top))] sm:pt-[calc(6rem+var(--safe-area-top))] px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 transition-all duration-300 md:pb-12",
+          "pt-[calc(5.5rem+var(--safe-area-top))] sm:pt-[calc(6rem+var(--safe-area-top))] px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 min-w-0 transition-all duration-300 md:pb-12",
           isSubscriptionBlocked
             ? "pb-[calc(1.5rem+var(--safe-area-bottom))]"
             : "pb-[calc(6rem+var(--safe-area-bottom))]"
@@ -214,7 +214,7 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
                 className={cn(
                   "h-11 w-11 rounded-full flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
                   profile?.logo_url
-                    ? "bg-white border border-white/10 p-0.5"
+                    ? "bg-white border border-white/20"
                     : "bg-white/10 border border-white/5 p-2"
                 )}
               >
@@ -222,8 +222,8 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
                   src={profile?.logo_url || "/assets/logo-van360.webp"}
                   alt={profile?.logo_url ? displayName : "Van360"}
                   className={cn(
-                    "h-full w-full object-contain",
-                    !profile?.logo_url && "brightness-0 invert"
+                    "h-full w-full rounded-full",
+                    profile?.logo_url ? "object-cover" : "object-contain brightness-0 invert"
                   )}
                 />
               </div>
@@ -232,13 +232,13 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
                   {displayName}
                 </span>
                 <div className="flex items-center">
-                  <span className="text-[12px] text-slate-400 font-medium">{statusLabel}</span>
+                  <span className="text-[12px] text-white/60 font-medium">{statusLabel}</span>
                 </div>
               </div>
             </button>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="p-1.5 text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+              className="p-1.5 text-white/60 hover:text-white transition-colors shrink-0 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

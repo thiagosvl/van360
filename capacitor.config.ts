@@ -20,13 +20,9 @@ const config: CapacitorConfig = {
       disableJSLogging: false,
       shakeMenu: false,
     },
-    Keyboard: {
-      resize: 'body',
-      resizeOnFullScreen: true,
-    },
     StatusBar: {
       overlaysWebView: true,
-      style: 'DARK',
+      style: 'LIGHT',
     },
   },
   server: {

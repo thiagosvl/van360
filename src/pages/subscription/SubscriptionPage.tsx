@@ -11,8 +11,6 @@ import { ReferAndEarnCard } from "@/components/features/subscription/ReferAndEar
 import { SubscriptionHeroCard } from "@/components/features/subscription/SubscriptionHeroCard";
 import { SubscriptionPlansShowcase } from "@/components/features/subscription/SubscriptionPlansShowcase";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
-import { IOSSubscriptionView } from "@/components/features/subscription/IOSSubscriptionView";
-import { isNativeIos } from "@/utils/detectPlatform";
 import { copyToClipboard } from "@/utils/browser";
 import {
   Clock,
@@ -22,6 +20,7 @@ import {
   Trash2,
   CreditCard,
   History,
+  Smartphone,
 } from "lucide-react";
 import { SubscriptionInvoiceCard } from "@/components/features/subscription/SubscriptionInvoiceCard";
 import { SubscriptionInvoicesDialog } from "@/components/features/subscription/SubscriptionInvoicesDialog";
@@ -35,6 +34,8 @@ import {
 import {
   SubscriptionInvoiceStatus,
   SubscriptionIdentifer,
+  SubscriptionStatus,
+  CheckoutPaymentMethod,
 } from "@/types/enums";
 import { useLayout } from "@/hooks";
 import { toast } from "sonner";
@@ -43,6 +44,17 @@ import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { parseLocalDate } from "@/utils/dateUtils";
+import { isNativeIos } from "@/utils/detectPlatform";
+import { openBrowserLink } from "@/utils/browser";
+import { getWhatsAppUrl } from "@/constants";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
+import {
+  purchaseIosProduct,
+  restoreIosPurchases,
+  getActiveIosProductId,
+  IAP_PRODUCTS,
+  IapCapacityTier,
+} from "@/services/native/iapRevenueCat.service";
 
 export default function SubscriptionPage() {
   const { can } = usePermissions();
@@ -80,15 +92,20 @@ export default function SubscriptionPage() {
   } = useSubscriptionBilling(user?.id);
 
   const { referral } = useSubscriptionReferral(user?.id);
+  const { data: usuarioResumo } = useUsuarioResumo(user?.id);
+  const activeStudentsCount = usuarioResumo?.contadores?.passageiros?.ativos ?? 0;
+
   const {
     setPageTitle,
   } = useLayout();
-
 
   const { openSaaSCheckoutDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [expandedPaymentMethodId, setExpandedPaymentMethodId] = useState<string | null>(null);
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [showUpgradeShowcase, setShowUpgradeShowcase] = useState(false);
+  const [isUpgradingIos, setIsUpgradingIos] = useState(false);
+  const [upgradeForcedPeriod, setUpgradeForcedPeriod] = useState<SubscriptionIdentifer | undefined>();
 
   const cancelSubscription = useCancelSubscription();
 
@@ -110,7 +127,58 @@ export default function SubscriptionPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleSubscribe = (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
+  const handleSubscribe = async (plan?: SaaSPlan | string, forcedPeriod?: SubscriptionIdentifer) => {
+    if (isNativeIos()) {
+      const isMonthlyAppleActive =
+        subscription?.status === SubscriptionStatus.ACTIVE &&
+        subscription?.planos?.identificador === SubscriptionIdentifer.MONTHLY &&
+        subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP;
+
+      if (isMonthlyAppleActive && (forcedPeriod === SubscriptionIdentifer.YEARLY || !forcedPeriod)) {
+        if (activeStudentsCount > 250) {
+          openBrowserLink(
+            getWhatsAppUrl(
+              "Olá! Sou assinante do Van360 e gostaria de fazer upgrade para o plano anual corporativo (acima de 250 alunos)."
+            )
+          );
+          return;
+        }
+
+        setIsUpgradingIos(true);
+        try {
+          const currentProductId = await getActiveIosProductId();
+          const isCurrentTier250 =
+            currentProductId === IAP_PRODUCTS.MENSAL_250 ||
+            currentProductId === IAP_PRODUCTS.ANUAL_250 ||
+            activeStudentsCount > 110;
+
+          const productId = isCurrentTier250 ? IAP_PRODUCTS.ANUAL_250 : IAP_PRODUCTS.ANUAL_110;
+          const result = await purchaseIosProduct(productId);
+          if (result.success) {
+            toast.success("Assinatura Anual confirmada com sucesso pela App Store!");
+            setShowUpgradeShowcase(false);
+            await handleRefresh();
+          } else if (!result.userCancelled) {
+            toast.error(result.errorMessage || "Não foi possível concluir a troca de plano.");
+          }
+        } catch {
+          toast.error("Erro inesperado ao conectar com a App Store.");
+        } finally {
+          setIsUpgradingIos(false);
+        }
+        return;
+      }
+
+      setUpgradeForcedPeriod(forcedPeriod);
+      setShowUpgradeShowcase(true);
+      setTimeout(() => {
+        const showcaseEl = document.getElementById("subscription-plans-showcase");
+        if (showcaseEl) {
+          showcaseEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
+      return;
+    }
     if (!plans) return;
     const initialPlanId = typeof plan === "string" ? plan : plan?.id;
     openSaaSCheckoutDialog({
@@ -126,8 +194,8 @@ export default function SubscriptionPage() {
   };
 
   useEffect(() => {
-    setPageTitle(isNativeIos() ? (isSalesMode ? "Acesso" : "Sua Assinatura") : "Assinatura do App");
-  }, [setPageTitle, isSalesMode]);
+    setPageTitle("Assinatura do App");
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (searchParams.get("open_checkout") === "true" && plans && plans.length > 0) {
@@ -142,7 +210,42 @@ export default function SubscriptionPage() {
     return <AccessRestrictedState moduleName="Assinatura" />;
   }
 
+  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
+
+  const handleRestoreIosPurchases = async () => {
+    setIsRestoringPurchases(true);
+    try {
+      const res = await restoreIosPurchases();
+      if (res.hasActiveSubscription) {
+        toast.success("Assinatura restaurada com sucesso!");
+        await handleRefresh();
+      } else {
+        toast.info("Nenhuma assinatura ativa encontrada para este Apple ID.");
+      }
+    } catch {
+      toast.error("Erro ao conectar com a App Store.");
+    } finally {
+      setIsRestoringPurchases(false);
+    }
+  };
+
   const handleCancelSubscription = () => {
+    if (subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP) {
+      openConfirmationDialog({
+        title: "Assinatura Gerenciada pela Apple",
+        description:
+          "Sua assinatura foi contratada pela App Store. Para gerenciar ou cancelar a renovação automática, acesse os Ajustes do seu iPhone em seu ID Apple.",
+        confirmText: "Gerenciar na Apple",
+        cancelText: "Voltar",
+        variant: "default",
+        onConfirm: () => {
+          void openBrowserLink("https://apps.apple.com/account/subscriptions");
+          closeConfirmationDialog();
+        },
+      });
+      return;
+    }
+
     openConfirmationDialog({
       title: "Cancelar Assinatura",
       description: "Tem certeza que deseja cancelar sua assinatura? Você não receberá novas cobranças e seu acesso será suspenso. Seus dados continuarão salvos e você poderá reativar a qualquer momento.",
@@ -198,29 +301,20 @@ export default function SubscriptionPage() {
   if (isLoading) {
     return (
       <div className="space-y-8 p-6 pt-10 max-w-5xl mx-auto">
-        <Skeleton className="h-12 w-64 rounded-2xl" />
-        <Skeleton className="h-40 w-full rounded-[28px]" />
-        <Skeleton className="h-72 w-full rounded-[28px]" />
-        <Skeleton className="h-64 w-full rounded-[28px]" />
+        <Skeleton className="h-12 w-64 rounded-[18px]" />
+        <Skeleton className="h-40 w-full rounded-[24px]" />
+        <Skeleton className="h-72 w-full rounded-[24px]" />
+        <Skeleton className="h-64 w-full rounded-[24px]" />
       </div>
     );
   }
 
-  if (isNativeIos()) {
-    return (
-      <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
-          <IOSSubscriptionView isSalesMode={isSalesMode} />
-        </div>
-      </PullToRefreshWrapper>
-    );
-  }
 
   return (
     <PullToRefreshWrapper onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-surface max-w-6xl mx-auto space-y-6 pb-24">
+      <div className="min-h-screen bg-transparent max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-24 pt-1 sm:pt-2">
         {!isSalesMode && (
-          <section className="px-1 mb-8">
+          <section className="mb-6">
             <SubscriptionHeroCard
               subscription={subscription}
               trialDaysLeft={trialDaysLeft}
@@ -231,12 +325,13 @@ export default function SubscriptionPage() {
               isPastDue={isPastDue}
               referral={referral}
               onSubscribe={handleSubscribe}
+              isLoadingUpgrade={isUpgradingIos}
             />
           </section>
         )}
 
-        {isSalesMode ? (
-          <div className="max-w-lg mx-auto space-y-8 w-full px-1 sm:px-0">
+        {!isSalesMode && showUpgradeShowcase && (
+          <section className="max-w-lg mx-auto space-y-4 sm:space-y-6 w-full mb-6">
             <SubscriptionPlansShowcase
               plans={plans || []}
               pricing={pricing}
@@ -248,7 +343,29 @@ export default function SubscriptionPage() {
               isExpired={isExpired}
               isCanceled={isCanceled}
               onSelectPlan={handleSubscribe}
+              activeStudentsCount={activeStudentsCount}
+              initialPeriod={upgradeForcedPeriod}
+            />
+          </section>
+        )}
+
+        {isSalesMode ? (
+          <div className="max-w-lg mx-auto space-y-4 sm:space-y-6 w-full">
+            <SubscriptionPlansShowcase
+              plans={plans || []}
+              pricing={pricing}
+              isPromotionActive={isPromotionActive}
+              subscription={subscription}
+              referral={referral}
+              trialDaysLeft={trialDaysLeft}
+              isTrial={isTrial}
+              isExpired={isExpired}
+              isCanceled={isCanceled}
+              onSelectPlan={handleSubscribe}
+              activeStudentsCount={activeStudentsCount}
+              initialPeriod={upgradeForcedPeriod}
               pendingInvoicesSlot={(() => {
+                if (isNativeIos()) return null;
                 const pendingInvoices = (invoices || [])
                   .filter((inv) => inv.status === SubscriptionInvoiceStatus.PENDING)
                   .sort((a, b) => parseLocalDate(b.created_at).getTime() - parseLocalDate(a.created_at).getTime());
@@ -258,7 +375,7 @@ export default function SubscriptionPage() {
                 return (
                   <section className="w-full space-y-3">
                     <div className="flex items-center justify-between px-1">
-                      <h2 className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight flex items-center gap-2">
                         <span className="relative flex h-2.5 w-2.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
@@ -294,9 +411,9 @@ export default function SubscriptionPage() {
               if (displayedInvoices.length === 0) return null;
 
               return (
-                <section className="pt-6 border-t border-slate-200/80 w-full">
+                <section className="pt-6 border-t border-[#e5e5e5] w-full">
                   <div className="flex items-center justify-between mb-4 px-1">
-                    <h2 className="text-[17px] font-bold text-slate-800">
+                    <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight">
                       Últimas Faturas
                     </h2>
                   </div>
@@ -317,9 +434,9 @@ export default function SubscriptionPage() {
                       <button
                         type="button"
                         onClick={() => setIsHistoryDialogOpen(true)}
-                        className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-bold text-[#1a3a5c] flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.99] group mt-2"
+                        className="w-full py-3 px-4 bg-white hover:bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] text-xs sm:text-sm font-semibold text-primary flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.99] group mt-2"
                       >
-                        <History className="w-4 h-4 text-slate-400 group-hover:text-[#1a3a5c] transition-colors" />
+                        <History className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                         <span>Ver histórico completo ({totalCount})</span>
                       </button>
                     )}
@@ -352,7 +469,7 @@ export default function SubscriptionPage() {
               <div className="xl:col-span-2 space-y-8">
                 <section>
                   <div className="flex items-center justify-between mb-4 px-1">
-                    <h2 className="text-[17px] font-bold text-slate-800">
+                    <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight">
                       Últimas Faturas
                     </h2>
                   </div>
@@ -367,12 +484,28 @@ export default function SubscriptionPage() {
                       const hasMore = totalCount > 3;
 
                       if (displayedInvoices.length === 0) {
-                        return (
-                          <div className="py-4 text-center space-y-3 bg-white rounded-[22px] border border-slate-100 shadow-sm">
-                            <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
-                              <Clock className="w-6 h-6 text-slate-300" />
+                        if (subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP) {
+                          return (
+                            <div className="py-6 text-center space-y-3 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs">
+                              <div className="w-10 h-10 bg-[#f5f5f5] rounded-[14px] flex items-center justify-center mx-auto border border-[#e5e5e5]">
+                                <Smartphone className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div className="space-y-1 max-w-sm mx-auto px-4">
+                                <p className="text-xs font-semibold text-foreground">Gerenciado pela Apple</p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  Os recibos e comprovantes fiscais das suas assinaturas são enviados diretamente para o email do seu ID Apple.
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-xs font-base text-slate-400">Não há histórico de pagamentos.</p>
+                          );
+                        }
+
+                        return (
+                          <div className="py-6 text-center space-y-3 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs">
+                            <div className="w-10 h-10 bg-[#f5f5f5] rounded-[14px] flex items-center justify-center mx-auto border border-[#e5e5e5]">
+                              <Clock className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Não há histórico de pagamentos.</p>
                           </div>
                         );
                       }
@@ -394,9 +527,9 @@ export default function SubscriptionPage() {
                             <button
                               type="button"
                               onClick={() => setIsHistoryDialogOpen(true)}
-                              className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-bold text-[#1a3a5c] flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] group mt-2"
+                              className="w-full py-3 px-4 bg-white hover:bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] text-xs sm:text-sm font-semibold text-primary flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.99] group mt-2"
                             >
-                              <History className="w-4 h-4 text-slate-400 group-hover:text-[#1a3a5c] transition-colors" />
+                              <History className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                               <span>Ver histórico completo ({totalCount})</span>
                             </button>
                           )}
@@ -406,9 +539,31 @@ export default function SubscriptionPage() {
                   </div>
                 </section>
 
-                {paymentMethods && paymentMethods.length > 0 && (
+                {subscription?.metodo_pagamento === CheckoutPaymentMethod.APPLE_IAP ? (
                   <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                    <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
+                      Método de Pagamento
+                    </h2>
+                    <div className="overflow-hidden rounded-[20px] border border-[#e5e5e5] bg-white p-4 sm:p-5 shadow-xs flex items-center gap-3.5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#f5f5f5]">
+                        <Smartphone className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-semibold text-foreground">Apple ID (In-App Purchase)</p>
+                          <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wider text-primary">
+                            Ativo
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Cobranças gerenciadas diretamente na sua conta da App Store.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                ) : paymentMethods && paymentMethods.length > 0 ? (
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
                       Métodos de Pagamento
                     </h2>
 
@@ -420,59 +575,59 @@ export default function SubscriptionPage() {
                           <div
                             key={method.id}
                             className={cn(
-                              "overflow-hidden rounded-[22px] border transition-all duration-300",
+                              "overflow-hidden rounded-[20px] border transition-all duration-300",
                               method.is_default
-                                ? "border-slate-100 bg-white shadow-soft-xl"
-                                : "border-slate-100/70 bg-surface-container-low/80"
+                                ? "border-[#e5e5e5] bg-white shadow-xs"
+                                : "border-[#e5e5e5]/80 bg-[#f5f5f5]"
                             )}
                           >
                             <button
                               type="button"
-                              className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5"
+                              className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5 cursor-pointer"
                               onClick={() =>
                                 setExpandedPaymentMethodId((current) => current === method.id ? null : method.id)
                               }
                               aria-expanded={isExpanded}
                             >
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50">
-                                <CreditCard className="h-4 w-4 text-slate-400" />
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#f5f5f5]">
+                                <CreditCard className="h-4 w-4 text-muted-foreground" />
                               </div>
 
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <p className="truncate text-sm font-semibold uppercase text-primary">{method.brand}</p>
+                                  <p className="truncate text-sm font-semibold uppercase text-foreground">{method.brand}</p>
                                   {method.is_default ? (
-                                    <span className="shrink-0 rounded-full bg-secondary-container px-2 py-1 text-[9px] font-black uppercase leading-none tracking-[0.14em] text-on-secondary-container">
+                                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wider text-primary">
                                       Principal
                                     </span>
                                   ) : null}
                                 </div>
 
-                                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-slate-500">
-                                  <span className="tracking-[0.16em] text-primary">•••• {method.last_4_digits}</span>
+                                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                  <span className="tracking-widest text-foreground font-medium">•••• {method.last_4_digits}</span>
                                   <span>Expira {method.expire_month}/{method.expire_year.toString().slice(-2)}</span>
                                 </div>
                               </div>
 
                               <ChevronDown
                                 className={cn(
-                                  "h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200",
+                                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
                                   isExpanded && "rotate-180"
                                 )}
                               />
                             </button>
 
                             {isExpanded && (
-                              <div className="animate-in fade-in slide-in-from-top-1 duration-200 border-t border-slate-100 bg-white/80 px-4 py-3 sm:px-5">
-                                <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                                  <CircleDot className="h-3 w-3 shrink-0 text-slate-300" />
-                                  <span className="font-medium">Uso recorrente protegido para renovações automáticas.</span>
+                              <div className="animate-in fade-in slide-in-from-top-1 duration-200 border-t border-[#e5e5e5] bg-white px-4 py-3.5 sm:px-5">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <CircleDot className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                  <span>Uso recorrente protegido para renovações automáticas.</span>
                                 </div>
 
                                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                                   {!method.is_default && (
                                     <button
-                                      className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-4 text-[11px] font-black uppercase tracking-[0.14em] text-primary transition-colors hover:bg-slate-200"
+                                      className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-[18px] bg-[#f5f5f5] px-4 text-xs font-semibold text-foreground transition-colors hover:bg-[#e5e5e5] cursor-pointer"
                                       onClick={() => handleSetDefaultCard(method.id)}
                                     >
                                       <CheckCircle2 className="h-4 w-4" />
@@ -481,8 +636,8 @@ export default function SubscriptionPage() {
                                   )}
                                   <button
                                     className={cn(
-                                      "flex min-h-10 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-bold text-rose-600 transition-colors hover:bg-rose-100",
-                                      method.is_default ? "w-full bg-rose-50" : "flex-1 bg-rose-50"
+                                      "flex min-h-10 items-center justify-center gap-2 rounded-[18px] px-4 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10 cursor-pointer",
+                                      method.is_default ? "w-full bg-destructive/5" : "flex-1 bg-destructive/5"
                                     )}
                                     onClick={() => handleDeleteCard(method.id)}
                                   >
@@ -497,11 +652,11 @@ export default function SubscriptionPage() {
                       })}
                     </div>
                   </section>
-                )}
+                ) : null}
               </div>
 
               <aside className="xl:col-span-1">
-                <h2 className="text-[17px] font-bold text-slate-800 mb-4 px-1">
+                <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
                   Indique e Ganhe
                 </h2>
                 <div className="xl:sticky xl:top-24">
@@ -519,17 +674,28 @@ export default function SubscriptionPage() {
           </>
         )}
 
-        {isActive && !!subscription?.data_vencimento && (
-          <div className="flex justify-center pt-10">
+        <div className="flex flex-col items-center gap-3 pt-10">
+          {isNativeIos() && (
+            <button
+              type="button"
+              disabled={isRestoringPurchases}
+              onClick={handleRestoreIosPurchases}
+              className="text-[11px] font-medium text-[#737373] hover:text-[#0a0a0a] underline underline-offset-4 decoration-[#e5e5e5] hover:decoration-[#737373] transition-colors cursor-pointer"
+            >
+              {isRestoringPurchases ? "Restaurando compras..." : "Restaurar compras da App Store"}
+            </button>
+          )}
+
+          {isActive && !!subscription?.data_vencimento && (
             <button
               type="button"
               onClick={handleCancelSubscription}
-              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-400 transition-colors"
+              className="text-[11px] font-medium text-[#737373] hover:text-[#0a0a0a] underline underline-offset-4 decoration-[#e5e5e5] hover:decoration-[#737373] transition-colors cursor-pointer"
             >
               Cancelar assinatura
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         <SubscriptionInvoicesDialog
           open={isHistoryDialogOpen}

@@ -42,3 +42,23 @@ export function useAdminRetryRepasse() {
     },
   });
 }
+
+export function useAdminDeleteRepasse() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => adminRepasseApi.deleteRepasse(id),
+    onSuccess: async (data) => {
+      toast.success(data?.message || "Registro de repasse excluído com sucesso.");
+      await qc.invalidateQueries({ queryKey: ADMIN_REPASSE_KEYS.all });
+    },
+    onError: (err: unknown) => {
+      const apiError = err as { response?: { data?: { error?: string; message?: string } } };
+      const msg =
+        apiError?.response?.data?.error ||
+        apiError?.response?.data?.message ||
+        "Falha ao excluir registro de repasse.";
+      toast.error(msg);
+    },
+  });
+}

@@ -34,9 +34,16 @@ export function useUpdatePassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Passageiro>; showToast?: boolean }) =>
-      passageiroApi.updatePassageiro(id, data),
-    onError: (error: any, variables) => {
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Passageiro>;
+      showToast?: boolean;
+      skipContratosInvalidation?: boolean;
+    }) => passageiroApi.updatePassageiro(id, data),
+    onError: (error: unknown, variables) => {
       if (variables.showToast !== false) {
         toast.error("passageiro.erro.atualizar", {
           description: getErrorMessage(error, "passageiro.erro.atualizarDetalhe"),
@@ -57,11 +64,12 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
       queryClient.invalidateQueries({ queryKey: ["recibo-anual"] });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      queryClient.invalidateQueries({ queryKey: ["contratos"] });
-      queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
       queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
+
+      if (!variables.skipContratosInvalidation) {
+        queryClient.invalidateQueries({ queryKey: ["contratos"] });
+      }
 
       if (variables.data?.escola_id !== undefined) {
         queryClient.invalidateQueries({ queryKey: ["escolas"] });

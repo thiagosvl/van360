@@ -1,4 +1,4 @@
-﻿import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminCalculatorUI } from "@/hooks/ui/admin/useAdminCalculatorUI";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
@@ -17,12 +17,12 @@ export default function AdminCalculator() {
   }, [setPageTitle]);
 
   return (
-    <div className="space-y-6 pb-20 text-slate-100">
+    <div className="space-y-6 pb-20 text-foreground">
       <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black font-headline text-white">Hub de Inteligência Financeira</h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Hub de inteligência financeira</h1>
+            <p className="text-xs text-muted-foreground mt-1">
               Simule a economia unitária por condutor, impacto do WABA, custos de infraestrutura e ponto de equilíbrio.
             </p>
           </div>
@@ -30,10 +30,10 @@ export default function AdminCalculator() {
             <Button
               variant="outline"
               size="sm"
-              className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="h-8 rounded-lg border-border bg-background text-foreground hover:bg-secondary text-xs font-medium"
               onClick={() => {
                 openConfirmationDialog({
-                  title: "Resetar Cenário",
+                  title: "Resetar cenário",
                   description: "Tem certeza que deseja resetar o cenário para os valores padrões? Esta ação não pode ser desfeita.",
                   confirmText: "Resetar",
                   variant: "destructive",
@@ -44,17 +44,17 @@ export default function AdminCalculator() {
                 });
               }}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
+              <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
               Resetar
             </Button>
             <Button
               size="sm"
-              className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 font-bold"
+              className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium shadow-xs"
               onClick={() => {
                 openConfirmationDialog({
-                  title: "Salvar Cenário",
+                  title: "Salvar cenário",
                   description: "Deseja salvar esta simulação? Ela será carregada automaticamente na sua próxima visita.",
-                  confirmText: "Salvar Cenário",
+                  confirmText: "Salvar cenário",
                   onConfirm: () => {
                     calcHook.handleSaveScenario();
                     closeConfirmationDialog();
@@ -62,8 +62,8 @@ export default function AdminCalculator() {
                 });
               }}
             >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Cenário
+              <Save className="w-3.5 h-3.5 mr-1.5" />
+              Salvar cenário
             </Button>
           </div>
         </div>
@@ -73,21 +73,21 @@ export default function AdminCalculator() {
           onValueChange={(val) => calcHook.setActiveTab(val as "simulador" | "dre")}
           className="w-full space-y-6"
         >
-          <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-none">
-            <TabsList className="flex w-full min-h-[40px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-2">
+          <div className="bg-card border border-border p-1 rounded-xl overflow-x-auto scrollbar-none">
+            <TabsList className="flex w-full min-h-[36px] bg-transparent p-0 gap-1 mt-0 min-w-max md:min-w-0 md:grid md:grid-cols-2">
               <TabsTrigger
                 value="simulador"
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap"
+                className="rounded-lg h-full font-medium text-xs transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap"
               >
-                <Calculator className="w-4 h-4 mr-2 hidden sm:block" />
-                Simulador & Custos de Infra
+                <Calculator className="w-3.5 h-3.5 mr-1.5 hidden sm:block" />
+                Simulador & custos de infra
               </TabsTrigger>
               <TabsTrigger
                 value="dre"
-                className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-slate-400 hover:text-white px-4 flex-1 whitespace-nowrap"
+                className="rounded-lg h-full font-medium text-xs transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs data-[state=inactive]:text-muted-foreground hover:text-foreground px-4 flex-1 whitespace-nowrap"
               >
-                <LineChart className="w-4 h-4 mr-2 hidden sm:block" />
-                DRE & Projeções (12 Meses)
+                <LineChart className="w-3.5 h-3.5 mr-1.5 hidden sm:block" />
+                DRE & projeções (12 meses)
               </TabsTrigger>
             </TabsList>
           </div>
