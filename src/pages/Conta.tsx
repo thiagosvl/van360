@@ -93,7 +93,7 @@ export const Conta = memo(function Conta() {
   }, [tabParam, isSubConta, setPageTitle]);
 
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [appVersion, setAppVersion] = useState<string>("1.0.7");
+  const [appVersion, setAppVersion] = useState<string>("1.0.8");
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {

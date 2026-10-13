@@ -69,7 +69,6 @@ export default function AdminPassengerSendCobrancaDialog({
   motoristaNome,
 }: AdminPassengerSendCobrancaDialogProps) {
   const dispatchMutation = useDispatchPassengerCobrancaAdmin(userId);
-  const [force, setForce] = useState(false);
 
   const cobranca = passageiro.cobranca_mes_atual;
   const resp = passageiro.responsavel_principal;
@@ -82,7 +81,7 @@ export default function AdminPassengerSendCobrancaDialog({
       await dispatchMutation.mutateAsync({
         passengerId: passageiro.id,
         cobrancaId: cobranca?.id,
-        force,
+        force: true,
       });
       safeCloseDialog(onClose);
     } catch {
@@ -224,20 +223,10 @@ export default function AdminPassengerSendCobrancaDialog({
         />
 
         {cobranca?.desativar_lembretes && (
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-center justify-between">
-            <span className="text-[11px]">
-              Lembretes automáticos estão desativados nesta cobrança.
-            </span>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none font-semibold">
-              <input
-                type="checkbox"
-                checked={force}
-                onChange={(e) => setForce(e.target.checked)}
-                className="rounded border-border bg-card text-amber-500 focus:ring-amber-500 h-4 w-4"
-              />
-              <span className="text-[11px]">Forçar mesmo assim</span>
-            </label>
-          </div>
+          <Banner
+            variant="info"
+            description="Os lembretes automáticos desta parcela estão desativados pelo motorista. O disparo manual do administrador forçará o envio e regenerará o Pix com as regras vigentes."
+          />
         )}
       </AdminBaseDialog.Body>
 
@@ -254,7 +243,7 @@ export default function AdminPassengerSendCobrancaDialog({
           icon={<Send className="h-4 w-4" />}
           onClick={handleConfirm}
           isLoading={dispatchMutation.isPending}
-          disabled={dispatchMutation.isPending || (!force && cobranca?.desativar_lembretes)}
+          disabled={dispatchMutation.isPending}
         />
       </AdminBaseDialog.Footer>
     </AdminBaseDialog>
