@@ -20,7 +20,7 @@ export function useRenovacoesViewModel() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
 
-  const { data, isLoading, refetch } = useRenovacoesList({
+  const { data, isLoading, isFetching, refetch } = useRenovacoesList({
     ano_destino: anoDestino,
     status: (statusFilter === FILTER_ALL || statusFilter === "sem_telefone") ? undefined : statusFilter,
     escola_id: escolaFilter === FILTER_ALL ? undefined : escolaFilter,
@@ -243,6 +243,8 @@ export function useRenovacoesViewModel() {
     semTelefoneCount: passageirosSemTelefone.length,
     pendentesAptosCount,
     isLoading,
+    isFetching,
+    hasData: Boolean(data),
     refetch,
     handleConfirmarManual,
     handleRegistrarSaida,

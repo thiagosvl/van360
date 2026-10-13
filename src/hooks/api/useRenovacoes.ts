@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { RenovacaoStatus } from "@/types/enums";
 import { apiClient } from "@/services/api/client";
@@ -34,6 +34,7 @@ export function useRenovacoesList(params: ListRenovacoesParams) {
       });
       return response.data;
     },
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 2,
   });
 }

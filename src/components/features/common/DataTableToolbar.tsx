@@ -24,7 +24,7 @@ export interface DataTableToolbarProps {
   onSearchChange?: (val: string) => void;
   searchPlaceholder?: string;
   disabled?: boolean;
-  
+
   // Filters
   filterConfig?: {
     title: string;
@@ -84,12 +84,12 @@ export const DataTableToolbar = ({
 
   const filterTriggerElement = filterConfig && (
     <Button
-       variant="outline"
-       className={cn(
-         "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-sm gap-1.5 md:gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 cursor-pointer",
-         actions ? "flex-1 md:flex-initial" : (isMobile ? "flex-1" : "")
-       )}
-       disabled={disabled}
+      variant="outline"
+      className={cn(
+        "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-sm gap-1.5 md:gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 cursor-pointer",
+        actions ? "flex-1 md:flex-initial" : (isMobile ? "flex-1" : "")
+      )}
+      disabled={disabled}
     >
       {filterConfig.triggerIcon || (
         <>
@@ -139,11 +139,11 @@ export const DataTableToolbar = ({
                         {filterConfig.description}
                       </DrawerDescription>
                     </DrawerHeader>
- 
+
                     <div className="flex-1 overflow-y-auto px-6 space-y-4">
                       {filterChildren}
                     </div>
- 
+
                     {showFilterFooter && (
                       <div className="px-6 pt-3 border-t border-[#e5e5e5] bg-white">
                         <div className="flex items-center gap-2.5">
@@ -151,11 +151,11 @@ export const DataTableToolbar = ({
                             variant="ghost"
                             className="flex-1 h-11 rounded-[18px] text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] text-sm font-medium gap-1.5 cursor-pointer"
                             onClick={() => {
-                                if (filterConfig.onClearTemp) {
-                                    filterConfig.onClearTemp();
-                                } else if (filterConfig.onClear) {
-                                    filterConfig.onClear();
-                                }
+                              if (filterConfig.onClearTemp) {
+                                filterConfig.onClearTemp();
+                              } else if (filterConfig.onClear) {
+                                filterConfig.onClear();
+                              }
                             }}
                           >
                             Limpar
@@ -182,7 +182,7 @@ export const DataTableToolbar = ({
                     <div className="space-y-3">
                       <div className="flex items-center justify-between pb-1 border-b border-[#e5e5e5]">
                         <h4 className="font-semibold text-[#0a0a0a] text-xs">
-                          Filtragem Avançada
+                          Filtros
                         </h4>
                         {filterConfig.hasActiveFilters && (
                           <button

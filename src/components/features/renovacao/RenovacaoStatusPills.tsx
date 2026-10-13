@@ -1,13 +1,14 @@
 import { RenovacaoKPIs } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { cn } from "@/lib/utils";
-import { PhoneOff } from "lucide-react";
+import { PhoneOff, Loader2 } from "lucide-react";
 
 interface RenovacaoStatusPillsProps {
   kpis: RenovacaoKPIs;
   activeStatus: string;
   onSelectStatus: (status: string) => void;
   semTelefoneCount?: number;
+  isLoading?: boolean;
 }
 
 export const ALL_STATUS_FILTER = "all";
@@ -27,6 +28,7 @@ export function RenovacaoStatusPills({
   activeStatus,
   onSelectStatus,
   semTelefoneCount = 0,
+  isLoading = false,
 }: RenovacaoStatusPillsProps) {
   const { contadores } = kpis;
 
@@ -95,13 +97,16 @@ export function RenovacaoStatusPills({
             <span>{pill.label}</span>
             <span
               className={cn(
-                "rounded-[18px] px-2 py-0.5 text-[11px] leading-none",
+                "rounded-[18px] px-2 py-0.5 text-[11px] leading-none inline-flex items-center gap-1",
                 isSelected
                   ? pill.activeBadgeClasses
                   : "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5]"
               )}
             >
-              {pill.count}
+              {isSelected && isLoading && (
+                <Loader2 className="w-2.5 h-2.5 animate-spin shrink-0" />
+              )}
+              <span>{pill.count}</span>
             </span>
           </button>
         );

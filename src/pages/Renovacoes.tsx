@@ -30,6 +30,7 @@ import { RenovacaoSkeleton } from "@/components/skeletons/RenovacaoSkeleton";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function Renovacoes() {
   useSEO({
@@ -73,6 +74,8 @@ export default function Renovacoes() {
     semTelefoneCount,
     pendentesAptosCount,
     isLoading,
+    isFetching,
+    hasData,
     refetch,
     handleConfirmarManual,
     handleRegistrarSaida,
@@ -90,12 +93,12 @@ export default function Renovacoes() {
       passageiroId: item.passageiro_id,
       editingResponsavel: item.responsavel_principal?.id
         ? ({
-            id: item.responsavel_principal.id,
-            nome: item.responsavel_principal.nome || "",
-            telefone: item.responsavel_principal.telefone || "",
-            cpf: item.responsavel_principal.cpf || null,
-            email: item.responsavel_principal.email || null,
-          } as PassageiroResponsavel)
+          id: item.responsavel_principal.id,
+          nome: item.responsavel_principal.nome || "",
+          telefone: item.responsavel_principal.telefone || "",
+          cpf: item.responsavel_principal.cpf || null,
+          email: item.responsavel_principal.email || null,
+        } as PassageiroResponsavel)
         : null,
       onSuccess: () => {
         refetch();
@@ -345,7 +348,7 @@ export default function Renovacoes() {
     return <AccessRestrictedState moduleName="Renovação de Ano Letivo" />;
   }
 
-  if (isLoading) {
+  if (isLoading && !hasData) {
     return <RenovacaoSkeleton />;
   }
 
@@ -376,6 +379,7 @@ export default function Renovacoes() {
             kpis={kpis}
             activeStatus={statusFilter}
             semTelefoneCount={semTelefoneCount}
+            isLoading={isFetching}
             onSelectStatus={(status) => {
               setStatusFilter(status);
               setPage(1);
@@ -495,35 +499,35 @@ export default function Renovacoes() {
                 </div>
               )}
 
-              <div className="space-y-2.5">
+              <div className={cn("space-y-2.5 transition-opacity duration-150", isFetching && "opacity-60")}>
                 {isViewSemTelefone
                   ? paginatedPassageiros.map((p) => (
-                      <RenovacaoSemTelefoneCard
-                        key={p.passageiro_id}
-                        item={p}
-                        onCadastrarResponsavel={handleCadastrarResponsavel}
-                      />
-                    ))
+                    <RenovacaoSemTelefoneCard
+                      key={p.passageiro_id}
+                      item={p}
+                      onCadastrarResponsavel={handleCadastrarResponsavel}
+                    />
+                  ))
                   : paginatedPassageiros.map((p) => (
-                      <RenovacaoPassengerCard
-                        key={p.passageiro_id}
-                        item={p}
-                        anoDestino={anoDestino}
-                        isSelected={selectedIds.has(p.passageiro_id)}
-                        onToggleSelect={toggleSelect}
-                        onConfirmarManual={handleConfirmarManual}
-                        onRegistrarSaida={handleRegistrarSaidaComConfirmacao}
-                        onReativar={handleReativarComConfirmacao}
-                        onOpenEditarReserva={(item) =>
-                          openEditarReservaDialog({
-                            passageiro: item,
-                            anoDestino,
-                            onSuccess: () => refetch(),
-                          })
-                        }
-                        isUpdating={isUpdating}
-                      />
-                    ))}
+                    <RenovacaoPassengerCard
+                      key={p.passageiro_id}
+                      item={p}
+                      anoDestino={anoDestino}
+                      isSelected={selectedIds.has(p.passageiro_id)}
+                      onToggleSelect={toggleSelect}
+                      onConfirmarManual={handleConfirmarManual}
+                      onRegistrarSaida={handleRegistrarSaidaComConfirmacao}
+                      onReativar={handleReativarComConfirmacao}
+                      onOpenEditarReserva={(item) =>
+                        openEditarReservaDialog({
+                          passageiro: item,
+                          anoDestino,
+                          onSuccess: () => refetch(),
+                        })
+                      }
+                      isUpdating={isUpdating}
+                    />
+                  ))}
               </div>
 
               <PassageirosPagination

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { Check, Edit3, PenLine, Redo2, RotateCcw, Undo2 } from "lucide-react";
+import { Edit3, PenLine, Redo2, RotateCcw, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 
@@ -416,19 +416,11 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
           />
 
           {hasSignature && !isEditing && (
-            <>
-              <div className="absolute top-3 right-3 pointer-events-none z-20">
-                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-[18px] border bg-emerald-500/10 backdrop-blur-xs text-emerald-700 border-emerald-500/20 shadow-2xs flex items-center gap-1">
-                  <span>Assinado</span>
-                  <Check className="w-3 h-3 text-emerald-600" />
-                </span>
-              </div>
-              <div
-                onClick={handleStartEditing}
-                className="absolute inset-0 z-10 cursor-pointer touch-pan-y bg-white/20 backdrop-blur-[0.5px] transition-all hover:bg-white/10"
-                title="Toque para editar"
-              />
-            </>
+            <div
+              onClick={handleStartEditing}
+              className="absolute inset-0 z-10 cursor-pointer touch-pan-y bg-white/20 backdrop-blur-[0.5px] transition-all hover:bg-white/10"
+              title="Toque para editar"
+            />
           )}
 
           {!isEditing && !hasSignature && (
@@ -507,16 +499,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
               </button>
             </div>
 
-            {isEditing ? (
-              <button
-                type="button"
-                onClick={handleFinishEditing}
-                className="h-8 px-3.5 rounded-[16px] bg-[#2563eb]/10 hover:bg-[#2563eb] text-[#2563eb] hover:text-white border border-[#2563eb]/20 text-xs font-semibold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Pronto</span>
-              </button>
-            ) : hasSignature ? (
+            {!isEditing && hasSignature && (
               <button
                 type="button"
                 onClick={handleStartEditing}
@@ -524,15 +507,6 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
               >
                 <Edit3 className="w-3.5 h-3.5 text-[#737373]" />
                 <span>Editar</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="h-8 px-3.5 rounded-[16px] bg-[#f5f5f5] text-[#a3a3a3] border border-[#e5e5e5] text-xs font-medium flex items-center gap-1.5 opacity-35 cursor-not-allowed pointer-events-none"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Pronto</span>
               </button>
             )}
           </div>
