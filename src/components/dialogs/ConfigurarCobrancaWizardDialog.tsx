@@ -191,7 +191,7 @@ export default function ConfigurarCobrancaWizardDialog({
                     Recibo profissional enviado aos pais
                   </h4>
                   <p className="text-xs text-[#525252] leading-relaxed">
-                    Assim que o Pix for confirmado, o comprovante oficial é enviado no WhatsApp e no e-mail do responsável.
+                    Assim que o Pix for confirmado, o comprovante oficial é enviado diretamente no WhatsApp do responsável.
                   </p>
                 </div>
               </div>

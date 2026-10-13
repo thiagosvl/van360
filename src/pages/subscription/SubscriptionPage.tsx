@@ -561,12 +561,11 @@ export default function SubscriptionPage() {
                       </div>
                     </div>
                   </section>
-                ) : (
-                  paymentMethods && paymentMethods.length > 0 && (
-                    <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
-                        Métodos de Pagamento
-                      </h2>
+                ) : paymentMethods && paymentMethods.length > 0 ? (
+                  <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <h2 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight mb-4 px-1">
+                      Métodos de Pagamento
+                    </h2>
 
                     <div className="space-y-3">
                       {paymentMethods.map((method) => {
@@ -653,7 +652,7 @@ export default function SubscriptionPage() {
                       })}
                     </div>
                   </section>
-                )}
+                ) : null}
               </div>
 
               <aside className="xl:col-span-1">

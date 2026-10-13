@@ -9,6 +9,8 @@ export interface SignaturePadRef {
   toDataURL: (type?: string, encoderOptions?: number) => string;
   isEmpty: () => boolean;
   fromDataURL: (dataURL: string) => void;
+  finishEditing: () => void;
+  isEditing: () => boolean;
 }
 
 interface SignaturePadProps {
@@ -28,6 +30,23 @@ interface StrokeGroup {
   points?: PointWithCoordinates[];
 }
 
+interface ClearSnapshot {
+  baseImage: HTMLImageElement | null;
+  strokes: unknown[];
+}
+
+interface StrokeRedoItem {
+  type: "stroke";
+  stroke: unknown;
+}
+
+interface ClearRedoItem {
+  type: "clear";
+  snapshot: ClearSnapshot;
+}
+
+type RedoItem = StrokeRedoItem | ClearRedoItem;
+
 const SIGNATURE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' fill='%230a0a0a' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='m15 5 4 4' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 22, crosshair`;
 
 const MIN_POINTS_THRESHOLD = 6;
@@ -40,10 +59,14 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     const [hasSignature, setHasSignature] = useState<boolean>(false);
     const [canUndo, setCanUndo] = useState<boolean>(false);
     const [canRedo, setCanRedo] = useState<boolean>(false);
-    const redoStackRef = useRef<unknown[]>([]);
+    const redoStackRef = useRef<RedoItem[]>([]);
+    const clearSnapshotRef = useRef<ClearSnapshot | null>(null);
+
+    const baseImageRef = useRef<HTMLImageElement | null>(null);
 
     const getTrimmedDataUrl = useCallback((type = "image/png"): string => {
-      if (!sigCanvasRef.current || sigCanvasRef.current.isEmpty()) return "";
+      if (!sigCanvasRef.current) return "";
+      if (sigCanvasRef.current.isEmpty() && !baseImageRef.current) return "";
       try {
         return sigCanvasRef.current.getTrimmedCanvas().toDataURL(type);
       } catch {
@@ -76,31 +99,121 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
       }
       const rawData = sigCanvasRef.current.toData() as unknown;
       const strokeCount = Array.isArray(rawData) ? rawData.length : 0;
-      setCanUndo(strokeCount > 0);
+      setCanUndo(strokeCount > 0 || clearSnapshotRef.current !== null);
       setCanRedo(redoStackRef.current.length > 0);
     }, []);
 
+    const drawBaseImage = useCallback((ctx: CanvasRenderingContext2D, img: HTMLImageElement, canvas: HTMLCanvasElement, ratio: number) => {
+      const w = canvas.width / ratio;
+      const h = canvas.height / ratio;
+      const imgRatio = img.width / img.height;
+      const targetRatio = w / h;
+      let renderW = w;
+      let renderH = h;
+      let renderX = 0;
+      let renderY = 0;
+
+      if (imgRatio > targetRatio) {
+        renderW = w;
+        renderH = w / imgRatio;
+        renderY = (h - renderH) / 2;
+      } else {
+        renderH = h;
+        renderW = h * imgRatio;
+        renderX = (w - renderW) / 2;
+      }
+
+      ctx.drawImage(img, renderX, renderY, renderW, renderH);
+    }, []);
+
+    const renderCanvasWithBase = useCallback((strokes: unknown[]) => {
+      if (!sigCanvasRef.current) return;
+      sigCanvasRef.current.fromData(strokes as Parameters<SignatureCanvas["fromData"]>[0]);
+      if (baseImageRef.current) {
+        const canvas = sigCanvasRef.current.getCanvas();
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const ratio = Math.max(window.devicePixelRatio || 1, 1);
+          ctx.save();
+          ctx.globalCompositeOperation = "destination-over";
+          drawBaseImage(ctx, baseImageRef.current, canvas, ratio);
+          ctx.restore();
+        }
+      }
+    }, [drawBaseImage]);
+
+    const handleClear = useCallback(() => {
+      const rawData = sigCanvasRef.current?.toData() as unknown;
+      const strokes = Array.isArray(rawData) ? rawData : [];
+      const hasContent = baseImageRef.current !== null || strokes.length > 0;
+      if (hasContent) {
+        clearSnapshotRef.current = {
+          baseImage: baseImageRef.current,
+          strokes: [...strokes],
+        };
+      }
+      baseImageRef.current = null;
+      sigCanvasRef.current?.clear();
+      redoStackRef.current = [];
+      setHasSignature(false);
+      setCanUndo(hasContent);
+      setCanRedo(false);
+      lastEmittedValueRef.current = null;
+      onChange?.(null);
+    }, [onChange]);
+
+    const loadBaseImage = useCallback((url: string) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        baseImageRef.current = img;
+        if (sigCanvasRef.current) {
+          const canvas = sigCanvasRef.current.getCanvas();
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            drawBaseImage(ctx, img, canvas, ratio);
+          }
+          setHasSignature(true);
+          updateUndoRedoState();
+        }
+      };
+      img.src = url;
+    }, [drawBaseImage, updateUndoRedoState]);
+
+    const handleFinishEditing = useCallback(() => {
+      const totalPoints = countTotalPoints();
+      if (totalPoints < MIN_POINTS_THRESHOLD && !baseImageRef.current) {
+        handleClear();
+      }
+      setIsEditing(false);
+    }, [countTotalPoints, handleClear]);
+
     useImperativeHandle(ref, () => ({
       clear: () => {
-        sigCanvasRef.current?.clear();
-        redoStackRef.current = [];
-        setHasSignature(false);
-        setIsEditing(false);
-        updateUndoRedoState();
-        onChange?.(null);
+        handleClear();
       },
       toDataURL: (type = "image/png") => getTrimmedDataUrl(type),
       isEmpty: () => {
-        if (!sigCanvasRef.current) return true;
-        if (sigCanvasRef.current.isEmpty()) return true;
-        return countTotalPoints() < MIN_POINTS_THRESHOLD;
+        return baseImageRef.current
+          ? false
+          : !sigCanvasRef.current
+          ? true
+          : sigCanvasRef.current.isEmpty() || countTotalPoints() < MIN_POINTS_THRESHOLD;
       },
       fromDataURL: (dataURL: string) => {
-        sigCanvasRef.current?.fromDataURL(dataURL);
-        setHasSignature(Boolean(dataURL));
         redoStackRef.current = [];
-        updateUndoRedoState();
+        if (dataURL) {
+          loadBaseImage(dataURL);
+        } else {
+          handleClear();
+        }
       },
+      finishEditing: () => {
+        handleFinishEditing();
+      },
+      isEditing: () => isEditing,
     }));
 
     const resizeCanvas = useCallback(() => {
@@ -108,47 +221,65 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
         const canvas = sigCanvasRef.current.getCanvas();
         const container = containerRef.current;
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-
-        const currentData = sigCanvasRef.current.isEmpty() ? null : sigCanvasRef.current.toDataURL();
+        const strokes = (sigCanvasRef.current.toData() as unknown[]) || [];
 
         canvas.width = container.offsetWidth * ratio;
         canvas.height = container.offsetHeight * ratio;
         canvas.getContext("2d")?.scale(ratio, ratio);
 
-        if (currentData) {
-          sigCanvasRef.current.fromDataURL(currentData);
-        } else {
-          sigCanvasRef.current.clear();
-        }
+        renderCanvasWithBase(strokes);
         updateUndoRedoState();
       }
-    }, [updateUndoRedoState]);
+    }, [renderCanvasWithBase, updateUndoRedoState]);
+
+    const lastEmittedValueRef = useRef<string | null>(null);
 
     useLayoutEffect(() => {
       const timeout = setTimeout(resizeCanvas, 150);
       window.addEventListener("resize", resizeCanvas);
 
-      if (initialValue && sigCanvasRef.current) {
-        sigCanvasRef.current.fromDataURL(initialValue);
-        setHasSignature(true);
-        updateUndoRedoState();
+      let resizeObserver: ResizeObserver | null = null;
+      if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          resizeCanvas();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
+
+      if (initialValue !== lastEmittedValueRef.current) {
+        lastEmittedValueRef.current = initialValue || null;
+        if (initialValue) {
+          loadBaseImage(initialValue);
+        } else {
+          baseImageRef.current = null;
+          sigCanvasRef.current?.clear();
+          setHasSignature(false);
+          updateUndoRedoState();
+        }
       }
 
       return () => {
         window.removeEventListener("resize", resizeCanvas);
         clearTimeout(timeout);
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
       };
-    }, [initialValue, resizeCanvas, updateUndoRedoState]);
+    }, [initialValue, resizeCanvas, loadBaseImage, updateUndoRedoState]);
 
     const handleEnd = () => {
       if (!sigCanvasRef.current) return;
 
+      clearSnapshotRef.current = null;
+
       const totalPoints = countTotalPoints();
-      if (totalPoints < MIN_POINTS_THRESHOLD) {
+
+      if (totalPoints < MIN_POINTS_THRESHOLD && !baseImageRef.current) {
         sigCanvasRef.current.clear();
         setHasSignature(false);
         redoStackRef.current = [];
         updateUndoRedoState();
+        lastEmittedValueRef.current = null;
         onChange?.(null);
         return;
       }
@@ -158,65 +289,91 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
 
       const trimmed = getTrimmedDataUrl();
       setHasSignature(true);
+      lastEmittedValueRef.current = trimmed;
       onChange?.(trimmed);
     };
 
     const handleUndo = () => {
       if (!sigCanvasRef.current) return;
+
+      if (clearSnapshotRef.current) {
+        const snapshot = clearSnapshotRef.current;
+        clearSnapshotRef.current = null;
+        baseImageRef.current = snapshot.baseImage;
+        renderCanvasWithBase(snapshot.strokes);
+        redoStackRef.current.push({ type: "clear", snapshot });
+        updateUndoRedoState();
+        setHasSignature(true);
+        const trimmed = getTrimmedDataUrl();
+        lastEmittedValueRef.current = trimmed;
+        onChange?.(trimmed);
+        return;
+      }
+
       const rawData = sigCanvasRef.current.toData() as unknown;
-      if (!Array.isArray(rawData) || rawData.length === 0) return;
+      if (!Array.isArray(rawData) || rawData.length === 0) {
+        return;
+      }
 
       const lastStroke = rawData[rawData.length - 1];
       const remainingStrokes = rawData.slice(0, -1);
 
-      redoStackRef.current.push(lastStroke);
-      sigCanvasRef.current.fromData(remainingStrokes as Parameters<SignatureCanvas["fromData"]>[0]);
+      redoStackRef.current.push({ type: "stroke", stroke: lastStroke });
+      renderCanvasWithBase(remainingStrokes);
 
       updateUndoRedoState();
 
+      const trimmed = getTrimmedDataUrl();
       if (remainingStrokes.length === 0) {
-        setHasSignature(false);
-        onChange?.(null);
+        if (baseImageRef.current) {
+          setHasSignature(true);
+          lastEmittedValueRef.current = trimmed;
+          onChange?.(trimmed);
+        } else {
+          setHasSignature(false);
+          lastEmittedValueRef.current = null;
+          onChange?.(null);
+        }
       } else {
-        onChange?.(getTrimmedDataUrl());
+        lastEmittedValueRef.current = trimmed;
+        onChange?.(trimmed);
       }
     };
 
     const handleRedo = () => {
-      if (!sigCanvasRef.current || redoStackRef.current.length === 0) return;
-      const strokeToRestore = redoStackRef.current.pop();
-      if (!strokeToRestore) return;
+      if (!sigCanvasRef.current || redoStackRef.current.length === 0) {
+        return;
+      }
+      const redoItem = redoStackRef.current.pop();
+      if (!redoItem) return;
+
+      if (redoItem.type === "clear") {
+        clearSnapshotRef.current = redoItem.snapshot;
+        baseImageRef.current = null;
+        sigCanvasRef.current?.clear();
+        setHasSignature(false);
+        updateUndoRedoState();
+        lastEmittedValueRef.current = null;
+        onChange?.(null);
+        return;
+      }
 
       const rawData = (sigCanvasRef.current.toData() as unknown) || [];
       const currentStrokes = Array.isArray(rawData) ? rawData : [];
-      const newStrokes = [...currentStrokes, strokeToRestore];
+      const newStrokes = [...currentStrokes, redoItem.stroke];
 
-      sigCanvasRef.current.fromData(newStrokes as Parameters<SignatureCanvas["fromData"]>[0]);
+      renderCanvasWithBase(newStrokes);
       updateUndoRedoState();
 
       setHasSignature(true);
-      onChange?.(getTrimmedDataUrl());
-    };
-
-    const handleClear = () => {
-      sigCanvasRef.current?.clear();
-      redoStackRef.current = [];
-      setHasSignature(false);
-      updateUndoRedoState();
-      onChange?.(null);
+      const trimmed = getTrimmedDataUrl();
+      lastEmittedValueRef.current = trimmed;
+      onChange?.(trimmed);
     };
 
     const handleStartEditing = () => {
       setIsEditing(true);
       setTimeout(updateUndoRedoState, 50);
-    };
-
-    const handleFinishEditing = () => {
-      const totalPoints = countTotalPoints();
-      if (totalPoints < MIN_POINTS_THRESHOLD) {
-        handleClear();
-      }
-      setIsEditing(false);
     };
 
     return (

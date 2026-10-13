@@ -875,6 +875,7 @@ export function SubscriptionPlansShowcase({
       >
         <AppTabNav
           activeTab={selectedPeriod}
+          layout="fill"
           items={[
             {
               value: SubscriptionIdentifer.MONTHLY,

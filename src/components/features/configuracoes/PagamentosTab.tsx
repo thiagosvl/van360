@@ -605,7 +605,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
 
           <div className="divide-y divide-[#e5e5e5] space-y-4 pt-1">
             <div className="space-y-2 pt-1 first:pt-0">
-              <div className="flex items-center justify-between gap-3">
+              <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 items-start">
                 <div className="space-y-0.5 min-w-0 pr-1">
                   <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
                     Lembrete no dia do vencimento
@@ -613,20 +613,9 @@ export const PagamentosTab = memo(function PagamentosTab() {
                   <p className="text-xs text-[#737373] mt-0.5">
                     Envia mensagem na data exata em que a parcela vence.
                   </p>
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                    <span className="text-[10px] text-[#737373]">Enviado via:</span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
-                      <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
-                      WhatsApp
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
-                      <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
-                      App dos Pais
-                    </span>
-                  </div>
                 </div>
 
-                <div className="shrink-0 self-start pt-0.5">
+                <div className="shrink-0 self-start pt-0.5 sm:row-span-2">
                   <Switch
                     id="switch-cobranca-vencimento-hoje-ativo"
                     checked={configuracoes?.cobranca_vencimento_hoje_ativo ?? true}
@@ -640,11 +629,23 @@ export const PagamentosTab = memo(function PagamentosTab() {
                     }
                   />
                 </div>
+
+                <div className="col-span-2 sm:col-span-1 flex flex-wrap items-center gap-1.5 pt-0.5 sm:pt-1">
+                  <span className="text-[10px] text-[#737373]">Enviado via:</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
+                    <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
+                    WhatsApp
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                    <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                    App dos Pais
+                  </span>
+                </div>
               </div>
             </div>
 
             <div className="space-y-2 pt-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 items-start">
                 <div className="space-y-0.5 min-w-0 pr-1">
                   <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
                     Lembrete de atraso (3 dias após)
@@ -652,20 +653,9 @@ export const PagamentosTab = memo(function PagamentosTab() {
                   <p className="text-xs text-[#737373] mt-0.5">
                     Avisa o responsável caso a parcela continue pendente após 3 dias.
                   </p>
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                    <span className="text-[10px] text-[#737373]">Enviado via:</span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
-                      <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
-                      WhatsApp
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
-                      <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
-                      App dos Pais
-                    </span>
-                  </div>
                 </div>
 
-                <div className="shrink-0 self-start pt-0.5">
+                <div className="shrink-0 self-start pt-0.5 sm:row-span-2">
                   <Switch
                     id="switch-cobranca-atraso-3-dias-ativo"
                     checked={configuracoes?.cobranca_atraso_3_dias_ativo ?? true}
@@ -678,6 +668,18 @@ export const PagamentosTab = memo(function PagamentosTab() {
                       )
                     }
                   />
+                </div>
+
+                <div className="col-span-2 sm:col-span-1 flex flex-wrap items-center gap-1.5 pt-0.5 sm:pt-1">
+                  <span className="text-[10px] text-[#737373]">Enviado via:</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
+                    <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
+                    WhatsApp
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                    <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                    App dos Pais
+                  </span>
                 </div>
               </div>
             </div>
@@ -751,7 +753,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 <span className="text-[10px] text-[#737373]">Enviado via:</span>
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
                   <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
-                  Somente no App dos Pais (não envia WhatsApp)
+                  App dos Pais (não envia WhatsApp)
                 </span>
               </div>
             </div>

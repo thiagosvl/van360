@@ -19,6 +19,7 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
+import { sanitizeClauseText, sanitizeGenericText } from "@/utils/domain/contrato/contratoSanitize";
 import {
   ArrowDown,
   ArrowLeft,
@@ -233,10 +234,15 @@ export default function ConfigurarModeloContrato() {
   const saveButtonText = !isContractActive ? "Salvar" : "Salvar Alterações";
 
   const captureSignature = () => {
-    if (sigPad.current && !sigPad.current.isEmpty()) {
-      const sig = sigPad.current.toDataURL("image/png");
-      setSignatureTemp(sig);
-      return sig;
+    if (sigPad.current && sigPad.current.isEditing()) {
+      if (!sigPad.current.isEmpty()) {
+        const sig = sigPad.current.toDataURL("image/png");
+        setSignatureTemp(sig);
+        return sig;
+      } else {
+        setSignatureTemp(null);
+        return null;
+      }
     }
     return signatureTemp;
   };
@@ -269,11 +275,12 @@ export default function ConfigurarModeloContrato() {
 
   const handleSaveClauseEditor = () => {
     if (!editingClauseData) return;
+    const cleanText = sanitizeClauseText(editingText);
     setSecoes((prev) =>
       prev.map((sec) => {
         if (sec.id === editingClauseData.sectionId) {
           const updated = sec.clausulas.map((c) =>
-            c.id === editingClauseData.clauseId ? { ...c, texto: editingText } : c
+            c.id === editingClauseData.clauseId ? { ...c, texto: cleanText } : c
           );
           return { ...sec, clausulas: updated };
         }
@@ -445,8 +452,8 @@ export default function ConfigurarModeloContrato() {
       .filter((s) => s.titulo.trim() !== "")
       .map((s) => ({
         id: s.id,
-        titulo: s.titulo.trim(),
-        clausulas: s.clausulas.map((c) => c.texto.trim()).filter((t) => t !== ""),
+        titulo: sanitizeGenericText(s.titulo),
+        clausulas: s.clausulas.map((c) => sanitizeClauseText(c.texto)).filter((t) => t !== ""),
       }))
       .filter((s) => s.clausulas.length > 0);
   }, [secoes]);
@@ -468,7 +475,7 @@ export default function ConfigurarModeloContrato() {
         multaAtraso,
         jurosAtraso,
         multaRescisao,
-        assinaturaCondutorUrl: finalSig || profile?.assinatura_digital_url,
+        assinaturaCondutorUrl: finalSig || null,
         logoCondutorUrl: logoTemp !== null ? logoTemp : profile?.logo_url,
       });
       if (pdfUrlRef.current) window.URL.revokeObjectURL(pdfUrlRef.current);
@@ -495,29 +502,21 @@ export default function ConfigurarModeloContrato() {
     }
 
     const finalSig = captureSignature();
-    if (!finalSig && !profile.assinatura_digital_url) {
-      setActiveTab("identity");
-      toast.error("Faça a sua assinatura digital para ativar seu modelo de contrato.");
-      setTimeout(() => {
-        const el = document.getElementById("assinatura-digital-card");
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 120);
-      return;
+    if (sigPad.current?.isEditing()) {
+      sigPad.current.finishEditing();
     }
 
     setIsSubmitting(true);
     const wasActive = isContractActive;
     try {
       const resolvedLogo = logoTemp !== null ? logoTemp : (profile.logo_url || null);
-      const resolvedSig = finalSig || profile.assinatura_digital_url || null;
+      const resolvedSig = finalSig || null;
 
       await usuarioApi.atualizarUsuario(profile.id, {
-        assinatura_digital_url: resolvedSig || undefined,
+        assinatura_digital_url: resolvedSig,
         logo_url: resolvedLogo,
         config_contrato: {
-          usar_contratos: true,
+          usar_contratos: Boolean(resolvedSig),
           multa_atraso: multaAtraso,
           juros_atraso: jurosAtraso,
           multa_rescisao: multaRescisao,
@@ -526,8 +525,8 @@ export default function ConfigurarModeloContrato() {
         },
       });
 
-      setIsLocallyActive(true);
-      if (resolvedSig) setSignatureTemp(resolvedSig);
+      setIsLocallyActive(Boolean(resolvedSig));
+      setSignatureTemp(resolvedSig);
       if (resolvedLogo) setLogoTemp(resolvedLogo);
 
       initialSnapshotRef.current = buildSnapshot(
@@ -543,11 +542,11 @@ export default function ConfigurarModeloContrato() {
         if (!old) return old;
         return {
           ...old,
-          assinatura_digital_url: resolvedSig || old.assinatura_digital_url,
+          assinatura_digital_url: resolvedSig,
           logo_url: resolvedLogo,
           config_contrato: {
             ...old.config_contrato,
-            usar_contratos: true,
+            usar_contratos: Boolean(resolvedSig),
             multa_atraso: multaAtraso,
             juros_atraso: jurosAtraso,
             multa_rescisao: multaRescisao,
@@ -559,7 +558,9 @@ export default function ConfigurarModeloContrato() {
 
       refreshProfile();
 
-      if (!wasActive) {
+      if (!resolvedSig) {
+        toast.success("Assinatura removida e alterações salvas com sucesso!");
+      } else if (!wasActive) {
         toast.success("Modelo de contrato ativado com sucesso! Agora você já pode gerar contratos.");
       } else {
         toast.success("Modelo de contrato salvo com sucesso!");
@@ -982,7 +983,7 @@ export default function ConfigurarModeloContrato() {
               ref={sigPad}
               initialValue={signatureTemp}
               onChange={(dataUrl) => {
-                setSignatureTemp(dataUrl || "");
+                setSignatureTemp(dataUrl || null);
               }}
             />
           </div>
@@ -1085,6 +1086,18 @@ export default function ConfigurarModeloContrato() {
                 autoFocus={!editingClauseData.initialText.trim()}
                 value={editingText}
                 onChange={(e) => setEditingText(e.target.value)}
+                onPaste={(e) => {
+                  const pastedData = e.clipboardData.getData("text");
+                  if (pastedData && (pastedData.includes("\t") || pastedData.includes("“") || pastedData.includes("”") || pastedData.includes("—") || pastedData.includes("–"))) {
+                    e.preventDefault();
+                    const cleanPasted = sanitizeClauseText(pastedData);
+                    const target = e.currentTarget;
+                    const start = target.selectionStart;
+                    const end = target.selectionEnd;
+                    const nextText = editingText.substring(0, start) + cleanPasted + editingText.substring(end);
+                    setEditingText(nextText);
+                  }
+                }}
                 placeholder="Digite o texto da cláusula..."
                 className="w-full min-h-[300px] sm:min-h-[380px] p-4 text-xs sm:text-sm text-[#0a0a0a] bg-[#f5f5f5] focus:bg-white border border-[#e5e5e5] rounded-[16px] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] leading-relaxed placeholder:text-[#737373] transition-all resize-y outline-none"
               />

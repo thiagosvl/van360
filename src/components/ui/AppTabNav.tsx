@@ -36,9 +36,9 @@ export function AppTabNav<T extends string = string>({
   const containerRef = useRef<HTMLDivElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
 
-  const isFillMobile =
-    layout === "fill" || (layout === "auto" && items.length <= 2);
-  const isScrollable = !isFillMobile;
+  const isFill = layout === "fill";
+  const isAutoTwoItems = layout === "auto" && items.length <= 2;
+  const isScrollable = !isFill && !isAutoTwoItems;
 
   useEffect(() => {
     if (!autoScrollToActive || !isScrollable) return;
@@ -63,7 +63,8 @@ export function AppTabNav<T extends string = string>({
     <div
       ref={containerRef}
       className={cn(
-        "bg-[#f5f5f5] p-1 rounded-[20px] sm:rounded-[22px] border border-[#e5e5e5] overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0 w-full sm:w-fit",
+        "bg-[#f5f5f5] p-1 rounded-[20px] sm:rounded-[22px] border border-[#e5e5e5] overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden touch-pan-x shrink-0 w-full",
+        !isFill && "sm:w-fit",
         className
       )}
     >
@@ -71,7 +72,9 @@ export function AppTabNav<T extends string = string>({
         ref={tabListRef}
         className={cn(
           "bg-transparent min-h-[38px] sm:min-h-[42px] p-0 gap-1.5 border-0 justify-start",
-          isFillMobile
+          isFill
+            ? "w-full flex items-center"
+            : isAutoTwoItems
             ? "w-full grid grid-cols-2 sm:flex sm:w-auto"
             : "w-max min-w-full flex items-center sm:w-auto",
           listClassName
@@ -86,7 +89,7 @@ export function AppTabNav<T extends string = string>({
             onClick={item.onClick}
             className={cn(
               "group flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 px-3 sm:px-4 rounded-[16px] sm:rounded-[18px] text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap text-center select-none",
-              isFillMobile ? "w-full sm:w-auto" : "shrink-0",
+              isFill ? "w-full flex-1" : isAutoTwoItems ? "w-full sm:w-auto" : "shrink-0",
               "data-[state=active]:bg-white data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-xs data-[state=active]:font-semibold",
               "data-[state=inactive]:text-[#737373] hover:text-[#0a0a0a] hover:bg-white/40",
               "disabled:pointer-events-none disabled:opacity-40",
