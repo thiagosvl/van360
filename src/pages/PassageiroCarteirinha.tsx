@@ -262,8 +262,7 @@ export default function PassageiroCarteirinha() {
       veiculo: mat.veiculo ?? undefined,
       contrato_id: contrato?.id ?? undefined,
       status_contrato:
-        (contrato?.status as Passageiro["status_contrato"]) ??
-        ContratoStatus.NAO_SOLICITADO,
+        (contrato?.status as Passageiro["status_contrato"]) ?? undefined,
       contrato_status: contrato?.status ?? "sem_contrato",
       contrato_provider:
         (contrato?.provider as Passageiro["contrato_provider"]) ?? undefined,

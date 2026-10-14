@@ -18,7 +18,7 @@ import {
   useToggleAtivoPassageiro,
   useVeiculos,
 } from "@/hooks";
-import { DeletePassageiroOptionsContent, DeletePassageiroScope } from "@/components/features/passageiro/DeletePassageiroOptionsContent";
+import { DeletePassageiroOptionsContent, DeletePassageiroMode } from "@/components/features/passageiro/DeletePassageiroOptionsContent";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
@@ -127,7 +127,7 @@ export function usePassageirosViewModel() {
   const deletePassageiro = useDeletePassageiro();
   const deletePassageiroMatricula = useDeletePassageiroMatricula();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
-  const deleteScopeRef = useRef<DeletePassageiroScope>("matricula");
+  const deleteScopeRef = useRef<DeletePassageiroMode>("matricula");
 
   const isActionLoading =
     deletePassageiro.isPending ||
@@ -311,11 +311,12 @@ export function usePassageirosViewModel() {
         openConfirmationDialog({
           title: "Excluir matrícula ou aluno?",
           description: createElement(DeletePassageiroOptionsContent, {
-            anoLetivo: targetAno,
+            nomeAluno: passageiro.nome,
+            anoSelecionado: targetAno,
             anosMatriculados,
-            defaultScope: "matricula",
-            onScopeChange: (scope: DeletePassageiroScope) => {
-              deleteScopeRef.current = scope;
+            defaultMode: "matricula",
+            onChangeMode: (mode: DeletePassageiroMode) => {
+              deleteScopeRef.current = mode;
             },
           }),
           confirmText: "Confirmar Exclusão",
@@ -324,7 +325,7 @@ export function usePassageirosViewModel() {
             try {
               if (deleteScopeRef.current === "matricula") {
                 await deletePassageiroMatricula.mutateAsync({
-                  passageiroId: passageiro.id,
+                  id: passageiro.id,
                   anoLetivo: targetAno,
                 });
               } else {
