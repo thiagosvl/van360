@@ -55,8 +55,14 @@ interface CobrancasListProps {
 
 import { isPassageiroIncompleto } from "@/utils/domain";
 
+function isCobrancaSemValor(cobranca?: Cobranca | null): boolean {
+  if (!cobranca) return true;
+  if (Number(cobranca.valor) > 0) return false;
+  return isPassageiroIncompleto(cobranca.passageiro);
+}
+
 function getVencimentoDia(cobranca: Cobranca) {
-  if (cobranca?.isProjection && isPassageiroIncompleto(cobranca?.passageiro)) {
+  if (cobranca?.isProjection && isCobrancaSemValor(cobranca)) {
     return "--";
   }
   const dateStr = cobranca?.data_vencimento;
@@ -93,13 +99,13 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const telefoneResponsavel = respPrincipal?.telefone;
   const nomeRespText = respPrincipal?.nome ?? "";
 
-  const onEnviarCobranca = (telefoneResponsavel && !isPassageiroIncompleto(cobranca.passageiro))
+  const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
       nomeResponsavel: nomeRespText,
       nomePassageiro: cobranca.passageiro?.nome ?? "",
       mes: cobranca.mes,
-      valor: cobranca.valor,
+      valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
       dataVencimento: cobranca.data_vencimento,
       chavePix,
       tipoChavePix,
@@ -139,7 +145,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
     <MobileActionItem
       actions={actions}
       onClickItem={
-        cobranca?.isProjection && isPassageiroIncompleto(cobranca.passageiro)
+        cobranca?.isProjection && isCobrancaSemValor(cobranca)
           ? () => onOpenCreateForProjection?.(cobranca)
           : undefined
       }
@@ -242,7 +248,7 @@ export function CobrancasList({
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
 
   const handleOpenCreateForProjection = (cobranca: Cobranca) => {
-    if (isPassageiroIncompleto(cobranca.passageiro)) {
+    if (isCobrancaSemValor(cobranca)) {
       openConfirmationDialog({
         title: "Valor das parcelas não configurado",
         description:
@@ -321,13 +327,13 @@ export function CobrancasList({
     const respPrincipal = cobranca.passageiro?.responsavel_principal;
     const telefoneResponsavel = respPrincipal?.telefone;
 
-    const onEnviarCobranca = (telefoneResponsavel && !isPassageiroIncompleto(cobranca.passageiro))
+    const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
       ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
         telefoneResponsavel,
         nomeResponsavel: formatNomeResponsavelCompletoExibicao(respPrincipal?.nome),
         nomePassageiro: cobranca.passageiro?.nome ?? "",
         mes: cobranca.mes,
-        valor: cobranca.valor,
+        valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
         dataVencimento: cobranca.data_vencimento,
         chavePix: profile?.chave_pix,
         tipoChavePix: profile?.tipo_chave_pix,
@@ -507,13 +513,13 @@ function ActionSheetWrapper({
 }) {
   const respPrincipal = cobranca.passageiro?.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
-  const onEnviarCobranca = (telefoneResponsavel && !isPassageiroIncompleto(cobranca.passageiro))
+  const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
       nomeResponsavel: respPrincipal?.nome ?? "",
       nomePassageiro: cobranca.passageiro?.nome ?? "",
       mes: cobranca.mes,
-      valor: cobranca.valor,
+      valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
       dataVencimento: cobranca.data_vencimento,
       chavePix,
       tipoChavePix,
