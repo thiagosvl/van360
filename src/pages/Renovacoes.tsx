@@ -18,6 +18,7 @@ import { PassageirosPagination } from "@/components/features/passageiro/Passagei
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
 import { Rocket, Users, ArrowLeft } from "lucide-react";
 import { PassageiroResponsavel } from "@/types/passageiro";
@@ -465,11 +466,11 @@ export default function Renovacoes() {
                 <div className="flex flex-wrap items-center justify-between gap-2 px-1 py-0.5">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <label className="flex items-center gap-2 text-xs font-medium text-[#0a0a0a] cursor-pointer select-none">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isAllSelected}
-                        onChange={toggleSelectAll}
-                        className="h-4 w-4 rounded-[4px] border-[#e5e5e5] text-[#0a0a0a] focus:ring-[#0a0a0a] cursor-pointer"
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Marcar todos os alunos"
+                        className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a] data-[state=checked]:text-white shrink-0 cursor-pointer"
                       />
                       <span>
                         {isAllSelected ? "Desmarcar todos" : `Marcar todos (${passageiros.length})`}

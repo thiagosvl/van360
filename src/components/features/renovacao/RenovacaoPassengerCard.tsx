@@ -17,6 +17,7 @@ import { formatCurrency, formatShortName, formatFirstName } from "@/utils/format
 import { formatDateToBR } from "@/utils/formatters/date";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useNotificarLoteRenovacao } from "@/hooks/api/useRenovacoes";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -151,10 +152,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
   return (
     <div
       className={cn(
-        "rounded-[20px] sm:rounded-[24px] border bg-[#ffffff] transition-all overflow-hidden shadow-xs",
+        "rounded-[20px] sm:rounded-[24px] border bg-white transition-all overflow-hidden shadow-xs",
         isSelected
-          ? "border-primary/40 ring-1 ring-primary/20 bg-primary/[0.01]"
-          : "border-[#e5e5e5] hover:border-[#737373]/30"
+          ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
+          : "border-[#e5e5e5] hover:border-[#737373]/40"
       )}
     >
       <div
@@ -162,17 +163,13 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
         className="flex items-center justify-between p-3.5 sm:p-4 gap-2.5 sm:gap-3 cursor-pointer select-none"
       >
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={isSelected}
             disabled={isUpdating}
-            onChange={(e) => {
-              e.stopPropagation();
-              onToggleSelect(item.passageiro_id);
-            }}
+            onCheckedChange={() => onToggleSelect(item.passageiro_id)}
             onClick={(e) => e.stopPropagation()}
             aria-label={`Selecionar ${shortName}`}
-            className="h-4 w-4 rounded-[4px] border-[#e5e5e5] text-[#0a0a0a] focus:ring-[#0a0a0a] cursor-pointer shrink-0"
+            className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a] data-[state=checked]:text-white shrink-0 cursor-pointer"
           />
 
           {item.foto_url ? (
