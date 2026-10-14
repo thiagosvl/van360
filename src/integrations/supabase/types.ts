@@ -1610,7 +1610,6 @@ export type Database = {
           ano_origem: number
           confirmado_em: string | null
           created_at: string
-          dados_ano_origem: Json | null
           id: string
           ip_confirmacao: string | null
           justificativa_recusa: string | null
@@ -1622,6 +1621,7 @@ export type Database = {
           nova_data_inicio_transporte: string | null
           nova_escola_id: string | null
           nova_modalidade: Database["public"]["Enums"]["modalidade_enum"] | null
+          nova_sala: string | null
           nova_turma: string | null
           novo_dia_vencimento: number | null
           novo_isento: boolean
@@ -1644,7 +1644,6 @@ export type Database = {
           ano_origem?: number
           confirmado_em?: string | null
           created_at?: string
-          dados_ano_origem?: Json | null
           id?: string
           ip_confirmacao?: string | null
           justificativa_recusa?: string | null
@@ -1658,6 +1657,7 @@ export type Database = {
           nova_modalidade?:
             | Database["public"]["Enums"]["modalidade_enum"]
             | null
+          nova_sala?: string | null
           nova_turma?: string | null
           novo_dia_vencimento?: number | null
           novo_isento?: boolean
@@ -1680,7 +1680,6 @@ export type Database = {
           ano_origem?: number
           confirmado_em?: string | null
           created_at?: string
-          dados_ano_origem?: Json | null
           id?: string
           ip_confirmacao?: string | null
           justificativa_recusa?: string | null
@@ -1694,6 +1693,7 @@ export type Database = {
           nova_modalidade?:
             | Database["public"]["Enums"]["modalidade_enum"]
             | null
+          nova_sala?: string | null
           nova_turma?: string | null
           novo_dia_vencimento?: number | null
           novo_isento?: boolean

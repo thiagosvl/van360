@@ -190,7 +190,7 @@ export default function Passageiros() {
                 <div className="flex items-center justify-between px-0.5">
                   {isMainTab && can("passageiros.gerenciar") ? (
                     <Link
-                      to="/alunos/atualizacao-rapida"
+                      to={`/alunos/atualizacao-rapida?ano=${selectedAnoLetivo}`}
                       className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group py-1"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />

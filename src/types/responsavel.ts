@@ -21,6 +21,7 @@ export interface ResponsavelCobrancaItem {
   id: string;
   mes: number;
   ano: number;
+  ano_letivo?: number | null;
   valor: number;
   valor_pago?: number | null;
   tipo_pagamento?: string | null;
@@ -55,6 +56,7 @@ export interface RegistrarAusenciaPayload {
 
 export interface ResponsavelContratoItem {
   id: string;
+  ano?: number | null;
   status: ContratoStatus;
   minuta_url?: string | null;
   contrato_final_url?: string | null;
@@ -62,6 +64,32 @@ export interface ResponsavelContratoItem {
   pdf_url?: string | null;
   token_acesso?: string | null;
   created_at?: string | null;
+}
+
+export interface ResponsavelMatriculaItem {
+  id: string;
+  ano_letivo: number;
+  ativo: boolean;
+  isento?: boolean;
+  escola_id?: string | null;
+  veiculo_id?: string | null;
+  escola_nome?: string | null;
+  veiculo_placa?: string | null;
+  veiculo_modelo?: string | null;
+  periodo?: string | null;
+  modalidade?: string | null;
+  turma?: string | null;
+  sala?: string | null;
+  nome_professor?: string | null;
+  horario_entrada?: string | null;
+  horario_saida?: string | null;
+  valor_cobranca?: number | null;
+  dia_vencimento?: number | null;
+  data_inicio_transporte?: string | null;
+  data_fim_transporte?: string | null;
+  data_inicio_cobranca?: string | null;
+  data_fim_cobranca?: string | null;
+  contrato?: ResponsavelContratoItem | null;
 }
 
 export interface ResponsavelAdicionalItem {
@@ -96,6 +124,9 @@ export interface ResponsavelRotaItem {
 export interface ResponsavelCarteirinhaData {
   id: string;
   usuario_id?: string;
+  ano_letivo?: number;
+  anos_matriculados?: number[];
+  matriculas?: ResponsavelMatriculaItem[];
   nome: string;
   genero?: string | null;
   data_nascimento?: string | null;

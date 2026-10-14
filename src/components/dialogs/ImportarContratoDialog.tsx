@@ -189,11 +189,14 @@ export function ImportarContratoDialog({
       return;
     }
 
+    const targetAno = rawPass?.ano_letivo || currentSelectedPassageiro?.ano_letivo;
+
     try {
       await importarMutation.mutateAsync({
         passageiroId: targetId,
         arquivoBase64: base64Content,
         nomeArquivo: selectedFile.name,
+        ano: targetAno ? Number(targetAno) : undefined,
       });
       onSuccess?.();
       handleClose();

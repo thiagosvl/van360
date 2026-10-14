@@ -105,10 +105,9 @@ export function useRelatoriosViewModel() {
     { enabled: !!usuarioId && shouldFetchSaidas && can("gastos.visualizar") }
   );
 
-  // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
   const passageirosFilters = useMemo(
-    () => ({ usuarioId, veiculo: veiculoId }),
-    [usuarioId, veiculoId]
+    () => ({ usuarioId, veiculo: veiculoId, ano_letivo: ano }),
+    [usuarioId, veiculoId, ano]
   );
 
   const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(

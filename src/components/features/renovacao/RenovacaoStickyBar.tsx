@@ -29,7 +29,6 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
   return (
     <div className="fixed bottom-[calc(4.75rem+var(--safe-area-bottom,0px))] md:bottom-6 left-0 right-0 md:left-72 z-40 flex justify-center px-3 sm:px-6 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
       <div className="pointer-events-auto w-full max-w-xl md:max-w-3xl lg:max-w-4xl bg-white/95 backdrop-blur-md border border-[#e5e5e5] shadow-xl rounded-[24px] p-3 sm:px-5 sm:py-3.5">
-        {/* Mobile view (< sm) */}
         <div className="flex sm:hidden flex-col gap-2.5">
           <div className="flex items-center justify-between px-0.5">
             <div className="flex items-center gap-2 shrink-0">
@@ -117,7 +116,6 @@ export const RenovacaoStickyBar = memo(function RenovacaoStickyBar({
           </div>
         </div>
 
-        {/* Tablet and Desktop view (>= sm) */}
         <div className="hidden sm:flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5] flex items-center justify-center text-xs shrink-0">

@@ -8,6 +8,7 @@ import {
   useCreateVeiculo,
   useCreateContrato,
   useDeletePassageiro,
+  useDeletePassageiroMatricula,
   useDeleteContrato,
   useSubstituirContrato,
   useEscolas,
@@ -17,6 +18,7 @@ import {
   useToggleAtivoPassageiro,
   useVeiculos,
 } from "@/hooks";
+import { DeletePassageiroOptionsContent, DeletePassageiroScope } from "@/components/features/passageiro/DeletePassageiroOptionsContent";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
@@ -31,7 +33,7 @@ import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "../business/usePermissions";
 import { getNowBR } from "@/utils/dateUtils";
@@ -122,10 +124,13 @@ export function usePassageirosViewModel() {
   const createEscola = useCreateEscola();
   const createVeiculo = useCreateVeiculo();
   const deletePassageiro = useDeletePassageiro();
+  const deletePassageiroMatricula = useDeletePassageiroMatricula();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
+  const deleteScopeRef = useRef<DeletePassageiroScope>("matricula");
 
   const isActionLoading =
     deletePassageiro.isPending ||
+    deletePassageiroMatricula.isPending ||
     toggleAtivoPassageiro.isPending;
 
   useEffect(() => {
@@ -294,6 +299,45 @@ export function usePassageirosViewModel() {
 
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
+      const targetAno = passageiro.ano_letivo ? Number(passageiro.ano_letivo) : selectedAnoLetivo;
+      const anosMatriculados =
+        passageiro.anos_matriculados && passageiro.anos_matriculados.length > 0
+          ? passageiro.anos_matriculados
+          : [targetAno];
+
+      if (anosMatriculados.length > 1) {
+        deleteScopeRef.current = "matricula";
+        openConfirmationDialog({
+          title: "Excluir matrícula ou aluno?",
+          description: createElement(DeletePassageiroOptionsContent, {
+            anoLetivo: targetAno,
+            anosMatriculados,
+            defaultScope: "matricula",
+            onScopeChange: (scope: DeletePassageiroScope) => {
+              deleteScopeRef.current = scope;
+            },
+          }),
+          confirmText: "Confirmar Exclusão",
+          variant: "destructive",
+          onConfirm: async () => {
+            try {
+              if (deleteScopeRef.current === "matricula") {
+                await deletePassageiroMatricula.mutateAsync({
+                  passageiroId: passageiro.id,
+                  anoLetivo: targetAno,
+                });
+              } else {
+                await deletePassageiro.mutateAsync(passageiro.id);
+              }
+              safeCloseDialog(closeConfirmationDialog);
+            } catch {
+              safeCloseDialog(closeConfirmationDialog);
+            }
+          },
+        });
+        return;
+      }
+
       openConfirmationDialog({
         title: "Excluir aluno?",
         description:
@@ -310,12 +354,13 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
+    [deletePassageiro, deletePassageiroMatricula, selectedAnoLetivo, closeConfirmationDialog, openConfirmationDialog],
   );
 
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
       const action = passageiro.ativo ? "desativar" : "ativar";
+      const targetAno = passageiro.ano_letivo ? Number(passageiro.ano_letivo) : selectedAnoLetivo;
 
       openConfirmationDialog({
         title: action === "ativar" ? "Reativar aluno?" : "Desativar aluno?",
@@ -326,7 +371,11 @@ export function usePassageirosViewModel() {
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
           try {
-            await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
+            await toggleAtivoPassageiro.mutateAsync({
+              id: passageiro.id,
+              novoStatus: !passageiro.ativo,
+              anoLetivo: targetAno,
+            });
             safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
@@ -334,17 +383,20 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro],
+    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro, selectedAnoLetivo],
   );
 
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
-        editingPassageiro: passageiro,
+        editingPassageiro: {
+          ...passageiro,
+          ano_letivo: passageiro.ano_letivo || selectedAnoLetivo,
+        },
       });
     },
-    [openPassageiroFormDialog],
+    [openPassageiroFormDialog, selectedAnoLetivo],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -472,9 +524,10 @@ export function usePassageirosViewModel() {
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {
-      navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      const targetAno = passageiro.ano_letivo ? Number(passageiro.ano_letivo) : selectedAnoLetivo;
+      navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id)}?ano=${targetAno}`);
     },
-    [navigate],
+    [navigate, selectedAnoLetivo],
   );
 
 
@@ -485,13 +538,13 @@ export function usePassageirosViewModel() {
         await createContrato.mutateAsync({
           passageiroId: passageiro.id,
           valorMensal: passageiro.valor_cobranca,
-          diaVencimento: passageiro.dia_vencimento
+          diaVencimento: passageiro.dia_vencimento,
+          ano: passageiro.ano_letivo ? Number(passageiro.ano_letivo) : selectedAnoLetivo,
         });
       } catch (error) {
-        // Erro já tratado no hook
       }
     },
-    [createContrato]
+    [createContrato, selectedAnoLetivo]
   );
 
   const handleExcluirContrato = useCallback(

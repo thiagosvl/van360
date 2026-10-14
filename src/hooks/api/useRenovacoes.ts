@@ -246,10 +246,10 @@ export interface RenovacaoContratoConfigResponse {
   ano: number;
   customizado_para_ano: boolean;
   usar_contratos: boolean;
-  multa_atraso: { valor: number; tipo: any } | null;
-  juros_atraso: { valor: number; tipo: any } | null;
-  multa_rescisao: { valor: number; tipo: any } | null;
-  secoes: any[] | null;
+  multa_atraso: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  juros_atraso: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  multa_rescisao: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  secoes: import("@/constants/defaults").ContractSection[] | null;
   clausulas: string[] | null;
   tem_assinatura_digital: boolean;
   logo_url: string | null;
@@ -258,10 +258,10 @@ export interface RenovacaoContratoConfigResponse {
 export interface SalvarRenovacaoContratoConfigPayload {
   ano: number;
   usar_contratos: boolean;
-  multa_atraso?: { valor: number; tipo: any } | null;
-  juros_atraso?: { valor: number; tipo: any } | null;
-  multa_rescisao?: { valor: number; tipo: any } | null;
-  secoes?: any[] | null;
+  multa_atraso?: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  juros_atraso?: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  multa_rescisao?: { valor: number; tipo: import("@/types/enums").ContractMultaTipo | string } | null;
+  secoes?: import("@/constants/defaults").ContractSection[] | null;
   clausulas?: string[] | null;
 }
 

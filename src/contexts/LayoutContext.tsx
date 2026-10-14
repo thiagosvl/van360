@@ -254,6 +254,14 @@ export interface OpenConfirmarDisparoWabaDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenEditarDadosPublicosRenovacaoDialogProps {
+  token: string;
+  responsavel?: import("@/types/renovacao").PublicRenovacaoResponse["responsavel"];
+  passageiro: import("@/types/renovacao").PublicRenovacaoResponse["passageiro"];
+  condicoes: import("@/types/renovacao").PublicRenovacaoResponse["condicoes"];
+  onSuccess?: () => void;
+}
+
 export interface OpenRegistrarAusenciaProps {
   lockedRotaId?: string;
   lockedPassageiro?: { id: string; nome: string };
@@ -516,6 +524,8 @@ export interface LayoutContextType {
   closeEditarReservaDialog: () => void;
   openConfirmarDisparoWabaDialog: (props: OpenConfirmarDisparoWabaDialogProps) => void;
   closeConfirmarDisparoWabaDialog: () => void;
+  openEditarDadosPublicosRenovacaoDialog: (props: OpenEditarDadosPublicosRenovacaoDialogProps) => void;
+  closeEditarDadosPublicosRenovacaoDialog: () => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

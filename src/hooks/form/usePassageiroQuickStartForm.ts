@@ -118,10 +118,10 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
         veiculoId = veiculos[0].id;
       }
 
-      const mockPassenger: any = mockGenerator.passenger({
+      const mockPassenger = mockGenerator.passenger({
         escola_id: escolaId,
         veiculo_id: veiculoId,
-      });
+      }) as { nome: string; escola_id?: string; veiculo_id?: string };
 
       form.setValue("nome", mockPassenger.nome, { shouldValidate: true });
       if (mockPassenger.escola_id) {

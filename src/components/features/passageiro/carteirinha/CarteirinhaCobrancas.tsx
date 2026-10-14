@@ -206,14 +206,15 @@ export const CarteirinhaCobrancas = ({
   }, [cobrancas, passageiro, selectedYear, currentYear, currentMonth, profile?.created_at]);
 
   const availableRetroMonths = useMemo(() => {
+    if (selectedYear > currentYear) return [];
     return getAvailableRetroactiveMonths({
       passageiro,
       cobrancas,
       driverCreatedAt: profile?.created_at,
-      currentMonth,
-      currentYear,
+      currentMonth: selectedYear < currentYear ? 13 : currentMonth,
+      currentYear: selectedYear,
     });
-  }, [passageiro, cobrancas, profile?.created_at, currentMonth, currentYear]);
+  }, [passageiro, cobrancas, profile?.created_at, currentMonth, currentYear, selectedYear]);
 
   const hasRetroactiveMonths = availableRetroMonths.length > 0;
   const isIncomplete = isPassageiroIncompleto(passageiro);

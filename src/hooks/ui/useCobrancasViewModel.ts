@@ -278,6 +278,7 @@ export function useCobrancasViewModel() {
               valor: Number(cobranca.valor),
               data_vencimento: cobranca.data_vencimento,
               status: CobrancaStatus.CANCELADA,
+              ano_letivo: cobranca.ano_letivo || Number(cobranca.ano),
             });
           } else {
             await deleteCobranca.mutateAsync(cobranca.id);
@@ -312,13 +313,13 @@ export function useCobrancasViewModel() {
   const navigateToPassageiro = useCallback(
     (passageiroId: string) => {
       navigate(
-        ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
+        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
           ":passageiro_id",
           passageiroId
-        )
+        )}?ano=${anoFilter}`
       );
     },
-    [navigate]
+    [navigate, anoFilter]
   );
 
   const pullToRefreshReload = useCallback(async () => {

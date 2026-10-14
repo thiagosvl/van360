@@ -42,7 +42,98 @@ export function useResponsavelCarteirinhaViewModel() {
   };
 
   const passageiroId = passageiroSelecionado?.id || null;
-  const { data: carteirinha, isLoading, error, refetch } = useCarteirinhaQuery(passageiroId, token);
+  const { data: rawCarteirinha, isLoading, error, refetch } = useCarteirinhaQuery(passageiroId, token);
+
+  const currentYear = new Date().getFullYear();
+  const urlAno = Number(searchParams.get("ano"));
+
+  const anosDisponiveis = (() => {
+    const anos = new Set<number>();
+    if (Array.isArray(rawCarteirinha?.anos_matriculados) && rawCarteirinha.anos_matriculados.length > 0) {
+      rawCarteirinha.anos_matriculados.forEach((a) => anos.add(Number(a)));
+    } else if (rawCarteirinha?.ano_letivo) {
+      anos.add(Number(rawCarteirinha.ano_letivo));
+    } else {
+      anos.add(currentYear);
+    }
+    return Array.from(anos).sort((a, b) => a - b);
+  })();
+
+  const [selectedYear, setSelectedYearState] = useState<number>(() => {
+    if (urlAno && !Number.isNaN(urlAno) && urlAno >= 2020 && urlAno <= 2100) {
+      return urlAno;
+    }
+    return currentYear;
+  });
+
+  useEffect(() => {
+    if (!rawCarteirinha) return;
+    if (urlAno && anosDisponiveis.includes(urlAno)) {
+      if (selectedYear !== urlAno) setSelectedYearState(urlAno);
+      return;
+    }
+    if (!anosDisponiveis.includes(selectedYear)) {
+      const target = anosDisponiveis.includes(currentYear)
+        ? currentYear
+        : anosDisponiveis[anosDisponiveis.length - 1] || currentYear;
+      setSelectedYearState(target);
+    }
+  }, [rawCarteirinha, anosDisponiveis, urlAno, selectedYear, currentYear]);
+
+  const setSelectedYear = (ano: number) => {
+    setSelectedYearState(ano);
+    setSearchParams((prev) => {
+      const updated = new URLSearchParams(prev);
+      updated.set("ano", String(ano));
+      return updated;
+    }, { replace: true });
+  };
+
+  const carteirinha = (() => {
+    if (!rawCarteirinha) return undefined;
+    const mat = (rawCarteirinha.matriculas || []).find((m) => Number(m.ano_letivo) === Number(selectedYear));
+    const cobrancasAno = (rawCarteirinha.cobrancas || []).filter(
+      (c) => Number(c.ano_letivo ?? c.ano) === Number(selectedYear)
+    );
+    const recibosAno = (rawCarteirinha.recibos_anuais || []).filter(
+      (r) => Number(r.ano) === Number(selectedYear)
+    );
+
+    if (!mat) {
+      return {
+        ...rawCarteirinha,
+        ano_letivo: selectedYear,
+        cobrancas: cobrancasAno,
+        recibos_anuais: recibosAno,
+      };
+    }
+
+    return {
+      ...rawCarteirinha,
+      ano_letivo: mat.ano_letivo,
+      ativo: mat.ativo,
+      isento: mat.isento ?? rawCarteirinha.isento,
+      escola_nome: mat.escola_nome ?? rawCarteirinha.escola_nome,
+      veiculo_placa: mat.veiculo_placa ?? rawCarteirinha.veiculo_placa,
+      veiculo_modelo: mat.veiculo_modelo ?? rawCarteirinha.veiculo_modelo,
+      periodo: mat.periodo ?? rawCarteirinha.periodo,
+      modalidade: mat.modalidade ?? rawCarteirinha.modalidade,
+      turma: mat.turma ?? rawCarteirinha.turma,
+      sala: mat.sala ?? rawCarteirinha.sala,
+      nome_professor: mat.nome_professor ?? rawCarteirinha.nome_professor,
+      horario_entrada: mat.horario_entrada ?? rawCarteirinha.horario_entrada,
+      horario_saida: mat.horario_saida ?? rawCarteirinha.horario_saida,
+      valor_cobranca: mat.valor_cobranca ?? rawCarteirinha.valor_cobranca,
+      dia_vencimento: mat.dia_vencimento ?? rawCarteirinha.dia_vencimento,
+      data_inicio_transporte: mat.data_inicio_transporte ?? rawCarteirinha.data_inicio_transporte,
+      data_fim_transporte: mat.data_fim_transporte ?? rawCarteirinha.data_fim_transporte,
+      data_inicio_cobranca: mat.data_inicio_cobranca ?? rawCarteirinha.data_inicio_cobranca,
+      data_fim_cobranca: mat.data_fim_cobranca ?? rawCarteirinha.data_fim_cobranca,
+      contrato: mat.contrato !== undefined ? mat.contrato : rawCarteirinha.contrato,
+      cobrancas: cobrancasAno,
+      recibos_anuais: recibosAno,
+    };
+  })();
 
   const handleLogout = () => {
     logout();
@@ -106,6 +197,9 @@ export function useResponsavelCarteirinhaViewModel() {
     passageiroSelecionado,
     carteirinha,
     responsavelLogado,
+    selectedYear,
+    setSelectedYear,
+    anosDisponiveis,
     isLoading,
     error,
     activeTab,

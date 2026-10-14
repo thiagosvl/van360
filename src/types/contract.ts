@@ -52,6 +52,7 @@ export interface CreateContratoDTO {
   dataFim?: string;
   modalidade?: string;
   notificarResponsavel?: boolean;
+  ano?: number;
 }
 
 export interface ReplaceContratoDTO {
@@ -63,6 +64,7 @@ export interface ImportContratoDTO {
   passageiroId: string;
   arquivoBase64: string;
   nomeArquivo: string;
+  ano?: number;
 }
 
 export interface ContratoPagination {

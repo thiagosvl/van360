@@ -29,8 +29,6 @@ export type PermissionKey =
   | "rotas.excluir"
   | "rotas.iniciar_encerrar"
   | "rotas.executar_paradas"
-
-  // Renovação Anual
   | "renovacoes.gerenciar"
 
   // Escolas & Aniversários

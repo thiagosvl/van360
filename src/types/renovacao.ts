@@ -32,6 +32,7 @@ export interface RenovacaoPassageiroItem {
   periodo_atual?: string | null;
   modalidade_atual?: string | null;
   turma_atual?: string | null;
+  sala_atual?: string | null;
   nome_professor_atual?: string | null;
   veiculo_id_atual?: string | null;
   isento_atual?: boolean;
@@ -58,6 +59,7 @@ export interface RenovacaoPassageiroItem {
   novo_periodo?: string | null;
   nova_modalidade?: string | null;
   nova_turma?: string | null;
+  nova_sala?: string | null;
   novo_nome_professor?: string | null;
   novo_veiculo_id?: string | null;
   nova_data_inicio_transporte?: string | null;
@@ -100,6 +102,7 @@ export interface UpdateRenovacaoPayload {
   novo_periodo?: string | null;
   nova_modalidade?: string | null;
   nova_turma?: string | null;
+  nova_sala?: string | null;
   novo_nome_professor?: string | null;
   nova_data_inicio_transporte?: string;
   nova_data_fim_transporte?: string;
@@ -165,6 +168,7 @@ export interface PublicRenovacaoResponse {
     periodo: PublicRenovacaoConditionItem<string | null>;
     modalidade: PublicRenovacaoConditionItem<string | null>;
     turma?: PublicRenovacaoConditionItem<string | null>;
+    sala?: PublicRenovacaoConditionItem<string | null>;
     nome_professor?: PublicRenovacaoConditionItem<string | null>;
     data_inicio_transporte?: string | null;
     data_fim_transporte?: string | null;

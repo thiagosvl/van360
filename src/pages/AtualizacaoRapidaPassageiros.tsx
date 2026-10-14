@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { PERMISSIONS } from "@/config/permissions";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 
 export default function AtualizacaoRapidaPassageiros() {
   const { can } = usePermissions();
@@ -36,6 +37,8 @@ export default function AtualizacaoRapidaPassageiros() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    selectedAnoLetivo,
+    setSelectedAnoLetivo,
     apenasSemValor,
     setApenasSemValor,
     totalSemValor,
@@ -64,6 +67,7 @@ export default function AtualizacaoRapidaPassageiros() {
   const hasActiveDropdownFilters = activeDropdownCount > 0;
 
   const handleBack = () => {
+    const dest = `/alunos?ano=${selectedAnoLetivo}`;
     if (business.dirtyCount > 0) {
       openConfirmationDialog({
         title: "Descartar alterações?",
@@ -73,14 +77,14 @@ export default function AtualizacaoRapidaPassageiros() {
         variant: "destructive",
         onConfirm: () => {
           safeCloseDialog(closeConfirmationDialog);
-          navigate("/alunos");
+          navigate(dest);
         },
         onCancel: () => {
           safeCloseDialog(closeConfirmationDialog);
         },
       });
     } else {
-      navigate("/alunos");
+      navigate(dest);
     }
   };
 
@@ -97,11 +101,18 @@ export default function AtualizacaoRapidaPassageiros() {
           <span>Voltar</span>
         </Button>
 
-        <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
-          {isLoading
-            ? "Carregando..."
-            : `${passageiros.length} DE ${totalOriginal} ${totalOriginal === 1 ? "ALUNO" : "ALUNOS"}`}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
+            {isLoading
+              ? "Carregando..."
+              : `${passageiros.length} DE ${totalOriginal} ${totalOriginal === 1 ? "ALUNO" : "ALUNOS"}`}
+          </span>
+          <AnoLetivoSelect
+            ano={selectedAnoLetivo}
+            onChangeAno={setSelectedAnoLetivo}
+            className="h-9"
+          />
+        </div>
       </div>
 
       <div className="space-y-3">

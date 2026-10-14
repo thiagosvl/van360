@@ -74,27 +74,44 @@ export function shouldGeneratePassengerProjection({
   targetMonth,
   targetYear,
 }: ProjectionContextParams): boolean {
-  // 1. Deve estar ativo e NÃO ser isento
   if (passageiro.ativo === false || passageiro.isento === true) {
     return false;
   }
 
-  // 2. Validação do Mês/Ano de Início da Cobrança
-  const inicioStr = passageiro.data_inicio_cobranca || passageiro.created_at || driverCreatedAt;
-  const inicio = parseMonthYearFromDateString(inicioStr);
-  if (inicio) {
-    if (targetYear < inicio.year || (targetYear === inicio.year && targetMonth < inicio.month)) {
+  const explicitInicio = parseMonthYearFromDateString(passageiro.data_inicio_cobranca);
+  const fallbackInicio = parseMonthYearFromDateString(passageiro.created_at || driverCreatedAt);
+  const anoLetivoNum = passageiro.ano_letivo ? Number(passageiro.ano_letivo) : null;
+
+  let startYear: number | null = null;
+  let startMonth = 1;
+
+  if (explicitInicio) {
+    startYear = explicitInicio.year;
+    startMonth = explicitInicio.month;
+  } else if (anoLetivoNum && (!fallbackInicio || anoLetivoNum > fallbackInicio.year)) {
+    startYear = anoLetivoNum;
+    startMonth = 1;
+  } else if (fallbackInicio) {
+    startYear = fallbackInicio.year;
+    startMonth = fallbackInicio.month;
+  }
+
+  if (startYear !== null) {
+    if (targetYear < startYear || (targetYear === startYear && targetMonth < startMonth)) {
       return false;
     }
   }
 
-  // 3. Validação do Mês/Ano de Término da Cobrança
   if (passageiro.data_fim_cobranca) {
     const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
     if (fim) {
       if (targetYear > fim.year || (targetYear === fim.year && targetMonth > fim.month)) {
         return false;
       }
+    }
+  } else if (anoLetivoNum && !isNaN(anoLetivoNum)) {
+    if (targetYear > anoLetivoNum) {
+      return false;
     }
   }
 

@@ -97,7 +97,7 @@ export function EditarDadosPublicosRenovacaoDialog({
       });
 
       setTurma(condicoes.turma?.novo || passageiro.turma || "");
-      setSala(passageiro.sala || "");
+      setSala(condicoes.sala?.novo || passageiro.sala || "");
       setNomeProfessor(condicoes.nome_professor?.novo || passageiro.nome_professor || "");
       setObservacoes(passageiro.observacoes || "");
     }

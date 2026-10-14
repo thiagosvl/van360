@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useUpdateRenovacao } from "@/hooks/api/useRenovacoes";
 import { useEscolasWithFilters, useProfile, useVeiculosWithFilters } from "@/hooks";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
+import { RenovacaoStatus } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { moneyMask, moneyToNumber, dateMask } from "@/utils/masks";
@@ -21,6 +23,7 @@ import {
   Compass,
   User,
   Sparkles,
+  DoorOpen,
 } from "lucide-react";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { modalidades, periodos, formatCurrency } from "@/utils/formatters";
@@ -61,6 +64,7 @@ export function EditarReservaDialog({
   const [novoPeriodo, setNovoPeriodo] = useState("");
   const [novaModalidade, setNovaModalidade] = useState("ida_volta");
   const [novaTurma, setNovaTurma] = useState("");
+  const [novaSala, setNovaSala] = useState("");
   const [novoNomeProfessor, setNovoNomeProfessor] = useState("");
   const [novoVeiculoId, setNovoVeiculoId] = useState("");
   const [dataInicioTransporte, setDataInicioTransporte] = useState<string>(`01/02/${anoDestino}`);
@@ -84,6 +88,7 @@ export function EditarReservaDialog({
 
       setNovaModalidade(passageiro.nova_modalidade || passageiro.modalidade_atual || "ida_volta");
       setNovaTurma(passageiro.nova_turma || passageiro.turma_atual || "");
+      setNovaSala(passageiro.nova_sala || passageiro.sala_atual || "");
       setNovoNomeProfessor(passageiro.novo_nome_professor || passageiro.nome_professor_atual || "");
 
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
@@ -136,6 +141,7 @@ export function EditarReservaDialog({
           novo_periodo: novoPeriodo || null,
           nova_modalidade: novaModalidade || null,
           nova_turma: novaTurma || null,
+          nova_sala: novaSala || null,
           novo_nome_professor: novoNomeProfessor || null,
           novo_veiculo_id: novoVeiculoId || null,
           nova_data_inicio_transporte: dataInicioTransporte ? convertDateBrToISO(dataInicioTransporte) : undefined,
@@ -178,6 +184,16 @@ export function EditarReservaDialog({
               {passageiro?.nome}
             </span>
           </div>
+
+          {passageiro?.status === RenovacaoStatus.CONFIRMADO &&
+            Boolean(passageiro?.contrato_id || profile?.config_contrato?.usar_contratos) && (
+              <Banner
+                variant="warning"
+                title="Aluno Confirmado com Fluxo de Contrato"
+                description={`Caso altere valor, vencimento, datas, escola, período ou modalidade, o contrato e a matrícula de ${anoDestino} serão reiniciados e a renovação voltará para Pendente no mesmo link para nova confirmação e assinatura.`}
+                className="rounded-[18px]"
+              />
+            )}
 
           {!isIsentoOriginal && (
             <div className="space-y-4">
@@ -483,6 +499,21 @@ export function EditarReservaDialog({
               </div>
 
               <div className="space-y-1.5">
+                <Label className="text-[#0a0a0a] font-medium text-xs">
+                  Sala
+                </Label>
+                <div className="relative">
+                  <DoorOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                  <Input
+                    value={novaSala}
+                    onChange={(e) => setNovaSala(e.target.value)}
+                    placeholder="Ex: Sala 12"
+                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
                   Nome do Professor
                 </Label>

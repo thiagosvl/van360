@@ -30,6 +30,21 @@ export function useAtualizacaoRapidaViewModel() {
   const initialSemValor = searchParams.get("semValor") === "true";
   const [apenasSemValor, setApenasSemValorState] = useState<boolean>(initialSemValor);
 
+  const currentYear = new Date().getFullYear();
+  const [selectedAnoLetivo, setSelectedAnoLetivo] = useState<number>(() => {
+    const pAno = searchParams.get("ano");
+    return pAno ? Number(pAno) : currentYear;
+  });
+
+  const handleAnoLetivoChange = useCallback((novoAno: number) => {
+    setSelectedAnoLetivo(novoAno);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("ano", String(novoAno));
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   const setApenasSemValor = useCallback((val: boolean) => {
     setApenasSemValorState(val);
     setSearchParams((prev) => {
@@ -81,6 +96,7 @@ export function useAtualizacaoRapidaViewModel() {
         limit: 500,
         page: 1,
         status: "ativo",
+        ano_letivo: selectedAnoLetivo,
       });
       const list = Array.isArray(response) ? response : (response?.list || []);
       const activeOnly = list.filter((p) => p.ativo !== false);
@@ -92,11 +108,11 @@ export function useAtualizacaoRapidaViewModel() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, business]);
+  }, [user?.id, business, selectedAnoLetivo]);
 
   useEffect(() => {
     loadPassageiros();
-  }, [user?.id]);
+  }, [user?.id, selectedAnoLetivo]);
 
   const passageirosMap = useMemo(() => {
     const map = new Map<string, Passageiro>();
@@ -216,7 +232,10 @@ export function useAtualizacaoRapidaViewModel() {
     setIsSaving(true);
     setIsGlobalLoading(true, "Salvando alterações nos alunos...");
     try {
-      const itemsToUpdate = business.changedItemsList;
+      const itemsToUpdate = business.changedItemsList.map((item) => ({
+        ...item,
+        ano_letivo: selectedAnoLetivo,
+      }));
       await passageiroApi.updateBatch(itemsToUpdate);
 
       setPassageiros((prev) =>
@@ -246,7 +265,7 @@ export function useAtualizacaoRapidaViewModel() {
       setIsSaving(false);
       setIsGlobalLoading(false);
     }
-  }, [business, isSaving, queryClient, setIsGlobalLoading]);
+  }, [business, isSaving, queryClient, setIsGlobalLoading, selectedAnoLetivo]);
 
   return {
     passageiros: filteredPassageiros,
@@ -262,6 +281,8 @@ export function useAtualizacaoRapidaViewModel() {
     setSelectedVeiculo,
     selectedPeriodo,
     setSelectedPeriodo,
+    selectedAnoLetivo,
+    setSelectedAnoLetivo: handleAnoLetivoChange,
     apenasSemValor,
     setApenasSemValor,
     totalSemValor,

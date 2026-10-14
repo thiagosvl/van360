@@ -73,7 +73,7 @@ export function DeletePassageiroOptionsContent({
           className={cn(
             "w-full text-left p-3.5 rounded-[18px] border transition-all flex items-start gap-3 cursor-pointer",
             selected === "aluno"
-              ? "bg-rose-50/70 border-rose-400 ring-1 ring-rose-400/30"
+              ? "bg-[#e7000b]/[0.08] border-[#e7000b]/30 ring-1 ring-[#e7000b]/20"
               : "bg-[#fafafa] border-[#e5e5e5] hover:border-[#737373]/40"
           )}
         >
@@ -81,7 +81,7 @@ export function DeletePassageiroOptionsContent({
             className={cn(
               "w-8 h-8 rounded-[12px] flex items-center justify-center shrink-0 mt-0.5",
               selected === "aluno"
-                ? "bg-rose-500/15 text-rose-700"
+                ? "bg-[#e7000b]/15 text-[#e7000b]"
                 : "bg-white text-[#737373] border border-[#e5e5e5]"
             )}
           >

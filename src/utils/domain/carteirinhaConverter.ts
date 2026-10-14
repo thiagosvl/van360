@@ -22,6 +22,7 @@ export function mapearCarteirinhaParaPassageiro(carteirinha: ResponsavelCarteiri
     dia_vencimento: carteirinha.dia_vencimento ?? 1,
     data_inicio_cobranca: carteirinha.data_inicio_cobranca || undefined,
     data_fim_cobranca: carteirinha.data_fim_cobranca || undefined,
+    ano_letivo: carteirinha.ano_letivo || undefined,
     created_at: carteirinha.created_at || undefined,
     responsavel_principal: carteirinha.responsavel_principal || undefined,
     responsavel_logado_id: carteirinha.responsavel_logado_id || undefined,

@@ -8,6 +8,7 @@ import {
   Car,
 } from "lucide-react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -21,6 +22,7 @@ import { RenovacaoReajusteTipo } from "@/types/enums";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { moneyMask, moneyToNumber, dateMask } from "@/utils/masks";
 import { formatCurrency } from "@/utils/formatters";
+import { convertDateBrToISO } from "@/utils/formatters/date";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -134,42 +136,58 @@ export function ReajusteLoteDialog({
       return;
     }
 
-    if (acaoSelecionada === "mensalidade") {
-      let valorNum = 0;
-      if (tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL) {
-        valorNum = parseFloat(valorInput.replace(",", "."));
-      } else {
-        valorNum = moneyToNumber(valorInput);
+    try {
+      if (acaoSelecionada === "mensalidade") {
+        let valorNum = 0;
+        if (tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL) {
+          valorNum = parseFloat(valorInput.replace(",", "."));
+        } else {
+          valorNum = moneyToNumber(valorInput);
+        }
+
+        if (isNaN(valorNum) || valorNum <= 0) {
+          toast.error("Informe um valor ou percentual válido maior que zero.");
+          return;
+        }
+
+        await reajusteMutation.mutateAsync({
+          ano_destino: anoDestino,
+          escola_ids: selectedEscolaIds,
+          tipo_reajuste: tipoReajuste,
+          valor_reajuste: valorNum,
+        });
+      } else if (acaoSelecionada === "transporte") {
+        const dtIni = convertDateBrToISO(dataInicioTransporte);
+        const dtFim = convertDateBrToISO(dataFimTransporte);
+        if (!dtIni || !dtFim) {
+          toast.error("Informe datas válidas para o início e fim do transporte.");
+          return;
+        }
+        await reajusteMutation.mutateAsync({
+          ano_destino: anoDestino,
+          escola_ids: selectedEscolaIds,
+          data_inicio_transporte: dtIni,
+          data_fim_transporte: dtFim,
+        });
+      } else if (acaoSelecionada === "cobranca") {
+        const dtIni = convertDateBrToISO(dataInicioCobranca);
+        const dtFim = convertDateBrToISO(dataFimCobranca);
+        if (!dtIni || !dtFim) {
+          toast.error("Informe datas válidas para o início e fim da cobrança.");
+          return;
+        }
+        await reajusteMutation.mutateAsync({
+          ano_destino: anoDestino,
+          escola_ids: selectedEscolaIds,
+          data_inicio_cobranca: dtIni,
+          data_fim_cobranca: dtFim,
+        });
       }
 
-      if (isNaN(valorNum) || valorNum <= 0) {
-        toast.error("Informe um valor ou percentual válido maior que zero.");
-        return;
-      }
-
-      await reajusteMutation.mutateAsync({
-        ano_destino: anoDestino,
-        escola_ids: selectedEscolaIds,
-        tipo_reajuste: tipoReajuste,
-        valor_reajuste: valorNum,
-      });
-    } else if (acaoSelecionada === "transporte") {
-      await reajusteMutation.mutateAsync({
-        ano_destino: anoDestino,
-        escola_ids: selectedEscolaIds,
-        data_inicio_transporte: dataInicioTransporte,
-        data_fim_transporte: dataFimTransporte,
-      });
-    } else if (acaoSelecionada === "cobranca") {
-      await reajusteMutation.mutateAsync({
-        ano_destino: anoDestino,
-        escola_ids: selectedEscolaIds,
-        data_inicio_cobranca: dataInicioCobranca,
-        data_fim_cobranca: dataFimCobranca,
-      });
+      safeCloseDialog(onClose);
+    } catch {
+      // O erro já é exibido pelo hook da mutação
     }
-
-    safeCloseDialog(onClose);
   };
 
   return (
@@ -474,12 +492,11 @@ export function ReajusteLoteDialog({
             </div>
           )}
 
-          <div className="rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-3.5 space-y-1">
-            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block">
-              O que vai acontecer?
-            </span>
-            <p className="text-xs text-[#0a0a0a] leading-relaxed">
-              {selectedEscolaIds.length === 0
+          <Banner
+            variant="neutral"
+            title="O que vai acontecer?"
+            description={
+              selectedEscolaIds.length === 0
                 ? "Nenhuma escola selecionada. Selecione ao menos uma escola acima."
                 : acaoSelecionada === "mensalidade"
                 ? valorInput.trim()
@@ -491,9 +508,10 @@ export function ReajusteLoteDialog({
                   : `O valor da parcela será atualizado para os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
                 : acaoSelecionada === "transporte"
                 ? `O período de transporte (${dataInicioTransporte} a ${dataFimTransporte}) será atualizado para ${getEscolaDisplayText()}.`
-                : `O período de cobrança (${dataInicioCobranca} a ${dataFimCobranca}) será atualizado para ${getEscolaDisplayText()}.`}
-            </p>
-          </div>
+                : `O período de cobrança (${dataInicioCobranca} a ${dataFimCobranca}) será atualizado para ${getEscolaDisplayText()}.`
+            }
+            className="rounded-[18px]"
+          />
         </BaseDialog.Body>
 
         <BaseDialog.Footer className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-[#e5e5e5]">

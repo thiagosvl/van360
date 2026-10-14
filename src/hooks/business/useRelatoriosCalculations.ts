@@ -399,61 +399,63 @@ export const useRelatoriosCalculations = ({
       return true;
     };
 
-    // Escolas
-    const totalPassageirosPorEscola = escolasList.reduce(
-      (acc: number, e) => acc + (e.passageiros_ativos_count || 0),
+    const hasPassageirosLoaded = passageirosList.length > 0;
+
+    const escolasComContagem = escolasList.map((e) => {
+      const vigentes = passageirosList.filter(
+        (p: Passageiro) => isPassageiroVigente(p) && String(p.escola_id) === String(e.id)
+      );
+      const count = hasPassageirosLoaded ? vigentes.length : (e.passageiros_ativos_count || 0);
+      const valor = vigentes.reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
+      return { escola: e, count, valor };
+    });
+
+    const totalPassageirosPorEscola = escolasComContagem.reduce(
+      (acc: number, item) => acc + item.count,
       0
     );
 
-    const escolas = escolasList
-      .filter((e) => (e.passageiros_ativos_count || 0) > 0)
-      .map((e) => {
-        const valor = passageirosList
-          .filter((p: Passageiro) => isPassageiroVigente(p) && String(p.escola_id) === String(e.id))
-          .reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
-
-        return {
-          nome: e.nome,
-          passageiros: e.passageiros_ativos_count || 0,
-          valor: valor,
-          percentual:
-            totalPassageirosPorEscola > 0
-              ? ((e.passageiros_ativos_count || 0) /
-                totalPassageirosPorEscola) *
-              100
-              : 0,
-        };
-      })
+    const escolas = escolasComContagem
+      .filter((item) => item.count > 0)
+      .map(({ escola: e, count, valor }) => ({
+        nome: e.nome,
+        passageiros: count,
+        valor,
+        percentual:
+          totalPassageirosPorEscola > 0
+            ? (count / totalPassageirosPorEscola) * 100
+            : 0,
+      }))
       .sort((a, b) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
-    // Veículos (Lista Operacional)
-    const totalPassageirosPorVeiculo = veiculosListFull.reduce(
-      (acc: number, v) => acc + (v.passageiros_ativos_count || 0),
+    const veiculosComContagem = veiculosListFull.map((v) => {
+      const vigentes = passageirosList.filter(
+        (p: Passageiro) => isPassageiroVigente(p) && String(p.veiculo_id) === String(v.id)
+      );
+      const count = hasPassageirosLoaded ? vigentes.length : (v.passageiros_ativos_count || 0);
+      const valor = vigentes.reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
+      return { veiculo: v, count, valor };
+    });
+
+    const totalPassageirosPorVeiculo = veiculosComContagem.reduce(
+      (acc: number, item) => acc + item.count,
       0
     );
 
-    const veiculos = veiculosListFull
-      .filter((v) => (v.passageiros_ativos_count || 0) > 0)
-      .map((v) => {
-        const valor = passageirosList
-          .filter((p: Passageiro) => isPassageiroVigente(p) && String(p.veiculo_id) === String(v.id))
-          .reduce((acc: number, p: Passageiro) => acc + Number(p.valor_cobranca || 0), 0);
-
-        return {
-          placa: formatarPlacaExibicao(v.placa),
-          passageiros: v.passageiros_ativos_count || 0,
-          valor: valor,
-          marca: v.marca,
-          modelo: v.modelo,
-          percentual:
-            totalPassageirosPorVeiculo > 0
-              ? ((v.passageiros_ativos_count || 0) /
-                totalPassageirosPorVeiculo) *
-              100
-              : 0,
-        };
-      })
+    const veiculos = veiculosComContagem
+      .filter((item) => item.count > 0)
+      .map(({ veiculo: v, count, valor }) => ({
+        placa: formatarPlacaExibicao(v.placa),
+        passageiros: count,
+        valor,
+        marca: v.marca,
+        modelo: v.modelo,
+        percentual:
+          totalPassageirosPorVeiculo > 0
+            ? (count / totalPassageirosPorVeiculo) * 100
+            : 0,
+      }))
       .sort((a, b) => b.passageiros - a.passageiros)
       .slice(0, 5);
 

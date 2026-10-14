@@ -31,6 +31,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
   const now = getNowBR();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
+  const targetYear = carteirinha.ano_letivo || currentYear;
 
   const displayCobrancas = useMemo(() => {
     const rawList = carteirinha.cobrancas || [];
@@ -38,58 +39,62 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
     if (!passageiroConvertido || carteirinha.isento) return list;
 
-    const startMonth = currentMonth;
-    const endMonth = 12;
-    const dbMonths = new Set(list.filter((c) => c.ano === currentYear).map((c) => c.mes));
+    if (targetYear >= currentYear) {
+      const startMonth = targetYear > currentYear ? 1 : currentMonth;
+      const endMonth = 12;
+      const dbMonths = new Set(list.filter((c) => c.ano === targetYear).map((c) => c.mes));
 
-    for (let m = startMonth; m <= endMonth; m++) {
-      if (!dbMonths.has(m)) {
-        const canGenerate = shouldGeneratePassengerProjection({
-          passageiro: passageiroConvertido,
-          targetMonth: m,
-          targetYear: currentYear,
-        });
-
-        if (canGenerate) {
-          const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, currentYear);
-          list.push({
-            id: `proj_resp_${carteirinha.id}_${m}_${currentYear}`,
-            mes: m,
-            ano: currentYear,
-            valor: Number(carteirinha.valor_cobranca || 0),
-            status: CobrancaStatus.PENDENTE,
-            data_vencimento: dataVenc,
-            isProjection: true,
+      for (let m = startMonth; m <= endMonth; m++) {
+        if (!dbMonths.has(m)) {
+          const canGenerate = shouldGeneratePassengerProjection({
+            passageiro: passageiroConvertido,
+            targetMonth: m,
+            targetYear,
           });
+
+          if (canGenerate) {
+            const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, targetYear);
+            list.push({
+              id: `proj_resp_${carteirinha.id}_${m}_${targetYear}`,
+              mes: m,
+              ano: targetYear,
+              ano_letivo: targetYear,
+              valor: Number(carteirinha.valor_cobranca || 0),
+              status: CobrancaStatus.PENDENTE,
+              data_vencimento: dataVenc,
+              isProjection: true,
+            });
+          }
         }
       }
-    }
 
-    if (passageiroConvertido.data_fim_cobranca) {
-      const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
-      if (fim && fim.year > currentYear) {
-        for (let y = currentYear + 1; y <= fim.year; y++) {
-          const maxM = y === fim.year ? fim.month : 12;
-          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
-          for (let m = 1; m <= maxM; m++) {
-            if (!dbMonthsFuture.has(m)) {
-              const canGenerate = shouldGeneratePassengerProjection({
-                passageiro: passageiroConvertido,
-                targetMonth: m,
-                targetYear: y,
-              });
-
-              if (canGenerate) {
-                const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
-                list.push({
-                  id: `proj_resp_${carteirinha.id}_${m}_${y}`,
-                  mes: m,
-                  ano: y,
-                  valor: Number(carteirinha.valor_cobranca || 0),
-                  status: CobrancaStatus.PENDENTE,
-                  data_vencimento: dataVenc,
-                  isProjection: true,
+      if (passageiroConvertido.data_fim_cobranca) {
+        const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
+        if (fim && fim.year > targetYear) {
+          for (let y = targetYear + 1; y <= fim.year; y++) {
+            const maxM = y === fim.year ? fim.month : 12;
+            const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
+            for (let m = 1; m <= maxM; m++) {
+              if (!dbMonthsFuture.has(m)) {
+                const canGenerate = shouldGeneratePassengerProjection({
+                  passageiro: passageiroConvertido,
+                  targetMonth: m,
+                  targetYear: y,
                 });
+
+                if (canGenerate) {
+                  const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
+                  list.push({
+                    id: `proj_resp_${carteirinha.id}_${m}_${y}`,
+                    mes: m,
+                    ano: y,
+                    ano_letivo: targetYear,
+                    valor: Number(carteirinha.valor_cobranca || 0),
+                    status: CobrancaStatus.PENDENTE,
+                    data_vencimento: dataVenc,
+                    isProjection: true,
+                  });
+                }
               }
             }
           }
@@ -101,7 +106,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
       if (a.ano !== b.ano) return a.ano - b.ano;
       return a.mes - b.mes;
     });
-  }, [carteirinha, passageiroConvertido, currentMonth, currentYear]);
+  }, [carteirinha, passageiroConvertido, currentMonth, currentYear, targetYear]);
 
   const [receiptDialogState, setReceiptDialogState] = useState<{
     open: boolean;

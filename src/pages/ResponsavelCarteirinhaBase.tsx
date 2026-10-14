@@ -29,6 +29,7 @@ import {
 } from "@/components/features/responsavel/carteirinha";
 import { useAppPermissions } from "@/hooks/business/useAppPermissions";
 import { PermissionRescueBanner } from "@/components/common/PermissionRescueBanner";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { Banner } from "@/components/ui/Banner";
 import { AppPermissionStatus, PermissionRescueType, UserType } from "@/types/enums";
 
@@ -46,6 +47,9 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     passageiros,
     carteirinha,
     responsavelLogado,
+    selectedYear,
+    setSelectedYear,
+    anosDisponiveis,
     isLoading,
     error,
     activeTab,
@@ -55,7 +59,6 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
     handleLogout,
     handleSwitchPassageiro,
     handleRefresh,
-    handleVerRecibo,
     refetch,
     refetchPassageiros
   } = useResponsavelCarteirinhaViewModel();
@@ -128,6 +131,14 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           </h1>
 
           <div className="flex items-center gap-2">
+            {anosDisponiveis.length > 0 && (
+              <AnoLetivoSelect
+                ano={selectedYear}
+                onChangeAno={setSelectedYear}
+                anosDisponiveis={anosDisponiveis}
+                className="h-9"
+              />
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

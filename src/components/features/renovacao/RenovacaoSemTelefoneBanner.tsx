@@ -21,7 +21,6 @@ export function RenovacaoSemTelefoneBanner({
 
   return (
     <>
-      {/* Mobile: Accordion compacto em 1 linha */}
       <div className="block sm:hidden rounded-[18px] border border-amber-500/25 bg-amber-500/[0.08] overflow-hidden transition-all">
         <button
           type="button"
@@ -66,7 +65,6 @@ export function RenovacaoSemTelefoneBanner({
         )}
       </div>
 
-      {/* Desktop (>= sm): Banner oficial horizontal */}
       <div className="hidden sm:block">
         <Banner
           variant="warning"

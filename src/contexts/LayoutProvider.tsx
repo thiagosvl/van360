@@ -65,6 +65,7 @@ import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialo
 import { ReajusteLoteDialog } from "@/components/dialogs/ReajusteLoteDialog";
 import { EditarReservaDialog } from "@/components/dialogs/EditarReservaDialog";
 import { ConfirmarDisparoWabaDialog } from "@/components/dialogs/ConfirmarDisparoWabaDialog";
+import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -101,6 +102,7 @@ import {
   OpenReajusteLoteDialogProps,
   OpenEditarReservaDialogProps,
   OpenConfirmarDisparoWabaDialogProps,
+  OpenEditarDadosPublicosRenovacaoDialogProps,
   OpenFretamentoFormProps,
   OpenPasseioFormProps,
   OpenNovoFretamentoOuPasseioProps,
@@ -430,6 +432,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [confirmarDisparoWabaDialogState, setConfirmarDisparoWabaDialogState] = useState<{
     open: boolean;
     props?: OpenConfirmarDisparoWabaDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [editarDadosPublicosRenovacaoDialogState, setEditarDadosPublicosRenovacaoDialogState] = useState<{
+    open: boolean;
+    props?: OpenEditarDadosPublicosRenovacaoDialogProps;
   }>({
     open: false,
   });
@@ -939,6 +948,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setConfirmarDisparoWabaDialogState({ open: false }));
   };
 
+  const openEditarDadosPublicosRenovacaoDialog = (props: OpenEditarDadosPublicosRenovacaoDialogProps) => {
+    setEditarDadosPublicosRenovacaoDialogState({ open: true, props });
+  };
+
+  const closeEditarDadosPublicosRenovacaoDialog = () => {
+    safeCloseDialog(() => setEditarDadosPublicosRenovacaoDialogState({ open: false }));
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -1018,6 +1035,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeEditarReservaDialog,
         openConfirmarDisparoWabaDialog,
         closeConfirmarDisparoWabaDialog,
+        openEditarDadosPublicosRenovacaoDialog,
+        closeEditarDadosPublicosRenovacaoDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -1889,6 +1908,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiros={confirmarDisparoWabaDialogState.props.passageiros}
           anoDestino={confirmarDisparoWabaDialogState.props.anoDestino}
           onSuccess={confirmarDisparoWabaDialogState.props.onSuccess}
+        />
+      )}
+
+      {editarDadosPublicosRenovacaoDialogState.open && editarDadosPublicosRenovacaoDialogState.props && (
+        <EditarDadosPublicosRenovacaoDialog
+          isOpen={true}
+          onClose={closeEditarDadosPublicosRenovacaoDialog}
+          token={editarDadosPublicosRenovacaoDialogState.props.token}
+          responsavel={editarDadosPublicosRenovacaoDialogState.props.responsavel}
+          passageiro={editarDadosPublicosRenovacaoDialogState.props.passageiro}
+          condicoes={editarDadosPublicosRenovacaoDialogState.props.condicoes}
+          onSuccess={editarDadosPublicosRenovacaoDialogState.props.onSuccess}
         />
       )}
 

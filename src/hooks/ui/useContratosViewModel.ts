@@ -216,8 +216,8 @@ export function useContratosViewModel() {
   }, [navigate, location.search]);
 
   const handleVerPassageiro = useCallback((id: string) => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
-  }, [navigate]);
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id)}?ano=${anoLetivo}`);
+  }, [navigate, anoLetivo]);
 
   const handleVisualizarLink = useCallback((token: string) => {
     openBrowserLink(`${BASE_DOMAIN}/assinar/${token}`);
@@ -259,23 +259,27 @@ export function useContratosViewModel() {
 
   const handleSubstituir = useCallback((id: string, item?: ContratoListItem) => {
     const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
-    const passageiroResolvido = rawPassageiro || ({
-      id: item?.passageiro_id || "",
-      nome: item?.nome || "Aluno",
-      responsavel_principal: item?.responsavel_principal,
-      valor_cobranca: item?.valor_parcela || item?.valor_cobranca,
-      dia_vencimento: item?.dados_contrato?.diaVencimento as number,
-    } as Passageiro);
+    const passageiroResolvido = rawPassageiro
+      ? { ...rawPassageiro, ano_letivo: rawPassageiro.ano_letivo || anoLetivo }
+      : ({
+          id: item?.passageiro_id || "",
+          nome: item?.nome || "Aluno",
+          responsavel_principal: item?.responsavel_principal,
+          valor_cobranca: item?.valor_parcela || item?.valor_cobranca,
+          dia_vencimento: item?.dados_contrato?.diaVencimento as number,
+          ano_letivo: anoLetivo,
+        } as Passageiro);
 
     openConfirmarGerarContratoDialog({
       passageiro: passageiroResolvido,
       isSubstituicao: true,
       contratoIdParaSubstituir: id,
     });
-  }, [openConfirmarGerarContratoDialog]);
+  }, [openConfirmarGerarContratoDialog, anoLetivo]);
 
   const handleGerarContrato = useCallback((passageiroId: string, item?: ContratoListItem) => {
-    const rawPassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
+    const basePassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
+    const rawPassageiro = basePassageiro ? { ...basePassageiro, ano_letivo: basePassageiro.ano_letivo || anoLetivo } : undefined;
 
     if (rawPassageiro) {
       queryClient.setQueryData(["passageiro", passageiroId], (old: unknown) => old || rawPassageiro);
@@ -300,11 +304,15 @@ export function useContratosViewModel() {
       passageiroId,
       initialPassageiro: rawPassageiro,
       onSuccess: (_id, _bypassed, updatedValues, updatedPassageiro) => {
-        const passageiroResolvido = updatedPassageiro || queryClient.getQueryData<Passageiro>(["passageiro", passageiroId]) || rawPassageiro || ({
+        const resolvedBase = updatedPassageiro || queryClient.getQueryData<Passageiro>(["passageiro", passageiroId]) || rawPassageiro || ({
           id: passageiroId,
           nome: item?.nome || "Aluno",
           responsavel_principal: item?.responsavel_principal,
         } as Passageiro);
+        const passageiroResolvido = {
+          ...resolvedBase,
+          ano_letivo: resolvedBase.ano_letivo || anoLetivo,
+        };
 
         const valorMensal = updatedValues?.valorMensal ?? (Number(passageiroResolvido?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
         const diaVencimento = updatedValues?.diaVencimento ?? (Number(passageiroResolvido?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
@@ -319,7 +327,7 @@ export function useContratosViewModel() {
         });
       }
     });
-  }, [openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, queryClient]);
+  }, [openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, queryClient, anoLetivo]);
 
   const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
     handleGerarContrato(passageiroId, item);
@@ -330,11 +338,15 @@ export function useContratosViewModel() {
       ? passageiro.passageiro
       : passageiro;
 
+    const passWithYear = rawPass
+      ? { ...(rawPass as unknown as Passageiro), ano_letivo: (rawPass as unknown as Passageiro).ano_letivo || anoLetivo }
+      : ({ ano_letivo: anoLetivo } as Passageiro);
+
     openImportarContratoDialog({
       passageiroId,
-      passageiro: rawPass as unknown as Passageiro,
+      passageiro: passWithYear,
     });
-  }, [openImportarContratoDialog]);
+  }, [openImportarContratoDialog, anoLetivo]);
 
   const handleOpenPreview = useCallback(async () => {
     if (!isContratoConfigurado) {

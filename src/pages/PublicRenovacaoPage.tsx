@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePublicRenovacao, useResponderPublicRenovacao } from "@/hooks/api/useRenovacoes";
+import { useLayout } from "@/contexts/LayoutContext";
 import { formatCurrency } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
 import {
   CheckCircle2,
   FileSignature,
@@ -27,12 +27,12 @@ import { toast } from "sonner";
 export default function PublicRenovacaoPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { openEditarDadosPublicosRenovacaoDialog } = useLayout();
 
   const { data, isLoading, error, refetch } = usePublicRenovacao(token);
   const { mutateAsync: responder, isPending: isResponding } = useResponderPublicRenovacao(token);
 
   const [confirmRecusaOpen, setConfirmRecusaOpen] = useState(false);
-  const [modalEdicaoOpen, setModalEdicaoOpen] = useState(false);
   const [contractData, setContractData] = useState<{ token_acesso: string; link_assinatura: string } | null>(null);
 
   const handleConfirmar = async () => {
@@ -71,19 +71,6 @@ export default function PublicRenovacaoPage() {
     }
   };
 
-  const handleReverter = async () => {
-    try {
-      await responder({
-        status: "pendente",
-      });
-      setConfirmRecusaOpen(false);
-      toast.info("Sua resposta foi desfeita. A proposta voltou para análise.");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Tente novamente ou fale com o motorista.";
-      toast.error("Erro ao desfazer resposta", { description: msg });
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
@@ -117,6 +104,7 @@ export default function PublicRenovacaoPage() {
   const activeContractToken = isContratoAssinado
     ? null
     : (contractData?.token_acesso || (contrato?.status === "pendente" ? contrato?.token_acesso : null));
+  const signedContractToken = isContratoAssinado ? contrato?.token_acesso : null;
   const temContratoDigital = Boolean(contrato?.usar_contratos || activeContractToken || isContratoAssinado);
   const temCondicoesAlteradas = Boolean(
     condicoes?.valor?.alterado ||
@@ -128,7 +116,7 @@ export default function PublicRenovacaoPage() {
 
   const motoristaWhatsappUrl = motorista.telefone
     ? `https://wa.me/55${motorista.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(
-      `Olá! Estou visualizando a proposta de renovação de ${passageiro.nome} para ${ano_destino} e gostaria de tirar uma dúvida.`
+      `Olá! Estou visualizando a proposta de renovação de ${passageiro.nome} para ${ano_destino} e gostaria de falar com você.`
     )}`
     : null;
 
@@ -142,7 +130,6 @@ export default function PublicRenovacaoPage() {
   return (
     <div className="min-h-screen bg-[#f5f5f5] py-6 sm:py-10 px-3.5 sm:px-6">
       <div className="max-w-lg mx-auto space-y-4">
-        {/* Cabeçalho Motorista */}
         <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs flex items-center gap-3.5">
           {motorista.logo_url ? (
             <img
@@ -166,7 +153,6 @@ export default function PublicRenovacaoPage() {
           </div>
         </div>
 
-        {/* Card Aluno e Dados Cadastrais */}
         <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -193,7 +179,15 @@ export default function PublicRenovacaoPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setModalEdicaoOpen(true)}
+                onClick={() =>
+                  openEditarDadosPublicosRenovacaoDialog({
+                    token: token || "",
+                    responsavel,
+                    passageiro,
+                    condicoes,
+                    onSuccess: () => refetch(),
+                  })
+                }
                 className="h-9 px-3 text-xs font-medium gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] shadow-none shrink-0 cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5 text-[#737373]" />
@@ -218,7 +212,7 @@ export default function PublicRenovacaoPage() {
               </div>
             </div>
 
-            {(condicoes.turma?.novo || passageiro.turma || passageiro.sala || condicoes.nome_professor?.novo || passageiro.nome_professor) && (
+            {(condicoes.turma?.novo || passageiro.turma || condicoes.sala?.novo || passageiro.sala || condicoes.nome_professor?.novo || passageiro.nome_professor) && (
               <div className="flex items-start gap-2.5 text-[#737373] pt-2 border-t border-[#e5e5e5]">
                 <GraduationCap className="w-4 h-4 text-[#0a0a0a] shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1 space-y-0.5">
@@ -227,8 +221,8 @@ export default function PublicRenovacaoPage() {
                     {(condicoes.turma?.novo || passageiro.turma) && (
                       <span>Turma: <strong className="text-[#0a0a0a] font-medium">{condicoes.turma?.novo || passageiro.turma}</strong></span>
                     )}
-                    {passageiro.sala && (
-                      <span>Sala: <strong className="text-[#0a0a0a] font-medium">{passageiro.sala}</strong></span>
+                    {(condicoes.sala?.novo || passageiro.sala) && (
+                      <span>Sala: <strong className="text-[#0a0a0a] font-medium">{condicoes.sala?.novo || passageiro.sala}</strong></span>
                     )}
                     {(condicoes.nome_professor?.novo || passageiro.nome_professor) && (
                       <span>Prof.: <strong className="text-[#0a0a0a] font-medium">{condicoes.nome_professor?.novo || passageiro.nome_professor}</strong></span>
@@ -259,7 +253,6 @@ export default function PublicRenovacaoPage() {
           />
         )}
 
-        {/* Condições Contratuais e Financeiras */}
         <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#737373] flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-[#0a0a0a]" />
@@ -369,7 +362,6 @@ export default function PublicRenovacaoPage() {
           </div>
         </div>
 
-        {/* Escola, Turno e Itinerário */}
         <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#737373] flex items-center gap-1.5">
             <School className="w-4 h-4 text-[#0a0a0a]" />
@@ -468,7 +460,6 @@ export default function PublicRenovacaoPage() {
           </div>
         </div>
 
-        {/* Resposta e Ações */}
         {data.concluido ? (
           <Banner
             variant="neutral"
@@ -481,7 +472,7 @@ export default function PublicRenovacaoPage() {
             <Banner
               variant="success"
               title={`Vaga Confirmada para ${ano_destino}!`}
-              description={`A vaga de ${passageiro.nome} está garantida para o ano letivo de ${ano_destino}. O motorista foi notificado.`}
+              description={`A vaga de ${passageiro.nome} está garantida para o ano letivo de ${ano_destino}. Caso precise alterar alguma informação, fale diretamente com o motorista.`}
               className="rounded-[18px]"
             />
 
@@ -504,70 +495,38 @@ export default function PublicRenovacaoPage() {
               </div>
             )}
 
-            {isContratoAssinado ? (
+            {isContratoAssinado && (
               <div className="space-y-3 pt-1">
                 <Banner
                   variant="neutral"
                   title="Contrato Digital Assinado"
-                  description={`O contrato para o ano letivo de ${ano_destino} já foi formalizado e assinado digitalmente. Para alterações ou rescisão, entre em contato com o motorista pelo WhatsApp.`}
+                  description={`O contrato para o ano letivo de ${ano_destino} já foi formalizado e assinado digitalmente.`}
                   className="rounded-[18px]"
                 />
-                {motoristaWhatsappUrl && (
+                {signedContractToken && (
                   <Button
-                    asChild
                     variant="outline"
+                    onClick={() => navigate(`/assinar/${signedContractToken}`)}
                     className="w-full h-11 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 shadow-none cursor-pointer"
                   >
-                    <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
-                      <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
-                      Falar com Motorista no WhatsApp
-                    </a>
+                    <FileSignature className="w-4 h-4 text-primary" />
+                    <span>Visualizar Contrato Assinado</span>
                   </Button>
                 )}
               </div>
-            ) : !confirmRecusaOpen ? (
-              <div className="pt-2 flex flex-col items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={handleReverter}
-                  disabled={isResponding}
-                  className="text-xs font-normal text-[#737373] hover:text-[#0a0a0a] transition-colors underline underline-offset-4 cursor-pointer"
-                >
-                  Mudar de ideia? Desfazer confirmação
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmRecusaOpen(true)}
-                  disabled={isResponding}
-                  className="text-xs font-normal text-[#737373] hover:text-[#e7000b] transition-colors underline underline-offset-4 cursor-pointer"
-                >
-                  Informar que não vai renovar
-                </button>
-              </div>
-            ) : (
-              <Banner
-                variant="warning"
-                title={`Alterar resposta e não renovar para ${ano_destino}?`}
-                description="A vaga confirmada anteriormente será liberada e o motorista será avisado."
-                action={{
-                  label: "Confirmar Saída",
-                  onClick: handleRecusar,
-                  disabled: isResponding,
-                  className: "bg-[#e7000b] hover:bg-[#c4000a] text-white",
-                }}
-                className="rounded-[18px]"
+            )}
+
+            {motoristaWhatsappUrl && (
+              <Button
+                asChild
+                variant="outline"
+                className="w-full h-11 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 shadow-none cursor-pointer"
               >
-                <div className="pt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setConfirmRecusaOpen(false)}
-                    className="h-8 text-xs font-medium rounded-[14px] border border-[#e5e5e5] bg-white"
-                  >
-                    Voltar
-                  </Button>
-                </div>
-              </Banner>
+                <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
+                  Falar com Motorista no WhatsApp
+                </a>
+              </Button>
             )}
           </div>
         ) : isRecused ? (
@@ -575,29 +534,22 @@ export default function PublicRenovacaoPage() {
             <Banner
               variant="neutral"
               title="Vaga Não Renovada"
-              description={`Você informou que não utilizará o transporte em ${ano_destino}. A vaga de ${passageiro.nome} foi liberada.`}
+              description={`Você informou que não utilizará o transporte em ${ano_destino}. Caso tenha mudado de ideia e queira verificar a disponibilidade de vaga, fale diretamente com o motorista.`}
               className="rounded-[18px]"
             />
 
-            <Button
-              onClick={handleConfirmar}
-              disabled={isResponding}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium h-11 rounded-[18px] text-sm shadow-xs gap-2 cursor-pointer"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              {temContratoDigital ? "Mudei de ideia: Garantir vaga e assinar" : `Mudei de ideia: Garantir vaga para ${ano_destino}`}
-            </Button>
-
-            <div className="text-center pt-1">
-              <button
-                type="button"
-                onClick={handleReverter}
-                disabled={isResponding}
-                className="text-xs font-normal text-[#737373] hover:text-[#0a0a0a] transition-colors underline underline-offset-4 cursor-pointer"
+            {motoristaWhatsappUrl && (
+              <Button
+                asChild
+                variant="outline"
+                className="w-full h-11 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 shadow-none cursor-pointer"
               >
-                Desfazer resposta e voltar para análise
-              </button>
-            </div>
+                <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
+                  Falar com Motorista no WhatsApp
+                </a>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">
@@ -652,18 +604,6 @@ export default function PublicRenovacaoPage() {
           </p>
         </div>
       </div>
-
-      {modalEdicaoOpen && (
-        <EditarDadosPublicosRenovacaoDialog
-          isOpen={modalEdicaoOpen}
-          onClose={() => setModalEdicaoOpen(false)}
-          token={token || ""}
-          responsavel={responsavel}
-          passageiro={passageiro}
-          condicoes={condicoes}
-          onSuccess={() => refetch()}
-        />
-      )}
     </div>
   );
 }
