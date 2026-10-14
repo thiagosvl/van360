@@ -122,7 +122,7 @@ import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
 import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
@@ -144,6 +144,7 @@ import {
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [pageTitle, setPageTitle] = useState("Carregando...");
   const [pageSubtitle, setPageSubtitle] = useState("Por favor, aguarde.");
 
@@ -793,8 +794,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => setFirstChargeDialogState({ open: true, props });
 
-  const openContractSetupDialog = (_props?: OpenContractSetupDialogProps) => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
+  const openContractSetupDialog = (props?: OpenContractSetupDialogProps) => {
+    const returnTo = props?.returnTo || `${location.pathname}${location.search}`;
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${encodeURIComponent(returnTo)}`);
   };
 
   const openPixPaymentDialog = (props: OpenPixPaymentDialogProps) => {

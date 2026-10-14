@@ -207,6 +207,7 @@ export interface OpenContractSetupDialogProps {
   forceOpen?: boolean;
   ano?: number;
   onSuccess?: (usarContratos?: boolean) => void;
+  returnTo?: string;
 }
 
 export interface OpenConfirmarGerarContratoDialogProps {

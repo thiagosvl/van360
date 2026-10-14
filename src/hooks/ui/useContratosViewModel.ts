@@ -32,7 +32,7 @@ import { openBrowserLink } from "@/utils/browser";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "@/utils/notifications/toast";
 
 export function useContratosViewModel() {
@@ -51,6 +51,7 @@ export function useContratosViewModel() {
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -167,14 +168,16 @@ export function useContratosViewModel() {
   const isContratoAtivo = statusConfig === StatusConfiguracaoContrato.ATIVO;
 
   const handleOpenContractSetup = useCallback(() => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
-  }, [navigate]);
+    const returnUrl = encodeURIComponent(`${ROUTES.PRIVATE.MOTORISTA.CONTRACTS}${location.search}`);
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${returnUrl}`);
+  }, [navigate, location.search]);
 
   const handleToggleContracts = useCallback(async (active: boolean) => {
     if (!profile?.id) return;
 
     if (active && !profile.assinatura_digital_url) {
-      navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
+      const returnUrl = encodeURIComponent(`${ROUTES.PRIVATE.MOTORISTA.CONTRACTS}${location.search}`);
+      navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${returnUrl}`);
       return;
     }
 
@@ -205,11 +208,12 @@ export function useContratosViewModel() {
         }
       }
     });
-  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile, navigate]);
+  }, [profile, refetchKPIs, refetchContratos, openConfirmationDialog, closeConfirmationDialog, refreshProfile, navigate, location.search]);
 
   const handleActivateContracts = useCallback(() => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP);
-  }, [navigate]);
+    const returnUrl = encodeURIComponent(`${ROUTES.PRIVATE.MOTORISTA.CONTRACTS}${location.search}`);
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${returnUrl}`);
+  }, [navigate, location.search]);
 
   const handleVerPassageiro = useCallback((id: string) => {
     navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", id));
