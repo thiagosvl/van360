@@ -470,7 +470,7 @@ export default function Renovacoes() {
                         checked={isAllSelected}
                         onCheckedChange={toggleSelectAll}
                         aria-label="Marcar todos os alunos"
-                        className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a] data-[state=checked]:text-white shrink-0 cursor-pointer"
+                        className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shrink-0 cursor-pointer"
                       />
                       <span>
                         {isAllSelected ? "Desmarcar todos" : `Marcar todos (${passageiros.length})`}

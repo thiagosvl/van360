@@ -152,10 +152,10 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
   return (
     <div
       className={cn(
-        "rounded-[20px] sm:rounded-[24px] border bg-white transition-all overflow-hidden shadow-xs",
+        "rounded-[20px] sm:rounded-[24px] border transition-all overflow-hidden shadow-xs",
         isSelected
-          ? "border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
-          : "border-[#e5e5e5] hover:border-[#737373]/40"
+          ? "bg-blue-50/60 border-primary/40 ring-1 ring-primary/20"
+          : "bg-white border-[#e5e5e5] hover:border-[#737373]/40"
       )}
     >
       <div
@@ -169,7 +169,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
             onCheckedChange={() => onToggleSelect(item.passageiro_id)}
             onClick={(e) => e.stopPropagation()}
             aria-label={`Selecionar ${shortName}`}
-            className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a] data-[state=checked]:text-white shrink-0 cursor-pointer"
+            className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shrink-0 cursor-pointer"
           />
 
           {item.foto_url ? (
