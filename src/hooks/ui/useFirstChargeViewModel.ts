@@ -14,6 +14,7 @@ import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
+import { isContratoAtivoNaConta } from "@/utils/domain";
 
 interface FirstChargeViewModelProps {
   passageiro: Passageiro;
@@ -33,7 +34,7 @@ export function useFirstChargeViewModel({
   onSuccess,
 }: FirstChargeViewModelProps) {
   const { profile } = useProfile();
-  const showContractStep = !!profile?.config_contrato?.usar_contratos;
+  const showContractStep = isContratoAtivoNaConta(profile);
 
   const now = getNowBR();
   const showPaymentStep = !passageiro.isento && shouldGeneratePassengerProjection({

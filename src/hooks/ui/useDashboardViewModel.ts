@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { getNowBR } from "@/utils/dateUtils";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
+import { isContratoAtivoNaConta } from "@/utils/domain";
 
 import { isMotoristaTitular } from "@/utils/userUtils";
 
@@ -116,7 +117,7 @@ export function useDashboardViewModel() {
         }
 
         const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
-        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const hasContractConfig = isContratoAtivoNaConta(profile);
         const now = getNowBR();
         const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
           passageiro,

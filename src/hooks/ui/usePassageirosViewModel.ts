@@ -36,6 +36,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermissions } from "../business/usePermissions";
 import { getNowBR } from "@/utils/dateUtils";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
+import { isContratoAtivoNaConta } from "@/utils/domain";
 
 export function usePassageirosViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -345,7 +346,7 @@ export function usePassageirosViewModel() {
         }
 
         const hasFinancialInfo = !passageiro.isento && !!passageiro.valor_cobranca && passageiro.valor_cobranca > 0;
-        const hasContractConfig = !!profile?.config_contrato?.usar_contratos;
+        const hasContractConfig = isContratoAtivoNaConta(profile);
         const now = getNowBR();
         const hasPayment = hasFinancialInfo && shouldGeneratePassengerProjection({
           passageiro,

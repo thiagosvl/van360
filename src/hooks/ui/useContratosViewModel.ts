@@ -4,6 +4,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
   obterStatusConfiguracaoContrato,
   StatusConfiguracaoContrato,
+  hasPendenciasParaGerarContrato,
   obterUrlDocumentoContrato,
   gerarNomeArquivoContrato,
   shareContratoFile,
@@ -259,12 +260,7 @@ export function useContratosViewModel() {
       queryClient.setQueryData(["passageiro", passageiroId], (old: unknown) => old || rawPassageiro);
     }
 
-    const hasNomeResp = !!(rawPassageiro?.responsavel_principal?.nome);
-    const hasCpf = !!(rawPassageiro?.responsavel_principal?.cpf);
-    const hasInicio = !!(rawPassageiro?.data_inicio_transporte);
-    const hasFim = !!(rawPassageiro?.data_fim_transporte);
-
-    if (rawPassageiro && hasNomeResp && hasCpf && hasInicio && hasFim) {
+    if (rawPassageiro && !hasPendenciasParaGerarContrato(rawPassageiro)) {
       openConfirmarGerarContratoDialog({
         passageiro: rawPassageiro,
         valorMensal: Number(rawPassageiro.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,

@@ -1,7 +1,8 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Switch } from "@/components/ui/switch";
+import { useLayout } from "@/contexts/LayoutContext";
 import { Passageiro } from "@/types/passageiro";
-import { formatFirstName } from "@/utils/formatters";
+import { hasPendenciasParaGerarContrato } from "@/utils/domain";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { useCreateContrato, useSubstituirContrato } from "@/hooks/api/useContratos";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
@@ -35,17 +36,17 @@ export function ConfirmarGerarContratoDialog({
 }: ConfirmarGerarContratoDialogProps) {
   const [notificarResponsavel, setNotificarResponsavel] = useState(true);
   const queryClient = useQueryClient();
+  const { openGerarContratoValidadorDialog } = useLayout();
   const createContrato = useCreateContrato();
   const substituirContrato = useSubstituirContrato();
 
   const isSubmitting = createContrato.isPending || substituirContrato.isPending;
 
   const cachedPassageiro = passageiro?.id ? queryClient.getQueryData<Passageiro>(["passageiro", passageiro.id]) : null;
-  const currentPassageiro = cachedPassageiro || passageiro;
+  const currentPassageiro = cachedPassageiro ? { ...cachedPassageiro, ...passageiro } : passageiro;
 
   const valorExibicao = valorMensal ?? (currentPassageiro?.valor_cobranca ? Number(currentPassageiro.valor_cobranca) : undefined);
   const diaExibicao = diaVencimento ?? currentPassageiro?.dia_vencimento ?? undefined;
-  const firstName = formatFirstName(currentPassageiro?.nome || "");
 
   const responsavelNome =
     currentPassageiro?.responsavel_principal?.nome ||
@@ -56,34 +57,78 @@ export function ConfirmarGerarContratoDialog({
     safeCloseDialog(() => onOpenChange(false));
   };
 
+  const executeContractAction = async (
+    targetPassageiro: Passageiro,
+    resolvedValor?: number,
+    resolvedDia?: number
+  ) => {
+    if (isSubstituicao) {
+      const idAlvo = contratoIdParaSubstituir || targetPassageiro.contrato_id;
+      if (!idAlvo) return;
+      await substituirContrato.mutateAsync({
+        contratoId: idAlvo,
+        notificarResponsavel,
+      });
+    } else {
+      await createContrato.mutateAsync({
+        passageiroId: targetPassageiro.id,
+        valorMensal: resolvedValor,
+        diaVencimento: resolvedDia ? Number(resolvedDia) : undefined,
+        dataInicio: dataInicio || targetPassageiro.data_inicio_transporte || undefined,
+        dataFim: dataFim || targetPassageiro.data_fim_transporte || undefined,
+        notificarResponsavel,
+      });
+    }
+  };
+
   const handleConfirm = async () => {
     if (!currentPassageiro?.id) return;
 
-    try {
-      if (isSubstituicao) {
-        const idAlvo = contratoIdParaSubstituir || currentPassageiro.contrato_id;
-        if (!idAlvo) return;
-        await substituirContrato.mutateAsync({
-          contratoId: idAlvo,
-          notificarResponsavel,
-        });
-      } else {
-        await createContrato.mutateAsync({
+    if (hasPendenciasParaGerarContrato(currentPassageiro)) {
+      handleClose();
+      setTimeout(() => {
+        openGerarContratoValidadorDialog({
           passageiroId: currentPassageiro.id,
-          valorMensal: valorExibicao,
-          diaVencimento: diaExibicao ? Number(diaExibicao) : undefined,
-          dataInicio: dataInicio || currentPassageiro.data_inicio_transporte || undefined,
-          dataFim: dataFim || currentPassageiro.data_fim_transporte || undefined,
-          notificarResponsavel,
-        });
-      }
+          initialPassageiro: currentPassageiro,
+          onSuccess: async (_id, _bypassed, updatedValues, freshPassageiro) => {
+            const finalPass = freshPassageiro || currentPassageiro;
+            const finalValor =
+              updatedValues?.valorMensal ??
+              valorExibicao ??
+              (finalPass.valor_cobranca ? Number(finalPass.valor_cobranca) : undefined);
+            const finalDia =
+              updatedValues?.diaVencimento ??
+              (diaExibicao
+                ? Number(diaExibicao)
+                : finalPass.dia_vencimento
+                  ? Number(finalPass.dia_vencimento)
+                  : undefined);
 
+            try {
+              await executeContractAction(finalPass, finalValor, finalDia);
+              onSuccess?.();
+            } catch {}
+          },
+        });
+      }, 150);
+      return;
+    }
+
+    try {
+      await executeContractAction(
+        currentPassageiro,
+        valorExibicao,
+        diaExibicao ? Number(diaExibicao) : undefined
+      );
       handleClose();
       onSuccess?.();
-    } catch { }
+    } catch {}
   };
 
-  const dialogTitle = isSubstituicao ? "Substituir Contrato" : "Gerar Contrato";
+  const dialogTitle = isSubstituicao ? "Substituir Contrato?" : "Gerar Contrato?";
+  const dialogSubtitle = isSubstituicao
+    ? "Deseja atualizar o contrato do aluno com as novas informações?"
+    : "Deseja emitir o contrato digital para este aluno?";
   const actionLabel = isSubstituicao
     ? (notificarResponsavel ? "Substituir e Enviar" : "Apenas Substituir")
     : (notificarResponsavel ? "Gerar e Enviar" : "Gerar Contrato");
@@ -92,6 +137,7 @@ export function ConfirmarGerarContratoDialog({
     <BaseDialog open={open} onOpenChange={onOpenChange} lockClose={isSubmitting} maxWidth="md">
       <BaseDialog.Header
         title={dialogTitle}
+        subtitle={dialogSubtitle}
         onClose={handleClose}
       />
 
