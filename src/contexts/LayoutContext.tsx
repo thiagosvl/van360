@@ -262,6 +262,10 @@ export interface OpenEditarDadosPublicosRenovacaoDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenTutorialRenovacaoDialogProps {
+  anoDestino: number;
+}
+
 export interface OpenRegistrarAusenciaProps {
   lockedRotaId?: string;
   lockedPassageiro?: { id: string; nome: string };
@@ -526,6 +530,8 @@ export interface LayoutContextType {
   closeConfirmarDisparoWabaDialog: () => void;
   openEditarDadosPublicosRenovacaoDialog: (props: OpenEditarDadosPublicosRenovacaoDialogProps) => void;
   closeEditarDadosPublicosRenovacaoDialog: () => void;
+  openTutorialRenovacaoDialog: (props: OpenTutorialRenovacaoDialogProps) => void;
+  closeTutorialRenovacaoDialog: () => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

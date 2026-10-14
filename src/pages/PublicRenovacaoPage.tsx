@@ -6,7 +6,6 @@ import { formatCurrency } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import {
   CheckCircle2,
   FileSignature,
@@ -113,12 +112,6 @@ export default function PublicRenovacaoPage() {
     condicoes?.periodo?.alterado ||
     condicoes?.modalidade?.alterado
   );
-
-  const motoristaWhatsappUrl = motorista.telefone
-    ? `https://wa.me/55${motorista.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(
-      `Olá! Estou visualizando a proposta de renovação de ${passageiro.nome} para ${ano_destino} e gostaria de falar com você.`
-    )}`
-    : null;
 
   const enderecoFormatado = [
     responsavel?.logradouro ? `${responsavel.logradouro}${responsavel.numero ? `, ${responsavel.numero}` : ""}` : null,
@@ -464,7 +457,7 @@ export default function PublicRenovacaoPage() {
           <Banner
             variant="neutral"
             title="Ciclo de Renovação Concluído"
-            description={`As renovações para o ano letivo de ${ano_destino} foram finalizadas pelo motorista. Entre em contato diretamente pelo WhatsApp para dúvidas.`}
+            description={`As renovações para o ano letivo de ${ano_destino} foram finalizadas. Caso precise de alguma alteração, fale diretamente com o motorista.`}
             className="rounded-[18px]"
           />
         ) : isConfirmed ? (
@@ -472,7 +465,7 @@ export default function PublicRenovacaoPage() {
             <Banner
               variant="success"
               title={`Vaga Confirmada para ${ano_destino}!`}
-              description={`A vaga de ${passageiro.nome} está garantida para o ano letivo de ${ano_destino}. Caso precise alterar alguma informação, fale diretamente com o motorista.`}
+              description={`A vaga de ${passageiro.nome} está garantida para o ano letivo de ${ano_destino}. Caso queira mudar de ideia ou alterar alguma informação, fale com o motorista para que ele realize a alteração.`}
               className="rounded-[18px]"
             />
 
@@ -515,41 +508,15 @@ export default function PublicRenovacaoPage() {
                 )}
               </div>
             )}
-
-            {motoristaWhatsappUrl && (
-              <Button
-                asChild
-                variant="outline"
-                className="w-full h-11 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 shadow-none cursor-pointer"
-              >
-                <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
-                  Falar com Motorista no WhatsApp
-                </a>
-              </Button>
-            )}
           </div>
         ) : isRecused ? (
           <div className="space-y-3">
             <Banner
               variant="neutral"
               title="Vaga Não Renovada"
-              description={`Você informou que não utilizará o transporte em ${ano_destino}. Caso tenha mudado de ideia e queira verificar a disponibilidade de vaga, fale diretamente com o motorista.`}
+              description={`Você informou que não utilizará o transporte em ${ano_destino}. Caso tenha mudado de ideia, fale com o motorista para que ele altere a situação da vaga.`}
               className="rounded-[18px]"
             />
-
-            {motoristaWhatsappUrl && (
-              <Button
-                asChild
-                variant="outline"
-                className="w-full h-11 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 shadow-none cursor-pointer"
-              >
-                <a href={motoristaWhatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <WhatsAppIcon className="w-4 h-4 fill-current text-emerald-600" />
-                  Falar com Motorista no WhatsApp
-                </a>
-              </Button>
-            )}
           </div>
         ) : (
           <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">

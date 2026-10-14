@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useSession } from "./useSession";
 import { useProfile } from "./useProfile";
-import { hasPermission, PermissionKey } from "@/config/permissions";
+import { hasPermission, PermissionKey, PERMISSIONS } from "@/config/permissions";
 import { UserType } from "@/types/enums";
 import {
   isMotoristaTitular,
@@ -9,6 +9,7 @@ import {
   isMonitor as checkIsMonitor,
   isSubConta as checkIsSubConta,
 } from "@/utils/userUtils";
+import { isRenovacaoDisponivel } from "@/utils/domain/renovacao/renovacaoDisponibilidade";
 
 export function usePermissions() {
   const { user } = useSession();
@@ -17,9 +18,12 @@ export function usePermissions() {
   const can = useCallback(
     (permission: PermissionKey): boolean => {
       const role = profile?.tipo as UserType | undefined;
+      if (permission === PERMISSIONS.RENOVACOES_GERENCIAR && !isRenovacaoDisponivel([profile?.id, user?.id])) {
+        return false;
+      }
       return hasPermission(role, permission);
     },
-    [profile?.tipo]
+    [profile?.tipo, profile?.id, user?.id]
   );
 
   return {

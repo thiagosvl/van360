@@ -330,7 +330,7 @@ export function PassageiroFinanceiroDialog({
 
             {!isIsento && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <FormField
                     control={form.control}
                     name="valor_cobranca"
@@ -339,6 +339,7 @@ export function PassageiroFinanceiroDialog({
                         field={field}
                         label="Valor da Parcela"
                         required
+                        className="space-y-1.5"
                         labelClassName="text-[#0a0a0a] font-medium text-xs"
                       />
                     )}

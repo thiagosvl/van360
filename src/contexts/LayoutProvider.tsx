@@ -66,6 +66,7 @@ import { ReajusteLoteDialog } from "@/components/dialogs/ReajusteLoteDialog";
 import { EditarReservaDialog } from "@/components/dialogs/EditarReservaDialog";
 import { ConfirmarDisparoWabaDialog } from "@/components/dialogs/ConfirmarDisparoWabaDialog";
 import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
+import { TutorialRenovacaoDialog } from "@/components/dialogs/TutorialRenovacaoDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -103,6 +104,7 @@ import {
   OpenEditarReservaDialogProps,
   OpenConfirmarDisparoWabaDialogProps,
   OpenEditarDadosPublicosRenovacaoDialogProps,
+  OpenTutorialRenovacaoDialogProps,
   OpenFretamentoFormProps,
   OpenPasseioFormProps,
   OpenNovoFretamentoOuPasseioProps,
@@ -439,6 +441,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarDadosPublicosRenovacaoDialogState, setEditarDadosPublicosRenovacaoDialogState] = useState<{
     open: boolean;
     props?: OpenEditarDadosPublicosRenovacaoDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [tutorialRenovacaoDialogState, setTutorialRenovacaoDialogState] = useState<{
+    open: boolean;
+    props?: OpenTutorialRenovacaoDialogProps;
   }>({
     open: false,
   });
@@ -956,6 +965,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setEditarDadosPublicosRenovacaoDialogState({ open: false }));
   };
 
+  const openTutorialRenovacaoDialog = (props: OpenTutorialRenovacaoDialogProps) => {
+    setTutorialRenovacaoDialogState({ open: true, props });
+  };
+
+  const closeTutorialRenovacaoDialog = () => {
+    safeCloseDialog(() => setTutorialRenovacaoDialogState({ open: false }));
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -1037,6 +1054,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeConfirmarDisparoWabaDialog,
         openEditarDadosPublicosRenovacaoDialog,
         closeEditarDadosPublicosRenovacaoDialog,
+        openTutorialRenovacaoDialog,
+        closeTutorialRenovacaoDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -1920,6 +1939,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiro={editarDadosPublicosRenovacaoDialogState.props.passageiro}
           condicoes={editarDadosPublicosRenovacaoDialogState.props.condicoes}
           onSuccess={editarDadosPublicosRenovacaoDialogState.props.onSuccess}
+        />
+      )}
+
+      {tutorialRenovacaoDialogState.open && tutorialRenovacaoDialogState.props && (
+        <TutorialRenovacaoDialog
+          isOpen={true}
+          onClose={closeTutorialRenovacaoDialog}
+          anoDestino={tutorialRenovacaoDialogState.props.anoDestino}
         />
       )}
 

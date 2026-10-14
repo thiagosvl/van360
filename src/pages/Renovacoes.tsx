@@ -20,7 +20,8 @@ import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
-import { Users, ArrowLeft } from "lucide-react";
+import { Users, ArrowLeft, HelpCircle } from "lucide-react";
+import { STORAGE_KEYS } from "@/constants";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
 import { useSEO } from "@/hooks/useSEO";
@@ -48,6 +49,7 @@ export default function Renovacoes() {
     openReajusteLoteDialog,
     openEditarReservaDialog,
     openConfirmarDisparoWabaDialog,
+    openTutorialRenovacaoDialog,
     openResponsavelFormDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -342,6 +344,15 @@ export default function Renovacoes() {
     clearSelection();
   }, [statusFilter, escolaFilter, periodoFilter, searchTerm, anoDestino, clearSelection]);
 
+  useEffect(() => {
+    if (!canManage || isLoading) return;
+    const alreadyDismissed = localStorage.getItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED);
+    if (!alreadyDismissed) {
+      localStorage.setItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED, "true");
+      openTutorialRenovacaoDialog({ anoDestino });
+    }
+  }, [canManage, isLoading, anoDestino, openTutorialRenovacaoDialog]);
+
   const totalPages = Math.ceil((passageiros.length || 0) / limit);
 
   const paginatedPassageiros = useMemo(() => {
@@ -366,11 +377,20 @@ export default function Renovacoes() {
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
       <div className="max-w-6xl mx-auto space-y-5 pb-24 sm:pb-28 pt-2 sm:pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
+        <div className="flex items-center justify-between gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2.5">
             <span className="text-xs font-medium text-[#737373]">
               Origem {anoDestino - 1} → Destino {anoDestino}
             </span>
+            <button
+              type="button"
+              onClick={() => openTutorialRenovacaoDialog({ anoDestino })}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[14px] text-xs font-medium text-[#737373] hover:text-[#0a0a0a] bg-white hover:bg-[#fafafa] border border-[#e5e5e5] transition-colors cursor-pointer"
+              title="Ver passo a passo de como funciona a renovação"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-[#737373]" />
+              <span>Como funciona</span>
+            </button>
           </div>
           <AnoLetivoSelect
             ano={anoDestino}
