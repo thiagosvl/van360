@@ -657,6 +657,16 @@ export default function PassageiroCarteirinha() {
     });
   }, [passageiro?.contrato_id, openConfirmationDialog, closeConfirmationDialog, deleteContrato]);
 
+  const anosMatriculados = useMemo(() => {
+    const list = passageiro?.anos_matriculados || [];
+    if (list.length > 0) return list;
+    return [passageiro?.ano_letivo || selectedYearNum];
+  }, [passageiro?.anos_matriculados, passageiro?.ano_letivo, selectedYearNum]);
+
+  const anosDisponiveisCarteirinha = useMemo(() => {
+    return Array.from(new Set([...anosMatriculados, selectedYearNum])).sort((a, b) => a - b);
+  }, [anosMatriculados, selectedYearNum]);
+
   if (!can("passageiros.visualizar")) {
     return <AccessRestrictedState moduleName="Alunos" />;
   }
@@ -689,16 +699,6 @@ export default function PassageiroCarteirinha() {
       queryClient.invalidateQueries({ queryKey: ["passageiro-rotas", passageiro_id] }),
     ]);
   };
-
-  const anosMatriculados = useMemo(() => {
-    const list = passageiro.anos_matriculados || [];
-    if (list.length > 0) return list;
-    return [passageiro.ano_letivo || selectedYearNum];
-  }, [passageiro.anos_matriculados, passageiro.ano_letivo, selectedYearNum]);
-
-  const anosDisponiveisCarteirinha = useMemo(() => {
-    return Array.from(new Set([...anosMatriculados, selectedYearNum])).sort((a, b) => a - b);
-  }, [anosMatriculados, selectedYearNum]);
 
   const showRenewalBanner =
     can("renovacoes.gerenciar") &&
