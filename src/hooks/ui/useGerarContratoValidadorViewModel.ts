@@ -12,6 +12,7 @@ import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
 import { safeCloseDialog } from "@/hooks";
 import { toast } from "@/utils/notifications/toast";
 import { ParentescoResponsavel, PassageiroPeriodo } from "@/types/enums";
+import { avaliarPendenciasContrato } from "@/utils/domain";
 
 export const gerarContratoValidadorSchema = z
   .object({
@@ -82,50 +83,20 @@ export function useGerarContratoValidadorViewModel({
   const updatePassageiro = useUpdatePassageiro();
   const isSubmitting = updatePassageiro.isPending;
 
-  const needsNomeResp = useMemo(() => {
-    return !passageiro?.responsavel_principal?.nome || passageiro.responsavel_principal.nome.trim() === "";
-  }, [passageiro?.responsavel_principal?.nome]);
-
-  const needsTelefoneResp = useMemo(() => {
-    return !passageiro?.responsavel_principal?.telefone || passageiro.responsavel_principal.telefone.trim() === "";
-  }, [passageiro?.responsavel_principal?.telefone]);
-
-  const needsCpfResp = useMemo(() => {
-    const rawCpf = passageiro?.responsavel_principal?.cpf;
-    if (!rawCpf || rawCpf.trim() === "") return true;
-    const digits = rawCpf.replace(/\D/g, "");
-    return digits.length !== 11;
-  }, [passageiro?.responsavel_principal?.cpf]);
-
-  const needsParentesco = useMemo(() => {
-    return !passageiro?.responsavel_principal?.parentesco;
-  }, [passageiro?.responsavel_principal?.parentesco]);
-
-  const needsResponsavelGroup = needsNomeResp || needsTelefoneResp || needsCpfResp || needsParentesco;
-
-  const needsValor = useMemo(() => {
-    return !passageiro?.isento && (!passageiro?.valor_cobranca || Number(passageiro.valor_cobranca) <= 0);
-  }, [passageiro?.isento, passageiro?.valor_cobranca]);
-
-  const needsVencimento = useMemo(() => {
-    return !passageiro?.isento && !passageiro?.dia_vencimento;
-  }, [passageiro?.isento, passageiro?.dia_vencimento]);
-
-  const needsFinanceiroGroup = needsValor || needsVencimento;
-
-  const needsDataInicio = useMemo(() => {
-    return !passageiro?.data_inicio_transporte || passageiro.data_inicio_transporte.trim() === "";
-  }, [passageiro?.data_inicio_transporte]);
-
-  const needsDataFim = useMemo(() => {
-    return !passageiro?.data_fim_transporte || passageiro.data_fim_transporte.trim() === "";
-  }, [passageiro?.data_fim_transporte]);
-
-  const needsPeriodo = useMemo(() => {
-    return !passageiro?.periodo || passageiro.periodo.trim() === "";
-  }, [passageiro?.periodo]);
-
-  const needsTransporteGroup = needsDataInicio || needsDataFim || needsPeriodo;
+  const {
+    needsNomeResp,
+    needsTelefoneResp,
+    needsCpfResp,
+    needsParentesco,
+    needsResponsavelGroup,
+    needsValor,
+    needsVencimento,
+    needsFinanceiroGroup,
+    needsDataInicio,
+    needsDataFim,
+    needsPeriodo,
+    needsTransporteGroup,
+  } = useMemo(() => avaliarPendenciasContrato(passageiro), [passageiro]);
 
   const dynamicSchema = useMemo(() => {
     return gerarContratoValidadorSchema.superRefine((data, ctx) => {

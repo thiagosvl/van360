@@ -28,6 +28,7 @@ import {
   isCobrancaRetroativa,
   COBRANCA_BANNER_MESSAGES,
   getDefaultAnoLetivo,
+  isPassageiroIncompleto,
 } from "@/utils/domain";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
@@ -265,6 +266,7 @@ export function PassageiroFinanceiroDialog({
       toast.success("Parcelas configuradas com sucesso!");
       handleClose();
 
+      const wasIncomplete = isPassageiroIncompleto(passageiro);
       const currentMonth = now.getMonth() + 1;
       const hasCurrentMonthRealCharge = (cobrancasData || []).some(
         (c) => c.mes === currentMonth && c.ano === currentYear && c.status !== CobrancaStatus.CANCELADA
@@ -276,7 +278,7 @@ export function PassageiroFinanceiroDialog({
         targetYear: currentYear,
       });
 
-      if (isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
+      if (wasIncomplete && isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
         openFirstChargeDialog({
           passageiro: updatedPassageiro,
           onSuccess: () => {

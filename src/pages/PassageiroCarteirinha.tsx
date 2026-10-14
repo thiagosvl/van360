@@ -57,7 +57,7 @@ import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/h
 import { usePassageiroRotas } from "@/hooks/api/useRoutes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
+import { CobrancaStatus, ContratoProvider, ContratoStatus, PassageiroFormModes } from "@/types/enums";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
@@ -69,7 +69,12 @@ import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
-import { obterUrlDocumentoContrato, isPassageiroIncompleto } from "@/utils/domain";
+import {
+  obterUrlDocumentoContrato,
+  isPassageiroIncompleto,
+  isContratoAtivoNaConta,
+  hasPendenciasParaGerarContrato,
+} from "@/utils/domain";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
 const currentYear = getNowBR().getFullYear().toString();
@@ -378,6 +383,7 @@ export default function PassageiroCarteirinha() {
     }
   }, [passageiro, setPageTitle]);
   const handlePassageiroFormSuccess = useCallback((data?: Passageiro | { passageiro?: Passageiro; id?: string }, meta?: { hasCriticalContractChanges?: boolean }) => {
+    const wasIncomplete = isPassageiroIncompleto(passageiro);
     const rawData: Partial<Passageiro> = data
       ? ("passageiro" in data && data.passageiro ? data.passageiro : data)
       : {};
@@ -386,6 +392,7 @@ export default function PassageiroCarteirinha() {
       ...rawData,
       status_contrato: rawData.status_contrato ?? passageiro?.status_contrato,
       contrato_id: rawData.contrato_id ?? passageiro?.contrato_id,
+      contrato_provider: rawData.contrato_provider ?? passageiro?.contrato_provider,
     } as Passageiro;
 
     const valorFinal = Number(updatedPassageiro.valor_cobranca || 0);
@@ -406,7 +413,7 @@ export default function PassageiroCarteirinha() {
       targetYear: currYear,
     });
 
-    if (isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
+    if (wasIncomplete && isEligibleForFirstCharge && !hasCurrentMonthRealCharge) {
       setTimeout(() => {
         openFirstChargeDialog({
           passageiro: updatedPassageiro,
@@ -416,51 +423,26 @@ export default function PassageiroCarteirinha() {
     }
 
     const hasChanges = meta?.hasCriticalContractChanges === true;
-    const usarContratos = !!profile?.config_contrato?.usar_contratos;
+    const isContratoAtivo = canManageContracts && isContratoAtivoNaConta(profile);
+    const isContratoImportado = updatedPassageiro.contrato_provider === ContratoProvider.IMPORTADO;
 
-    if (hasChanges && usarContratos) {
+    if (hasChanges && isContratoAtivo && !isContratoImportado) {
       setTimeout(() => {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
           updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-        const hasNomeResp = !!(updatedPassageiro.responsavel_principal?.nome);
-        const hasCpf = !!(updatedPassageiro.responsavel_principal?.cpf);
-        const hasInicio = !!(updatedPassageiro.data_inicio_transporte);
-        const hasFim = !!(updatedPassageiro.data_fim_transporte);
-
-        if (hasNomeResp && hasCpf && hasInicio && hasFim) {
-          openConfirmarGerarContratoDialog({
-            passageiro: updatedPassageiro,
-            valorMensal: updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined,
-            diaVencimento: updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined,
-            isSubstituicao: hasActiveContract,
-            contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
-          });
-          return;
-        }
-
-        openGerarContratoValidadorDialog({
-          passageiroId: updatedPassageiro.id!,
-          initialPassageiro: updatedPassageiro,
-          onSuccess: (_id, _bypassed, updatedValues, freshPassageiro) => {
-            const finalPass = freshPassageiro || updatedPassageiro;
-            const valorMensal = updatedValues?.valorMensal ?? (finalPass.valor_cobranca ? Number(finalPass.valor_cobranca) : undefined);
-            const diaVencimento = updatedValues?.diaVencimento ?? (finalPass.dia_vencimento ? Number(finalPass.dia_vencimento) : undefined);
-
-            openConfirmarGerarContratoDialog({
-              passageiro: finalPass,
-              valorMensal,
-              diaVencimento,
-              dataInicio: finalPass.data_inicio_transporte || undefined,
-              dataFim: finalPass.data_fim_transporte || undefined,
-              isSubstituicao: hasActiveContract,
-              contratoIdParaSubstituir: finalPass.contrato_id || undefined,
-            });
-          },
+        openConfirmarGerarContratoDialog({
+          passageiro: updatedPassageiro,
+          valorMensal: updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined,
+          diaVencimento: updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined,
+          dataInicio: updatedPassageiro.data_inicio_transporte || undefined,
+          dataFim: updatedPassageiro.data_fim_transporte || undefined,
+          isSubstituicao: hasActiveContract,
+          contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
         });
       }, 300);
     }
-  }, [passageiro, cobrancas, openFirstChargeDialog, openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, profile?.config_contrato?.usar_contratos]);
+  }, [passageiro, cobrancas, canManageContracts, openFirstChargeDialog, openConfirmarGerarContratoDialog, profile]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -814,7 +796,7 @@ export default function PassageiroCarteirinha() {
     onCopyToClipboard: handleCopyToClipboard,
     onToggleClick: handleToggleClick,
     onEnviarWhatsApp: handleEnviarWhatsApp,
-    contratosAtivos: !!profile?.config_contrato?.usar_contratos,
+    contratosAtivos: isContratoAtivoNaConta(profile),
     onDeleteClick: () => {
       const hasMultipleYears = anosMatriculados.length > 1;
       let selectedMode: DeletePassageiroMode = "matricula";
@@ -917,12 +899,7 @@ export default function PassageiroCarteirinha() {
           openBrowserLink(urlContrato);
         }
       } else {
-        const hasNomeResp = !!(passageiro.responsavel_principal?.nome);
-        const hasCpf = !!(passageiro.responsavel_principal?.cpf);
-        const hasInicio = !!(passageiro.data_inicio_transporte);
-        const hasFim = !!(passageiro.data_fim_transporte);
-
-        if (hasNomeResp && hasCpf && hasInicio && hasFim) {
+        if (!hasPendenciasParaGerarContrato(passageiro)) {
           openConfirmarGerarContratoDialog({
             passageiro,
             valorMensal: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined,

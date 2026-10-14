@@ -1,3 +1,4 @@
+import { Passageiro } from "@/types/passageiro";
 import { Usuario } from "@/types/usuario";
 
 export enum StatusConfiguracaoContrato {
@@ -25,4 +26,81 @@ export function obterStatusConfiguracaoContrato(
     return StatusConfiguracaoContrato.DESATIVADO;
   }
   return StatusConfiguracaoContrato.ATIVO;
+}
+
+export function isContratoAtivoNaConta(
+  profile?: Partial<Usuario> | null
+): boolean {
+  return obterStatusConfiguracaoContrato(profile) === StatusConfiguracaoContrato.ATIVO;
+}
+
+export interface PendenciasContratoResult {
+  needsNomeResp: boolean;
+  needsTelefoneResp: boolean;
+  needsCpfResp: boolean;
+  needsParentesco: boolean;
+  needsResponsavelGroup: boolean;
+  needsValor: boolean;
+  needsVencimento: boolean;
+  needsFinanceiroGroup: boolean;
+  needsDataInicio: boolean;
+  needsDataFim: boolean;
+  needsPeriodo: boolean;
+  needsTransporteGroup: boolean;
+  hasPendencias: boolean;
+}
+
+export function avaliarPendenciasContrato(
+  passageiro?: Partial<Passageiro> | null
+): PendenciasContratoResult {
+  const resp = passageiro?.responsavel_principal;
+  const needsNomeResp = !resp?.nome || resp.nome.trim() === "";
+  const needsTelefoneResp = !resp?.telefone || resp.telefone.replace(/\D/g, "").length < 10;
+  const rawCpf = resp?.cpf || "";
+  const needsCpfResp = rawCpf.replace(/\D/g, "").length !== 11;
+  const needsParentesco = !resp?.parentesco;
+  const needsResponsavelGroup =
+    needsNomeResp || needsTelefoneResp || needsCpfResp || needsParentesco;
+
+  const needsValor =
+    !passageiro?.isento &&
+    (!passageiro?.valor_cobranca || Number(passageiro.valor_cobranca) <= 0);
+  const needsVencimento = !passageiro?.isento && !passageiro?.dia_vencimento;
+  const needsFinanceiroGroup = needsValor || needsVencimento;
+
+  const needsDataInicio =
+    !passageiro?.data_inicio_transporte ||
+    String(passageiro.data_inicio_transporte).trim() === "";
+  const needsDataFim =
+    !passageiro?.data_fim_transporte ||
+    String(passageiro.data_fim_transporte).trim() === "";
+  const needsPeriodo =
+    !passageiro?.periodo || String(passageiro.periodo).trim() === "";
+  const needsTransporteGroup = needsDataInicio || needsDataFim || needsPeriodo;
+
+  const hasPendencias =
+    needsResponsavelGroup || needsFinanceiroGroup || needsTransporteGroup;
+
+  return {
+    needsNomeResp,
+    needsTelefoneResp,
+    needsCpfResp,
+    needsParentesco,
+    needsResponsavelGroup,
+    needsValor,
+    needsVencimento,
+    needsFinanceiroGroup,
+    needsDataInicio,
+    needsDataFim,
+    needsPeriodo,
+    needsTransporteGroup,
+    hasPendencias,
+  };
+}
+
+export function hasPendenciasParaGerarContrato(
+  passageiro?: Partial<Passageiro> | null
+): boolean {
+  if (!passageiro) return true;
+  return avaliarPendenciasContrato(passageiro).hasPendencias;
 }

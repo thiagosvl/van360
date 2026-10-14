@@ -25,6 +25,7 @@ import { toast } from "@/utils/notifications/toast";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { isContratoAtivoNaConta } from "@/utils/domain";
 
 interface UsePassageiroFormViewModelProps {
   isOpen: boolean;
@@ -370,10 +371,11 @@ export function usePassageiroFormViewModel({
     const commonOptions = {
       onSuccess: (responseData?: Passageiro) => {
         const isEdit = mode === PassageiroFormModes.EDIT;
-        const isContractActive = !!profile?.config_contrato?.usar_contratos;
+        const isContractActive = isContratoAtivoNaConta(profile);
+        const basePassageiro = targetPassageiro || editingPassageiro;
         let hasCriticalContractChanges = false;
 
-        if (isEdit && editingPassageiro && isContractActive) {
+        if (isEdit && basePassageiro && isContractActive) {
           const normalizeText = (val: unknown) => {
             if (val === null || val === undefined) return "";
             return String(val).trim().toLowerCase();
@@ -416,11 +418,11 @@ export function usePassageiroFormViewModel({
           };
 
           const isIsento = !!purePayload.isento;
-          const isIsentoAtual = !!editingPassageiro.isento;
+          const isIsentoAtual = !!basePassageiro.isento;
           const valorForm = parseCurrencyToNumber(purePayload.valor_cobranca as string | number | null | undefined);
           const vencimentoForm = Number(purePayload.dia_vencimento || 0);
-          const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
-          const vencimentoAtual = Number(editingPassageiro.dia_vencimento || 0);
+          const valorAtual = Number(basePassageiro.valor_cobranca || 0);
+          const vencimentoAtual = Number(basePassageiro.dia_vencimento || 0);
 
           const hasFinancialChanges = isIsento !== isIsentoAtual || (!isIsento && (
             Math.abs(valorForm - valorAtual) > 0.01 ||
@@ -429,29 +431,29 @@ export function usePassageiroFormViewModel({
 
           hasCriticalContractChanges =
             hasFinancialChanges ||
-            checkTextChange(purePayload.nome, editingPassageiro.nome) ||
-            checkTextChange(data.responsavel_principal?.nome, editingPassageiro.responsavel_principal?.nome) ||
-            checkTextChange(data.responsavel_principal?.parentesco, editingPassageiro.responsavel_principal?.parentesco) ||
-            checkDigitsChange(data.responsavel_principal?.cpf, editingPassageiro.responsavel_principal?.cpf) ||
-            checkDigitsChange(data.responsavel_principal?.telefone, editingPassageiro.responsavel_principal?.telefone) ||
-            checkTextChange(purePayload.escola_id, editingPassageiro.escola_id) ||
-            checkTextChange(purePayload.periodo, editingPassageiro.periodo) ||
-            checkTextChange(purePayload.modalidade, editingPassageiro.modalidade) ||
-            checkTextChange(purePayload.turma, editingPassageiro.turma) ||
-            checkTextChange(purePayload.sala, editingPassageiro.sala) ||
-            checkTextChange(purePayload.nome_professor, editingPassageiro.nome_professor) ||
-            checkDateChange(purePayload.data_inicio_transporte, editingPassageiro.data_inicio_transporte) ||
-            checkDateChange(purePayload.data_fim_transporte, editingPassageiro.data_fim_transporte) ||
-            checkTimeChange(purePayload.horario_entrada, editingPassageiro.horario_entrada) ||
-            checkTimeChange(purePayload.horario_saida, editingPassageiro.horario_saida) ||
-            checkDateChange(purePayload.data_inicio_cobranca, editingPassageiro.data_inicio_cobranca) ||
-            checkDateChange(purePayload.data_fim_cobranca, editingPassageiro.data_fim_cobranca) ||
-            checkTextChange(data.responsavel_principal?.logradouro, editingPassageiro.responsavel_principal?.logradouro) ||
-            checkTextChange(data.responsavel_principal?.numero, editingPassageiro.responsavel_principal?.numero) ||
-            checkTextChange(data.responsavel_principal?.bairro, editingPassageiro.responsavel_principal?.bairro) ||
-            checkTextChange(data.responsavel_principal?.cidade, editingPassageiro.responsavel_principal?.cidade) ||
-            checkTextChange(data.responsavel_principal?.estado, editingPassageiro.responsavel_principal?.estado) ||
-            checkDigitsChange(data.responsavel_principal?.cep, editingPassageiro.responsavel_principal?.cep);
+            checkTextChange(purePayload.nome, basePassageiro.nome) ||
+            checkTextChange(data.responsavel_principal?.nome, basePassageiro.responsavel_principal?.nome) ||
+            checkTextChange(data.responsavel_principal?.parentesco, basePassageiro.responsavel_principal?.parentesco) ||
+            checkDigitsChange(data.responsavel_principal?.cpf, basePassageiro.responsavel_principal?.cpf) ||
+            checkDigitsChange(data.responsavel_principal?.telefone, basePassageiro.responsavel_principal?.telefone) ||
+            checkTextChange(purePayload.escola_id, basePassageiro.escola_id) ||
+            checkTextChange(purePayload.periodo, basePassageiro.periodo) ||
+            checkTextChange(purePayload.modalidade, basePassageiro.modalidade) ||
+            checkTextChange(purePayload.turma, basePassageiro.turma) ||
+            checkTextChange(purePayload.sala, basePassageiro.sala) ||
+            checkTextChange(purePayload.nome_professor, basePassageiro.nome_professor) ||
+            checkDateChange(purePayload.data_inicio_transporte, basePassageiro.data_inicio_transporte) ||
+            checkDateChange(purePayload.data_fim_transporte, basePassageiro.data_fim_transporte) ||
+            checkTimeChange(purePayload.horario_entrada, basePassageiro.horario_entrada) ||
+            checkTimeChange(purePayload.horario_saida, basePassageiro.horario_saida) ||
+            checkDateChange(purePayload.data_inicio_cobranca, basePassageiro.data_inicio_cobranca) ||
+            checkDateChange(purePayload.data_fim_cobranca, basePassageiro.data_fim_cobranca) ||
+            checkTextChange(data.responsavel_principal?.logradouro, basePassageiro.responsavel_principal?.logradouro) ||
+            checkTextChange(data.responsavel_principal?.numero, basePassageiro.responsavel_principal?.numero) ||
+            checkTextChange(data.responsavel_principal?.bairro, basePassageiro.responsavel_principal?.bairro) ||
+            checkTextChange(data.responsavel_principal?.cidade, basePassageiro.responsavel_principal?.cidade) ||
+            checkTextChange(data.responsavel_principal?.estado, basePassageiro.responsavel_principal?.estado) ||
+            checkDigitsChange(data.responsavel_principal?.cep, basePassageiro.responsavel_principal?.cep);
         }
 
         onSuccess(responseData, {
