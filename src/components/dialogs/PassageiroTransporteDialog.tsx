@@ -245,6 +245,7 @@ export function PassageiroTransporteDialog({
 
     try {
       const payload: Record<string, unknown> = {
+        ...(passageiro.ano_letivo ? { ano_letivo: passageiro.ano_letivo } : {}),
         veiculo_id: data.veiculo_id || null,
         modalidade: data.modalidade || null,
         data_inicio_transporte: data.data_inicio_transporte ? convertDateBrToISO(data.data_inicio_transporte) : null,

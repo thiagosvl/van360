@@ -109,10 +109,6 @@ export interface UpdateRenovacaoPayload {
   novo_isento?: boolean;
 }
 
-export interface VirarAnoLetivoPayload {
-  ano_destino: number;
-}
-
 export interface PublicRenovacaoConditionItem<T> {
   atual: T;
   novo: T;

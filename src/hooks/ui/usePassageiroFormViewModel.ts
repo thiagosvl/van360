@@ -22,7 +22,7 @@ import { parseCurrencyToNumber } from "@/utils/formatters";
 import { cleanString } from "@/utils/string";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 import { getErrorMessage } from "@/utils/errorHandler";
 
@@ -60,7 +60,41 @@ export function usePassageiroFormViewModel({
     { enabled: isOpen && mode === PassageiroFormModes.EDIT && !!editingPassageiro?.id }
   );
 
-  const targetPassageiro = (fullPassageiro as Passageiro) || editingPassageiro;
+  const targetPassageiro = useMemo(() => {
+    const base = (fullPassageiro as Passageiro) || editingPassageiro;
+    if (!base) return null;
+    const requestedYear = editingPassageiro?.ano_letivo;
+    if (requestedYear && base.matriculas && base.matriculas.length > 0) {
+      const mat = base.matriculas.find((m) => Number(m.ano_letivo) === Number(requestedYear));
+      if (mat) {
+        return {
+          ...base,
+          matricula_id: mat.id,
+          ano_letivo: mat.ano_letivo,
+          escola_id: mat.escola_id ?? undefined,
+          veiculo_id: mat.veiculo_id ?? "",
+          periodo: (mat.periodo as Passageiro["periodo"]) ?? base.periodo,
+          modalidade: (mat.modalidade as Passageiro["modalidade"]) ?? base.modalidade,
+          turma: mat.turma ?? undefined,
+          sala: mat.sala ?? null,
+          nome_professor: mat.nome_professor ?? undefined,
+          horario_entrada: mat.horario_entrada ?? null,
+          horario_saida: mat.horario_saida ?? null,
+          valor_cobranca: Number(mat.valor_cobranca ?? 0),
+          dia_vencimento: Number(mat.dia_vencimento ?? 10),
+          isento: Boolean(mat.isento),
+          data_inicio_transporte: mat.data_inicio_transporte ?? undefined,
+          data_fim_transporte: mat.data_fim_transporte ?? undefined,
+          data_inicio_cobranca: mat.data_inicio_cobranca ?? undefined,
+          data_fim_cobranca: mat.data_fim_cobranca ?? undefined,
+          ativo: Boolean(mat.ativo),
+          escola: mat.escola ?? base.escola,
+          veiculo: mat.veiculo ?? base.veiculo,
+        } as Passageiro;
+      }
+    }
+    return base;
+  }, [fullPassageiro, editingPassageiro]);
 
   const includeEscolaId =
     mode === PassageiroFormModes.EDIT
@@ -317,11 +351,9 @@ export function usePassageiroFormViewModel({
     delete purePayload.ano_inicio_cobranca;
     delete purePayload.ano_fim_cobranca;
 
-    if (mode === PassageiroFormModes.EDIT) {
-      delete purePayload.ano_letivo;
-    } else {
-      purePayload.ano_letivo = anoLetivoNum;
-    }
+    purePayload.ano_letivo = !Number.isNaN(anoLetivoNum)
+      ? anoLetivoNum
+      : (editingPassageiro?.ano_letivo || currentYear);
 
     purePayload.genero = purePayload.genero || null;
     purePayload.periodo = purePayload.periodo || null;

@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   useRenovacoesList,
   useUpdateRenovacao,
-  useVirarAnoLetivo,
   useReajusteLote,
   useAtualizarStatusLoteRenovacao,
 } from "../api/useRenovacoes";
@@ -11,12 +11,40 @@ import { toast } from "sonner";
 
 export const FILTER_ALL = "all";
 
+function getDefaultAnoDestino(): number {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  return currentMonth <= 2 ? currentYear : currentYear + 1;
+}
+
 export function useRenovacoesViewModel() {
-  const [anoDestino, setAnoDestino] = useState<number>(new Date().getFullYear() + 1);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [anoDestino, setAnoDestinoState] = useState<number>(() => {
+    const paramAno = Number(searchParams.get("ano"));
+    if (paramAno && paramAno >= 2020 && paramAno <= 2100) {
+      return paramAno;
+    }
+    return getDefaultAnoDestino();
+  });
+
+  const setAnoDestino = useCallback(
+    (novoAno: number) => {
+      setAnoDestinoState(novoAno);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("ano", String(novoAno));
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
   const [statusFilter, setStatusFilter] = useState<string>(FILTER_ALL);
   const [escolaFilter, setEscolaFilter] = useState<string>(FILTER_ALL);
   const [periodoFilter, setPeriodoFilter] = useState<string>(FILTER_ALL);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>(() => searchParams.get("search") || "");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
 
@@ -29,7 +57,6 @@ export function useRenovacoesViewModel() {
   });
 
   const updateRenovacaoMutation = useUpdateRenovacao();
-  const virarAnoMutation = useVirarAnoLetivo();
   const reajusteLoteMutation = useReajusteLote();
   const atualizarStatusLoteMutation = useAtualizarStatusLoteRenovacao();
 
@@ -253,7 +280,6 @@ export function useRenovacoesViewModel() {
     handleRegistrarSaidaLote,
     handleReativarLote,
     handleUpdateValorInline,
-    virarAnoMutation,
     reajusteLoteMutation,
     isUpdating: updateRenovacaoMutation.isPending || isBatchUpdating,
   };

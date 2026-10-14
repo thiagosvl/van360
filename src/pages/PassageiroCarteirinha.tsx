@@ -31,6 +31,12 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppTabNav, AppTabItem } from "@/components/ui/AppTabNav";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
+import { Banner } from "@/components/ui/Banner";
+import {
+  DeletePassageiroOptionsContent,
+  DeletePassageiroMode,
+} from "@/components/features/passageiro/DeletePassageiroOptionsContent";
 import { CalendarClock, FileText, User, Users, Wallet } from "lucide-react";
 
 import { useLayout } from "@/contexts/LayoutContext";
@@ -39,6 +45,7 @@ import {
   useCreateCobranca,
   useDeleteCobranca,
   useDeletePassageiro,
+  useDeletePassageiroMatricula,
   useDesfazerPagamento,
   useIsMobile, usePassageiro,
   useToggleAtivoPassageiro,
@@ -136,6 +143,7 @@ export default function PassageiroCarteirinha() {
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
+  const deletePassageiroMatricula = useDeletePassageiroMatricula();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
   const updateCobranca = useUpdateCobranca();
   const createCobranca = useCreateCobranca();
@@ -152,6 +160,7 @@ export default function PassageiroCarteirinha() {
     deleteContrato.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
+    deletePassageiroMatricula.isPending ||
     toggleAtivoPassageiro.isPending ||
     createCobranca.isPending ||
     updateCobranca.isPending ||
@@ -163,8 +172,24 @@ export default function PassageiroCarteirinha() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
-  const [yearFilter, setYearFilter] = useState(currentYear);
-  const hasSetInitialYear = useRef(false);
+  const urlAno = searchParams.get("ano");
+  const [yearFilter, setYearFilterState] = useState(urlAno || currentYear);
+  const hasSetInitialYear = useRef(Boolean(urlAno));
+
+  const setYearFilter = useCallback(
+    (newYear: string) => {
+      setYearFilterState(newYear);
+      setSearchParams(
+        (prev) => {
+          const updated = new URLSearchParams(prev);
+          updated.set("ano", newYear);
+          return updated;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
@@ -182,14 +207,69 @@ export default function PassageiroCarteirinha() {
     enabled: !!passageiro_id && !isDeleting && !isDeletedRef.current,
   });
 
-  const passageiro = passageiroData as Passageiro;
-
   useEffect(() => {
-    if (passageiro?.ano_letivo && !hasSetInitialYear.current) {
+    if (passageiroData && !hasSetInitialYear.current) {
       hasSetInitialYear.current = true;
-      setYearFilter(passageiro.ano_letivo.toString());
+      const anos = passageiroData.anos_matriculados || [];
+      const currNum = Number(currentYear);
+      if (anos.includes(currNum)) {
+        setYearFilterState(String(currNum));
+      } else if (anos.length > 0) {
+        setYearFilterState(String(anos[anos.length - 1]));
+      } else if (passageiroData.ano_letivo) {
+        setYearFilterState(String(passageiroData.ano_letivo));
+      }
     }
-  }, [passageiro?.ano_letivo]);
+  }, [passageiroData]);
+
+  const selectedYearNum = Number(yearFilter) || Number(currentYear);
+
+  const passageiro = useMemo(() => {
+    if (!passageiroData) return undefined as unknown as Passageiro;
+    const mat = passageiroData.matriculas?.find(
+      (m) => Number(m.ano_letivo) === selectedYearNum
+    );
+    if (!mat) return passageiroData as Passageiro;
+    const contrato = mat.contrato;
+    return {
+      ...passageiroData,
+      matricula_id: mat.id,
+      ano_letivo: mat.ano_letivo,
+      escola_id: mat.escola_id ?? undefined,
+      veiculo_id: mat.veiculo_id ?? "",
+      periodo: (mat.periodo as Passageiro["periodo"]) ?? passageiroData.periodo,
+      modalidade: (mat.modalidade as Passageiro["modalidade"]) ?? passageiroData.modalidade,
+      turma: mat.turma ?? undefined,
+      sala: mat.sala ?? null,
+      nome_professor: mat.nome_professor ?? undefined,
+      horario_entrada: mat.horario_entrada ?? null,
+      horario_saida: mat.horario_saida ?? null,
+      valor_cobranca: Number(mat.valor_cobranca ?? 0),
+      dia_vencimento: Number(mat.dia_vencimento ?? 10),
+      isento: Boolean(mat.isento),
+      data_inicio_transporte: mat.data_inicio_transporte ?? undefined,
+      data_fim_transporte: mat.data_fim_transporte ?? undefined,
+      data_inicio_cobranca: mat.data_inicio_cobranca ?? undefined,
+      data_fim_cobranca: mat.data_fim_cobranca ?? undefined,
+      ativo: Boolean(mat.ativo),
+      escola: mat.escola ?? undefined,
+      escola_nome: mat.escola?.nome ?? undefined,
+      veiculo: mat.veiculo ?? undefined,
+      contrato_id: contrato?.id ?? undefined,
+      status_contrato:
+        (contrato?.status as Passageiro["status_contrato"]) ??
+        ContratoStatus.NAO_SOLICITADO,
+      contrato_status: contrato?.status ?? "sem_contrato",
+      contrato_provider:
+        (contrato?.provider as Passageiro["contrato_provider"]) ?? undefined,
+      minuta_url: contrato?.minuta_url ?? undefined,
+      contrato_final_url: contrato?.contrato_final_url ?? undefined,
+      contrato_url:
+        contrato?.contrato_final_url || contrato?.minuta_url || undefined,
+      token_acesso: contrato?.token_acesso ?? undefined,
+      contrato_ano: contrato?.ano ?? null,
+    } as Passageiro;
+  }, [passageiroData, selectedYearNum]);
 
   const {
     data: rotasPassageiro = [],
@@ -459,6 +539,7 @@ export default function PassageiroCarteirinha() {
           await toggleAtivoPassageiro.mutateAsync({
             id: passageiro_id,
             novoStatus: !passageiro.ativo,
+            anoLetivo: selectedYearNum,
           });
           safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
@@ -628,11 +709,26 @@ export default function PassageiroCarteirinha() {
     ]);
   };
 
+  const anosMatriculados = useMemo(() => {
+    const list = passageiro.anos_matriculados || [];
+    if (list.length > 0) return list;
+    return [passageiro.ano_letivo || selectedYearNum];
+  }, [passageiro.anos_matriculados, passageiro.ano_letivo, selectedYearNum]);
+
+  const anosDisponiveisCarteirinha = useMemo(() => {
+    return Array.from(new Set([...anosMatriculados, selectedYearNum])).sort((a, b) => a - b);
+  }, [anosMatriculados, selectedYearNum]);
+
+  const showRenewalBanner =
+    can("renovacoes.gerenciar") &&
+    selectedYearNum <= Number(currentYear) &&
+    !anosMatriculados.includes(selectedYearNum + 1);
+
   const cobrancasProps = {
     cobrancas,
     passageiro,
     yearFilter,
-    onYearFilterChange: setYearFilter,
+    onYearFilterChange: undefined,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
     onOpenCobrancaDialog: (mes?: number, ano?: number, lockFoiPago?: boolean, lockMesAno?: boolean, availableMonths?: number[]) => {
@@ -719,22 +815,55 @@ export default function PassageiroCarteirinha() {
     onToggleClick: handleToggleClick,
     onEnviarWhatsApp: handleEnviarWhatsApp,
     contratosAtivos: !!profile?.config_contrato?.usar_contratos,
-    onDeleteClick: () =>
+    onDeleteClick: () => {
+      const hasMultipleYears = anosMatriculados.length > 1;
+      let selectedMode: DeletePassageiroMode = "matricula";
+
       openConfirmationDialog({
-        title: "Excluir aluno?",
-        description:
-          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno.",
+        title: hasMultipleYears ? "Como deseja excluir?" : "Excluir aluno?",
+        description: hasMultipleYears ? (
+          <DeletePassageiroOptionsContent
+            nomeAluno={passageiro.nome}
+            anoSelecionado={selectedYearNum}
+            anosMatriculados={anosMatriculados}
+            defaultMode="matricula"
+            onChangeMode={(m) => {
+              selectedMode = m;
+            }}
+          />
+        ) : (
+          "Tem certeza que deseja excluir este aluno? Esta ação excluirá permanentemente o cadastro e todos os dados do aluno."
+        ),
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
           if (!passageiro_id) return;
+
+          if (hasMultipleYears && selectedMode === "matricula") {
+            try {
+              const res = await deletePassageiroMatricula.mutateAsync({
+                id: passageiro_id,
+                anoLetivo: selectedYearNum,
+              });
+              safeCloseDialog(closeConfirmationDialog);
+              if (res.deletedStudent) {
+                navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
+              } else if (res.remainingYears && res.remainingYears.length > 0) {
+                setYearFilter(String(res.remainingYears[res.remainingYears.length - 1]));
+              }
+            } catch {
+              safeCloseDialog(closeConfirmationDialog);
+            }
+            return;
+          }
+
           setIsDeleting(true);
           try {
             isDeletedRef.current = true;
             await deletePassageiro.mutateAsync(passageiro_id);
             safeCloseDialog(closeConfirmationDialog);
             navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
-          } catch (error) {
+          } catch {
             isDeletedRef.current = false;
             safeCloseDialog(closeConfirmationDialog);
           } finally {
@@ -743,7 +872,8 @@ export default function PassageiroCarteirinha() {
             }
           }
         },
-      }),
+      });
+    },
     onToggleNotificacoesClick: () => {
       const isAtivo = !!passageiro.enviar_notificacoes;
       const action = isAtivo ? "desativar" : "ativar";
@@ -906,6 +1036,37 @@ export default function PassageiroCarteirinha() {
     </>
   );
 
+  const renderYearAndRenewalHeader = () => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-medium text-[#737373]">
+          Matrícula de {selectedYearNum}
+        </span>
+        <AnoLetivoSelect
+          ano={selectedYearNum}
+          onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
+          anosDisponiveis={anosDisponiveisCarteirinha}
+          label="Ano Letivo"
+        />
+      </div>
+
+      {showRenewalBanner && (
+        <Banner
+          variant="info"
+          title={`Renovação ${selectedYearNum + 1} pendente`}
+          description={`Este aluno ainda não possui matrícula confirmada para ${selectedYearNum + 1}.`}
+          action={{
+            label: "Ir para Renovação",
+            onClick: () =>
+              navigate(
+                `${ROUTES.PRIVATE.MOTORISTA.RENOVATION}?ano=${selectedYearNum + 1}&search=${encodeURIComponent(passageiro.nome)}`
+              ),
+          }}
+        />
+      )}
+    </div>
+  );
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
@@ -924,7 +1085,11 @@ export default function PassageiroCarteirinha() {
                 />
               </Suspense>
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full pt-3 sm:pt-4">
+              <div className="pt-2">
+                {renderYearAndRenewalHeader()}
+              </div>
+
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full pt-2 sm:pt-3">
                 <AppTabNav
                   activeTab={activeTab}
                   items={mobileTabItems}
@@ -994,7 +1159,8 @@ export default function PassageiroCarteirinha() {
                   </div>
                 </div>
 
-                <div className="col-span-8 space-y-6">
+                <div className="col-span-8 space-y-5">
+                  {renderYearAndRenewalHeader()}
                   {renderTabContents()}
                 </div>
               </div>

@@ -15,6 +15,7 @@ export interface ListPassageirosResponse {
 
 export interface PassageiroBatchUpdateItem {
   id: string;
+  ano_letivo?: number;
   escola_id?: string | null;
   veiculo_id?: string | null;
   turma?: string | null;
@@ -37,9 +38,11 @@ export const passageiroApi = {
         return res.data;
       }),
 
-  getPassageiro: (passageiroId: string): Promise<Passageiro> =>
+  getPassageiro: (passageiroId: string, anoLetivo?: number): Promise<Passageiro> =>
     apiClient
-      .get(`${endpointBase}/${passageiroId}`)
+      .get(`${endpointBase}/${passageiroId}`, {
+        params: anoLetivo ? { ano_letivo: anoLetivo } : undefined,
+      })
       .then(res => res.data),
 
   deletePassageiro: (passageiroId: string): Promise<void> =>
@@ -47,9 +50,20 @@ export const passageiroApi = {
       .delete(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
-  toggleAtivo: (passageiroId: string, novoStatus: boolean): Promise<Passageiro> =>
+  deleteMatricula: (
+    passageiroId: string,
+    anoLetivo: number
+  ): Promise<{ deletedStudent: boolean; remainingYears?: number[] }> =>
     apiClient
-      .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, { novoStatus })
+      .delete(`${endpointBase}/${passageiroId}/matriculas/${anoLetivo}`)
+      .then(res => res.data),
+
+  toggleAtivo: (passageiroId: string, novoStatus: boolean, anoLetivo?: number): Promise<Passageiro> =>
+    apiClient
+      .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, {
+        novoStatus,
+        ...(anoLetivo ? { ano_letivo: anoLetivo } : {}),
+      })
       .then(res => res.data),
 
   updatePassageiro: (passageiroId: string, data: Record<string, unknown>): Promise<Passageiro> => {

@@ -64,7 +64,6 @@ import { OnboardingSuccessDialog } from "@/components/dialogs/OnboardingSuccessD
 import { ImageFullscreenDialog } from "@/components/dialogs/ImageFullscreenDialog";
 import { ReajusteLoteDialog } from "@/components/dialogs/ReajusteLoteDialog";
 import { EditarReservaDialog } from "@/components/dialogs/EditarReservaDialog";
-import { ConfirmarViradaAnoDialog } from "@/components/dialogs/ConfirmarViradaAnoDialog";
 import { ConfirmarDisparoWabaDialog } from "@/components/dialogs/ConfirmarDisparoWabaDialog";
 import {
   OpenPixPaymentDialogProps,
@@ -101,7 +100,6 @@ import {
   OpenOnboardingSuccessDialogProps,
   OpenReajusteLoteDialogProps,
   OpenEditarReservaDialogProps,
-  OpenConfirmarViradaAnoDialogProps,
   OpenConfirmarDisparoWabaDialogProps,
   OpenFretamentoFormProps,
   OpenPasseioFormProps,
@@ -425,13 +423,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarReservaDialogState, setEditarReservaDialogState] = useState<{
     open: boolean;
     props?: OpenEditarReservaDialogProps;
-  }>({
-    open: false,
-  });
-
-  const [confirmarViradaAnoDialogState, setConfirmarViradaAnoDialogState] = useState<{
-    open: boolean;
-    props?: OpenConfirmarViradaAnoDialogProps;
   }>({
     open: false,
   });
@@ -940,14 +931,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setEditarReservaDialogState({ open: false }));
   };
 
-  const openConfirmarViradaAnoDialog = (props: OpenConfirmarViradaAnoDialogProps) => {
-    setConfirmarViradaAnoDialogState({ open: true, props });
-  };
-
-  const closeConfirmarViradaAnoDialog = () => {
-    safeCloseDialog(() => setConfirmarViradaAnoDialogState({ open: false }));
-  };
-
   const openConfirmarDisparoWabaDialog = (props: OpenConfirmarDisparoWabaDialogProps) => {
     setConfirmarDisparoWabaDialogState({ open: true, props });
   };
@@ -1033,8 +1016,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeReajusteLoteDialog,
         openEditarReservaDialog,
         closeEditarReservaDialog,
-        openConfirmarViradaAnoDialog,
-        closeConfirmarViradaAnoDialog,
         openConfirmarDisparoWabaDialog,
         closeConfirmarDisparoWabaDialog,
 
@@ -1898,17 +1879,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiro={editarReservaDialogState.props.passageiro}
           anoDestino={editarReservaDialogState.props.anoDestino}
           onSuccess={editarReservaDialogState.props.onSuccess}
-        />
-      )}
-
-      {confirmarViradaAnoDialogState.open && confirmarViradaAnoDialogState.props && (
-        <ConfirmarViradaAnoDialog
-          isOpen={true}
-          onClose={closeConfirmarViradaAnoDialog}
-          anoDestino={confirmarViradaAnoDialogState.props.anoDestino}
-          kpis={confirmarViradaAnoDialogState.props.kpis}
-          onSuccess={confirmarViradaAnoDialogState.props.onSuccess}
-          onRevisarPendentes={confirmarViradaAnoDialogState.props.onRevisarPendentes}
         />
       )}
 

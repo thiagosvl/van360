@@ -248,13 +248,6 @@ export interface OpenEditarReservaDialogProps {
   onSuccess?: () => void;
 }
 
-export interface OpenConfirmarViradaAnoDialogProps {
-  anoDestino: number;
-  kpis: RenovacaoKPIs;
-  onSuccess?: () => void;
-  onRevisarPendentes?: () => void;
-}
-
 export interface OpenConfirmarDisparoWabaDialogProps {
   passageiros: RenovacaoPassageiroItem[];
   anoDestino: number;
@@ -521,8 +514,6 @@ export interface LayoutContextType {
   closeReajusteLoteDialog: () => void;
   openEditarReservaDialog: (props: OpenEditarReservaDialogProps) => void;
   closeEditarReservaDialog: () => void;
-  openConfirmarViradaAnoDialog: (props: OpenConfirmarViradaAnoDialogProps) => void;
-  closeConfirmarViradaAnoDialog: () => void;
   openConfirmarDisparoWabaDialog: (props: OpenConfirmarDisparoWabaDialogProps) => void;
   closeConfirmarDisparoWabaDialog: () => void;
 

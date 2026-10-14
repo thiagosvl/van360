@@ -57,7 +57,6 @@ export {
   useRenovacoesList,
   useReajusteLote,
   useUpdateRenovacao,
-  useVirarAnoLetivo,
 } from "./api/useRenovacoes";
 
 // API hooks (mutations)
@@ -76,7 +75,7 @@ export {
     useCreateGasto, useDeleteGasto, useUpdateGasto
 } from "./api/useGastoMutations";
 export {
-    useCreatePassageiro, useDeletePassageiro, useFinalizePreCadastro, useToggleAtivoPassageiro, useUpdatePassageiro,
+    useCreatePassageiro, useDeletePassageiro, useDeletePassageiroMatricula, useFinalizePreCadastro, useToggleAtivoPassageiro, useUpdatePassageiro,
     useCreateResponsavelAdicional, useUpdateResponsavelAdicional, useDeleteResponsavelAdicional, useSetPrincipalResponsavel,
     useToggleNotificacoesRotaResponsavel
 } from "./api/usePassageiroMutations";

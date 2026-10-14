@@ -81,6 +81,44 @@ export interface Passageiro {
   modo_cobranca?: ModoCobrancaEnum | null;
   responsaveis?: PassageiroResponsavel[];
   responsavel_logado_id?: string | null;
+  matricula_id?: string;
+  anos_matriculados?: number[];
+  matriculas?: PassageiroMatricula[];
+}
+
+export interface PassageiroMatricula {
+  id: string;
+  passageiro_id: string;
+  usuario_id: string;
+  ano_letivo: number;
+  escola_id?: string | null;
+  veiculo_id?: string | null;
+  periodo?: PassageiroPeriodo | string | null;
+  modalidade?: PassageiroModalidade | string | null;
+  turma?: string | null;
+  sala?: string | null;
+  nome_professor?: string | null;
+  horario_entrada?: string | null;
+  horario_saida?: string | null;
+  valor_cobranca: number;
+  dia_vencimento: number;
+  isento?: boolean | null;
+  data_inicio_transporte?: string | null;
+  data_fim_transporte?: string | null;
+  data_inicio_cobranca?: string | null;
+  data_fim_cobranca?: string | null;
+  ativo: boolean;
+  escola?: { id?: string; nome?: string } | null;
+  veiculo?: { id?: string; placa?: string; modelo?: string } | null;
+  contrato?: {
+    id?: string;
+    status?: string;
+    provider?: string | null;
+    minuta_url?: string | null;
+    contrato_final_url?: string | null;
+    token_acesso?: string | null;
+    ano?: number | null;
+  } | null;
 }
 
 export interface PassageiroResponsavel {

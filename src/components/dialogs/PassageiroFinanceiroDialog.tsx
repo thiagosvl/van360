@@ -225,6 +225,7 @@ export function PassageiroFinanceiroDialog({
     const diaFinal = data.isento ? null : (data.dia_vencimento ? Number(data.dia_vencimento) : null);
 
     const payload: Record<string, unknown> = {
+      ano_letivo: passageiro.ano_letivo || Number(defaultAnoLetivo),
       isento: data.isento,
       valor_cobranca: valorFinal,
       dia_vencimento: diaFinal,

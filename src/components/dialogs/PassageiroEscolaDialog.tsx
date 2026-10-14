@@ -120,6 +120,7 @@ export function PassageiroEscolaDialog({
       await updatePassageiro.mutateAsync({
         id: passageiro.id,
         data: {
+          ...(passageiro.ano_letivo ? { ano_letivo: passageiro.ano_letivo } : {}),
           escola_id: data.escola_id,
           periodo: (data.periodo as PassageiroPeriodo) || undefined,
           turma: data.turma?.trim() || null,

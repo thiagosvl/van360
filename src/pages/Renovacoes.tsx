@@ -15,12 +15,12 @@ import { RenovacaoSemTelefoneCard } from "@/components/features/renovacao/Renova
 import { RenovacaoSemTelefoneBanner } from "@/components/features/renovacao/RenovacaoSemTelefoneBanner";
 import { RenovacaoStickyBar } from "@/components/features/renovacao/RenovacaoStickyBar";
 import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
+import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
-import { Rocket, Users, ArrowLeft } from "lucide-react";
+import { Users, ArrowLeft } from "lucide-react";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
 import { useSEO } from "@/hooks/useSEO";
@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 export default function Renovacoes() {
   useSEO({
     title: "Renovação de Ano Letivo",
-    description: "Gerencie as reservas de vaga, reajustes e virada de ano letivo da sua van.",
+    description: "Gerencie as reservas de vaga, reajustes e matrículas do próximo ano letivo da sua van.",
   });
 
   const { can } = usePermissions();
@@ -47,7 +47,6 @@ export default function Renovacoes() {
   const {
     openReajusteLoteDialog,
     openEditarReservaDialog,
-    openConfirmarViradaAnoDialog,
     openConfirmarDisparoWabaDialog,
     openResponsavelFormDialog,
     openConfirmationDialog,
@@ -56,6 +55,7 @@ export default function Renovacoes() {
 
   const {
     anoDestino,
+    setAnoDestino,
     statusFilter,
     setStatusFilter,
     escolaFilter,
@@ -114,7 +114,7 @@ export default function Renovacoes() {
 
     openConfirmationDialog({
       title: `Confirmar vaga de ${count} ${count === 1 ? "aluno" : "alunos"}?`,
-      description: `As vagas selecionadas serão marcadas como confirmadas para o ano letivo de ${anoDestino}.`,
+      description: `As vagas selecionadas serão confirmadas e matriculadas imediatamente no ano letivo de ${anoDestino}.`,
       confirmText: "Sim, Confirmar",
       cancelText: "Cancelar",
       variant: "success",
@@ -145,7 +145,7 @@ export default function Renovacoes() {
       description: (
         <div className="space-y-3">
           <p>
-            Tem certeza que deseja registrar a saída de <strong>{count} {count === 1 ? "aluno" : "alunos"}</strong> para o ano letivo de <strong>{anoDestino}</strong>? As vagas não serão renovadas.
+            Tem certeza que deseja registrar a saída de <strong>{count} {count === 1 ? "aluno" : "alunos"}</strong> para o ano letivo de <strong>{anoDestino}</strong>? Caso já possuam matrícula confirmada em {anoDestino}, ela será removida.
           </p>
           {countContratos > 0 && (
             <Banner
@@ -187,7 +187,7 @@ export default function Renovacoes() {
       description: (
         <div className="space-y-3">
           <p>
-            As vagas selecionadas voltarão para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+            As vagas selecionadas voltarão para o status pendente para o ano letivo de <strong>{anoDestino}</strong> e eventuais matrículas já geradas em {anoDestino} serão removidas.
           </p>
           {countContratos > 0 && (
             <Banner
@@ -220,6 +220,7 @@ export default function Renovacoes() {
     const nomeAluno = p?.nome || "o aluno";
     const temContrato = Boolean(p?.contrato_status);
     const contratoAssinado = p?.contrato_status === "assinado";
+    const eraConfirmado = p?.status === RenovacaoStatus.CONFIRMADO;
 
     return new Promise<void>((resolve, reject) => {
       openConfirmationDialog({
@@ -228,6 +229,7 @@ export default function Renovacoes() {
           <div className="space-y-3">
             <p>
               Tem certeza que deseja marcar a vaga de <strong>{nomeAluno}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
+              {eraConfirmado ? ` A matrícula de ${anoDestino} será removida.` : ""}
             </p>
             {temContrato && (
               <Banner
@@ -265,6 +267,7 @@ export default function Renovacoes() {
     const nomeAluno = nomeAlunoParam || p?.nome || "o aluno";
     const temContrato = Boolean(p?.contrato_status);
     const contratoAssinado = p?.contrato_status === "assinado";
+    const eraConfirmado = p?.status === RenovacaoStatus.CONFIRMADO;
 
     return new Promise<void>((resolve, reject) => {
       openConfirmationDialog({
@@ -273,6 +276,7 @@ export default function Renovacoes() {
           <div className="space-y-3">
             <p>
               A vaga de <strong>{nomeAluno}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+              {eraConfirmado ? ` A matrícula de ${anoDestino} será removida até nova confirmação.` : ""}
             </p>
             {temContrato && (
               <Banner
@@ -336,7 +340,7 @@ export default function Renovacoes() {
   useEffect(() => {
     setPage(1);
     clearSelection();
-  }, [statusFilter, escolaFilter, periodoFilter, searchTerm, clearSelection]);
+  }, [statusFilter, escolaFilter, periodoFilter, searchTerm, anoDestino, clearSelection]);
 
   const totalPages = Math.ceil((passageiros.length || 0) / limit);
 
@@ -344,6 +348,12 @@ export default function Renovacoes() {
     const from = (page - 1) * limit;
     return passageiros.slice(from, from + limit);
   }, [passageiros, page, limit]);
+
+  const currentYear = new Date().getFullYear();
+  const anosDisponiveisRenovacao = useMemo(
+    () => [currentYear - 1, currentYear, currentYear + 1],
+    [currentYear]
+  );
 
   if (!canManage) {
     return <AccessRestrictedState moduleName="Renovação de Ano Letivo" />;
@@ -353,21 +363,24 @@ export default function Renovacoes() {
     return <RenovacaoSkeleton />;
   }
 
-  const handleOpenVirada = () => {
-    openConfirmarViradaAnoDialog({
-      anoDestino,
-      kpis,
-      onSuccess: () => refetch(),
-      onRevisarPendentes: () => {
-        setStatusFilter(RenovacaoStatus.PENDENTE);
-        setPage(1);
-      },
-    });
-  };
-
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
       <div className="max-w-6xl mx-auto space-y-5 pb-24 sm:pb-28 pt-2 sm:pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <span className="text-xs font-medium text-[#737373]">
+              Origem {anoDestino - 1} → Destino {anoDestino}
+            </span>
+          </div>
+          <AnoLetivoSelect
+            ano={anoDestino}
+            onChangeAno={setAnoDestino}
+            anosDisponiveis={anosDisponiveisRenovacao}
+            label="Renovação"
+            className="h-10 sm:h-11"
+          />
+        </div>
+
         <RenovacaoKPICard
           kpis={kpis}
           anoDestino={anoDestino}
@@ -541,32 +554,6 @@ export default function Renovacoes() {
                 options={[20, 50, 100, 250, 500, 1000, 5000]}
                 className="mt-4"
               />
-
-              {!isViewSemTelefone && (
-                <div className="mt-8 rounded-[24px] border border-[#e5e5e5] bg-white p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-center sm:text-left">
-                    <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
-                      Transição para o Ano Letivo {anoDestino}
-                    </h4>
-                    <p className="text-xs text-[#737373] mt-0.5 font-normal">
-                      {kpis.contadores.confirmados > 0
-                        ? `${kpis.contadores.confirmados} aluno(s) confirmado(s) prontos para virada.`
-                        : "Confirme os alunos que continuarão no transporte para aplicar a virada."}
-                    </p>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="tonal"
-                    onClick={handleOpenVirada}
-                    disabled={isLoading || kpis.contadores.confirmados === 0}
-                    className="w-full sm:w-auto h-11 px-5 rounded-[18px] font-medium text-xs sm:text-sm gap-2 transition-all active:scale-[0.98] cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <Rocket className="w-4 h-4" />
-                    <span>Iniciar Ano Letivo {anoDestino} (Aplicar Virada)</span>
-                  </Button>
-                </div>
-              )}
             </>
           )}
         </div>

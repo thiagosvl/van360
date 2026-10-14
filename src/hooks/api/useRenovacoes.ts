@@ -7,7 +7,6 @@ import {
   RenovacoesListResponse,
   ReajusteLotePayload,
   UpdateRenovacaoPayload,
-  VirarAnoLetivoPayload,
   PublicRenovacaoResponse,
   AtualizarDadosPublicosPayload,
   ResponderRenovacaoPayload,
@@ -81,8 +80,16 @@ export function useUpdateRenovacao() {
       );
       return response.data;
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] }),
+        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.passageiroId] }),
+        queryClient.invalidateQueries({ queryKey: ["contratos"] }),
+        queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] }),
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] }),
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
+      ]);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao atualizar reserva", {
@@ -107,33 +114,19 @@ export function useAtualizarStatusLoteRenovacao() {
       return response.data as { success: boolean; updated_count: number };
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] }),
+        queryClient.invalidateQueries({ queryKey: ["passageiro"] }),
+        queryClient.invalidateQueries({ queryKey: ["contratos"] }),
+        queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] }),
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] }),
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
+      ]);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao atualizar em lote", {
         description: error.response?.data?.error || "Ocorreu um erro ao atualizar os passageiros.",
-      });
-    },
-  });
-}
-
-export function useVirarAnoLetivo() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: VirarAnoLetivoPayload) => {
-      const response = await apiClient.post("/renovacoes/virar-ano", payload);
-      return response.data;
-    },
-    onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.all });
-      toast.success(`Ano Letivo ${data.ano_destino} iniciado com sucesso!`, {
-        description: `${data.confirmados_virados} passageiros promovidos e ${data.recusados_desativados} saídas registradas.`,
-      });
-    },
-    onError: (error: AxiosError<{ error?: string; message?: string }>) => {
-      toast.error("Erro ao virar ano letivo", {
-        description: error.response?.data?.error || "Verifique as pendências e tente novamente.",
       });
     },
   });

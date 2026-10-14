@@ -119,13 +119,56 @@ export function useDeletePassageiro() {
   });
 }
 
+export function useDeletePassageiroMatricula() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, anoLetivo }: { id: string; anoLetivo: number }) =>
+      passageiroApi.deleteMatricula(id, anoLetivo),
+    onError: (error: unknown) => {
+      toast.error("passageiro.erro.excluir", {
+        description: getErrorMessage(error, "passageiro.erro.excluirDetalhe"),
+      });
+    },
+    onSuccess: (result, variables) => {
+      toast.success("passageiro.sucesso.excluido");
+
+      if (result.deletedStudent) {
+        queryClient.removeQueries({ queryKey: ["passageiro", variables.id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["available-years", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos", "kpis"] });
+      queryClient.invalidateQueries({ queryKey: ["renovacoes"] });
+      queryClient.invalidateQueries({ queryKey: ["aniversariantes"] });
+    },
+  });
+}
+
 export function useToggleAtivoPassageiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, novoStatus }: { id: string; novoStatus: boolean }) =>
-      passageiroApi.toggleAtivo(id, novoStatus),
-    onError: (error: any, variables) => {
+    mutationFn: ({
+      id,
+      novoStatus,
+      anoLetivo,
+    }: {
+      id: string;
+      novoStatus: boolean;
+      anoLetivo?: number;
+    }) => passageiroApi.toggleAtivo(id, novoStatus, anoLetivo),
+    onError: (error: unknown, variables) => {
       toast.error(
         variables.novoStatus ? "passageiro.erro.ativar" : "passageiro.erro.desativar",
         {
@@ -133,7 +176,7 @@ export function useToggleAtivoPassageiro() {
         }
       );
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       toast.success(
         variables.novoStatus ? "passageiro.sucesso.ativado" : "passageiro.sucesso.desativado"
       );
