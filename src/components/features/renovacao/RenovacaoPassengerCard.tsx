@@ -220,18 +220,14 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
         <div className="flex items-center gap-2 shrink-0">
           {item.contrato_status === "assinado" && (
-            <FileText
-              className="w-4 h-4 text-emerald-600 shrink-0"
-              title="Contrato Assinado"
-              aria-label="Contrato Assinado"
-            />
+            <span title="Contrato Assinado" aria-label="Contrato Assinado">
+              <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+            </span>
           )}
           {item.contrato_status === "pendente" && (
-            <FileText
-              className="w-4 h-4 text-amber-500 shrink-0"
-              title="Contrato Pendente"
-              aria-label="Contrato Pendente"
-            />
+            <span title="Contrato Pendente" aria-label="Contrato Pendente">
+              <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+            </span>
           )}
 
           {isConfirmed && (
