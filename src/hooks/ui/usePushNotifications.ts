@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
+import { STORAGE_KEYS } from '@/constants';
 import { CobrancaTab, PushNotificationAction } from '@/types/enums';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor, PluginListenerHandle } from '@capacitor/core';
@@ -13,9 +14,9 @@ import { responsavelApi } from '@/services/api/responsavel.api';
 import { normalizeNotificationRoute, savePendingDeepLink } from '@/utils/deepLink';
 
 export const getCachedPushTokenInfo = async (): Promise<{ token: string; platform: string } | null> => {
-  const token = localStorage.getItem('van360_fcm_token');
+  const token = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
   if (!token) return null;
-  const platform = localStorage.getItem('van360_fcm_platform') || 'android';
+  const platform = localStorage.getItem(STORAGE_KEYS.FCM_PLATFORM) || 'android';
   return { token, platform };
 };
 
@@ -170,8 +171,8 @@ export const usePushNotifications = () => {
           console.log('[Push] Token do dispositivo capturado:', token.value);
           const info = await Device.getInfo();
           const platform = info.platform || 'android';
-          localStorage.setItem('van360_fcm_token', token.value);
-          localStorage.setItem('van360_fcm_platform', platform);
+          localStorage.setItem(STORAGE_KEYS.FCM_TOKEN, token.value);
+          localStorage.setItem(STORAGE_KEYS.FCM_PLATFORM, platform);
 
           await dispatchTokenToBackend(token.value, platform);
         });
@@ -184,8 +185,8 @@ export const usePushNotifications = () => {
 
         await PushNotifications.register();
 
-        const cachedToken = localStorage.getItem('van360_fcm_token');
-        const cachedPlatform = localStorage.getItem('van360_fcm_platform') || 'android';
+        const cachedToken = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
+        const cachedPlatform = localStorage.getItem(STORAGE_KEYS.FCM_PLATFORM) || 'android';
         if (cachedToken) {
           await dispatchTokenToBackend(cachedToken, cachedPlatform);
         }
