@@ -7,6 +7,7 @@ import {
   PassageiroPeriodo,
   TipoResponsavel,
   ModoCobrancaEnum,
+  RenovacaoStatus,
 } from "./enums";
 
 export interface Responsavel {
@@ -84,6 +85,7 @@ export interface Passageiro {
   matricula_id?: string;
   anos_matriculados?: number[];
   matriculas?: PassageiroMatricula[];
+  renovacoes?: Array<{ id: string; ano_origem: number; ano_destino: number; status: RenovacaoStatus | string }>;
 }
 
 export interface PassageiroMatricula {

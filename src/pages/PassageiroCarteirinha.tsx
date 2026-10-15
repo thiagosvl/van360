@@ -57,7 +57,7 @@ import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/h
 import { usePassageiroRotas } from "@/hooks/api/useRoutes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { CobrancaStatus, ContratoProvider, ContratoStatus, PassageiroFormModes } from "@/types/enums";
+import { CobrancaStatus, ContratoProvider, ContratoStatus, PassageiroFormModes, RenovacaoStatus } from "@/types/enums";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
@@ -707,10 +707,53 @@ export default function PassageiroCarteirinha() {
     ]);
   };
 
+  const targetRenewalYear = selectedYearNum + 1;
+
+  const renovacaoDestino = (passageiro?.renovacoes || []).find(
+    (r) => Number(r.ano_destino) === targetRenewalYear
+  );
+
+  const hasResponsavel = Boolean(
+    passageiro?.responsavel_principal?.nome ||
+    passageiro?.responsavel_principal?.id ||
+    (passageiro?.responsaveis && passageiro.responsaveis.length > 0)
+  );
+
+  const isFinanceiroIncompleto = isPassageiroIncompleto(passageiro);
+  const isFinanceiroRegular = passageiro?.isento === true || !isFinanceiroIncompleto;
+
+  const isRenovacaoRecusada = renovacaoDestino?.status === RenovacaoStatus.RECUSADO;
+  const isRenovacaoConfirmada = renovacaoDestino?.status === RenovacaoStatus.CONFIRMADO;
+  const jaMatriculadoNoProximoAno = anosMatriculados.includes(targetRenewalYear);
+
   const showRenewalBanner =
     can("renovacoes.gerenciar") &&
+    Boolean(passageiro?.ativo) &&
+    hasResponsavel &&
+    isFinanceiroRegular &&
     selectedYearNum <= Number(currentYear) &&
-    !anosMatriculados.includes(selectedYearNum + 1);
+    !jaMatriculadoNoProximoAno &&
+    !isRenovacaoRecusada &&
+    !isRenovacaoConfirmada;
+
+  const renderRenewalBanner = () => {
+    if (!showRenewalBanner) return null;
+
+    return (
+      <Banner
+        variant="info"
+        title={`Renovação ${selectedYearNum + 1} pendente`}
+        description={`Este aluno ainda não possui matrícula confirmada para ${selectedYearNum + 1}.`}
+        action={{
+          label: "Ir para Renovação",
+          onClick: () =>
+            navigate(
+              `${ROUTES.PRIVATE.MOTORISTA.RENOVATION}?ano=${selectedYearNum + 1}&search=${encodeURIComponent(passageiro.nome)}`
+            ),
+        }}
+      />
+    );
+  };
 
   const cobrancasProps = {
     cobrancas,
@@ -1019,43 +1062,51 @@ export default function PassageiroCarteirinha() {
     </>
   );
 
-  const renderYearAndRenewalHeader = () => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-medium text-[#737373]">
-          Matrícula de {selectedYearNum}
-        </span>
-        <AnoLetivoSelect
-          ano={selectedYearNum}
-          onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
-          anosDisponiveis={anosDisponiveisCarteirinha}
-          label="Ano Letivo"
-        />
-      </div>
+  const renderYearAndRenewalHeader = () => {
+    const hasAnoSelect = anosDisponiveisCarteirinha.length > 1;
+    const renewalBanner = renderRenewalBanner();
 
-      {showRenewalBanner && (
-        <Banner
-          variant="info"
-          title={`Renovação ${selectedYearNum + 1} pendente`}
-          description={`Este aluno ainda não possui matrícula confirmada para ${selectedYearNum + 1}.`}
-          action={{
-            label: "Ir para Renovação",
-            onClick: () =>
-              navigate(
-                `${ROUTES.PRIVATE.MOTORISTA.RENOVATION}?ano=${selectedYearNum + 1}&search=${encodeURIComponent(passageiro.nome)}`
-              ),
-          }}
-        />
-      )}
-    </div>
-  );
+    if (!hasAnoSelect && !renewalBanner) return null;
+
+    return (
+      <div className="space-y-3">
+        {hasAnoSelect && (
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-medium text-[#737373]">
+              Matrícula de {selectedYearNum}
+            </span>
+            <AnoLetivoSelect
+              ano={selectedYearNum}
+              onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
+              anosDisponiveis={anosDisponiveisCarteirinha}
+              label="Ano Letivo"
+            />
+          </div>
+        )}
+
+        {renewalBanner}
+      </div>
+    );
+  };
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {isMobile ? (
             <>
+              {anosDisponiveisCarteirinha.length > 1 && (
+                <div className="w-full">
+                  <AnoLetivoSelect
+                    ano={selectedYearNum}
+                    onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
+                    anosDisponiveis={anosDisponiveisCarteirinha}
+                    label="Ano Letivo"
+                    className="w-full justify-between h-10"
+                  />
+                </div>
+              )}
+
               <Suspense fallback={<CarteirinhaHeaderSkeleton />}>
                 <CarteirinhaHeader
                   passageiro={passageiro}
@@ -1068,17 +1119,15 @@ export default function PassageiroCarteirinha() {
                 />
               </Suspense>
 
-              <div className="pt-2">
-                {renderYearAndRenewalHeader()}
-              </div>
+              {renderRenewalBanner()}
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full pt-2 sm:pt-3">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <AppTabNav
                   activeTab={activeTab}
                   items={mobileTabItems}
                 />
 
-                {renderTabContents("mt-4")}
+                {renderTabContents("mt-3.5 sm:mt-4")}
               </Tabs>
             </>
           ) : (

@@ -69,11 +69,9 @@ export function FormEnderecoFields({
     if (sugestao.cidade) form.setValue(`${namePrefix}cidade`, sugestao.cidade, { shouldValidate: true });
     if (sugestao.estado) form.setValue(`${namePrefix}estado`, sugestao.estado, { shouldValidate: true });
     if (sugestao.cep) form.setValue(`${namePrefix}cep`, sugestao.cep, { shouldValidate: true });
+    form.setValue(`${namePrefix}numero`, "", { shouldValidate: true });
 
     setShowDropdown(false);
-    setTimeout(() => {
-      form.setFocus(`${namePrefix}numero`);
-    }, 100);
   };
 
   return (

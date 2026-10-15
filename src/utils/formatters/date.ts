@@ -74,6 +74,26 @@ export const formatMonthYearAbbr = (date?: string | Date | null): string => {
   return `${m}/${y}`;
 };
 
+export const formatMonthYearShort = (date?: string | Date | null): string => {
+  if (!date) return "";
+  if (typeof date === "string") {
+    const cleanStr = date.trim();
+    if (/^\d{4}-\d{2}$/.test(cleanStr)) {
+      const [year, month] = cleanStr.split("-");
+      const monthIdx = Number(month) - 1;
+      const m = nomesMesesAbreviado[monthIdx] || "";
+      const y = year.slice(-2);
+      return `${m}/${y}`;
+    }
+  }
+  const parsed = parseLocalDate(date);
+  if (isNaN(parsed.getTime())) return "";
+  const m = nomesMesesAbreviado[parsed.getMonth()] || "";
+  const y = String(parsed.getFullYear()).slice(-2);
+  return `${m}/${y}`;
+};
+
+
 /**
  * Formata para data e opcionalmente hora.
  */

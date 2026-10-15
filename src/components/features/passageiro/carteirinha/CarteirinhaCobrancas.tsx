@@ -89,7 +89,6 @@ export const CarteirinhaCobrancas = ({
 
   const {
     openAnnualReceiptDialog,
-    openPassageiroFormDialog,
     openPassageiroFinanceiroDialog,
     openResponsavelFormDialog,
   } = useLayout();
@@ -367,6 +366,9 @@ export const CarteirinhaCobrancas = ({
     );
   }, [displayCobrancas]);
 
+  const hasAjustarCondicoes = canManageFinancials && !showAjusteBanner;
+  const hasBarContent = Boolean(onYearFilterChange) || hasAjustarCondicoes || hasRetroactiveMonths;
+
   return (
     <div className="space-y-4">
       {elegibilidadeReciboAnual.isElegivel && (
@@ -380,43 +382,42 @@ export const CarteirinhaCobrancas = ({
         />
       )}
 
-      <div className="flex items-center justify-between gap-3 min-h-[32px] flex-wrap">
-        <div className="flex items-center gap-3">
-          {onYearFilterChange && (
-            <AnoLetivoSelect
-              ano={selectedYear}
-              onChangeAno={(novoAno) => onYearFilterChange(novoAno.toString())}
-              label="Ano"
-            />
-          )}
-          <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest leading-none px-1">
-            {`${displayCobrancas.length} ${displayCobrancas.length === 1 ? "PARCELA" : "PARCELAS"}`}
-          </span>
-          {canManageFinancials && !showAjusteBanner && (
-            <button
+      {hasBarContent && (
+        <div className="flex items-center justify-between gap-3 min-h-[32px]">
+          <div className="flex items-center gap-3">
+            {onYearFilterChange && (
+              <AnoLetivoSelect
+                ano={selectedYear}
+                onChangeAno={(novoAno) => onYearFilterChange(novoAno.toString())}
+                label="Ano"
+              />
+            )}
+            {hasAjustarCondicoes && (
+              <button
+                type="button"
+                onClick={() => openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess })}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group py-1"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
+                <span>Ajustar Condições</span>
+              </button>
+            )}
+          </div>
+
+          {hasRetroactiveMonths && (
+            <Button
               type="button"
-              onClick={() => openPassageiroFinanceiroDialog({ passageiro, onSuccess: onActionSuccess })}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group py-1 ml-1"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
+              className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer shrink-0"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
-              <span>Ajustar Condições</span>
-            </button>
+              <Plus className="h-3 w-3 text-[#737373]" />
+              <span>Registrar Parcela</span>
+            </Button>
           )}
         </div>
-
-        {hasRetroactiveMonths && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenCobrancaDialog(undefined, undefined, undefined, undefined, availableRetroMonths)}
-            className="h-7 rounded-[18px] border font-semibold text-xs flex items-center gap-1.5 px-2.5 transition-all border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] shadow-xs cursor-pointer shrink-0"
-          >
-            <Plus className="h-3 w-3 text-[#737373]" />
-            <span>Registrar Parcela</span>
-          </Button>
-        )}
-      </div>
+      )}
 
       {showAjusteBanner && (
         <Banner
@@ -431,7 +432,6 @@ export const CarteirinhaCobrancas = ({
                 onSuccess: onActionSuccess,
               }),
           }}
-          className="mb-4"
         />
       )}
 
@@ -449,7 +449,6 @@ export const CarteirinhaCobrancas = ({
                 onSuccess: onActionSuccess,
               }),
           }}
-          className="mb-4"
         />
       )}
 

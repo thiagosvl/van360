@@ -2,6 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { Passageiro } from "@/types/passageiro";
 import { memo } from "react";
+import { PassageiroSummary } from "./PassageiroSummary";
 
 interface PassageiroActionsMenuProps {
   passageiro: Passageiro;
@@ -27,8 +28,7 @@ export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
   return (
     <ActionsDropdown
       actions={actions}
-      title={props.passageiro.nome}
-      description={props.passageiro.escola?.nome || "Aluno"}
+      header={<PassageiroSummary passageiro={props.passageiro} />}
     />
   );
 });

@@ -36,7 +36,7 @@ export function RenovacaoSemTelefoneBanner({
           </div>
 
           <div className="flex items-center gap-1 text-[11px] font-medium text-amber-700 shrink-0">
-            <span>{isExpanded ? "Ocultar" : "Detalhes"}</span>
+            <span>{isExpanded ? "Ocultar" : ""}</span>
             <ChevronDown
               className={cn(
                 "w-3.5 h-3.5 transition-transform duration-200",

@@ -1,4 +1,4 @@
-import { FileText, Settings2, CheckCircle2 } from "lucide-react";
+import { FileText, Settings2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useRenovacaoContratoConfig, useSalvarRenovacaoContratoConfig } from "@/hooks/api/useRenovacoes";
@@ -47,30 +47,18 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
   };
 
   return (
-    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs space-y-3">
+    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4 h-full flex flex-col justify-between">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-center shrink-0 mt-0.5">
             <FileText className="w-5 h-5 text-[#0a0a0a]" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
-                Contrato Digital • {anoDestino}
-              </h3>
-              {usarContratos ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium border bg-emerald-50 text-emerald-800 border-emerald-300/80">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Ativo
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium border bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]">
-                  Desativado
-                </span>
-              )}
-            </div>
+            <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
+              Contrato Digital
+            </h3>
             <p className="text-xs text-[#737373] mt-1 leading-relaxed">
-              Exigir assinatura digital do responsável ao confirmar a vaga.
+              Exigir assinatura do contrato ao confirmar a vaga.
             </p>
           </div>
         </div>

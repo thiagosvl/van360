@@ -20,6 +20,7 @@ import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Banner } from "@/components/ui/Banner";
+import { Badge } from "@/components/ui/badge";
 import { Users, ArrowLeft, HelpCircle } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
 import { PassageiroResponsavel } from "@/types/passageiro";
@@ -377,36 +378,43 @@ export default function Renovacoes() {
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
       <div className="max-w-6xl mx-auto space-y-5 pb-24 sm:pb-28 pt-2 sm:pt-4">
-        <div className="flex items-center justify-between gap-2.5 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <span className="text-xs font-medium text-[#737373]">
-              Origem {anoDestino - 1} → Destino {anoDestino}
-            </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => openTutorialRenovacaoDialog({ anoDestino })}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[14px] text-xs font-medium text-[#737373] hover:text-[#0a0a0a] bg-white hover:bg-[#fafafa] border border-[#e5e5e5] transition-colors cursor-pointer"
-              title="Ver passo a passo de como funciona a renovação"
+              className="h-10 px-2.5 sm:px-3 rounded-[16px] bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center gap-1.5 text-xs font-semibold text-[#737373] hover:text-[#0a0a0a] hover:bg-[#fafafa] transition-colors cursor-pointer shrink-0"
+              title="Ajuda sobre a renovação"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-[#737373]" />
-              <span>Como funciona</span>
+              <HelpCircle className="w-4 h-4 text-[#737373] shrink-0" />
+              <span>Ajuda</span>
             </button>
           </div>
+
           <AnoLetivoSelect
             ano={anoDestino}
             onChangeAno={setAnoDestino}
             anosDisponiveis={anosDisponiveisRenovacao}
-            label="Renovação"
-            className="h-10 sm:h-11"
+            renderLabel={(ano) => (
+              <span className="text-xs font-bold text-[#0a0a0a] tracking-tight whitespace-nowrap">
+                <span className="text-[#737373] font-medium hidden sm:inline">Renovação </span>
+                <span>{ano - 1}</span>
+                <span className="text-[#a3a3a3] mx-1 font-normal">→</span>
+                <span>{ano}</span>
+              </span>
+            )}
+            className="h-10 sm:h-11 shadow-xs shrink-0"
           />
         </div>
 
-        <RenovacaoKPICard
-          kpis={kpis}
-          anoDestino={anoDestino}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-stretch">
+          <RenovacaoKPICard
+            kpis={kpis}
+            anoDestino={anoDestino}
+          />
 
-        <RenovacaoContratoConfigCard anoDestino={anoDestino} />
+          <RenovacaoContratoConfigCard anoDestino={anoDestino} />
+        </div>
 
         <div className="space-y-2.5">
           <RenovacaoStatusPills
@@ -525,7 +533,7 @@ export default function Renovacoes() {
                     <button
                       type="button"
                       onClick={clearSelection}
-                      className="text-xs font-normal text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+                      className="hidden md:block text-xs font-normal text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
                     >
                       Limpar seleção ({selectedIds.size})
                     </button>

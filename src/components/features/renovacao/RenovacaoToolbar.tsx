@@ -7,7 +7,6 @@ import { DataTableFilterSelect } from "../common/DataTableFilterSelect";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { Escola } from "@/types/escola";
 import { Button } from "@/components/ui/button";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface RenovacaoToolbarProps {
   searchTerm: string;
@@ -151,53 +150,15 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
                 type="button"
                 variant="outline"
                 onClick={handleOpenLote}
-                className="flex-1 md:flex-initial bg-white border border-[#e5e5e5] hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-xs sm:text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 sm:px-4 shadow-none shrink-0 cursor-pointer"
+                className="flex-1 md:flex-initial bg-white border border-[#e5e5e5] hover:bg-[#fafafa] text-[#0a0a0a] font-medium text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 sm:px-4 shadow-none shrink-0 cursor-pointer"
               >
                 <SlidersHorizontal className="h-4 w-4 text-[#737373] shrink-0" />
                 <span>Ajustes em Lote</span>
               </Button>
             )}
-
-            {onNotificarLote && (
-              <Button
-                type="button"
-                onClick={onNotificarLote}
-                disabled={isNotificandoLote}
-                className="hidden md:inline-flex bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs sm:text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-4 shadow-xs shrink-0 cursor-pointer disabled:opacity-40 transition-all"
-              >
-                <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
-                <span>
-                  {isNotificandoLote
-                    ? "Enviando..."
-                    : pendentesCount !== undefined && pendentesCount > 0
-                    ? `Disparar WhatsApp (${pendentesCount})`
-                    : "Disparar WhatsApp"}
-                </span>
-              </Button>
-            )}
           </div>
         }
       />
-
-      {onNotificarLote && (
-        <div className="block md:hidden">
-          <Button
-            type="button"
-            onClick={onNotificarLote}
-            disabled={isNotificandoLote}
-            className="w-full bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs sm:text-sm gap-2 h-10 rounded-[18px] shadow-xs cursor-pointer disabled:opacity-40 transition-all"
-          >
-            <WhatsAppIcon className="h-4 w-4 fill-current text-white shrink-0" />
-            <span>
-              {isNotificandoLote
-                ? "Enviando notificações..."
-                : pendentesCount !== undefined && pendentesCount > 0
-                ? `Disparar WhatsApp para ${pendentesCount} ${pendentesCount === 1 ? "aluno" : "alunos"}`
-                : "Disparar WhatsApp"}
-            </span>
-          </Button>
-        </div>
-      )}
     </div>
   );
 });

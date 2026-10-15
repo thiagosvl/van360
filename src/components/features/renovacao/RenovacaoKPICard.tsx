@@ -17,10 +17,10 @@ export function RenovacaoKPICard({
   );
 
   return (
-    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4">
+    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4 h-full flex flex-col justify-between">
       <div>
         <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
-          Faturamento Projetado • {anoDestino}
+          Faturamento Projetado
         </span>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a]">

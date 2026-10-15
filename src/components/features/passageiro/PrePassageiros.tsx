@@ -44,6 +44,8 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { Usuario } from "@/types/usuario";
 
+import { PrePassageiroSummary } from "./PrePassageiroSummary";
+
 interface PrePassageirosProps {
   onFinalizeNewPrePassageiro?: () => Promise<void>;
   profile?: Usuario | null;
@@ -140,10 +142,10 @@ export default function PrePassageiros({
 
   const ActionsMenu = ({
     prePassageiro,
-    showReviewOption,
+    showReviewOption = true,
   }: {
     prePassageiro: PrePassageiro;
-    showReviewOption: boolean;
+    showReviewOption?: boolean;
   }) => {
     const actions: ActionItem[] = [
       ...(showReviewOption
@@ -187,8 +189,7 @@ export default function PrePassageiros({
     return (
       <ActionsDropdown
         actions={actions}
-        title={formatShortName(prePassageiro.nome, true)}
-        description="Solicitação de cadastro"
+        header={<PrePassageiroSummary prePassageiro={prePassageiro} />}
       />
     );
   };
@@ -268,7 +269,7 @@ export default function PrePassageiros({
                         {formatRelativeTime(prePassageiro.created_at)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right py-3.5 pr-6">
+                    <TableCell className="text-right py-3.5 pr-6" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           size="sm"
@@ -283,7 +284,7 @@ export default function PrePassageiros({
                         </Button>
                         <ActionsMenu
                           prePassageiro={prePassageiro}
-                          showReviewOption={false}
+                          showReviewOption={true}
                         />
                       </div>
                     </TableCell>
@@ -356,7 +357,6 @@ export default function PrePassageiros({
                   )}
                 >
                   <div
-                    onClick={() => handleFinalizeClick(prePassageiro)}
                     className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e5e5e5] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-center gap-3.5 active:scale-[0.99] transition-all cursor-pointer relative"
                   >
                     <div className="flex-shrink-0 w-9 h-9 bg-[#f5f5f5] border border-[#e5e5e5] rounded-full flex items-center justify-center">

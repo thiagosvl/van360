@@ -384,8 +384,8 @@ export function ReajusteLoteDialog({
                   {tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
                     ? "Percentual a acrescentar (%)"
                     : tipoReajuste === RenovacaoReajusteTipo.FIXO
-                    ? "Valor a acrescentar por aluno (R$)"
-                    : "Novo valor da parcela para todos (R$)"}{" "}
+                      ? "Valor a acrescentar por aluno (R$)"
+                      : "Novo valor da parcela para todos (R$)"}{" "}
                   <span className="text-[#e7000b]">*</span>
                 </Label>
                 <div className="relative">
@@ -403,8 +403,8 @@ export function ReajusteLoteDialog({
                       tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
                         ? "Ex: 10%"
                         : tipoReajuste === RenovacaoReajusteTipo.FIXO
-                        ? "Ex: R$ 30,00"
-                        : "Ex: R$ 380,00"
+                          ? "Ex: R$ 30,00"
+                          : "Ex: R$ 380,00"
                     }
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
@@ -431,7 +431,7 @@ export function ReajusteLoteDialog({
                   <Input
                     value={dataInicioTransporte}
                     onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
@@ -447,7 +447,7 @@ export function ReajusteLoteDialog({
                   <Input
                     value={dataFimTransporte}
                     onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
@@ -467,7 +467,7 @@ export function ReajusteLoteDialog({
                   <Input
                     value={dataInicioCobranca}
                     onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
@@ -483,7 +483,7 @@ export function ReajusteLoteDialog({
                   <Input
                     value={dataFimCobranca}
                     onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                     required
                   />
@@ -499,16 +499,16 @@ export function ReajusteLoteDialog({
               selectedEscolaIds.length === 0
                 ? "Nenhuma escola selecionada. Selecione ao menos uma escola acima."
                 : acaoSelecionada === "mensalidade"
-                ? valorInput.trim()
-                  ? tipoReajuste === RenovacaoReajusteTipo.FIXO
-                    ? `Um acréscimo de ${formatCurrency(moneyToNumber(valorInput))} será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
-                    : tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
-                    ? `Um acréscimo de ${valorInput}% será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
-                    : `A parcela será definida exatamente em ${formatCurrency(moneyToNumber(valorInput))} para todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
-                  : `O valor da parcela será atualizado para os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
-                : acaoSelecionada === "transporte"
-                ? `O período de transporte (${dataInicioTransporte} a ${dataFimTransporte}) será atualizado para ${getEscolaDisplayText()}.`
-                : `O período de cobrança (${dataInicioCobranca} a ${dataFimCobranca}) será atualizado para ${getEscolaDisplayText()}.`
+                  ? valorInput.trim()
+                    ? tipoReajuste === RenovacaoReajusteTipo.FIXO
+                      ? `Um acréscimo de ${formatCurrency(moneyToNumber(valorInput))} será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                      : tipoReajuste === RenovacaoReajusteTipo.PERCENTUAL
+                        ? `Um acréscimo de ${valorInput}% será aplicado na parcela de todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                        : `A parcela será definida exatamente em ${formatCurrency(moneyToNumber(valorInput))} para todos os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                    : `O valor da parcela será atualizado para os alunos de ${getEscolaDisplayText()} para ${anoDestino}.`
+                  : acaoSelecionada === "transporte"
+                    ? `O período de transporte (${dataInicioTransporte} a ${dataFimTransporte}) será atualizado para ${getEscolaDisplayText()}.`
+                    : `O período de cobrança (${dataInicioCobranca} a ${dataFimCobranca}) será atualizado para ${getEscolaDisplayText()}.`
             }
             className="rounded-[18px]"
           />

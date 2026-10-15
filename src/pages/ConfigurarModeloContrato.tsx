@@ -834,7 +834,7 @@ export default function ConfigurarModeloContrato() {
             {[
               {
                 title: "Multa por Atraso",
-                desc: "Aplicada em caso de atraso na mensalidade.",
+                desc: "Aplicada em caso de atraso no pagamento.",
                 state: multaAtraso,
                 setState: setMultaAtraso,
                 icon: Timer,

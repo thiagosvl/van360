@@ -112,3 +112,14 @@ export const formatSala = (sala?: string | null): string => {
   return cleaned ? `Sala ${cleaned}` : "";
 };
 
+export const cleanProfessor = (professor?: string | null): string => {
+  if (!professor || !professor.trim()) return "";
+  return professor.trim().replace(/^(prof(\.|essor(a)?|a)?\s*)+/i, "").trim();
+};
+
+export const formatProfessor = (professor?: string | null): string => {
+  const cleaned = cleanProfessor(professor);
+  return cleaned ? `Prof. ${cleaned}` : "";
+};
+
+

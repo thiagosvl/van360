@@ -207,7 +207,7 @@ export function TutorialRenovacaoDialog({
                     O que o Pai vê quando abre o Link?
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Ele vê a nova mensalidade, escola, turno e vencimento de {anoDestino}. Antes de responder, ele mesmo pode atualizar <strong>endereço, turma, sala, professor ou cuidados de saúde</strong>.
+                    Ele vê as condições para {anoDestino}. Antes de responder, ele mesmo pode atualizar <strong>endereço, turma, sala, professor ou observações do aluno</strong>.
                   </span>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export function TutorialRenovacaoDialog({
                     {anoOrigem} e {anoDestino} Ficam Separados
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Nenhuma alteração feita na renovação de {anoDestino} afeta as mensalidades, escolas ou contratos de {anoOrigem}. Nas telas de Alunos, Carteirinha e Contratos, basta usar o seletor de ano no topo!
+                    Nenhuma alteração feita na renovação de {anoDestino} afeta as parcelas, escolas ou contratos de {anoOrigem}.
                   </span>
                 </div>
               </div>
@@ -320,21 +320,19 @@ export function TutorialRenovacaoDialog({
         )}
       </BaseDialog.Body>
 
-      <BaseDialog.Footer className="flex-row items-center justify-between gap-2.5">
+      <BaseDialog.Footer>
         {step > 1 ? (
           <BaseDialog.Action
             label="Anterior"
             variant="secondary"
             onClick={handlePrev}
             icon={<ArrowLeft className="w-4 h-4" />}
-            className="w-auto px-4"
           />
         ) : (
           <BaseDialog.Action
             label="Fechar"
-            variant="ghost"
+            variant="secondary"
             onClick={handleClose}
-            className="w-auto px-4"
           />
         )}
 
@@ -343,7 +341,6 @@ export function TutorialRenovacaoDialog({
           variant="primary"
           onClick={handleNext}
           icon={step < totalSteps ? <ArrowRight className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-          className="flex-1 sm:flex-initial sm:min-w-[160px]"
         />
       </BaseDialog.Footer>
     </BaseDialog>

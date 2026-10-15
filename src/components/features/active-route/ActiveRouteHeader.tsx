@@ -106,7 +106,7 @@ export function ActiveRouteHeader({
                     size="sm"
                     onClick={onDeleteRoute}
                     disabled={isDeletingRoute}
-                    className="h-8 px-3 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#e7000b]/10 text-[#737373] hover:text-[#e7000b] hover:border-[#e7000b]/20 font-medium text-xs shrink-0 cursor-pointer shadow-none transition-all flex items-center gap-1.5"
+                    className="h-8 px-3 rounded-[18px] border border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] font-medium text-xs shrink-0 cursor-pointer shadow-none transition-all flex items-center gap-1.5"
                     title="Excluir esta rota"
                   >
                     {isDeletingRoute ? (

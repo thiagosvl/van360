@@ -213,7 +213,7 @@ export function RevisarSolicitacaoDialog({
                           Aluno Isento
                         </FormLabel>
                         <div className="text-xs text-[#737373] font-normal leading-relaxed">
-                          Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
+                          Nenhuma parcela será gerada.
                         </div>
                       </div>
                       <FormControl>

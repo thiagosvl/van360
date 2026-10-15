@@ -86,31 +86,24 @@ export const DataTableToolbar = ({
     <Button
       variant="outline"
       className={cn(
-        "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-sm gap-1.5 md:gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 cursor-pointer",
+        "bg-white border-[#e5e5e5] text-[#0a0a0a] font-medium text-sm gap-2 h-10 sm:h-11 rounded-[18px] px-3.5 shadow-none hover:bg-[#fafafa] shrink-0 cursor-pointer justify-center transition-all",
+        filterConfig.hasActiveFilters && "border-[#0a0a0a]",
         actions ? "flex-1 md:flex-initial" : (isMobile ? "flex-1" : "")
       )}
       disabled={disabled}
     >
       {filterConfig.triggerIcon || (
-        <>
-          {isMobile ? (
-            <Filter
-              className={cn(
-                "h-4 w-4 mr-1.5",
-                filterConfig.hasActiveFilters && "text-primary"
-              )}
-            />
-          ) : (
-            <ListFilter
-              className={cn(
-                "h-4 w-4",
-                filterConfig.hasActiveFilters && "text-primary"
-              )}
-            />
+        <ListFilter
+          className={cn(
+            "h-4 w-4 text-[#737373] shrink-0",
+            filterConfig.hasActiveFilters && "text-primary"
           )}
-        </>
+        />
       )}
-      {filterConfig.triggerLabel || "Filtros"}
+      <span>{filterConfig.triggerLabel || "Filtros"}</span>
+      {filterConfig.hasActiveFilters && (
+        <span className="h-2 w-2 rounded-full bg-primary -mr-0.5" />
+      )}
     </Button>
   );
 

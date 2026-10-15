@@ -134,7 +134,7 @@ export default function Passageiros() {
                   <AnoLetivoSelect
                     ano={selectedAnoLetivo}
                     onChangeAno={setSelectedAnoLetivo}
-                    className="self-end sm:self-center h-10 sm:h-11"
+                    className="w-full sm:w-auto justify-between sm:justify-start h-10 sm:h-11"
                   />
                 )}
               </div>

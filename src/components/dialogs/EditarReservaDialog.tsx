@@ -24,9 +24,10 @@ import {
   User,
   Sparkles,
   DoorOpen,
+  ArrowRight,
 } from "lucide-react";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { modalidades, periodos, formatCurrency } from "@/utils/formatters";
+import { modalidades, periodos, formatCurrency, formatFirstName, formatShortName } from "@/utils/formatters";
 import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { cn } from "@/lib/utils";
 
@@ -54,11 +55,9 @@ export function EditarReservaDialog({
   const isIsentoOriginal = Boolean(passageiro?.isento_atual);
 
   const [novoValor, setNovoValor] = useState("");
-  const [modoCalculo, setModoCalculo] = useState<"direto" | "fixo" | "percentual">("direto");
-  const [valorIncremento, setValorIncremento] = useState("");
   const [novoDiaVencimento, setNovoDiaVencimento] = useState("10");
-  const [dataInicioCobranca, setDataInicioCobranca] = useState<string>(`01/02/${anoDestino}`);
-  const [dataFimCobranca, setDataFimCobranca] = useState<string>(`01/12/${anoDestino}`);
+  const [dataInicioCobranca, setDataInicioCobranca] = useState<string>("");
+  const [dataFimCobranca, setDataFimCobranca] = useState<string>("");
 
   const [novaEscolaId, setNovaEscolaId] = useState("");
   const [novoPeriodo, setNovoPeriodo] = useState("");
@@ -67,15 +66,16 @@ export function EditarReservaDialog({
   const [novaSala, setNovaSala] = useState("");
   const [novoNomeProfessor, setNovoNomeProfessor] = useState("");
   const [novoVeiculoId, setNovoVeiculoId] = useState("");
-  const [dataInicioTransporte, setDataInicioTransporte] = useState<string>(`01/02/${anoDestino}`);
-  const [dataFimTransporte, setDataFimTransporte] = useState<string>(`15/12/${anoDestino}`);
+  const [dataInicioTransporte, setDataInicioTransporte] = useState<string>("");
+  const [dataFimTransporte, setDataFimTransporte] = useState<string>("");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (passageiro) {
+      setErrors({});
       const valorBase = passageiro.novo_valor_cobranca ?? passageiro.valor_cobranca_atual ?? 0;
       setNovoValor(moneyMask(String(Math.round(valorBase * 100))));
-      setModoCalculo("direto");
-      setValorIncremento("");
 
       const diaVenc = passageiro.novo_dia_vencimento || passageiro.dia_vencimento_atual || 10;
       setNovoDiaVencimento(String(diaVenc));
@@ -94,34 +94,24 @@ export function EditarReservaDialog({
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
       setNovoVeiculoId(veiculoId);
 
-      const projectDate = (dateVal: string | null | undefined, fallback: string) => {
-        if (!dateVal) return fallback;
-        const br = formatDateToBR(dateVal);
-        const parts = br.split("/");
-        if (parts.length === 3) {
-          return `${parts[0]}/${parts[1]}/${anoDestino}`;
-        }
-        return fallback;
-      };
-
       const dtInicioTransp = passageiro.nova_data_inicio_transporte
         ? formatDateToBR(passageiro.nova_data_inicio_transporte)
-        : projectDate(passageiro.data_inicio_transporte_atual, `01/02/${anoDestino}`);
+        : "";
       setDataInicioTransporte(dtInicioTransp);
 
       const dtFimTransp = passageiro.nova_data_fim_transporte
         ? formatDateToBR(passageiro.nova_data_fim_transporte)
-        : projectDate(passageiro.data_fim_transporte_atual, `15/12/${anoDestino}`);
+        : "";
       setDataFimTransporte(dtFimTransp);
 
       const dtInicioCobr = passageiro.nova_data_inicio_cobranca
         ? formatDateToBR(passageiro.nova_data_inicio_cobranca)
-        : projectDate(passageiro.data_inicio_cobranca_atual, `01/02/${anoDestino}`);
+        : "";
       setDataInicioCobranca(dtInicioCobr);
 
       const dtFimCobr = passageiro.nova_data_fim_cobranca
         ? formatDateToBR(passageiro.nova_data_fim_cobranca)
-        : projectDate(passageiro.data_fim_cobranca_atual, `01/12/${anoDestino}`);
+        : "";
       setDataFimCobranca(dtFimCobr);
     }
   }, [passageiro, escolasList, veiculosList, anoDestino]);
@@ -129,6 +119,40 @@ export function EditarReservaDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passageiro) return;
+
+    const newErrors: Record<string, string> = {};
+
+    if (!isIsentoOriginal) {
+      if (!novoValor || moneyToNumber(novoValor) <= 0) {
+        newErrors.novoValor = "Informe o valor da parcela";
+      }
+      if (!novoDiaVencimento) {
+        newErrors.novoDiaVencimento = "Selecione o dia do vencimento";
+      }
+      if (!dataInicioCobranca || dataInicioCobranca.trim().length !== 10) {
+        newErrors.dataInicioCobranca = "Informe a data de início da cobrança";
+      }
+      if (!dataFimCobranca || dataFimCobranca.trim().length !== 10) {
+        newErrors.dataFimCobranca = "Informe a data de término da cobrança";
+      }
+    }
+
+    if (!novaEscolaId) {
+      newErrors.novaEscolaId = "Selecione a escola";
+    }
+    if (!novoPeriodo) {
+      newErrors.novoPeriodo = "Selecione o período";
+    }
+    if (!novaModalidade) {
+      newErrors.novaModalidade = "Selecione a modalidade";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Por favor, preencha os campos obrigatórios destacados.");
+      return;
+    }
+    setErrors({});
 
     try {
       await updateMutation.mutateAsync({
@@ -167,24 +191,19 @@ export function EditarReservaDialog({
       description={`Configuração da reserva e condições financeiras para o ano letivo de ${anoDestino}`}
     >
       <BaseDialog.Header
-        title={`Reserva de Vaga • ${anoDestino}`}
-        subtitle="Condições da proposta e valores para o próximo ano letivo"
+        title={passageiro?.nome ? `Reserva • ${formatFirstName(passageiro.nome)}` : "Reserva de Vaga"}
+        subtitle={
+          passageiro?.responsavel_principal?.nome
+            ? `${formatShortName(passageiro.responsavel_principal.nome, true)}`
+            : "Condições da proposta e valores para o próximo ano letivo"
+        }
         icon={<Sparkles className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={() => safeCloseDialog(onClose)}
         hideCloseButton={updateMutation.isPending}
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-        <BaseDialog.Body className="p-4 sm:p-6 space-y-6 overflow-y-auto max-h-[70vh]">
-          <div className="rounded-[20px] bg-[#fafafa] p-3.5 sm:p-4 border border-[#e5e5e5]">
-            <span className="text-[11px] font-medium text-[#737373] uppercase tracking-wider block">
-              Aluno
-            </span>
-            <span className="text-sm sm:text-base font-semibold text-[#0a0a0a] block mt-0.5">
-              {passageiro?.nome}
-            </span>
-          </div>
-
+        <BaseDialog.Body className="p-4 sm:p-6 space-y-8 overflow-y-auto max-h-[70vh]">
           {passageiro?.status === RenovacaoStatus.CONFIRMADO &&
             Boolean(passageiro?.contrato_id || profile?.config_contrato?.usar_contratos) && (
               <Banner
@@ -196,7 +215,7 @@ export function EditarReservaDialog({
             )}
 
           {!isIsentoOriginal && (
-            <div className="space-y-4">
+            <section className="space-y-4">
               <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a]">
                 <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                   <DollarSign className="w-4 h-4" />
@@ -204,162 +223,63 @@ export function EditarReservaDialog({
                 Condições da Parcela
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="rounded-[18px] border border-[#e5e5e5] bg-white p-3">
-                  <span className="text-[11px] text-[#737373] font-medium block">
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-[16px] sm:rounded-[18px] border border-[#e5e5e5] bg-white w-full shadow-none">
+                <div>
+                  <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
                     Parcela Atual
                   </span>
-                  <span className="text-sm sm:text-base font-semibold text-[#0a0a0a] mt-0.5 block">
-                    {formatCurrency(passageiro?.valor_cobranca_atual)}
+                  <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] mt-0.5 block">
+                    {isIsentoOriginal ? "Isento" : formatCurrency(passageiro?.valor_cobranca_atual)}
                   </span>
                 </div>
 
-                <div className="rounded-[18px] border border-primary/20 bg-primary/5 p-3">
-                  <span className="text-[11px] text-primary font-medium block">
-                    Nova Parcela ({anoDestino})
+                <ArrowRight className="w-4 h-4 text-[#737373] shrink-0 mx-2" />
+
+                <div className="text-right">
+                  <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
+                    Nova Parcela
                   </span>
-                  <span className="text-sm sm:text-base font-semibold text-primary mt-0.5 block">
-                    {novoValor ? novoValor : "R$ 0,00"}
+                  <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] mt-0.5 block">
+                    {isIsentoOriginal ? "Isento" : (novoValor || "R$ 0,00")}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Como deseja definir o valor?
-                </Label>
-                <div className="grid grid-cols-3 rounded-[18px] border border-[#e5e5e5] p-1 bg-[#fafafa] gap-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setModoCalculo("direto");
-                      setValorIncremento("");
-                    }}
-                    className={cn(
-                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
-                      modoCalculo === "direto"
-                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
-                    )}
-                  >
-                    Valor Final
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setModoCalculo("fixo");
-                      setValorIncremento("");
-                    }}
-                    className={cn(
-                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
-                      modoCalculo === "fixo"
-                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
-                    )}
-                  >
-                    + R$ (Fixo)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setModoCalculo("percentual");
-                      setValorIncremento("");
-                    }}
-                    className={cn(
-                      "py-2 text-xs rounded-[14px] transition-all text-center cursor-pointer truncate px-1",
-                      modoCalculo === "percentual"
-                        ? "bg-white text-primary font-medium shadow-xs border border-primary/20"
-                        : "text-[#737373] hover:text-[#0a0a0a] hover:bg-white/60"
-                    )}
-                  >
-                    + % (Percentual)
-                  </button>
-                </div>
-              </div>
-
-              {modoCalculo === "direto" ? (
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-[#0a0a0a] font-medium text-xs">
-                    Novo Valor da Parcela ({anoDestino}) <span className="text-[#e7000b]">*</span>
+                    Novo Valor ({anoDestino}) <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
                     <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={novoValor}
-                      onChange={(e) => setNovoValor(moneyMask(e.target.value))}
-                      placeholder="R$ 0,00"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
-                      required
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Label className="text-[#0a0a0a] font-medium text-xs">
-                    {modoCalculo === "fixo" ? "Valor do Acréscimo (R$)" : "Percentual de Acréscimo (%)"}{" "}
-                    <span className="text-[#e7000b]">*</span>
-                  </Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                    <Input
-                      value={valorIncremento}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        const baseOrigem = Number(passageiro?.valor_cobranca_atual || 0);
-
-                        if (modoCalculo === "percentual") {
-                          const clean = val.replace(/[^0-9,.]/g, "");
-                          setValorIncremento(clean);
-                          const perc = Number(clean.replace(",", "."));
-                          if (perc > 0) {
-                            const total = Number((baseOrigem * (1 + perc / 100)).toFixed(2));
-                            setNovoValor(moneyMask(String(Math.round(total * 100))));
-                          } else {
-                            setNovoValor(moneyMask(String(Math.round(baseOrigem * 100))));
-                          }
-                        } else {
-                          const masked = moneyMask(val);
-                          setValorIncremento(masked);
-                          const acrescimo = moneyToNumber(masked);
-                          if (acrescimo > 0) {
-                            const total = baseOrigem + acrescimo;
-                            setNovoValor(moneyMask(String(Math.round(total * 100))));
-                          } else {
-                            setNovoValor(moneyMask(String(Math.round(baseOrigem * 100))));
-                          }
-                        }
+                        setNovoValor(moneyMask(e.target.value));
+                        if (errors.novoValor) setErrors((prev) => ({ ...prev, novoValor: "" }));
                       }}
-                      placeholder={modoCalculo === "percentual" ? "Ex: 10%" : "Ex: R$ 30,00"}
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
+                      placeholder="R$ 0,00"
+                      className={cn(
+                        "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full",
+                        errors.novoValor && "border-[#e7000b] focus:border-[#e7000b] focus:ring-[#e7000b]"
+                      )}
+                      aria-invalid={!!errors.novoValor}
                     />
                   </div>
-
-                  {valorIncremento.trim() && (
-                    <div className="rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] p-2.5 text-center text-xs text-[#737373]">
-                      {modoCalculo === "fixo" ? (
-                        <>
-                          {formatCurrency(passageiro?.valor_cobranca_atual)} + {formatCurrency(moneyToNumber(valorIncremento))} ={" "}
-                          <strong className="font-semibold text-[#0a0a0a]">{novoValor}</strong>
-                        </>
-                      ) : (
-                        <>
-                          {formatCurrency(passageiro?.valor_cobranca_atual)} + {valorIncremento}% ={" "}
-                          <strong className="font-semibold text-[#0a0a0a]">{novoValor}</strong>
-                        </>
-                      )}
-                    </div>
-                  )}
+                  {errors.novoValor && <p className="text-xs text-[#e7000b] mt-1">{errors.novoValor}</p>}
                 </div>
-              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-[#0a0a0a] font-medium text-xs">
                     Vencimento <span className="text-[#e7000b]">*</span>
                   </Label>
                   <NativeSelect
                     value={novoDiaVencimento}
-                    onChange={(e) => setNovoDiaVencimento(e.target.value)}
+                    onChange={(e) => {
+                      setNovoDiaVencimento(e.target.value);
+                      if (errors.novoDiaVencimento) setErrors((prev) => ({ ...prev, novoDiaVencimento: "" }));
+                    }}
+                    error={!!errors.novoDiaVencimento}
                     icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
@@ -368,42 +288,61 @@ export function EditarReservaDialog({
                       </option>
                     ))}
                   </NativeSelect>
+                  {errors.novoDiaVencimento && <p className="text-xs text-[#e7000b] mt-1">{errors.novoDiaVencimento}</p>}
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-[#0a0a0a] font-medium text-xs">
-                    Início Cobrança
+                    Início Cobrança <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
                     <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={dataInicioCobranca}
-                      onChange={(e) => setDataInicioCobranca(dateMask(e.target.value))}
-                      placeholder="DD/MM/AAAA"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
+                      onChange={(e) => {
+                        setDataInicioCobranca(dateMask(e.target.value));
+                        if (errors.dataInicioCobranca) setErrors((prev) => ({ ...prev, dataInicioCobranca: "" }));
+                      }}
+                      placeholder="dd/mm/aaaa"
+                      className={cn(
+                        "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full",
+                        errors.dataInicioCobranca && "border-[#e7000b] focus:border-[#e7000b] focus:ring-[#e7000b]"
+                      )}
+                      aria-invalid={!!errors.dataInicioCobranca}
                     />
                   </div>
+                  {errors.dataInicioCobranca && <p className="text-xs text-[#e7000b] mt-1">{errors.dataInicioCobranca}</p>}
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-[#0a0a0a] font-medium text-xs">
-                    Fim Cobrança
+                    Fim Cobrança <span className="text-[#e7000b]">*</span>
                   </Label>
                   <div className="relative">
                     <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                     <Input
                       value={dataFimCobranca}
-                      onChange={(e) => setDataFimCobranca(dateMask(e.target.value))}
-                      placeholder="DD/MM/AAAA"
-                      className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
+                      onChange={(e) => {
+                        setDataFimCobranca(dateMask(e.target.value));
+                        if (errors.dataFimCobranca) setErrors((prev) => ({ ...prev, dataFimCobranca: "" }));
+                      }}
+                      placeholder="dd/mm/aaaa"
+                      className={cn(
+                        "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full",
+                        errors.dataFimCobranca && "border-[#e7000b] focus:border-[#e7000b] focus:ring-[#e7000b]"
+                      )}
+                      aria-invalid={!!errors.dataFimCobranca}
                     />
                   </div>
+                  {errors.dataFimCobranca && <p className="text-xs text-[#e7000b] mt-1">{errors.dataFimCobranca}</p>}
                 </div>
               </div>
-            </div>
+            </section>
           )}
 
-          <div className="space-y-4 pt-2 border-t border-[#e5e5e5]">
+          <section className="space-y-4">
             <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a]">
               <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
                 <Car className="w-4 h-4" />
@@ -418,7 +357,11 @@ export function EditarReservaDialog({
                 </Label>
                 <NativeSelect
                   value={novaEscolaId}
-                  onChange={(e) => setNovaEscolaId(e.target.value)}
+                  onChange={(e) => {
+                    setNovaEscolaId(e.target.value);
+                    if (errors.novaEscolaId) setErrors((prev) => ({ ...prev, novaEscolaId: "" }));
+                  }}
+                  error={!!errors.novaEscolaId}
                   icon={<School className="h-4 w-4 text-[#737373]" />}
                 >
                   <option value="">Selecione a escola</option>
@@ -428,6 +371,7 @@ export function EditarReservaDialog({
                     </option>
                   ))}
                 </NativeSelect>
+                {errors.novaEscolaId && <p className="text-xs text-[#e7000b] mt-1">{errors.novaEscolaId}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -436,7 +380,11 @@ export function EditarReservaDialog({
                 </Label>
                 <NativeSelect
                   value={novoPeriodo}
-                  onChange={(e) => setNovoPeriodo(e.target.value)}
+                  onChange={(e) => {
+                    setNovoPeriodo(e.target.value);
+                    if (errors.novoPeriodo) setErrors((prev) => ({ ...prev, novoPeriodo: "" }));
+                  }}
+                  error={!!errors.novoPeriodo}
                   icon={<Sun className="h-4 w-4 text-[#737373]" />}
                 >
                   <option value="">Selecione o período</option>
@@ -446,6 +394,7 @@ export function EditarReservaDialog({
                     </option>
                   ))}
                 </NativeSelect>
+                {errors.novoPeriodo && <p className="text-xs text-[#e7000b] mt-1">{errors.novoPeriodo}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -454,7 +403,11 @@ export function EditarReservaDialog({
                 </Label>
                 <NativeSelect
                   value={novaModalidade}
-                  onChange={(e) => setNovaModalidade(e.target.value)}
+                  onChange={(e) => {
+                    setNovaModalidade(e.target.value);
+                    if (errors.novaModalidade) setErrors((prev) => ({ ...prev, novaModalidade: "" }));
+                  }}
+                  error={!!errors.novaModalidade}
                   icon={<Compass className="h-4 w-4 text-[#737373]" />}
                 >
                   {modalidades.map((m) => (
@@ -463,11 +416,12 @@ export function EditarReservaDialog({
                     </option>
                   ))}
                 </NativeSelect>
+                {errors.novaModalidade && <p className="text-xs text-[#e7000b] mt-1">{errors.novaModalidade}</p>}
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Veículo
+                  Veículo <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <NativeSelect
                   value={novoVeiculoId}
@@ -485,7 +439,7 @@ export function EditarReservaDialog({
 
               <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Turma
+                  Turma <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <div className="relative">
                   <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -500,7 +454,7 @@ export function EditarReservaDialog({
 
               <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Sala
+                  Sala <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <div className="relative">
                   <DoorOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -513,9 +467,9 @@ export function EditarReservaDialog({
                 </div>
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Nome do Professor
+                  Nome do Professor <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -530,14 +484,14 @@ export function EditarReservaDialog({
 
               <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Início do Transporte
+                  Início do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <div className="relative">
                   <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataInicioTransporte}
                     onChange={(e) => setDataInicioTransporte(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
@@ -545,20 +499,20 @@ export function EditarReservaDialog({
 
               <div className="space-y-1.5">
                 <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Fim do Transporte
+                  Fim do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </Label>
                 <div className="relative">
                   <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                   <Input
                     value={dataFimTransporte}
                     onChange={(e) => setDataFimTransporte(dateMask(e.target.value))}
-                    placeholder="DD/MM/AAAA"
+                    placeholder="dd/mm/aaaa"
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </BaseDialog.Body>
 
         <BaseDialog.Footer className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-[#e5e5e5]">

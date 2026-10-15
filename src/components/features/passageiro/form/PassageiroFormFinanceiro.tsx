@@ -65,7 +65,7 @@ export function PassageiroFormFinanceiro({
                   Aluno Isento
                 </FormLabel>
                 <div className="text-[11px] sm:text-xs text-[#737373] font-normal leading-relaxed">
-                  Ative para filhos, parentes ou cortesias. Nenhuma cobrança ou parcela será gerada.
+                  Nenhuma parcela será gerada.
                 </div>
               </div>
               <FormControl>
@@ -81,8 +81,15 @@ export function PassageiroFormFinanceiro({
 
         {!isIsento && (
           <>
-            {!editingPassageiro && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div
+              className={cn(
+                "grid gap-2.5 sm:gap-4",
+                !editingPassageiro
+                  ? "grid-cols-1 sm:grid-cols-3"
+                  : "grid-cols-1 sm:grid-cols-2"
+              )}
+            >
+              {!editingPassageiro && (
                 <FormField
                   control={form.control}
                   name="ano_letivo"
@@ -114,10 +121,8 @@ export function PassageiroFormFinanceiro({
                     );
                   }}
                 />
-              </div>
-            )}
+              )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormField
                 control={form.control}
                 name="valor_cobranca"

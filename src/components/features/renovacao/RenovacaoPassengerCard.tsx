@@ -10,11 +10,14 @@ import {
   School,
   Pencil,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { formatCurrency, formatShortName, formatFirstName } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
+import { buildRenovacaoWhatsAppUrl } from "@/utils/whatsappTemplates";
+import { openBrowserLink } from "@/utils/browser";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -129,19 +132,24 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     }
   };
 
-  const handleReenviarWhatsAppManual = (e: React.MouseEvent) => {
+  const handleReenviarWhatsAppManual = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const tel = item.responsavel_principal?.telefone?.replace(/\D/g, "");
+    const tel = item.responsavel_principal?.telefone;
     if (!tel) {
       toast.error("Telefone não cadastrado.");
       return;
     }
 
-    const shortName = formatShortName(item.nome, true);
     const linkProposta = `${window.location.origin}/renovacao/${item.token_publico || ""}`;
-    const msg = `Olá! Segue o link com as condições de renovação do transporte escolar de ${shortName} para o ano letivo de ${anoDestino}: ${linkProposta}`;
-    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    const url = buildRenovacaoWhatsAppUrl({
+      telefoneResponsavel: tel,
+      nomeResponsavel: item.responsavel_principal?.nome,
+      nomePassageiro: item.nome,
+      anoDestino,
+      link: linkProposta,
+    });
+
+    await openBrowserLink(url);
   };
 
   const shortName = formatShortName(item.nome, true);
@@ -194,11 +202,6 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
                   Ajustado
                 </span>
               )}
-              {item.contrato_status === "assinado" && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-emerald-50 text-emerald-800 border border-emerald-300/80 text-[10px] font-medium">
-                  Contrato Assinado
-                </span>
-              )}
             </div>
 
             <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal truncate mt-0.5">
@@ -216,23 +219,38 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {item.contrato_status === "assinado" && (
+            <FileText
+              className="w-4 h-4 text-emerald-600 shrink-0"
+              title="Contrato Assinado"
+              aria-label="Contrato Assinado"
+            />
+          )}
+          {item.contrato_status === "pendente" && (
+            <FileText
+              className="w-4 h-4 text-amber-500 shrink-0"
+              title="Contrato Pendente"
+              aria-label="Contrato Pendente"
+            />
+          )}
+
           {isConfirmed && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] bg-emerald-50 text-emerald-800 border border-emerald-300/80 text-[11px] font-medium">
-              <Check className="w-3 h-3 stroke-[2.5]" />
+            <span className="inline-flex items-center gap-1.5 text-emerald-600 text-xs font-medium" title="Confirmado">
+              <Check className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">Confirmado</span>
             </span>
           )}
 
           {isRecusado && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] bg-rose-50 text-rose-800 border border-rose-300/80 text-[11px] font-medium">
-              <X className="w-3 h-3 stroke-[2.5]" />
+            <span className="inline-flex items-center gap-1.5 text-[#e7000b] text-xs font-medium" title="Saída">
+              <X className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">Saída</span>
             </span>
           )}
 
           {isPendente && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] bg-amber-50 text-amber-800 border border-amber-300/80 text-[11px] font-medium">
-              <Clock className="w-3 h-3 stroke-[2.5]" />
+            <span className="inline-flex items-center gap-1.5 text-amber-600 text-xs font-medium" title="Pendente">
+              <Clock className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">Pendente</span>
             </span>
           )}
@@ -270,171 +288,173 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
             </div>
           )}
 
-          <div
-            onClick={() => onOpenEditarReserva?.(item)}
-            className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-white hover:border-[#737373]/50 transition-all cursor-pointer shadow-none"
-            title="Clique para editar valores e proposta da reserva"
-          >
-            <div>
-              <span className="text-[11px] text-[#737373] font-normal block">
-                Atual ({anoDestino - 1})
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] mt-0.5 block">
-                {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
-              </span>
-            </div>
-
-            <ArrowRight className="w-3.5 h-3.5 text-[#737373] shrink-0 mx-2" />
-
-            <div className="text-right">
-              <span className="text-[11px] text-[#737373] font-normal block">
-                Nova Parcela ({anoDestino})
-              </span>
-              <div className="flex items-baseline justify-end gap-1.5 mt-0.5">
-                {isValorAlterado && (
-                  <span className="text-xs font-normal line-through text-[#e7000b]">
-                    {formatCurrency(item.valor_cobranca_atual)}
-                  </span>
-                )}
-                <span
-                  className={cn(
-                    "text-xs sm:text-sm font-semibold block",
-                    item.isento_atual
-                      ? "text-[#737373]"
-                      : isValorAlterado
-                        ? "text-emerald-700"
-                        : "text-[#0a0a0a]"
-                  )}
-                >
-                  {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pt-1">
+            <div
+              onClick={() => onOpenEditarReserva?.(item)}
+              className="inline-flex items-center justify-between sm:justify-start gap-3 sm:gap-4 p-3 rounded-[16px] border border-[#e5e5e5] bg-white hover:border-[#737373]/50 transition-all cursor-pointer shadow-none shrink-0"
+              title="Clique para editar valores e proposta da reserva"
+            >
+              <div>
+                <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
+                  Parcela Atual
+                </span>
+                <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] mt-0.5 block">
+                  {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
                 </span>
               </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {item.responsavel_principal?.telefone ? (
-              item.notificacao_enviada_em ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReenviarWhatsAppManual}
-                  className="rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer"
-                >
-                  <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
-                  <span className="truncate">Reenviar WhatsApp</span>
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDispararWaba}
-                  disabled={isSendingWaba}
-                  className="rounded-[14px] border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer disabled:opacity-40"
-                >
-                  {isSendingWaba ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-700" />
-                  ) : (
-                    <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-600" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+
+              <div>
+                <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
+                  Nova Parcela
+                </span>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  {isValorAlterado && (
+                    <span className="text-xs font-normal line-through text-[#e7000b]">
+                      {formatCurrency(item.valor_cobranca_atual)}
+                    </span>
                   )}
-                  <span className="truncate">{isSendingWaba ? "Enviando..." : "Enviar WhatsApp"}</span>
-                </Button>
-              )
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled
-                className="rounded-[14px] border border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] text-xs font-medium h-9 gap-1.5 opacity-60"
-              >
-                <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-[#737373]" />
-                <span className="truncate">Sem WhatsApp</span>
-              </Button>
-            )}
+                  <span
+                    className={cn(
+                      "text-xs sm:text-sm font-semibold block",
+                      item.isento_atual
+                        ? "text-[#737373]"
+                        : isValorAlterado
+                          ? "text-emerald-700"
+                          : "text-[#0a0a0a]"
+                    )}
+                  >
+                    {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-            {onOpenEditarReserva && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenEditarReserva(item);
-                }}
-                className="rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 gap-1.5 shadow-none cursor-pointer"
-              >
-                <Pencil className="w-3.5 h-3.5 text-[#737373]" />
-                <span className="truncate">Editar</span>
-              </Button>
-            )}
-          </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 shrink-0">
+              <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+                {item.responsavel_principal?.telefone ? (
+                  item.notificacao_enviada_em ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleReenviarWhatsAppManual}
+                      className="rounded-[14px] bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs h-9 px-3 gap-1.5 shadow-xs cursor-pointer w-full sm:w-auto justify-center transition-all"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-white shrink-0" />
+                      <span className="truncate">Reenviar</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleDispararWaba}
+                      disabled={isSendingWaba}
+                      className="rounded-[14px] bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-medium text-xs h-9 px-3 gap-1.5 shadow-xs cursor-pointer disabled:opacity-40 w-full sm:w-auto justify-center transition-all"
+                    >
+                      {isSendingWaba ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+                      ) : (
+                        <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-white shrink-0" />
+                      )}
+                      <span className="truncate">{isSendingWaba ? "Enviando..." : "Enviar WhatsApp"}</span>
+                    </Button>
+                  )
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    className="rounded-[14px] border border-[#e5e5e5] bg-[#f5f5f5] text-[#737373] text-xs font-medium h-9 px-3 gap-1.5 opacity-60 w-full sm:w-auto justify-center"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-[#737373] shrink-0" />
+                    <span className="truncate">Sem WhatsApp</span>
+                  </Button>
+                )}
 
-          <div className="grid grid-cols-3 p-1 rounded-[16px] bg-[#f5f5f5] border border-[#e5e5e5] gap-1">
-            <button
-              type="button"
-              onClick={handleSetSaida}
-              disabled={loadingAction !== null}
-              className={cn(
-                "h-8 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
-                isRecusado
-                  ? "bg-rose-50 text-rose-800 border border-rose-300/80 shadow-xs"
-                  : "text-[#737373] hover:text-rose-700 hover:bg-white/60"
-              )}
-            >
-              {loadingAction === "saida" ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <>
-                  <X className="w-3 h-3 stroke-[2.5]" />
-                  <span>Saída</span>
-                </>
-              )}
-            </button>
+                {onOpenEditarReserva && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenEditarReserva(item);
+                    }}
+                    className="rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium h-9 px-3 gap-1.5 shadow-none cursor-pointer w-full sm:w-auto justify-center"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    <span>Editar</span>
+                  </Button>
+                )}
+              </div>
 
-            <button
-              type="button"
-              onClick={handleSetPendente}
-              disabled={loadingAction !== null}
-              className={cn(
-                "h-8 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
-                isPendente
-                  ? "bg-amber-50 text-amber-800 border border-amber-300/80 shadow-xs"
-                  : "text-[#737373] hover:text-amber-800 hover:bg-white/60"
-              )}
-            >
-              {loadingAction === "pendente" ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <>
-                  <Clock className="w-3 h-3 stroke-[2.5]" />
-                  <span>Pendente</span>
-                </>
-              )}
-            </button>
+              <div className="grid grid-cols-3 sm:flex items-center p-1 rounded-[16px] bg-[#f5f5f5] border border-[#e5e5e5] gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleSetSaida}
+                  disabled={loadingAction !== null}
+                  className={cn(
+                    "h-8 sm:px-3 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
+                    isRecusado
+                      ? "bg-rose-50 text-rose-800 border border-rose-300/80 shadow-xs"
+                      : "text-[#737373] hover:text-rose-700 hover:bg-white/60"
+                  )}
+                >
+                  {loadingAction === "saida" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <X className="w-3 h-3 stroke-[2.5]" />
+                      <span>Saída</span>
+                    </>
+                  )}
+                </button>
 
-            <button
-              type="button"
-              onClick={handleSetConfirmado}
-              disabled={loadingAction !== null}
-              className={cn(
-                "h-8 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
-                isConfirmed
-                  ? "bg-emerald-50 text-emerald-800 border border-emerald-300/80 shadow-xs"
-                  : "text-[#737373] hover:text-emerald-800 hover:bg-white/60"
-              )}
-            >
-              {loadingAction === "confirmar" ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <>
-                  <Check className="w-3 h-3 stroke-[2.5]" />
-                  <span>Confirmado</span>
-                </>
-              )}
-            </button>
+                <button
+                  type="button"
+                  onClick={handleSetPendente}
+                  disabled={loadingAction !== null}
+                  className={cn(
+                    "h-8 sm:px-3 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
+                    isPendente
+                      ? "bg-amber-50 text-amber-800 border border-amber-300/80 shadow-xs"
+                      : "text-[#737373] hover:text-amber-800 hover:bg-white/60"
+                  )}
+                >
+                  {loadingAction === "pendente" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Clock className="w-3 h-3 stroke-[2.5]" />
+                      <span>Pendente</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSetConfirmado}
+                  disabled={loadingAction !== null}
+                  className={cn(
+                    "h-8 sm:px-3 rounded-[12px] font-medium text-xs flex items-center justify-center gap-1 transition-all cursor-pointer",
+                    isConfirmed
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-300/80 shadow-xs"
+                      : "text-[#737373] hover:text-emerald-800 hover:bg-white/60"
+                  )}
+                >
+                  {loadingAction === "confirmar" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="w-3 h-3 stroke-[2.5]" />
+                      <span>Confirmado</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

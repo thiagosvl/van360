@@ -9,6 +9,7 @@ interface AnoLetivoSelectProps {
   anosDisponiveis?: number[];
   className?: string;
   label?: string;
+  renderLabel?: (ano: number) => React.ReactNode;
 }
 
 export function AnoLetivoSelect({
@@ -17,6 +18,7 @@ export function AnoLetivoSelect({
   anosDisponiveis,
   className,
   label = "Ano Letivo",
+  renderLabel,
 }: AnoLetivoSelectProps) {
   const currentYear = getNowBR().getFullYear();
 
@@ -61,12 +63,22 @@ export function AnoLetivoSelect({
         <ChevronLeft className="w-4 h-4" />
       </button>
 
-      <div className="flex items-center gap-1.5 px-2">
+      <div className="flex items-center gap-1.5 px-1.5 sm:px-2 min-w-0">
         <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-        <span className="text-xs font-bold text-[#0a0a0a] tracking-tight">
-          {label ? `${label} ` : ""}
-          {ano}
-        </span>
+        {renderLabel ? (
+          renderLabel(ano)
+        ) : (
+          <span className="text-xs font-bold text-[#0a0a0a] tracking-tight whitespace-nowrap">
+            {label === "Ano Letivo" ? (
+              <>
+                Ano <span className="hidden min-[380px]:inline">Letivo </span>
+              </>
+            ) : label ? (
+              `${label} `
+            ) : null}
+            {ano}
+          </span>
+        )}
       </div>
 
       <button

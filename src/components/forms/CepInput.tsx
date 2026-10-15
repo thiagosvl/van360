@@ -71,12 +71,10 @@ export function CepInput<T extends FieldValues>({
           form.setValue(`${namePrefix}cidade` as any, address.cidade, { shouldValidate: true });
           // @ts-ignore
           form.setValue(`${namePrefix}estado` as any, address.estado, { shouldValidate: true });
+          // @ts-ignore
+          form.setValue(`${namePrefix}numero` as any, "", { shouldValidate: true });
 
           onAddressFetched?.(address);
-
-          if (nextField) {
-            setTimeout(() => form.setFocus(`${namePrefix}${nextField}` as any), 100);
-          }
         }
       } catch (error) {
         toast.error("Erro ao buscar CEP");

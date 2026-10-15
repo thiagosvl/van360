@@ -5,6 +5,7 @@ import { Passageiro } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
 import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
+import { toast } from "@/utils/notifications/toast";
 
 export interface ItineraryItem {
   id: string;
@@ -52,6 +53,13 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
   const showTopLine = index > 0;
   const isLast = index === totalItems - 1;
 
+  const handleShowNodeError = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (nodeError) {
+      toast.info(nodeError);
+    }
+  };
+
   return (
     <div className="relative w-full">
       {showTopLine && (
@@ -77,9 +85,15 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                       {item.nome}
                     </span>
                     {nodeError && (
-                      <span title={nodeError} className="inline-flex shrink-0">
-                        <Info className="w-3.5 h-3.5 text-primary" />
-                      </span>
+                      <button
+                        type="button"
+                        onClick={handleShowNodeError}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 transition-colors shrink-0 cursor-pointer active:scale-95"
+                        title={nodeError}
+                        aria-label="Ver sugestão da parada"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
                     )}
                   </div>
                   <button
@@ -134,9 +148,15 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                         {formatShortName(item.nome, true)}
                       </span>
                       {nodeError && (
-                        <span title={nodeError} className="inline-flex shrink-0">
-                          <Info className="w-3.5 h-3.5 text-primary" />
-                        </span>
+                        <button
+                          type="button"
+                          onClick={handleShowNodeError}
+                          className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 transition-colors shrink-0 cursor-pointer active:scale-95"
+                          title={nodeError}
+                          aria-label="Ver sugestão da parada"
+                        >
+                          <Info className="w-3.5 h-3.5" />
+                        </button>
                       )}
                     </div>
                     {(item.passageiro?.escola?.nome || item.detalhe) && (
@@ -172,8 +192,8 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                       className={cn(
                         "flex-1 rounded-[16px] py-1 text-xs transition-all flex items-center justify-center gap-1 cursor-pointer select-none",
                         (item.sentido === RouteSentido.INDO || !item.sentido)
-                          ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                          : "text-[#737373] hover:text-[#0a0a0a] font-normal"
+                          ? "bg-white text-[#0a0a0a] border border-[#e5e5e5] font-semibold shadow-xs"
+                          : "text-[#737373] hover:text-[#0a0a0a] border border-transparent font-normal"
                       )}
                     >
                       <span>Indo</span>
@@ -185,8 +205,8 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                       className={cn(
                         "flex-1 rounded-[16px] py-1 text-xs transition-all flex items-center justify-center gap-1 cursor-pointer select-none",
                         item.sentido === RouteSentido.VOLTANDO
-                          ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                          : "text-[#737373] hover:text-[#0a0a0a] font-normal"
+                          ? "bg-white text-[#0a0a0a] border border-[#e5e5e5] font-semibold shadow-xs"
+                          : "text-[#737373] hover:text-[#0a0a0a] border border-transparent font-normal"
                       )}
                     >
                       <span>Voltando</span>

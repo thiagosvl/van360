@@ -314,7 +314,7 @@ export function PassageiroFinanceiroDialog({
                       Aluno Isento
                     </FormLabel>
                     <div className="text-[11px] sm:text-xs text-[#737373] font-normal leading-relaxed">
-                      Ative para filhos, parentes ou cortesias. Nenhuma parcela será gerada.
+                      Nenhuma parcela será gerada.
                     </div>
                   </div>
                   <FormControl>

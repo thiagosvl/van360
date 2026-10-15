@@ -209,12 +209,12 @@ export interface AtualizarDadosPublicosPayload {
 }
 
 export interface ResponderRenovacaoPayload {
-  status: "confirmado" | "recusado" | "pendente";
+  status: RenovacaoStatus | "confirmado" | "recusado" | "pendente";
   observacoes_pais?: string | null;
 }
 
 export interface ResponderRenovacaoResponse {
-  status: "confirmado" | "recusado" | "pendente";
+  status: RenovacaoStatus | "confirmado" | "recusado" | "pendente";
   ano_destino: number;
   contrato?: {
     id: string;

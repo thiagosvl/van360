@@ -102,6 +102,23 @@ export default function ConfigurarRota() {
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Button>
+
+            <Button
+              type="submit"
+              variant="tonal"
+              size="sm"
+              disabled={vm.isSaving || !vm.isFormValid}
+              className="h-8 sm:h-9 px-3.5 sm:px-4 text-xs sm:text-sm font-semibold rounded-[18px] cursor-pointer"
+            >
+              {vm.isSaving ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Salvando...</span>
+                </>
+              ) : (
+                <span>Salvar</span>
+              )}
+            </Button>
           </div>
 
           <div className="bg-white border border-[#e5e5e5] p-4 sm:p-5 rounded-[24px] shadow-xs flex items-center justify-between gap-4 transition-all">
