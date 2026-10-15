@@ -235,7 +235,17 @@ export default function PassageiroCarteirinha() {
       (m) => Number(m.ano_letivo) === selectedYearNum
     );
     if (!mat) return passageiroData as Passageiro;
-    const contrato = mat.contrato;
+    const rawContrato = mat.contrato || (mat as any);
+    const contratoId = rawContrato?.id || (mat as any)?.contrato_id || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.contrato_id : undefined);
+    const statusContrato = (rawContrato?.status || (mat as any)?.status_contrato || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.status_contrato : undefined)) as Passageiro["status_contrato"];
+    const contratoStatus = (rawContrato?.status || (mat as any)?.contrato_status || (mat as any)?.status_contrato || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.contrato_status : undefined)) || "sem_contrato";
+    const contratoProvider = (rawContrato?.provider || (mat as any)?.contrato_provider || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.contrato_provider : undefined)) as Passageiro["contrato_provider"];
+    const minutaUrl = rawContrato?.minuta_url || (mat as any)?.minuta_url || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.minuta_url : undefined);
+    const contratoFinalUrl = rawContrato?.contrato_final_url || (mat as any)?.contrato_final_url || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.contrato_final_url : undefined);
+    const tokenAcesso = rawContrato?.token_acesso || (mat as any)?.token_acesso || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.token_acesso : undefined);
+    const contratoAno = rawContrato?.ano || (mat as any)?.contrato_ano || (Number(passageiroData.ano_letivo) === selectedYearNum ? passageiroData.contrato_ano : null);
+    const contratoUrl = contratoFinalUrl || minutaUrl || undefined;
+
     return {
       ...passageiroData,
       matricula_id: mat.id,
@@ -260,18 +270,15 @@ export default function PassageiroCarteirinha() {
       escola: mat.escola ?? undefined,
       escola_nome: mat.escola?.nome ?? undefined,
       veiculo: mat.veiculo ?? undefined,
-      contrato_id: contrato?.id ?? undefined,
-      status_contrato:
-        (contrato?.status as Passageiro["status_contrato"]) ?? undefined,
-      contrato_status: contrato?.status ?? "sem_contrato",
-      contrato_provider:
-        (contrato?.provider as Passageiro["contrato_provider"]) ?? undefined,
-      minuta_url: contrato?.minuta_url ?? undefined,
-      contrato_final_url: contrato?.contrato_final_url ?? undefined,
-      contrato_url:
-        contrato?.contrato_final_url || contrato?.minuta_url || undefined,
-      token_acesso: contrato?.token_acesso ?? undefined,
-      contrato_ano: contrato?.ano ?? null,
+      contrato_id: contratoId,
+      status_contrato: statusContrato,
+      contrato_status: contratoStatus,
+      contrato_provider: contratoProvider,
+      minuta_url: minutaUrl,
+      contrato_final_url: contratoFinalUrl,
+      contrato_url: contratoUrl,
+      token_acesso: tokenAcesso,
+      contrato_ano: contratoAno,
     } as Passageiro;
   }, [passageiroData, selectedYearNum]);
 
@@ -721,7 +728,7 @@ export default function PassageiroCarteirinha() {
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),
         mes,
-        ano: ano ?? Number(yearFilter) ?? undefined,
+        ano: ano ?? (yearFilter ? Number(yearFilter) : undefined),
         lockFoiPago,
         lockMesAno,
         availableMonths,

@@ -12,11 +12,11 @@ interface BottomNavbarProps {
 }
 
 export function BottomNavbar({ isSubscriptionBlocked }: BottomNavbarProps = {}) {
-  if (isSubscriptionBlocked) return null;
-
   const location = useLocation();
   const { user } = useSession();
   const { activeHrefs } = useBottomNavPreferences(user?.id);
+
+  if (isSubscriptionBlocked) return null;
 
   const navItems = activeHrefs
     .map(href => pagesItems.find(item => item.href === href))

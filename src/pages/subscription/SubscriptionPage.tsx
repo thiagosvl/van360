@@ -206,11 +206,11 @@ export default function SubscriptionPage() {
     }
   }, [searchParams, plans]);
 
+  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
+
   if (!can("assinatura.gerenciar")) {
     return <AccessRestrictedState moduleName="Assinatura" />;
   }
-
-  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
 
   const handleRestoreIosPurchases = async () => {
     setIsRestoringPurchases(true);
