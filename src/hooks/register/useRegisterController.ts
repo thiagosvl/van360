@@ -84,9 +84,15 @@ export function useRegisterController() {
       const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
       const cachedPush = await getCachedPushTokenInfo();
 
+      const rawApelido = data.apelido?.trim();
+      const isEmailInApelido = Boolean(
+        rawApelido && (rawApelido.includes("@") || rawApelido.toLowerCase() === data.email.trim().toLowerCase())
+      );
+      const sanitizedApelido = isEmailInApelido ? undefined : (rawApelido || undefined);
+
       const payload: RegistrarPayloadDTO = {
         nome: data.nome,
-        apelido: data.apelido?.trim() || undefined,
+        apelido: sanitizedApelido,
         email: data.email,
         senha: data.senha,
         termos_aceitos: data.termos_aceitos,

@@ -172,6 +172,7 @@ export default function Register() {
                                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                                 <Input
                                   placeholder="Digite seu nome completo"
+                                  autoComplete="name"
                                   {...field}
                                   className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
@@ -198,6 +199,9 @@ export default function Register() {
                                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                                 <Input
                                   placeholder="Ex: Tio Thiago"
+                                  autoComplete="off"
+                                  data-lpignore="true"
+                                  data-form-type="other"
                                   {...field}
                                   className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
                                       ? "border-[#e7000b] focus:border-[#e7000b]"
@@ -228,6 +232,7 @@ export default function Register() {
                                   {...field}
                                   type="tel"
                                   inputMode="numeric"
+                                  autoComplete="tel"
                                   placeholder="(11) 99999-9999"
                                   maxLength={15}
                                   onChange={(e) => field.onChange(phoneMask(e.target.value))}
@@ -255,6 +260,9 @@ export default function Register() {
                               <div className="relative">
                                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                                 <Input
+                                  type="email"
+                                  inputMode="email"
+                                  autoComplete="email"
                                   placeholder="seu@email.com"
                                   {...field}
                                   className={`pl-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
@@ -312,6 +320,7 @@ export default function Register() {
                               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
                                 type={showPassword ? "text" : "password"}
+                                autoComplete="new-password"
                                 placeholder="Mínimo 6 caracteres"
                                 {...field}
                                 className={`pl-10 pr-10 h-11 rounded-[18px] bg-[#f5f5f5] border transition-all text-sm text-[#0a0a0a] placeholder:text-[#a3a3a3] focus-visible:ring-0 focus:bg-white ${fieldState.error
