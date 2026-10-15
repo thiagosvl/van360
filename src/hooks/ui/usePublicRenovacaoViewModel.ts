@@ -11,7 +11,7 @@ export function usePublicRenovacaoViewModel() {
   const navigate = useNavigate();
   const { openEditarDadosPublicosRenovacaoDialog } = useLayout();
 
-  const { data, isLoading, error, refetch } = usePublicRenovacao(token);
+  const { data, isLoading, error } = usePublicRenovacao(token);
   const { mutateAsync: responder, isPending: isResponding } = useResponderPublicRenovacao(token);
 
   const [confirmRecusaOpen, setConfirmRecusaOpen] = useState(false);
@@ -75,12 +75,11 @@ export function usePublicRenovacaoViewModel() {
         });
       }
       toast.success("Renovação confirmada com sucesso!");
-      refetch();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Tente novamente ou fale com o motorista.";
       toast.error("Erro ao confirmar renovação", { description: msg });
     }
-  }, [responder, navigate, refetch]);
+  }, [responder, navigate]);
 
   const handleRecusar = useCallback(async () => {
     try {
@@ -89,12 +88,11 @@ export function usePublicRenovacaoViewModel() {
       });
       setConfirmRecusaOpen(false);
       toast.info("Resposta registrada. A vaga não será renovada.");
-      refetch();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Tente novamente ou fale com o motorista.";
       toast.error("Erro ao registrar resposta", { description: msg });
     }
-  }, [responder, refetch]);
+  }, [responder]);
 
   const handleNavigateToContract = useCallback((contractToken: string) => {
     navigate(ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", contractToken));

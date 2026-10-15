@@ -1,4 +1,4 @@
-import { FileSignature, Loader2 } from "lucide-react";
+import { InitialLoading } from "@/components/auth/InitialLoading";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import {
   PublicRenovacaoEscolaCard,
   PublicRenovacaoBottomBar,
 } from "@/components/features/renovacao/public";
+import { FileSignature } from "lucide-react";
 
 export default function PublicRenovacaoPage() {
   const {
@@ -38,14 +39,7 @@ export default function PublicRenovacaoPage() {
   } = usePublicRenovacaoViewModel();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
-        <div className="bg-white p-6 rounded-[24px] border border-border shadow-xs max-w-sm w-full text-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm font-medium text-muted-foreground">Carregando proposta de renovação...</p>
-        </div>
-      </div>
-    );
+    return <InitialLoading message="Carregando renovação..." />;
   }
 
   if (error || !data) {
@@ -112,18 +106,6 @@ export default function PublicRenovacaoPage() {
               description="Caso queira mudar de ideia ou alterar alguma informação, fale com o motorista para que ele realize a alteração."
               className="rounded-[18px]"
             />
-
-            {activeContractToken && (
-              <div className="bg-muted/30 rounded-[24px] p-5 border border-border space-y-2">
-                <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
-                  <FileSignature className="w-4 h-4 text-primary" />
-                  Contrato Digital de Prestação de Serviços
-                </div>
-                <p className="text-xs text-muted-foreground font-normal">
-                  O contrato referente ao ano de {ano_destino} está pronto para assinatura digital pelo celular com validade jurídica.
-                </p>
-              </div>
-            )}
 
             {isContratoAssinado && (
               <div className="space-y-3 pt-1">

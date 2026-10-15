@@ -1,11 +1,15 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useRenovacoesList,
   useUpdateRenovacao,
   useReajusteLote,
   useAtualizarStatusLoteRenovacao,
+  renovacaoKeys,
 } from "../api/useRenovacoes";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks";
 import { RenovacaoStatus } from "@/types/enums";
 import { toast } from "sonner";
 
@@ -59,6 +63,39 @@ export function useRenovacoesViewModel() {
   const updateRenovacaoMutation = useUpdateRenovacao();
   const reajusteLoteMutation = useReajusteLote();
   const atualizarStatusLoteMutation = useAtualizarStatusLoteRenovacao();
+
+  const { profile } = useProfile();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const channel = supabase
+      .channel(`renovacoes-sync-${profile.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "passageiro_renovacoes",
+          filter: `usuario_id=eq.${profile.id}`,
+        },
+        () => {
+          if (debounceTimer) clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
+          }, 400);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, queryClient]);
 
   const kpis = data?.kpis || {
     faturamento_atual: 0,

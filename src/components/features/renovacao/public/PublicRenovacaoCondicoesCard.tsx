@@ -1,4 +1,4 @@
-import { BadgeDollarSign, Calendar, ShieldCheck } from "lucide-react";
+import { BadgeDollarSign, Calendar, ShieldCheck, ReceiptText } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { formatMonthYearShort } from "@/utils/formatters/date";
 import type { PublicRenovacaoResponse } from "@/types/renovacao";
@@ -26,10 +26,8 @@ export function PublicRenovacaoCondicoesCard({ condicoes, anoDestino }: PublicRe
               <BadgeDollarSign className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs text-muted-foreground font-normal block">Parcela</span>
-              <span className="text-xs text-foreground font-medium">
-                {condicoes.qtd_parcelas ? `${condicoes.qtd_parcelas} parcelas mensais` : "Parcela mensal"}
-              </span>
+              <span className="text-xs text-muted-foreground font-normal block">Valor</span>
+              <span className="text-xs text-foreground font-medium">Mensalidade</span>
             </div>
           </div>
 
@@ -54,11 +52,27 @@ export function PublicRenovacaoCondicoesCard({ condicoes, anoDestino }: PublicRe
         <div className="flex items-center justify-between pt-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-[12px] bg-muted/60 text-foreground flex items-center justify-center shrink-0 border border-border">
+              <ReceiptText className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground font-normal block">Quantidade de Parcelas</span>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <span className="font-semibold text-foreground text-sm sm:text-base">
+              {condicoes.qtd_parcelas ? `${condicoes.qtd_parcelas} parcelas` : "11 parcelas"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[12px] bg-muted/60 text-foreground flex items-center justify-center shrink-0 border border-border">
               <Calendar className="w-4 h-4" />
             </div>
             <div>
               <span className="text-xs text-muted-foreground font-normal block">Vencimento</span>
-              <span className="text-xs text-foreground font-medium">Dia todo mês</span>
             </div>
           </div>
 

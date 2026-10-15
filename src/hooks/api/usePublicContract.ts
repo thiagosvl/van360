@@ -35,6 +35,13 @@ export function useGetPublicContract(token: string) {
     },
     enabled: !!token,
     retry: false,
+    refetchInterval: (query) => {
+      const contrato = query.state.data;
+      if (contrato && !contrato.minuta_url && contrato.status === ContratoStatus.PENDENTE) {
+        return 1500;
+      }
+      return false;
+    },
   });
 }
 

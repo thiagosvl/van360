@@ -69,8 +69,22 @@ export default function AssinarContrato() {
     };
   }, []);
 
-  if (isLoading) {
-    return <InitialLoading />;
+  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
+
+  const condutorInfo = contrato?.usuario || {
+    apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
+    nome: (dadosContrato.nomeCondutor as string | null | undefined) || null,
+    cpfcnpj: (dadosContrato.cpfCnpjCondutor as string | null | undefined) || null,
+  };
+  const nomeCondutorExibicao = getDriverDisplayName(condutorInfo);
+
+  const isAssinado = contrato?.status === ContratoStatus.ASSINADO;
+  const pdfUrl = isAssinado
+    ? (contrato?.contrato_final_url || contrato?.contrato_url || contrato?.minuta_url)
+    : contrato?.minuta_url;
+
+  if (isLoading || (contrato && !pdfUrl)) {
+    return <InitialLoading message="Preparando documento para assinatura..." />;
   }
 
   if (isError || !contrato) {
@@ -93,20 +107,6 @@ export default function AssinarContrato() {
       </div>
     );
   }
-
-  const dadosContrato = (contrato?.dados_contrato || {}) as Record<string, unknown>;
-
-  const condutorInfo = contrato.usuario || {
-    apelido: (dadosContrato.apelidoCondutor as string | null | undefined) || null,
-    nome: (dadosContrato.nomeCondutor as string | null | undefined) || null,
-    cpfcnpj: (dadosContrato.cpfCnpjCondutor as string | null | undefined) || null,
-  };
-  const nomeCondutorExibicao = getDriverDisplayName(condutorInfo);
-
-  const isAssinado = contrato.status === ContratoStatus.ASSINADO;
-  const pdfUrl = isAssinado
-    ? (contrato.contrato_final_url || contrato.contrato_url || contrato.minuta_url)
-    : contrato.minuta_url;
 
   const nomeAluno =
     (dadosContrato.nomeAluno as string | undefined) ||
