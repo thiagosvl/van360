@@ -4,7 +4,8 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  useTransition,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -51,7 +52,8 @@ import {
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
-  useUpdatePassageiro
+  useUpdatePassageiro,
+  useGerarContratoFlow,
 } from "@/hooks";
 import { useCreateContrato, useSubstituirContrato, useDeleteContrato } from "@/hooks/api/useContratos";
 import { usePassageiroRotas } from "@/hooks/api/useRoutes";
@@ -73,7 +75,6 @@ import {
   obterUrlDocumentoContrato,
   isPassageiroIncompleto,
   isContratoAtivoNaConta,
-  hasPendenciasParaGerarContrato,
 } from "@/utils/domain";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
 
@@ -100,11 +101,10 @@ export default function PassageiroCarteirinha() {
     openCobrancaFormDialog,
     openManualPaymentDialog,
     openReceiptDialog,
-    openGerarContratoValidadorDialog,
-    openConfirmarGerarContratoDialog,
     openPassageiroFinanceiroDialog,
     openFirstChargeDialog,
   } = useLayout();
+  const { iniciarFluxoGerarContrato } = useGerarContratoFlow();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const canViewFinancials =
@@ -306,6 +306,19 @@ export default function PassageiroCarteirinha() {
     enabled: !!passageiro_id && canViewFinancials && !isDeleting && !isDeletedRef.current,
   });
 
+  const [isPendingYearTransition, startYearTransition] = useTransition();
+
+  const handleYearChange = useCallback(
+    (novoAno: number) => {
+      startYearTransition(() => {
+        setYearFilter(novoAno.toString());
+      });
+    },
+    [setYearFilter]
+  );
+
+  const isYearChanging = isPendingYearTransition || Boolean(isCobrancasFetching && !isCobrancasLoading);
+
   const cobrancas = (cobrancasData || []) as Cobranca[];
 
   const mobileTabItems = useMemo<AppTabItem[]>(() => {
@@ -440,18 +453,15 @@ export default function PassageiroCarteirinha() {
         const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
           updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
-        openConfirmarGerarContratoDialog({
+        iniciarFluxoGerarContrato({
           passageiro: updatedPassageiro,
-          valorMensal: updatedPassageiro.valor_cobranca ? Number(updatedPassageiro.valor_cobranca) : undefined,
-          diaVencimento: updatedPassageiro.dia_vencimento ? Number(updatedPassageiro.dia_vencimento) : undefined,
-          dataInicio: updatedPassageiro.data_inicio_transporte || undefined,
-          dataFim: updatedPassageiro.data_fim_transporte || undefined,
+          anoLetivo: selectedYearNum,
           isSubstituicao: hasActiveContract,
           contratoIdParaSubstituir: updatedPassageiro.contrato_id || undefined,
         });
       }, 300);
     }
-  }, [passageiro, cobrancas, canManageContracts, openFirstChargeDialog, openConfirmarGerarContratoDialog, profile]);
+  }, [passageiro, cobrancas, canManageContracts, openFirstChargeDialog, iniciarFluxoGerarContrato, profile, selectedYearNum]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -951,35 +961,10 @@ export default function PassageiroCarteirinha() {
           openBrowserLink(urlContrato);
         }
       } else {
-        if (!hasPendenciasParaGerarContrato(passageiro)) {
-          openConfirmarGerarContratoDialog({
-            passageiro,
-            valorMensal: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined,
-            diaVencimento: passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined,
-            ano: selectedYearNum,
-            isSubstituicao: false,
-          });
-          return;
-        }
-
-        openGerarContratoValidadorDialog({
-          passageiroId: passageiro.id!,
-          initialPassageiro: passageiro,
-          onSuccess: (_id, _bypassed, updatedValues, freshPassageiro) => {
-            const finalPass = freshPassageiro || passageiro;
-            const valorMensal = updatedValues?.valorMensal ?? (finalPass.valor_cobranca ? Number(finalPass.valor_cobranca) : undefined);
-            const diaVencimento = updatedValues?.diaVencimento ?? (finalPass.dia_vencimento ? Number(finalPass.dia_vencimento) : undefined);
-
-            openConfirmarGerarContratoDialog({
-              passageiro: finalPass,
-              valorMensal,
-              diaVencimento,
-              dataInicio: finalPass.data_inicio_transporte || undefined,
-              dataFim: finalPass.data_fim_transporte || undefined,
-              ano: selectedYearNum,
-              isSubstituicao: false,
-            });
-          },
+        iniciarFluxoGerarContrato({
+          passageiro,
+          anoLetivo: selectedYearNum,
+          isSubstituicao: false,
         });
       }
     },
@@ -997,7 +982,7 @@ export default function PassageiroCarteirinha() {
   };
 
   const renderTabContents = (extraClassName?: string) => (
-    <>
+    <div className={cn("transition-opacity duration-200", isYearChanging && "opacity-40 pointer-events-none")}>
       {canViewFinancials && (
         <TabsContent value="parcelas" className={cn("outline-none space-y-5 transform-gpu will-change-transform", extraClassName)}>
           <Suspense fallback={<Skeleton className="h-96 w-full rounded-[24px]" />}>
@@ -1064,7 +1049,7 @@ export default function PassageiroCarteirinha() {
           />
         </Suspense>
       </TabsContent>
-    </>
+    </div>
   );
 
   const renderYearAndRenewalHeader = () => {
@@ -1082,9 +1067,10 @@ export default function PassageiroCarteirinha() {
             </span>
             <AnoLetivoSelect
               ano={selectedYearNum}
-              onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
+              onChangeAno={handleYearChange}
               anosDisponiveis={anosDisponiveisCarteirinha}
               label="Ano Letivo"
+              isLoading={isYearChanging}
             />
           </div>
         )}
@@ -1104,10 +1090,11 @@ export default function PassageiroCarteirinha() {
                 <div className="w-full">
                   <AnoLetivoSelect
                     ano={selectedYearNum}
-                    onChangeAno={(novoAno) => setYearFilter(novoAno.toString())}
+                    onChangeAno={handleYearChange}
                     anosDisponiveis={anosDisponiveisCarteirinha}
                     label="Ano Letivo"
                     className="w-full justify-between h-10"
+                    isLoading={isYearChanging}
                   />
                 </div>
               )}
@@ -1126,7 +1113,11 @@ export default function PassageiroCarteirinha() {
 
               {renderRenewalBanner()}
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className={cn("w-full", !showRenewalBanner && "pt-7 sm:pt-8")}
+              >
                 <AppTabNav
                   activeTab={activeTab}
                   items={mobileTabItems}

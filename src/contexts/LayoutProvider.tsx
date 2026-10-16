@@ -133,6 +133,7 @@ import {
   OpenCobrancaEditDialogProps,
   OpenCobrancaFormProps,
   OpenConfirmationDialogProps,
+  NavigateToContractSetupProps,
   OpenContractSetupDialogProps,
   OpenEscolaFormProps,
   OpenCadastrarEscolasProps,
@@ -812,9 +813,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => setFirstChargeDialogState({ open: true, props });
 
-  const openContractSetupDialog = (props?: OpenContractSetupDialogProps) => {
+  const navigateToContractSetup = (props?: NavigateToContractSetupProps) => {
     const returnTo = props?.returnTo || `${location.pathname}${location.search}`;
-    navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?returnTo=${encodeURIComponent(returnTo)}`);
+    const params = new URLSearchParams();
+    params.set("returnTo", returnTo);
+    if (props?.ano) {
+      params.set("anoDestino", String(props.ano));
+    }
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.CONTRACT_SETUP}?${params.toString()}`);
   };
 
   const openPixPaymentDialog = (props: OpenPixPaymentDialogProps) => {
@@ -1077,7 +1083,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeConfigurarPeriodoAnoDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
-        openContractSetupDialog,
+        navigateToContractSetup,
+        openContractSetupDialog: navigateToContractSetup,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarPixDialog: (props?: OpenEditarPixDialogProps) =>
           setEditarPixDialogState({ open: true, props }),
@@ -1959,6 +1966,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           responsavel={editarDadosPublicosRenovacaoDialogState.props.responsavel}
           passageiro={editarDadosPublicosRenovacaoDialogState.props.passageiro}
           condicoes={editarDadosPublicosRenovacaoDialogState.props.condicoes}
+          escolasDisponiveis={editarDadosPublicosRenovacaoDialogState.props.escolasDisponiveis}
           onSuccess={editarDadosPublicosRenovacaoDialogState.props.onSuccess}
         />
       )}

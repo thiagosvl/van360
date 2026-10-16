@@ -127,7 +127,7 @@ const CarteirinhaTopCard = ({
     passageiro.enviar_notificacoes !== false;
 
   return (
-    <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-8 shadow-sm border border-white/10 overflow-visible">
+    <div className="bg-gradient-to-br from-[#122842] via-[#1a385c] to-[#0e2137] text-white rounded-[24px] relative flex flex-col items-center mb-9 sm:mb-10 shadow-sm border border-white/10 overflow-visible">
       <div className="absolute top-0 left-0 w-full h-[35%] bg-white/5 rounded-t-[24px] pointer-events-none z-0" />
       <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/5 blur-xl pointer-events-none" />
 

@@ -22,6 +22,7 @@ export { useVeiculosViewModel } from "./ui/useVeiculosViewModel";
 export { useGastosViewModel } from "./ui/useGastosViewModel";
 export { useRelatoriosViewModel } from "./ui/useRelatoriosViewModel";
 export { useContratosViewModel } from "./ui/useContratosViewModel";
+export { useGerarContratoFlow } from "./ui/useGerarContratoFlow";
 export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
 export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
 export { useRevisarSolicitacaoViewModel } from "./ui/useRevisarSolicitacaoViewModel";

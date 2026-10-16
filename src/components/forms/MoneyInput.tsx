@@ -43,7 +43,8 @@ export function MoneyInput<T extends FieldValues>({
             inputMode="numeric"
             className={cn(
               "pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a] placeholder:text-[#737373] focus:bg-white focus:border-[#0a0a0a] transition-all",
-              inputClassName
+              inputClassName,
+              error && "border-[#e7000b] focus:border-[#e7000b]"
             )}
             disabled={disabled}
             onChange={(e) => {

@@ -1,16 +1,13 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   useRenovacoesList,
   useUpdateRenovacao,
   useReajusteLote,
   useAtualizarStatusLoteRenovacao,
-  renovacaoKeys,
 } from "../api/useRenovacoes";
-import { supabase } from "@/integrations/supabase/client";
-import { useProfile, useDebounce } from "@/hooks";
-import { RenovacaoStatus } from "@/types/enums";
+import { useDebounce } from "@/hooks";
+import { RenovacaoStatus, FilterDefaults } from "@/types/enums";
 import { toast } from "sonner";
 
 export const FILTER_ALL = "all";
@@ -45,9 +42,9 @@ export function useRenovacoesViewModel() {
     [setSearchParams]
   );
 
-  const [statusFilter, setStatusFilter] = useState<string>(FILTER_ALL);
-  const [escolaFilter, setEscolaFilter] = useState<string>(FILTER_ALL);
-  const [periodoFilter, setPeriodoFilter] = useState<string>(FILTER_ALL);
+  const [statusFilter, setStatusFilterState] = useState<string>(() => searchParams.get("status") || FILTER_ALL);
+  const [escolaFilter, setEscolaFilterState] = useState<string>(() => searchParams.get("escola") || FILTER_ALL);
+  const [periodoFilter, setPeriodoFilterState] = useState<string>(() => searchParams.get("periodo") || FILTER_ALL);
   const [searchTerm, setSearchTermState] = useState<string>(() => searchParams.get("search") || "");
 
   const setSearchTerm = useCallback(
@@ -66,10 +63,119 @@ export function useRenovacoesViewModel() {
     [setSearchParams]
   );
 
+  const setStatusFilter = useCallback(
+    (novoStatus: string) => {
+      setStatusFilterState(novoStatus);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (novoStatus && novoStatus !== FILTER_ALL) {
+          next.set("status", novoStatus);
+        } else {
+          next.delete("status");
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const setEscolaFilter = useCallback(
+    (novaEscola: string) => {
+      setEscolaFilterState(novaEscola);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (novaEscola && novaEscola !== FILTER_ALL && novaEscola !== FilterDefaults.TODAS) {
+          next.set("escola", novaEscola);
+        } else {
+          next.delete("escola");
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const setPeriodoFilter = useCallback(
+    (novoPeriodo: string) => {
+      setPeriodoFilterState(novoPeriodo);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (novoPeriodo && novoPeriodo !== FILTER_ALL && novoPeriodo !== FilterDefaults.TODOS) {
+          next.set("periodo", novoPeriodo);
+        } else {
+          next.delete("periodo");
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const applyFilters = useCallback(
+    (filters: { escola?: string; periodo?: string; status?: string }) => {
+      if (filters.escola !== undefined) setEscolaFilterState(filters.escola);
+      if (filters.periodo !== undefined) setPeriodoFilterState(filters.periodo);
+      if (filters.status !== undefined) setStatusFilterState(filters.status);
+
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (filters.escola !== undefined) {
+          if (filters.escola && filters.escola !== FILTER_ALL && filters.escola !== FilterDefaults.TODAS) {
+            next.set("escola", filters.escola);
+          } else {
+            next.delete("escola");
+          }
+        }
+        if (filters.periodo !== undefined) {
+          if (filters.periodo && filters.periodo !== FILTER_ALL && filters.periodo !== FilterDefaults.TODOS) {
+            next.set("periodo", filters.periodo);
+          } else {
+            next.delete("periodo");
+          }
+        }
+        if (filters.status !== undefined) {
+          if (filters.status && filters.status !== FILTER_ALL) {
+            next.set("status", filters.status);
+          } else {
+            next.delete("status");
+          }
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const clearFilters = useCallback(() => {
+    setEscolaFilterState(FILTER_ALL);
+    setPeriodoFilterState(FILTER_ALL);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("escola");
+      next.delete("periodo");
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   useEffect(() => {
     const paramSearch = searchParams.get("search") || "";
     if (paramSearch !== searchTerm) {
       setSearchTermState(paramSearch);
+    }
+
+    const paramStatus = searchParams.get("status") || FILTER_ALL;
+    if (paramStatus !== statusFilter) {
+      setStatusFilterState(paramStatus);
+    }
+
+    const paramEscola = searchParams.get("escola") || FILTER_ALL;
+    if (paramEscola !== escolaFilter) {
+      setEscolaFilterState(paramEscola);
+    }
+
+    const paramPeriodo = searchParams.get("periodo") || FILTER_ALL;
+    if (paramPeriodo !== periodoFilter) {
+      setPeriodoFilterState(paramPeriodo);
     }
   }, [searchParams]);
 
@@ -96,38 +202,7 @@ export function useRenovacoesViewModel() {
   const reajusteLoteMutation = useReajusteLote();
   const atualizarStatusLoteMutation = useAtualizarStatusLoteRenovacao();
 
-  const { profile } = useProfile();
-  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!profile?.id) return;
-
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const channel = supabase
-      .channel(`renovacoes-sync-${profile.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "passageiro_renovacoes",
-          filter: `usuario_id=eq.${profile.id}`,
-        },
-        () => {
-          if (debounceTimer) clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
-          }, 400);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id, queryClient]);
 
   const kpis = data?.kpis || {
     faturamento_atual: 0,
@@ -326,6 +401,8 @@ export function useRenovacoesViewModel() {
     setEscolaFilter,
     periodoFilter,
     setPeriodoFilter,
+    applyFilters,
+    clearFilters,
     searchTerm,
     setSearchTerm,
     selectedIds,

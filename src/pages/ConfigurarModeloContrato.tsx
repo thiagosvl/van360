@@ -17,6 +17,7 @@ import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usuarioApi } from "@/services/api/usuario.api";
+import { apiClient } from "@/services/api/client";
 import { ContractMultaTipo } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { sanitizeClauseText, sanitizeGenericText } from "@/utils/domain/contrato/contratoSanitize";
@@ -94,6 +95,7 @@ export default function ConfigurarModeloContrato() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get("returnTo");
+  const anoDestino = searchParams.get("anoDestino");
   const queryClient = useQueryClient();
   const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
   const { profile, refreshProfile } = useProfile();
@@ -490,6 +492,11 @@ export default function ConfigurarModeloContrato() {
   const handleSave = async () => {
     if (!profile) return;
 
+    if (!isDirty) {
+      toast.info("Nenhuma alteração foi realizada.");
+      return;
+    }
+
     const hasEmptySections = secoes.some(
       (s) => s.titulo.trim() === "" || s.clausulas.length === 0 || s.clausulas.some((c) => c.texto.trim() === "")
     );
@@ -506,17 +513,28 @@ export default function ConfigurarModeloContrato() {
       sigPad.current.finishEditing();
     }
 
+    if (!finalSig || finalSig.trim() === "") {
+      setShowErrors(true);
+      setActiveTab("identity");
+      toast.error("A assinatura digital é obrigatória para salvar o modelo de contrato.");
+      const card = document.getElementById("assinatura-digital-card");
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
     setIsSubmitting(true);
     const wasActive = isContractActive;
     try {
       const resolvedLogo = logoTemp !== null ? logoTemp : (profile.logo_url || null);
-      const resolvedSig = finalSig || null;
+      const resolvedSig = finalSig;
 
       await usuarioApi.atualizarUsuario(profile.id, {
         assinatura_digital_url: resolvedSig,
         logo_url: resolvedLogo,
         config_contrato: {
-          usar_contratos: Boolean(resolvedSig),
+          usar_contratos: true,
           multa_atraso: multaAtraso,
           juros_atraso: jurosAtraso,
           multa_rescisao: multaRescisao,
@@ -525,7 +543,7 @@ export default function ConfigurarModeloContrato() {
         },
       });
 
-      setIsLocallyActive(Boolean(resolvedSig));
+      setIsLocallyActive(true);
       setSignatureTemp(resolvedSig);
       if (resolvedLogo) setLogoTemp(resolvedLogo);
 
@@ -546,7 +564,7 @@ export default function ConfigurarModeloContrato() {
           logo_url: resolvedLogo,
           config_contrato: {
             ...old.config_contrato,
-            usar_contratos: Boolean(resolvedSig),
+            usar_contratos: true,
             multa_atraso: multaAtraso,
             juros_atraso: jurosAtraso,
             multa_rescisao: multaRescisao,
@@ -558,12 +576,24 @@ export default function ConfigurarModeloContrato() {
 
       refreshProfile();
 
-      if (!resolvedSig) {
-        toast.success("Assinatura removida e alterações salvas com sucesso!");
-      } else if (!wasActive) {
-        toast.success("Modelo de contrato ativado com sucesso! Agora você já pode gerar contratos.");
+      if (anoDestino && resolvedSig) {
+        await apiClient.put("/renovacoes/config-contrato", {
+          ano: Number(anoDestino),
+          usar_contratos: true,
+          multa_atraso: multaAtraso,
+          juros_atraso: jurosAtraso,
+          multa_rescisao: multaRescisao,
+          secoes: cleanSecoesDTO,
+          clausulas: flatClausulas,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["renovacoes"] });
+        toast.success(`Contrato digital configurado e ativado para ${anoDestino}.`);
       } else {
-        toast.success("Modelo de contrato salvo com sucesso!");
+        if (!wasActive) {
+          toast.success("Modelo de contrato ativado com sucesso! Agora você já pode gerar contratos.");
+        } else {
+          toast.success("Modelo de contrato salvo com sucesso!");
+        }
       }
 
       if (returnTo) {
@@ -969,7 +999,15 @@ export default function ConfigurarModeloContrato() {
 
       {activeTab === "identity" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-          <div id="assinatura-digital-card" className="order-1 p-5 sm:p-6 bg-white rounded-[24px] border border-[#e5e5e5] shadow-xs flex flex-col justify-between space-y-4 scroll-mt-24 h-full">
+          <div
+            id="assinatura-digital-card"
+            className={cn(
+              "order-1 p-5 sm:p-6 bg-white rounded-[24px] border shadow-xs flex flex-col justify-between space-y-4 scroll-mt-24 h-full transition-colors",
+              showErrors && !signatureTemp
+                ? "border-[#e7000b] ring-1 ring-[#e7000b]"
+                : "border-[#e5e5e5]"
+            )}
+          >
             <div>
               <h4 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] uppercase tracking-wider">
                 Assinatura Digital <span className="text-[#e7000b]">*</span>
@@ -977,6 +1015,11 @@ export default function ConfigurarModeloContrato() {
               <p className="text-xs text-[#737373] mt-0.5 font-normal">
                 Desenhe no quadro abaixo com o dedo no celular ou mouse no computador.
               </p>
+              {showErrors && !signatureTemp && (
+                <p className="text-xs text-[#e7000b] font-medium mt-1">
+                  A assinatura digital é obrigatória.
+                </p>
+              )}
             </div>
 
             <SignaturePad
@@ -1023,8 +1066,8 @@ export default function ConfigurarModeloContrato() {
               <Button
                 type="button"
                 onClick={handleSave}
-                disabled={isSubmitting}
-                className="h-11 px-6 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground text-sm font-medium gap-2 shadow-xs cursor-pointer transition-all"
+                disabled={isSubmitting || !isDirty}
+                className="h-11 px-6 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground text-sm font-medium gap-2 shadow-xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" />
@@ -1040,8 +1083,8 @@ export default function ConfigurarModeloContrato() {
             <Button
               type="button"
               onClick={handleSave}
-              disabled={isSubmitting}
-              className="w-full max-w-md h-12 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground text-sm font-semibold gap-2 shadow-[0_4px_20px_rgba(37,99,235,0.3)] pointer-events-auto cursor-pointer transition-all"
+              disabled={isSubmitting || !isDirty}
+              className="w-full max-w-md h-12 rounded-[18px] bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground text-sm font-semibold gap-2 shadow-[0_4px_20px_rgba(37,99,235,0.3)] pointer-events-auto cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none"
             >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" />

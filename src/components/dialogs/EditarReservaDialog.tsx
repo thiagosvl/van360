@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,23 @@ export function EditarReservaDialog({
   const [openCalendarFimTransp, setOpenCalendarFimTransp] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [initialValues, setInitialValues] = useState<{
+    novoValor: string;
+    novoDiaVencimento: string;
+    mesInicioCobranca: string;
+    anoInicioCobranca: string;
+    mesFimCobranca: string;
+    anoFimCobranca: string;
+    novaEscolaId: string;
+    novoPeriodo: string;
+    novaModalidade: string;
+    novaTurma: string;
+    novaSala: string;
+    novoNomeProfessor: string;
+    novoVeiculoId: string;
+    dataInicioTransporte: string;
+    dataFimTransporte: string;
+  } | null>(null);
 
   const anoOptions = [anoDestino.toString(), (anoDestino + 1).toString()];
 
@@ -89,10 +106,12 @@ export function EditarReservaDialog({
     if (passageiro) {
       setErrors({});
       const valorBase = passageiro.novo_valor_cobranca ?? passageiro.valor_cobranca_atual ?? 0;
-      setNovoValor(moneyMask(String(Math.round(valorBase * 100))));
+      const valorFormatado = moneyMask(String(Math.round(valorBase * 100)));
+      setNovoValor(valorFormatado);
 
       const diaVenc = passageiro.novo_dia_vencimento || passageiro.dia_vencimento_atual || 10;
-      setNovoDiaVencimento(String(diaVenc));
+      const diaVencStr = String(diaVenc);
+      setNovoDiaVencimento(diaVencStr);
 
       const escolaId = passageiro.nova_escola_id || passageiro.escola_id_atual || (escolasList[0]?.id ?? "");
       setNovaEscolaId(escolaId);
@@ -100,10 +119,17 @@ export function EditarReservaDialog({
       const periodo = passageiro.novo_periodo || passageiro.periodo_atual || "manha";
       setNovoPeriodo(periodo);
 
-      setNovaModalidade(passageiro.nova_modalidade || passageiro.modalidade_atual || "ida_volta");
-      setNovaTurma(passageiro.nova_turma || passageiro.turma_atual || "");
-      setNovaSala(passageiro.nova_sala || passageiro.sala_atual || "");
-      setNovoNomeProfessor(passageiro.novo_nome_professor || passageiro.nome_professor_atual || "");
+      const modalidade = passageiro.nova_modalidade || passageiro.modalidade_atual || "ida_volta";
+      setNovaModalidade(modalidade);
+
+      const turma = passageiro.nova_turma || passageiro.turma_atual || "";
+      setNovaTurma(turma);
+
+      const sala = passageiro.nova_sala || passageiro.sala_atual || "";
+      setNovaSala(sala);
+
+      const nomeProfessor = passageiro.novo_nome_professor || passageiro.nome_professor_atual || "";
+      setNovoNomeProfessor(nomeProfessor);
 
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
       setNovoVeiculoId(veiculoId);
@@ -111,46 +137,109 @@ export function EditarReservaDialog({
       const dtInicioTransp = passageiro.nova_data_inicio_transporte
         ? formatDateToBR(passageiro.nova_data_inicio_transporte)
         : (configPeriodoMestre?.data_inicio_transporte
-            ? formatDateToBR(new Date(configPeriodoMestre.data_inicio_transporte + "T12:00:00"))
-            : "");
+          ? formatDateToBR(new Date(configPeriodoMestre.data_inicio_transporte + "T12:00:00"))
+          : "");
       setDataInicioTransporte(dtInicioTransp);
 
       const dtFimTransp = passageiro.nova_data_fim_transporte
         ? formatDateToBR(passageiro.nova_data_fim_transporte)
         : (configPeriodoMestre?.data_fim_transporte
-            ? formatDateToBR(new Date(configPeriodoMestre.data_fim_transporte + "T12:00:00"))
-            : "");
+          ? formatDateToBR(new Date(configPeriodoMestre.data_fim_transporte + "T12:00:00"))
+          : "");
       setDataFimTransporte(dtFimTransp);
 
+      let anoIni = "";
+      let mesIni = "";
       if (passageiro.nova_data_inicio_cobranca) {
         const parts = passageiro.nova_data_inicio_cobranca.split("-");
         if (parts.length >= 2) {
-          setAnoInicioCobranca(parts[0]);
-          setMesInicioCobranca(parseInt(parts[1], 10).toString());
+          anoIni = parts[0];
+          mesIni = parseInt(parts[1], 10).toString();
         }
       } else if (configPeriodoMestre?.configurado && configPeriodoMestre.mes_inicio_cobranca && configPeriodoMestre.ano_inicio_cobranca) {
-        setAnoInicioCobranca(String(configPeriodoMestre.ano_inicio_cobranca));
-        setMesInicioCobranca(String(configPeriodoMestre.mes_inicio_cobranca));
-      } else {
-        setMesInicioCobranca("");
-        setAnoInicioCobranca("");
+        anoIni = String(configPeriodoMestre.ano_inicio_cobranca);
+        mesIni = String(configPeriodoMestre.mes_inicio_cobranca);
       }
+      setAnoInicioCobranca(anoIni);
+      setMesInicioCobranca(mesIni);
 
+      let anoFim = "";
+      let mesFim = "";
       if (passageiro.nova_data_fim_cobranca) {
         const parts = passageiro.nova_data_fim_cobranca.split("-");
         if (parts.length >= 2) {
-          setAnoFimCobranca(parts[0]);
-          setMesFimCobranca(parseInt(parts[1], 10).toString());
+          anoFim = parts[0];
+          mesFim = parseInt(parts[1], 10).toString();
         }
       } else if (configPeriodoMestre?.configurado && configPeriodoMestre.mes_fim_cobranca && configPeriodoMestre.ano_fim_cobranca) {
-        setAnoFimCobranca(String(configPeriodoMestre.ano_fim_cobranca));
-        setMesFimCobranca(String(configPeriodoMestre.mes_fim_cobranca));
-      } else {
-        setMesFimCobranca("");
-        setAnoFimCobranca("");
+        anoFim = String(configPeriodoMestre.ano_fim_cobranca);
+        mesFim = String(configPeriodoMestre.mes_fim_cobranca);
       }
+      setAnoFimCobranca(anoFim);
+      setMesFimCobranca(mesFim);
+
+      setInitialValues({
+        novoValor: valorFormatado,
+        novoDiaVencimento: diaVencStr,
+        mesInicioCobranca: mesIni,
+        anoInicioCobranca: anoIni,
+        mesFimCobranca: mesFim,
+        anoFimCobranca: anoFim,
+        novaEscolaId: escolaId,
+        novoPeriodo: periodo,
+        novaModalidade: modalidade,
+        novaTurma: turma,
+        novaSala: sala,
+        novoNomeProfessor: nomeProfessor,
+        novoVeiculoId: veiculoId,
+        dataInicioTransporte: dtInicioTransp,
+        dataFimTransporte: dtFimTransp,
+      });
     }
   }, [passageiro, escolasList, veiculosList, anoDestino, configPeriodoMestre]);
+
+  const hasChanges = useMemo(() => {
+    if (!initialValues) return false;
+
+    if (!isIsentoOriginal) {
+      if (novoValor !== initialValues.novoValor) return true;
+      if (novoDiaVencimento !== initialValues.novoDiaVencimento) return true;
+      if (mesInicioCobranca !== initialValues.mesInicioCobranca) return true;
+      if (anoInicioCobranca !== initialValues.anoInicioCobranca) return true;
+      if (mesFimCobranca !== initialValues.mesFimCobranca) return true;
+      if (anoFimCobranca !== initialValues.anoFimCobranca) return true;
+    }
+
+    if (novaEscolaId !== initialValues.novaEscolaId) return true;
+    if (novoPeriodo !== initialValues.novoPeriodo) return true;
+    if (novaModalidade !== initialValues.novaModalidade) return true;
+    if (novaTurma !== initialValues.novaTurma) return true;
+    if (novaSala !== initialValues.novaSala) return true;
+    if (novoNomeProfessor !== initialValues.novoNomeProfessor) return true;
+    if (novoVeiculoId !== initialValues.novoVeiculoId) return true;
+    if (dataInicioTransporte !== initialValues.dataInicioTransporte) return true;
+    if (dataFimTransporte !== initialValues.dataFimTransporte) return true;
+
+    return false;
+  }, [
+    initialValues,
+    isIsentoOriginal,
+    novoValor,
+    novoDiaVencimento,
+    mesInicioCobranca,
+    anoInicioCobranca,
+    mesFimCobranca,
+    anoFimCobranca,
+    novaEscolaId,
+    novoPeriodo,
+    novaModalidade,
+    novaTurma,
+    novaSala,
+    novoNomeProfessor,
+    novoVeiculoId,
+    dataInicioTransporte,
+    dataFimTransporte,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,7 +377,7 @@ export function EditarReservaDialog({
               <Banner
                 variant="warning"
                 title="Aluno Confirmado e com Contrato"
-                description={`Caso altere valor, vencimento, datas, escola, período ou modalidade, o contrato e a matrícula de ${anoDestino} serão reiniciados e a renovação voltará para Pendente no mesmo link para nova confirmação e assinatura.`}
+                description={`Caso altere as informações, o contrato e a matrícula de ${anoDestino} serão reiniciados e a renovação voltará para Pendente no mesmo link para nova confirmação e assinatura.`}
                 className="rounded-[18px]"
               />
             )}
@@ -797,7 +886,7 @@ export function EditarReservaDialog({
             variant="primary"
             type="submit"
             isLoading={updateMutation.isPending}
-            disabled={updateMutation.isPending}
+            disabled={!hasChanges || updateMutation.isPending}
           />
         </BaseDialog.Footer>
       </form>

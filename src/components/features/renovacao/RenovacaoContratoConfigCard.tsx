@@ -12,7 +12,7 @@ interface RenovacaoContratoConfigCardProps {
 
 export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoConfigCardProps) {
   const { profile } = useProfile();
-  const { openContractSetupDialog } = useLayout();
+  const { navigateToContractSetup } = useLayout();
   const { data: configContrato, isLoading } = useRenovacaoContratoConfig(anoDestino);
   const salvarConfigMutation = useSalvarRenovacaoContratoConfig();
 
@@ -22,7 +22,6 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
   const handleToggleUsarContratos = async (checked: boolean) => {
     if (checked && !temAssinatura) {
       toast.info("Configure a assinatura digital e as cláusulas antes de ativar o contrato.");
-      openContractSetupDialog({ ano: anoDestino });
       return;
     }
 
@@ -47,7 +46,7 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
   };
 
   return (
-    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4 h-full flex flex-col justify-between">
+    <div className="bg-[#ffffff] rounded-[20px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs space-y-3.5 h-full flex flex-col justify-between">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] flex items-center justify-center shrink-0 mt-0.5">
@@ -84,7 +83,7 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => openContractSetupDialog({ ano: anoDestino })}
+          onClick={() => navigateToContractSetup({ ano: anoDestino })}
           className="h-8 px-3 rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium gap-1.5 shadow-none shrink-0 cursor-pointer"
         >
           <Settings2 className="w-3.5 h-3.5 text-[#737373]" />

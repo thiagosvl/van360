@@ -15,6 +15,15 @@ import {
   GraduationCap,
   MapPin,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { periodos } from "@/utils/formatters/periodo";
+import { modalidades } from "@/utils/formatters/passenger";
 import type { PublicRenovacaoResponse, AtualizarDadosPublicosPayload } from "@/types/renovacao";
 
 interface EditarDadosPublicosRenovacaoDialogProps {
@@ -24,48 +33,55 @@ interface EditarDadosPublicosRenovacaoDialogProps {
   responsavel?: PublicRenovacaoResponse["responsavel"];
   passageiro: PublicRenovacaoResponse["passageiro"];
   condicoes: PublicRenovacaoResponse["condicoes"];
+  escolasDisponiveis?: Array<{ id: string; nome: string }>;
   onSuccess?: () => void;
 }
 
-const editarDadosPublicosSchema = z.object({
-  responsavel: z
-    .object({
-      cep: z.string().optional(),
-      logradouro: z.string().optional(),
-      numero: z.string().optional(),
-      complemento: z.string().optional(),
-      bairro: z.string().optional(),
-      cidade: z.string().optional(),
-      estado: z.string().optional(),
-      referencia: z.string().optional(),
-    })
-    .superRefine((data, ctx) => {
-      const cepClean = (data.cep || "").replace(/\D/g, "");
-      if (cepClean.length > 0 && cepClean.length < 8) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "CEP deve conter 8 dígitos",
-          path: ["cep"],
-        });
-      }
-      const temEndereco = Boolean(data.logradouro?.trim() || cepClean.length === 8);
-      if (temEndereco && (!data.numero || data.numero.trim() === "")) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Informe o número do endereço",
-          path: ["numero"],
-        });
-      }
+const createEditarDadosPublicosSchema = (temEscolasDisponiveis: boolean) =>
+  z.object({
+    responsavel: z
+      .object({
+        cep: z.string().optional(),
+        logradouro: z.string().optional(),
+        numero: z.string().optional(),
+        complemento: z.string().optional(),
+        bairro: z.string().optional(),
+        cidade: z.string().optional(),
+        estado: z.string().optional(),
+        referencia: z.string().optional(),
+      })
+      .superRefine((data, ctx) => {
+        const cepClean = (data.cep || "").replace(/\D/g, "");
+        if (cepClean.length > 0 && cepClean.length < 8) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "CEP deve conter 8 dígitos",
+            path: ["cep"],
+          });
+        }
+        const temEndereco = Boolean(data.logradouro?.trim() || cepClean.length === 8);
+        if (temEndereco && (!data.numero || data.numero.trim() === "")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Informe o número do endereço",
+            path: ["numero"],
+          });
+        }
+      }),
+    passageiro: z.object({
+      escola_id: temEscolasDisponiveis
+        ? z.string().min(1, "Selecione a escola")
+        : z.string().optional(),
+      periodo: z.string().min(1, "Selecione o turno"),
+      modalidade: z.string().min(1, "Selecione a modalidade"),
+      turma: z.string().optional(),
+      sala: z.string().optional(),
+      nome_professor: z.string().optional(),
+      observacoes: z.string().optional(),
     }),
-  passageiro: z.object({
-    turma: z.string().optional(),
-    sala: z.string().optional(),
-    nome_professor: z.string().optional(),
-    observacoes: z.string().optional(),
-  }),
-});
+  });
 
-type EditarDadosPublicosFormValues = z.infer<typeof editarDadosPublicosSchema>;
+type EditarDadosPublicosFormValues = z.infer<ReturnType<typeof createEditarDadosPublicosSchema>>;
 
 export function EditarDadosPublicosRenovacaoDialog({
   isOpen,
@@ -74,12 +90,15 @@ export function EditarDadosPublicosRenovacaoDialog({
   responsavel,
   passageiro,
   condicoes,
+  escolasDisponiveis = [],
   onSuccess,
 }: EditarDadosPublicosRenovacaoDialogProps) {
   const { mutateAsync: salvarDados, isPending } = useAtualizarDadosPublicosRenovacao(token);
 
+  const schema = createEditarDadosPublicosSchema(escolasDisponiveis.length > 0);
+
   const form = useForm<EditarDadosPublicosFormValues>({
-    resolver: zodResolver(editarDadosPublicosSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       responsavel: {
         cep: "",
@@ -92,6 +111,9 @@ export function EditarDadosPublicosRenovacaoDialog({
         referencia: "",
       },
       passageiro: {
+        escola_id: "",
+        periodo: "",
+        modalidade: "",
         turma: "",
         sala: "",
         nome_professor: "",
@@ -102,6 +124,12 @@ export function EditarDadosPublicosRenovacaoDialog({
 
   useEffect(() => {
     if (isOpen) {
+      const initialEscolaId =
+        condicoes.escola.novo_id ||
+        condicoes.escola.atual_id ||
+        escolasDisponiveis.find((e) => e.nome === condicoes.escola.novo)?.id ||
+        "";
+
       form.reset({
         responsavel: {
           cep: cepMask(responsavel?.cep || ""),
@@ -114,6 +142,9 @@ export function EditarDadosPublicosRenovacaoDialog({
           referencia: responsavel?.referencia || "",
         },
         passageiro: {
+          escola_id: initialEscolaId,
+          periodo: condicoes.periodo.novo || condicoes.periodo.atual || "",
+          modalidade: condicoes.modalidade.novo || condicoes.modalidade.atual || "",
           turma: condicoes.turma?.novo || passageiro.turma || "",
           sala: condicoes.sala?.novo || passageiro.sala || "",
           nome_professor: condicoes.nome_professor?.novo || passageiro.nome_professor || "",
@@ -121,26 +152,29 @@ export function EditarDadosPublicosRenovacaoDialog({
         },
       });
     }
-  }, [isOpen, responsavel, passageiro, condicoes, form]);
+  }, [isOpen, responsavel, passageiro, condicoes, escolasDisponiveis, form]);
 
   const handleSubmit = async (values: EditarDadosPublicosFormValues) => {
     try {
       const payload: AtualizarDadosPublicosPayload = {
         responsavel: {
-          cep: values.responsavel.cep.replace(/\D/g, "") || undefined,
-          logradouro: values.responsavel.logradouro.trim() || undefined,
-          numero: values.responsavel.numero.trim() || undefined,
-          complemento: values.responsavel.complemento.trim() || undefined,
-          bairro: values.responsavel.bairro.trim() || undefined,
-          cidade: values.responsavel.cidade.trim() || undefined,
-          estado: values.responsavel.estado.trim() || undefined,
-          referencia: values.responsavel.referencia.trim() || undefined,
+          cep: values.responsavel.cep ? values.responsavel.cep.replace(/\D/g, "") : undefined,
+          logradouro: values.responsavel.logradouro?.trim() || undefined,
+          numero: values.responsavel.numero?.trim() || undefined,
+          complemento: values.responsavel.complemento?.trim() || undefined,
+          bairro: values.responsavel.bairro?.trim() || undefined,
+          cidade: values.responsavel.cidade?.trim() || undefined,
+          estado: values.responsavel.estado?.trim() || undefined,
+          referencia: values.responsavel.referencia?.trim() || undefined,
         },
         passageiro: {
-          turma: values.passageiro.turma.trim() || undefined,
-          sala: values.passageiro.sala.trim() || undefined,
-          nome_professor: values.passageiro.nome_professor.trim() || undefined,
-          observacoes: values.passageiro.observacoes.trim() || undefined,
+          escola_id: values.passageiro.escola_id || undefined,
+          periodo: values.passageiro.periodo || undefined,
+          modalidade: values.passageiro.modalidade || undefined,
+          turma: values.passageiro.turma?.trim() || undefined,
+          sala: values.passageiro.sala?.trim() || undefined,
+          nome_professor: values.passageiro.nome_professor?.trim() || undefined,
+          observacoes: values.passageiro.observacoes?.trim() || undefined,
         },
       };
 
@@ -180,6 +214,98 @@ export function EditarDadosPublicosRenovacaoDialog({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {escolasDisponiveis.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="passageiro.escola_id"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-3 space-y-1.5">
+                        <FormLabel className="text-foreground font-medium text-xs">
+                          Escola <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Select
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground shadow-none">
+                              <SelectValue placeholder="Selecione a escola" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {escolasDisponiveis.map((escola) => (
+                              <SelectItem key={escola.id} value={escola.id} className="text-xs sm:text-sm">
+                                {escola.nome}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="passageiro.periodo"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5 sm:col-span-1">
+                      <FormLabel className="text-foreground font-medium text-xs">
+                        Turno <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select
+                        value={field.value || ""}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground shadow-none">
+                            <SelectValue placeholder="Selecione o turno" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {periodos.map((p) => (
+                            <SelectItem key={p.value} value={p.value} className="text-xs sm:text-sm">
+                              {p.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="passageiro.modalidade"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5 sm:col-span-2">
+                      <FormLabel className="text-foreground font-medium text-xs">
+                        Modalidade <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select
+                        value={field.value || ""}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground shadow-none">
+                            <SelectValue placeholder="Selecione a modalidade" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {modalidades.map((m) => (
+                            <SelectItem key={m.value} value={m.value} className="text-xs sm:text-sm">
+                              {m.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="passageiro.turma"

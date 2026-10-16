@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useParams } from "react-router-dom";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { SignatureDialog } from "@/components/dialogs/SignatureDialog";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -25,7 +26,7 @@ import { gerarNomeArquivoContrato } from "@/utils/domain/contrato/contratoUtils"
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
@@ -84,7 +85,7 @@ export default function AssinarContrato() {
     : contrato?.minuta_url;
 
   if (isLoading || (contrato && !pdfUrl)) {
-    return <InitialLoading message="Preparando documento para assinatura..." />;
+    return <InitialLoading message="Preparando seu contrato..." />;
   }
 
   if (isError || !contrato) {
@@ -135,31 +136,12 @@ export default function AssinarContrato() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col h-screen overflow-hidden font-sans">
-      <header className="sticky top-0 z-40 bg-[#0b1a2e] h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 shadow-sm shrink-0 relative">
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-          <div className="bg-white/10 p-2 sm:p-2.5 rounded-[12px] backdrop-blur-md border border-white/10 shrink-0">
-            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white/90" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-headline font-bold text-xs sm:text-sm text-white tracking-tight leading-none mb-1 truncate">
-              Contrato de Transporte
-            </h3>
-            {nomeCondutorExibicao && (
-              <p className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider leading-none truncate">
-                {nomeCondutorExibicao}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="shrink-0 flex items-center sm:absolute sm:left-1/2 sm:-translate-x-1/2 pointer-events-none">
-          <img
-            src="/assets/logo-van360.webp"
-            alt="Van360"
-            className="h-7 sm:h-9 w-auto filter brightness-0 invert opacity-90"
-          />
-        </div>
-      </header>
+      <PublicHeader
+        title="Contrato de Transporte"
+        subtitle={nomeCondutorExibicao}
+        icon={FileText}
+        containerClassName="max-w-[850px] px-4"
+      />
 
       <main className="flex-1 overflow-auto bg-[#f5f5f5] pb-32 scroll-smooth block touch-auto">
         <div className="min-w-full py-6 sm:py-10 flex flex-col items-center">

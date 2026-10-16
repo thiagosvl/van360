@@ -233,6 +233,7 @@ export function useGerarContratoValidadorViewModel({
   const onSuccessRef = useRef(onSuccess);
   const onCloseRef = useRef(onClose);
   const lastLoadedPassengerIdRef = useRef<string | null>(null);
+  const hasBypassedRef = useRef(false);
 
   useEffect(() => {
     onSuccessRef.current = onSuccess;
@@ -240,16 +241,27 @@ export function useGerarContratoValidadorViewModel({
   }, [onSuccess, onClose]);
 
   useEffect(() => {
-    if (!isOpen || !passageiro) return;
+    if (!isOpen) {
+      hasBypassedRef.current = false;
+      lastLoadedPassengerIdRef.current = null;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !passageiro || hasBypassedRef.current) return;
+
+    if (!needsResponsavelGroup && !needsFinanceiroGroup && !needsTransporteGroup) {
+      hasBypassedRef.current = true;
+      safeCloseDialog(onCloseRef.current);
+      onSuccessRef.current(passageiro.id, true, undefined, passageiro);
+      return;
+    }
 
     if (lastLoadedPassengerIdRef.current !== passageiro.id) {
       lastLoadedPassengerIdRef.current = passageiro.id;
       form.reset(getInitialFormValues(passageiro));
-
-      if (!needsResponsavelGroup && !needsFinanceiroGroup && !needsTransporteGroup) {
-        onCloseRef.current();
-        onSuccessRef.current(passageiro.id, true, undefined, passageiro);
-      }
+    } else if (!form.formState.isDirty) {
+      form.reset(getInitialFormValues(passageiro));
     }
   }, [
     isOpen,
@@ -259,12 +271,6 @@ export function useGerarContratoValidadorViewModel({
     needsFinanceiroGroup,
     needsTransporteGroup,
   ]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      lastLoadedPassengerIdRef.current = null;
-    }
-  }, [isOpen]);
 
   const handleSubmit = async (data: ValidadorFormValues) => {
     if (!passageiroId || !passageiro) return;

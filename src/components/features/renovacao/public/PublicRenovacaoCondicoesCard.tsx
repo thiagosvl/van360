@@ -54,13 +54,15 @@ export function PublicRenovacaoCondicoesCard({ condicoes, anoDestino }: PublicRe
               <ReceiptText className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs text-muted-foreground font-normal block">Quantidade de Parcelas</span>
+              <span className="text-xs text-muted-foreground font-normal block">Parcelas</span>
             </div>
           </div>
 
           <div className="text-right">
             <span className="font-semibold text-foreground text-sm sm:text-base">
-              {condicoes.qtd_parcelas ? `${condicoes.qtd_parcelas} parcelas` : "11 parcelas"}
+              {condicoes.qtd_parcelas
+                ? `${condicoes.qtd_parcelas} ${condicoes.qtd_parcelas === 1 ? "parcela" : "parcelas"}`
+                : ""}
             </span>
           </div>
         </div>
@@ -71,7 +73,7 @@ export function PublicRenovacaoCondicoesCard({ condicoes, anoDestino }: PublicRe
               <Calendar className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs text-muted-foreground font-normal block">Vencimento</span>
+              <span className="text-xs text-muted-foreground font-normal block">Dia do Vencimento</span>
             </div>
           </div>
 

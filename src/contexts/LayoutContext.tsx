@@ -203,12 +203,14 @@ export interface OpenFirstChargeDialogProps {
   onSuccess?: (passageiro?: Passageiro) => void;
 }
 
-export interface OpenContractSetupDialogProps {
+export interface NavigateToContractSetupProps {
   forceOpen?: boolean;
   ano?: number;
   onSuccess?: (usarContratos?: boolean) => void;
   returnTo?: string;
 }
+
+export type OpenContractSetupDialogProps = NavigateToContractSetupProps;
 
 export interface OpenConfirmarGerarContratoDialogProps {
   passageiro: Passageiro;
@@ -261,6 +263,7 @@ export interface OpenEditarDadosPublicosRenovacaoDialogProps {
   responsavel?: import("@/types/renovacao").PublicRenovacaoResponse["responsavel"];
   passageiro: import("@/types/renovacao").PublicRenovacaoResponse["passageiro"];
   condicoes: import("@/types/renovacao").PublicRenovacaoResponse["condicoes"];
+  escolasDisponiveis?: Array<{ id: string; nome: string }>;
   onSuccess?: () => void;
 }
 
@@ -520,7 +523,8 @@ export interface LayoutContextType {
 
   isFirstChargeDialogOpen: boolean;
 
-  openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
+  navigateToContractSetup: (props?: NavigateToContractSetupProps) => void;
+  openContractSetupDialog: (props?: NavigateToContractSetupProps) => void;
   openConfirmarGerarContratoDialog: (props: OpenConfirmarGerarContratoDialogProps) => void;
   closeConfirmarGerarContratoDialog: () => void;
   openGerarContratoValidadorDialog: (props: OpenGerarContratoValidadorDialogProps) => void;

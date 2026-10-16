@@ -17,7 +17,7 @@ export function RenovacaoKPICard({
   );
 
   return (
-    <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xs space-y-4 h-full flex flex-col justify-between">
+    <div className="bg-[#ffffff] rounded-[20px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs space-y-3.5 h-full flex flex-col justify-between">
       <div>
         <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
           Faturamento Projetado

@@ -4,7 +4,6 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
   obterStatusConfiguracaoContrato,
   StatusConfiguracaoContrato,
-  hasPendenciasParaGerarContrato,
   obterUrlDocumentoContrato,
   gerarNomeArquivoContrato,
   shareContratoFile,
@@ -25,6 +24,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
+import { useGerarContratoFlow } from "./useGerarContratoFlow";
 import { buildContratoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { ContratoStatus, ContratoTab, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -43,11 +43,10 @@ export function useContratosViewModel() {
     setPageTitle,
     openConfirmationDialog,
     closeConfirmationDialog,
-    openConfirmarGerarContratoDialog,
-    openGerarContratoValidadorDialog,
     openImportarContratoDialog,
     openPassageiroFormDialog,
   } = useLayout();
+  const { iniciarFluxoGerarContrato } = useGerarContratoFlow();
   const { user } = useSession();
   const { profile, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -271,59 +270,33 @@ export function useContratosViewModel() {
           ano_letivo: anoLetivo,
         } as Passageiro);
 
-    openConfirmarGerarContratoDialog({
+    iniciarFluxoGerarContrato({
       passageiro: passageiroResolvido,
+      anoLetivo,
       isSubstituicao: true,
       contratoIdParaSubstituir: id,
     });
-  }, [openConfirmarGerarContratoDialog, anoLetivo]);
+  }, [iniciarFluxoGerarContrato, anoLetivo]);
 
   const handleGerarContrato = useCallback((passageiroId: string, item?: ContratoListItem) => {
     const basePassageiro = (item?.passageiro || (item?.tipo === "passageiro" ? item : null)) as unknown as Passageiro | undefined;
-    const rawPassageiro = basePassageiro ? { ...basePassageiro, ano_letivo: basePassageiro.ano_letivo || anoLetivo } : undefined;
-
-    if (rawPassageiro) {
-      queryClient.setQueryData(["passageiro", passageiroId], (old: unknown) => old || rawPassageiro);
-    }
-
-    if (rawPassageiro && !hasPendenciasParaGerarContrato(rawPassageiro)) {
-      openConfirmarGerarContratoDialog({
-        passageiro: rawPassageiro,
-        valorMensal: Number(rawPassageiro.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined,
-        diaVencimento: Number(rawPassageiro.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined,
-        isSubstituicao: false,
-      });
-      return;
-    }
-
-    openGerarContratoValidadorDialog({
-      passageiroId,
-      initialPassageiro: rawPassageiro,
-      onSuccess: (_id, _bypassed, updatedValues, updatedPassageiro) => {
-        const resolvedBase = updatedPassageiro || queryClient.getQueryData<Passageiro>(["passageiro", passageiroId]) || rawPassageiro || ({
+    const passageiroResolvido = basePassageiro
+      ? { ...basePassageiro, ano_letivo: basePassageiro.ano_letivo || anoLetivo }
+      : ({
           id: passageiroId,
           nome: item?.nome || "Aluno",
           responsavel_principal: item?.responsavel_principal,
+          valor_cobranca: item?.valor_parcela || item?.valor_cobranca,
+          dia_vencimento: item?.dados_contrato?.diaVencimento as number,
+          ano_letivo: anoLetivo,
         } as Passageiro);
-        const passageiroResolvido = {
-          ...resolvedBase,
-          ano_letivo: resolvedBase.ano_letivo || anoLetivo,
-        };
 
-        const valorMensal = updatedValues?.valorMensal ?? (Number(passageiroResolvido?.valor_cobranca || item?.dados_contrato?.valorMensal) || undefined);
-        const diaVencimento = updatedValues?.diaVencimento ?? (Number(passageiroResolvido?.dia_vencimento || item?.dados_contrato?.diaVencimento) || undefined);
-
-        openConfirmarGerarContratoDialog({
-          passageiro: passageiroResolvido,
-          valorMensal,
-          diaVencimento,
-          dataInicio: passageiroResolvido?.data_inicio_transporte || undefined,
-          dataFim: passageiroResolvido?.data_fim_transporte || undefined,
-          isSubstituicao: false,
-        });
-      }
+    iniciarFluxoGerarContrato({
+      passageiro: passageiroResolvido,
+      anoLetivo,
+      isSubstituicao: false,
     });
-  }, [openGerarContratoValidadorDialog, openConfirmarGerarContratoDialog, queryClient, anoLetivo]);
+  }, [iniciarFluxoGerarContrato, anoLetivo]);
 
   const handleCompletarCadastro = useCallback((passageiroId: string, item?: ContratoListItem) => {
     handleGerarContrato(passageiroId, item);

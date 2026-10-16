@@ -150,6 +150,7 @@ export interface PublicRenovacaoResponse {
   concluido?: boolean;
   ano_origem: number;
   ano_destino: number;
+  escolas_disponiveis?: Array<{ id: string; nome: string }>;
   motorista: {
     id: string;
     nome: string;
@@ -188,7 +189,10 @@ export interface PublicRenovacaoResponse {
   condicoes: {
     valor: PublicRenovacaoConditionItem<number>;
     dia_vencimento: PublicRenovacaoConditionItem<number | null>;
-    escola: PublicRenovacaoConditionItem<string | null>;
+    escola: PublicRenovacaoConditionItem<string | null> & {
+      atual_id?: string | null;
+      novo_id?: string | null;
+    };
     periodo: PublicRenovacaoConditionItem<string | null>;
     modalidade: PublicRenovacaoConditionItem<string | null>;
     turma?: PublicRenovacaoConditionItem<string | null>;
@@ -229,6 +233,9 @@ export interface AtualizarDadosPublicosPayload {
     sala?: string;
     nome_professor?: string;
     observacoes?: string;
+    escola_id?: string;
+    periodo?: string;
+    modalidade?: string;
   };
 }
 

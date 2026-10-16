@@ -105,6 +105,7 @@ export function usePublicRenovacaoViewModel() {
       responsavel: data.responsavel,
       passageiro: data.passageiro,
       condicoes: data.condicoes,
+      escolasDisponiveis: data.escolas_disponiveis || [],
     });
   }, [data, token, openEditarDadosPublicosRenovacaoDialog]);
 

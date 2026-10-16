@@ -123,9 +123,9 @@ const showcaseFaqs: ShowcaseFaq[] = [
       "No Plano Mensal, você não tem carência, fidelidade ou multa: pode cancelar quando quiser com total liberdade pelo app. No Plano Anual, o acesso é garantido pelo período contratado de 12 meses.",
   },
   {
-    question: "Existe limite de alunos, rotas ou escolas?",
+    question: "Existe limite de rotas, escolas ou vans?",
     answer:
-      "Não há nenhum limite. Em ambos os planos você pode cadastrar quantos alunos, responsáveis, rotas, escolas e vans precisar sem custos adicionais.",
+      "Não há limites para rotas, escolas ou veículos cadastrados. Os planos são dimensionados para atender com folga a capacidade do seu transporte.",
   },
   {
     question: "Onde posso usar o Van360?",
@@ -301,15 +301,20 @@ export function SubscriptionPlansShowcase({
     { feature: "Contratos digitais", benefit: "assinados no celular com validade jurídica, sem papel" },
     { feature: "Rotas e chamada", benefit: "mapa ao vivo para os pais e chamada na saída da escola" },
     { feature: "Controle financeiro e gastos", benefit: "quem pagou, quem deve e as despesas da sua van" },
-    {
-      feature: "Capacidade de alunos",
-      benefit:
-        selectedCapacity === IapCapacityTier.TIER_110
-          ? "até 110 alunos cadastrados com rotas e carteirinhas"
-          : selectedCapacity === IapCapacityTier.TIER_250
-            ? "até 250 alunos cadastrados para frotas e equipes"
-            : "mais de 250 alunos com atendimento corporativo e frotas",
-    },
+    isIos
+      ? {
+          feature: "Capacidade de alunos",
+          benefit:
+            selectedCapacity === IapCapacityTier.TIER_110
+              ? "até 110 alunos cadastrados com rotas e carteirinhas"
+              : selectedCapacity === IapCapacityTier.TIER_250
+                ? "até 250 alunos cadastrados para frotas e equipes"
+                : "mais de 250 alunos com atendimento corporativo e frotas",
+        }
+      : {
+          feature: "Gestão de alunos",
+          benefit: "alunos cadastrados com rotas, cobranças e carteirinhas",
+        },
   ];
 
   const additionalFeatures = [
@@ -317,7 +322,7 @@ export function SubscriptionPlansShowcase({
     { feature: "Motoristas e monitores", benefit: "cadastre sua equipe com acesso às rotas e carteirinhas dos alunos" },
     { feature: "Carteirinha do aluno", benefit: "parcelas, contrato e dados do aluno guardados no celular, sem papel" },
     { feature: "App dos pais", benefit: "acompanham a rota, veem recibos, contratos e registram ausências" },
-    { feature: "Cadastro de alunos", benefit: "os pais preenchem pelo link ou você cadastra, sem limite" },
+    { feature: "Cadastro de alunos", benefit: "os pais preenchem pelo link de pré-cadastro ou você cadastra no app" },
     { feature: "Recibos em PDF", benefit: "comprovante profissional gerado e enviado em 1 toque" },
     { feature: "Aniversariantes do mês", benefit: "aviso automático para você não perder a data dos alunos" },
     { feature: "Acesso de qualquer lugar", benefit: "pelo celular, tablet ou computador, sempre sincronizado" },

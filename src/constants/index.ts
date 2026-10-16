@@ -38,6 +38,7 @@ export const STORAGE_KEYS = {
   APP_RATING_TRACKER: "van360:app_rating_tracker",
   FCM_TOKEN: "van360_fcm_token",
   FCM_PLATFORM: "van360_fcm_platform",
+  RENOVACOES_CONFIG_OCULTO: "van360:renovacoes:config_oculto",
 } as const;
 
 /** Gera a URL do WhatsApp com mensagem pré-preenchida */

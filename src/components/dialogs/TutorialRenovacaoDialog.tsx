@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,11 +13,12 @@ import {
   CheckCircle2,
   XCircle,
   Lock,
-  Calendar,
+  RotateCcw,
+  ShieldCheck,
+  SlidersHorizontal,
   HelpCircle,
   ArrowRight,
   ArrowLeft,
-  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export function TutorialRenovacaoDialog({
 }: TutorialRenovacaoDialogProps) {
   const [step, setStep] = useState(1);
   const [naoMostrarNovamente, setNaoMostrarNovamente] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const totalSteps = 4;
   const anoOrigem = anoDestino - 1;
 
@@ -43,6 +45,12 @@ export function TutorialRenovacaoDialog({
       setNaoMostrarNovamente(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = 0;
+    }
+  }, [step]);
 
   const handleClose = () => {
     if (naoMostrarNovamente) {
@@ -66,24 +74,12 @@ export function TutorialRenovacaoDialog({
     }
   };
 
-  const stepTitles: Record<number, { title: string; badge: string }> = {
-    1: {
-      badge: "Passo 1 • Preparação",
-      title: `Ajuste os valores para ${anoDestino}`,
-    },
-    2: {
-      badge: "Passo 2 • Convite aos Pais",
-      title: "Envie o link pelo WhatsApp",
-    },
-    3: {
-      badge: "Passo 3 • Confirmação e Contrato",
-      title: "O pai responde e o sistema matricula",
-    },
-    4: {
-      badge: "Passo 4 • Segurança e Controle",
-      title: "E se alguém mudar de ideia?",
-    },
-  };
+  const stepsConfig = [
+    { id: 1, label: "Preparar", icon: SlidersHorizontal },
+    { id: 2, label: "Convidar", icon: Send },
+    { id: 3, label: "Confirmar", icon: CheckCircle2 },
+    { id: 4, label: "Controle", icon: ShieldCheck },
+  ];
 
   return (
     <BaseDialog
@@ -92,92 +88,92 @@ export function TutorialRenovacaoDialog({
         if (!val) handleClose();
       }}
       maxWidth="lg"
-      description="Passo a passo de como funciona a renovação de matrícula"
+      description="Como funciona o ciclo de renovação de matrículas"
     >
       <BaseDialog.Header
         title="Como Funciona a Renovação"
-        icon={<HelpCircle className="w-5 h-5 text-[#0a0a0a]" />}
+        icon={<HelpCircle className="w-5 h-5 text-primary" />}
         showSteps
         currentStep={step}
         totalSteps={totalSteps}
         onClose={handleClose}
       />
 
-      <BaseDialog.Body animate animationKey={step} className="space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
-              {stepTitles[step].badge}
-            </span>
-            <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] mt-1.5 leading-snug">
-              {stepTitles[step].title}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            {[1, 2, 3, 4].map((num) => (
+      <BaseDialog.Body containerRef={bodyRef} className="space-y-4">
+        <div className="grid grid-cols-4 gap-1.5 p-1 bg-[#f5f5f5] rounded-[16px] border border-[#e5e5e5]">
+          {stepsConfig.map((s) => {
+            const Icon = s.icon;
+            const isActive = step === s.id;
+            return (
               <button
-                key={num}
+                key={s.id}
                 type="button"
-                onClick={() => setStep(num)}
+                onClick={() => setStep(s.id)}
                 className={cn(
-                  "w-7 h-7 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
-                  step === num
-                    ? "bg-[#0a0a0a] text-white"
-                    : "bg-[#f5f5f5] text-[#737373] hover:text-[#0a0a0a] border border-[#e5e5e5]"
+                  "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[12px] text-xs font-medium transition-all cursor-pointer",
+                  isActive
+                    ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                    : "text-[#737373] hover:text-[#0a0a0a]"
                 )}
               >
-                {num}
+                <Icon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-[#737373]")} />
+                <span className="hidden sm:inline">{s.label}</span>
+                <span className="sm:hidden">{s.id}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
         {step === 1 && (
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
-              Todos os seus alunos ativos de <strong>{anoOrigem}</strong> já aparecem prontos na lista. Antes de chamar os pais, você prepara as condições de <strong>{anoDestino}</strong>:
-            </p>
+            <div>
+              <h3 className="text-base font-semibold text-[#0a0a0a] leading-tight">
+                1. Ajuste os valores para {anoDestino}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#737373] mt-1 leading-relaxed">
+                Seus alunos de {anoOrigem} já estão na lista. Antes de avisar os responsáveis, defina os valores e datas:
+              </p>
+            </div>
 
-            <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#0a0a0a]">
-                  <TrendingUp className="w-4 h-4 text-primary" />
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <TrendingUp className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Ajustes em Lote (Para vários de uma vez)
+                    Ajustes em Lote
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Aplique aumento por porcentagem (%) ou valor fixo (R$), escolha o dia de vencimento e as datas de início e fim das aulas para todos ou por escola.
+                    Aumente o valor de todos os alunos ou filtre por escola (em % ou R$), e acerte o dia de vencimento de uma só vez.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#0a0a0a]">
-                  <Edit3 className="w-4 h-4 text-[#0a0a0a]" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <Edit3 className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Editar Condições (Aluno por aluno)
+                    Editar Aluno por Aluno
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Mudou de escola, turno ou tem um valor combinado diferente? Clique em <strong>Editar Condições</strong> no card daquele aluno.
+                    Se combinou um valor, turno ou escola diferente com algum aluno específico, toque no botão <strong>Editar</strong> ao lado dele.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#0a0a0a]">
-                  <FileSignature className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <FileSignature className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Contrato Digital de {anoDestino}
+                    Configurar Período e Contrato
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    No topo da tela, você escolhe se deseja exigir que o responsável assine o contrato de {anoDestino} assim que confirmar a vaga.
+                    Defina as datas das aulas em <strong>Configurar Período</strong> e ative o <strong>Contrato Digital</strong> se quiser que o responsável assine pelo celular no ato da confirmação.
                   </span>
                 </div>
               </div>
@@ -187,35 +183,40 @@ export function TutorialRenovacaoDialog({
 
         {step === 2 && (
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
-              Depois de revisar os valores, é hora de avisar os responsáveis com apenas um clique:
-            </p>
+            <div>
+              <h3 className="text-base font-semibold text-[#0a0a0a] leading-tight">
+                2. Convide os responsáveis pelo WhatsApp
+              </h3>
+              <p className="text-xs sm:text-sm text-[#737373] mt-1 leading-relaxed">
+                Com as condições prontas, você avisa os responsáveis com praticidade:
+              </p>
+            </div>
 
-            <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#0a0a0a]">
-                  <Send className="w-4 h-4 text-emerald-600" />
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <Send className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Botão "Notificar Pendentes"
+                    Enviar pelo WhatsApp
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Dispara uma mensagem oficial no WhatsApp de cada responsável com o link exclusivo de renovação do filho. Você também pode selecionar alunos específicos.
+                    Toque em <strong>Enviar WhatsApp</strong> no aluno ou selecione vários para usar o botão <strong>Disparar WhatsApp</strong>. Cada responsável recebe uma mensagem com o link exclusivo do filho.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#0a0a0a]">
-                  <Smartphone className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <Smartphone className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    O que o Pai vê quando abre o Link?
+                    O que o Responsável Vê
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Ele vê as condições para {anoDestino}. Antes de responder, ele mesmo pode atualizar <strong>endereço, turma, sala, professor ou observações do aluno</strong>.
+                    Ele abre o link no celular, confere o valor da parcela de {anoDestino} e pode tocar em <strong>Editar Dados</strong> se precisar atualizar endereço, turma ou professor antes de responder.
                   </span>
                 </div>
               </div>
@@ -223,44 +224,49 @@ export function TutorialRenovacaoDialog({
 
             <Banner
               variant="info"
-              title="Alunos sem Telefone"
-              description="Se algum aluno estiver sem celular no cadastro, um aviso aparece no topo da tela para você preencher o número antes de disparar."
-              className="rounded-[18px]"
+              title="Sem WhatsApp cadastrado?"
+              description="Se faltar o telefone de algum responsável, preencha o número no cadastro do aluno antes de disparar."
+              className="rounded-[16px]"
             />
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
-              Conforme os pais respondem pelo celular, sua lista atualiza sozinha:
-            </p>
+            <div>
+              <h3 className="text-base font-semibold text-[#0a0a0a] leading-tight">
+                3. Resposta rápida e vagas atualizadas
+              </h3>
+              <p className="text-xs sm:text-sm text-[#737373] mt-1 leading-relaxed">
+                Conforme os responsáveis respondem pelo celular, a lista atualiza na hora:
+              </p>
+            </div>
 
-            <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Quando o Pai Confirma a Vaga
+                    Quando o Responsável Confirma
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    A matrícula de <strong>{anoDestino}</strong> já é criada na hora! Se você ativou o Contrato Digital, o pai já é levado automaticamente para assinar o contrato de {anoDestino} na tela do celular.
+                    O aluno muda para <strong>Confirmado</strong> e a vaga de {anoDestino} já fica garantida. Se você ativou o Contrato Digital, ele já assina o documento na tela do celular no mesmo momento.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                  <XCircle className="w-4 h-4 text-[#e7000b]" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-red-50 text-red-600 border border-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <XCircle className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Quando o Pai Informa que Não Vai Renovar
+                    Quando Informa que Não Vai Renovar
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    O aluno entra em <strong>Saídas</strong> para {anoDestino} (liberando a vaga na sua van), mas continua ativo normalmente nas suas rotas e cobranças de {anoOrigem} até o fim do ano.
+                    O aluno vai para <strong>Saída</strong>, liberando o lugar na sua van para novos alunos em {anoDestino}. Ele continua ativo nas suas rotas e parcelas de {anoOrigem} normalmente até o fim das aulas.
                   </span>
                 </div>
               </div>
@@ -268,58 +274,63 @@ export function TutorialRenovacaoDialog({
 
             <Banner
               variant="neutral"
-              title="Pai confirmou pessoalmente ou por conversa?"
-              description="Você não precisa esperar ele clicar no link: basta tocar em 'Confirmar Vaga' ou 'Não Renovará' direto no card do aluno."
-              className="rounded-[18px]"
+              title="Avisou pessoalmente?"
+              description="Se o responsável já combinou com você no dia a dia, você não precisa do link: basta tocar direto em 'Confirmado' ou 'Saída' ao lado do aluno."
+              className="rounded-[16px]"
             />
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
-              Você tem controle total para organizar exceções sem bagunçar seus dados:
-            </p>
+            <div>
+              <h3 className="text-base font-semibold text-[#0a0a0a] leading-tight">
+                4. Segurança e histórico protegido
+              </h3>
+              <p className="text-xs sm:text-sm text-[#737373] mt-1 leading-relaxed">
+                Você tem controle total para lidar com imprevistos sem misturar os anos:
+              </p>
+            </div>
 
-            <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                  <Lock className="w-4 h-4 text-[#0a0a0a]" />
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Se o Pai Mudar de Ideia Depois de Responder
+                    Link Protegido Após Resposta
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Para sua segurança, depois que o pai confirma ou recusa, o link trava. A tela orienta que ele <strong>fale com você</strong>, e você altera o status dele aqui na tela de Renovação.
+                    Após o responsável responder (confirmando ou saindo), o link trava para evitar cliques acidentais. Se ele precisar alterar algo, a tela orienta que fale diretamente com você.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                  <RotateCcw className="w-4 h-4 text-amber-600" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <RotateCcw className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    Se Você Mudar Valor ou Escola de Quem Já Confirmou
+                    E se o responsável mudar de ideia?
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Se você não usa contrato, a matrícula de {anoDestino} é atualizada na hora. Se o aluno já tinha contrato em {anoDestino}, o sistema cancela o antigo e volta o aluno para pendente para que o pai confirme e assine o novo contrato pelo mesmo link.
+                    Se alguém disse que não ia renovar e depois pediu a vaga de volta (ou vice-versa), toque em <strong>Pendente</strong> ao lado do aluno. Isso reabre a vaga e destrava o link para ele responder novamente.
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-[#e5e5e5] pt-3 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-3 p-3 rounded-[16px] bg-[#fafafa] border border-[#e5e5e5]">
+                <div className="w-8 h-8 rounded-[12px] bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
-                    {anoOrigem} e {anoDestino} Ficam Separados
+                    {anoOrigem} e {anoDestino} Separados
                   </span>
                   <span className="text-xs text-[#737373] block leading-relaxed mt-0.5">
-                    Nenhuma alteração feita na renovação de {anoDestino} afeta as parcelas, escolas ou contratos de {anoOrigem}.
+                    Qualquer alteração feita para {anoDestino} não afeta as parcelas, rotas ou contratos do ano letivo de {anoOrigem}.
                   </span>
                 </div>
               </div>
@@ -329,12 +340,12 @@ export function TutorialRenovacaoDialog({
       </BaseDialog.Body>
 
       <BaseDialog.Footer className="flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <label className="flex items-center gap-2 select-none cursor-pointer text-xs text-[#737373] hover:text-[#0a0a0a]">
+        <label className="flex items-center gap-2 select-none cursor-pointer text-xs text-[#737373] hover:text-[#0a0a0a] transition-colors">
           <Checkbox
             checked={naoMostrarNovamente}
             onCheckedChange={(val) => setNaoMostrarNovamente(Boolean(val))}
           />
-          <span>Não mostrar este tutorial novamente</span>
+          <span>Não mostrar este guia novamente</span>
         </label>
 
         <div className="flex items-center gap-2 justify-end">
@@ -364,3 +375,4 @@ export function TutorialRenovacaoDialog({
     </BaseDialog>
   );
 }
+
