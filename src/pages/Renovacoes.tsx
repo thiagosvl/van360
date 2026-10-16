@@ -594,7 +594,7 @@ export default function Renovacoes() {
             onConfirmarLote={handleConfirmarLoteComConfirmacao}
             onSaidaLote={handleRegistrarSaidaLoteComConfirmacao}
             onPendenteLote={handleReativarLoteComConfirmacao}
-            onOpenReajuste={() => openReajusteLoteDialog({ anoDestino })}
+            onOpenReajuste={() => openReajusteLoteDialog({ anoDestino, passageiroIds: Array.from(selectedIds) })}
             isProcessing={isUpdating}
           />
         )}

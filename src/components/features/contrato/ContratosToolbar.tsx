@@ -7,7 +7,7 @@ import { ContratoTab } from "@/types/enums";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Search, MoreVertical, Loader2, FileText, CheckCircle2, PauseCircle, UploadCloud } from "lucide-react";
+import { Eye, Search, MoreVertical, Loader2, FileText, CheckCircle2, PauseCircle, UploadCloud, X } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 interface ContratosToolbarProps {
@@ -138,12 +138,26 @@ export const ContratosToolbar = memo(function ContratosToolbar({
         <div className="relative group flex-1 min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373] pointer-events-none transition-colors group-focus-within:text-[#0a0a0a] group-hover:text-[#0a0a0a]" />
           <Input
-            type="search"
+            type="text"
+            inputMode="search"
             placeholder="Buscar aluno ou responsável..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
+            className={cn(
+              "w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 text-sm font-normal transition-all shadow-none [&::-webkit-search-cancel-button]:hidden",
+              busca ? "pr-10" : "pr-4"
+            )}
           />
+          {busca && (
+            <button
+              type="button"
+              onClick={() => setBusca("")}
+              aria-label="Limpar busca"
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         <Button
@@ -234,12 +248,26 @@ export const ContratosToolbar = memo(function ContratosToolbar({
           <div className="relative group flex-1 min-w-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373] pointer-events-none transition-colors group-focus-within:text-[#0a0a0a] group-hover:text-[#0a0a0a]" />
             <Input
-              type="search"
+              type="text"
+              inputMode="search"
               placeholder="Buscar aluno ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
+              className={cn(
+                "w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 pl-10 text-sm font-normal transition-all shadow-none [&::-webkit-search-cancel-button]:hidden",
+                busca ? "pr-10" : "pr-4"
+              )}
             />
+            {busca && (
+              <button
+                type="button"
+                onClick={() => setBusca("")}
+                aria-label="Limpar busca"
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <Button

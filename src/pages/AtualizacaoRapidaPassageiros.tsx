@@ -127,16 +127,19 @@ export default function AtualizacaoRapidaPassageiros() {
               />
             </div>
             <Input
-              type="search"
+              type="text"
+              inputMode="search"
               placeholder="Buscar por nome do aluno..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] h-10 sm:h-11 pl-10 pr-10 rounded-[18px] text-sm font-normal text-[#0a0a0a] placeholder:text-[#737373] shadow-none transition-all"
+              className="w-full bg-white border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] h-10 sm:h-11 pl-10 pr-10 rounded-[18px] text-sm font-normal text-[#0a0a0a] placeholder:text-[#737373] shadow-none transition-all [&::-webkit-search-cancel-button]:hidden"
             />
             {searchTerm && (
               <button
+                type="button"
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] p-1"
+                aria-label="Limpar busca"
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

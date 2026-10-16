@@ -2,7 +2,7 @@ import { DateNavigation } from "@/components/common/DateNavigation";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { CobrancasPagination } from "@/components/features/cobranca/CobrancasPagination";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AppTabNav } from "@/components/ui/AppTabNav";
@@ -206,12 +206,26 @@ export default function Cobrancas() {
                   <Search className="h-4 w-4 text-[#737373] group-focus-within:text-[#0a0a0a] transition-colors" />
                 </div>
                 <Input
-                  type="search"
+                  type="text"
+                  inputMode="search"
                   placeholder="Buscar aluno ou responsável..."
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
+                  className={cn(
+                    "w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 text-sm font-normal transition-all shadow-none [&::-webkit-search-cancel-button]:hidden",
+                    busca ? "pr-10" : "pr-4"
+                  )}
                 />
+                {busca && (
+                  <button
+                    type="button"
+                    onClick={() => setBusca("")}
+                    aria-label="Limpar busca"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 

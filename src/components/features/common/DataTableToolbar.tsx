@@ -1,4 +1,4 @@
-import { Search, Filter, ListFilter } from "lucide-react";
+import { Search, Filter, ListFilter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -72,13 +72,28 @@ export const DataTableToolbar = ({
         />
       </div>
       <Input
-        type="search"
+        type="text"
+        inputMode="search"
         placeholder={searchPlaceholder}
-        value={searchTerm}
+        value={searchTerm || ""}
         onChange={(e) => onSearchChange(e.target.value)}
         disabled={disabled}
-        className="w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 pr-4 text-sm font-normal transition-all shadow-none"
+        className={cn(
+          "w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 text-sm font-normal transition-all shadow-none [&::-webkit-search-cancel-button]:hidden",
+          searchTerm && searchTerm.trim().length > 0 ? "pr-10" : "pr-4"
+        )}
       />
+      {searchTerm && searchTerm.trim().length > 0 && !disabled && (
+        <button
+          type="button"
+          onClick={() => onSearchChange("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer rounded-full outline-none focus:outline-none"
+          aria-label="Limpar busca"
+          title="Limpar busca"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 

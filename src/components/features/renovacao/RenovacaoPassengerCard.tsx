@@ -75,6 +75,13 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     item.periodo_atual &&
     item.novo_periodo !== item.periodo_atual;
 
+  const isVencimentoAlterado =
+    item.novo_dia_vencimento !== null &&
+    item.novo_dia_vencimento !== undefined &&
+    item.dia_vencimento_atual !== null &&
+    item.dia_vencimento_atual !== undefined &&
+    item.novo_dia_vencimento !== item.dia_vencimento_atual;
+
   const handleSetConfirmado = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isConfirmed || loadingAction) return;
@@ -193,16 +200,9 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
           )}
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-semibold text-[#0a0a0a] text-sm leading-tight truncate">
-                {shortName}
-              </h3>
-              {(isValorAlterado || isEscolaAlterada || isPeriodoAlterado) && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-amber-50 text-amber-800 border border-amber-300/80 text-[10px] font-medium">
-                  Ajustado
-                </span>
-              )}
-            </div>
+            <h3 className="font-semibold text-[#0a0a0a] text-sm leading-tight truncate">
+              {shortName}
+            </h3>
 
             <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal truncate mt-0.5">
               {respName && <span className="truncate">{respName}</span>}
@@ -263,71 +263,93 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
       {isExpanded && (
         <div className="border-t border-[#e5e5e5] p-3.5 sm:p-4 bg-[#fafafa] space-y-3">
-          {(isEscolaAlterada || isPeriodoAlterado) && (
-            <div className="flex flex-wrap gap-2">
-              {isEscolaAlterada && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-[18px] bg-sky-50 text-sky-800 border border-sky-200">
-                  <School className="w-3.5 h-3.5 shrink-0" />
-                  <span className="line-through text-[#e7000b]">{item.escola_nome_atual || "Antiga"}</span>
-                  <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
-                  <span className="text-[#0a0a0a] font-semibold">{item.nova_escola_nome || "Nova escola"}</span>
-                </span>
-              )}
-              {isPeriodoAlterado && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-[18px] bg-amber-50 text-amber-800 border border-amber-200 capitalize">
-                  <Clock className="w-3.5 h-3.5 shrink-0" />
-                  <span className="line-through text-[#e7000b]">{item.periodo_atual}</span>
-                  <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
-                  <span className="text-[#0a0a0a] font-semibold">{item.novo_periodo}</span>
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pt-1">
-            <div
-              onClick={() => onOpenEditarReserva?.(item)}
-              className="inline-flex items-center justify-between sm:justify-start gap-3 sm:gap-4 p-3 rounded-[16px] border border-[#e5e5e5] bg-white hover:border-[#737373]/50 transition-all cursor-pointer shadow-none shrink-0"
-              title="Clique para editar valores e proposta da reserva"
-            >
-              <div>
-                <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
-                  Parcela Atual
-                </span>
-                <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] mt-0.5 block">
-                  {item.isento_atual ? "Isento" : formatCurrency(item.valor_cobranca_atual)}
-                </span>
-              </div>
-
-              <ArrowRight className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-
-              <div>
-                <span className="text-[10px] text-[#737373] font-medium uppercase tracking-wider block">
-                  Nova Parcela
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  {isValorAlterado && (
-                    <span className="text-xs font-normal line-through text-[#e7000b]">
+          <div
+            onClick={() => onOpenEditarReserva?.(item)}
+            className="rounded-[16px] border border-[#e5e5e5] bg-white p-3 space-y-2.5 hover:border-[#737373]/50 transition-all cursor-pointer shadow-none"
+            title="Clique para editar valores e proposta da reserva"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#737373] font-medium">
+                Parcela {anoDestino}:
+              </span>
+              <div className="flex items-center gap-1.5 font-semibold">
+                {item.isento_atual ? (
+                  <span className="text-[#737373]">Isento</span>
+                ) : isValorAlterado ? (
+                  <>
+                    <span className="line-through text-[#e7000b]">
                       {formatCurrency(item.valor_cobranca_atual)}
                     </span>
-                  )}
-                  <span
-                    className={cn(
-                      "text-xs sm:text-sm font-semibold block",
-                      item.isento_atual
-                        ? "text-[#737373]"
-                        : isValorAlterado
-                          ? "text-emerald-700"
-                          : "text-[#0a0a0a]"
-                    )}
-                  >
-                    {item.isento_atual ? "Isento" : formatCurrency(item.novo_valor_cobranca)}
+                    <ArrowRight className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    <span className="text-emerald-700 text-sm">
+                      {formatCurrency(item.novo_valor_cobranca)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[#0a0a0a]">
+                    {formatCurrency(item.novo_valor_cobranca)}
                   </span>
-                </div>
+                )}
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 shrink-0">
+            {(isEscolaAlterada || isPeriodoAlterado || isVencimentoAlterado) && (
+              <div className="pt-2 border-t border-[#f0f0f0] grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {isEscolaAlterada && (
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#f9f9f9] px-2.5 py-1.5 rounded-[10px] min-w-0">
+                    <span className="text-[#737373] text-[11px] font-medium shrink-0">
+                      Escola:
+                    </span>
+                    <div className="flex items-center gap-1 min-w-0 truncate text-xs">
+                      <span className="line-through text-[#e7000b] truncate" title={item.escola_nome_atual || "Antiga"}>
+                        {item.escola_nome_atual || "Antiga"}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
+                      <span className="text-emerald-700 font-medium truncate" title={item.nova_escola_nome || "Nova escola"}>
+                        {item.nova_escola_nome || "Nova escola"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {isPeriodoAlterado && (
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#f9f9f9] px-2.5 py-1.5 rounded-[10px]">
+                    <span className="text-[#737373] text-[11px] font-medium shrink-0">
+                      Turno:
+                    </span>
+                    <div className="flex items-center gap-1 text-xs capitalize">
+                      <span className="line-through text-[#e7000b]">
+                        {item.periodo_atual}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
+                      <span className="text-emerald-700 font-medium">
+                        {item.novo_periodo}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {isVencimentoAlterado && (
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#f9f9f9] px-2.5 py-1.5 rounded-[10px]">
+                    <span className="text-[#737373] text-[11px] font-medium shrink-0">
+                      Vencimento:
+                    </span>
+                    <div className="flex items-center gap-1 text-xs">
+                      <span className="line-through text-[#e7000b]">
+                        Dia {String(item.dia_vencimento_atual).padStart(2, "0")}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-[#737373] shrink-0" />
+                      <span className="text-emerald-700 font-medium">
+                        Dia {String(item.novo_dia_vencimento).padStart(2, "0")}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
               <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
                 {item.responsavel_principal?.telefone ? (
                   item.notificacao_enviada_em ? (
@@ -452,7 +474,6 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
               </div>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

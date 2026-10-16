@@ -27,7 +27,6 @@ export function PublicRenovacaoCondicoesCard({ condicoes, anoDestino }: PublicRe
             </div>
             <div>
               <span className="text-xs text-muted-foreground font-normal block">Valor</span>
-              <span className="text-xs text-foreground font-medium">Mensalidade</span>
             </div>
           </div>
 

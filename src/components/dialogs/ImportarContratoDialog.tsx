@@ -263,10 +263,12 @@ export function ImportarContratoDialog({
             <div className="space-y-2">
               <div className="relative">
                 <Input
+                  type="text"
+                  inputMode="search"
                   placeholder="Buscar aluno por nome ou responsável..."
                   value={searchPassageiro}
                   onChange={(e) => setSearchPassageiro(e.target.value)}
-                  className="h-11 text-sm rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb]/60 focus:bg-white border-[#e5e5e5] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] pl-10 pr-9 text-[#0a0a0a] placeholder:text-[#737373] transition-all"
+                  className="h-11 text-sm rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb]/60 focus:bg-white border-[#e5e5e5] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] pl-10 pr-9 text-[#0a0a0a] placeholder:text-[#737373] transition-all [&::-webkit-search-cancel-button]:hidden"
                   autoFocus
                 />
                 <Search className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -274,7 +276,8 @@ export function ImportarContratoDialog({
                   <button
                     type="button"
                     onClick={() => setSearchPassageiro("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1"
+                    aria-label="Limpar busca"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

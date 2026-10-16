@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, UserCheck, Phone, Mail, CheckCircle2, UserPlus, Loader2 } from "lucide-react";
+import { Search, UserCheck, Phone, Mail, CheckCircle2, UserPlus, Loader2, X } from "lucide-react";
 import { AdminBaseDialog } from "@/components/ui/AdminBaseDialog";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useAdminUsers, useSetUserReferralAdmin } from "@/hooks/api/adminHooks";
@@ -113,16 +113,27 @@ export function AdminConfigureReferralDialog({
             <div className="relative flex items-center">
               <Search className="absolute left-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
+                type="text"
+                inputMode="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Digite para buscar..."
-                className="pl-10 pr-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground"
+                className="pl-10 pr-10 h-10 rounded-xl bg-secondary/50 border-input text-foreground text-xs focus-visible:ring-primary placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
               />
-              {isSearching && (
+              {isSearching ? (
                 <div className="absolute right-3.5 top-0 bottom-0 flex items-center pointer-events-none">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
-              )}
+              ) : search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
             </div>
           </div>
 

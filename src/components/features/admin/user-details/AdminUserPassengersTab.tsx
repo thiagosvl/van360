@@ -180,18 +180,21 @@ export function AdminUserPassengersTab({ passageiros, userId, motoristaNome }: A
             </div>
 
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
+                type="text"
+                inputMode="search"
                 placeholder="Buscar por aluno, responsável, escola..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-9 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary"
+                className="pl-9 pr-9 h-10 rounded-xl bg-secondary/50 border-input text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-primary [&::-webkit-search-cancel-button]:hidden"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  aria-label="Limpar busca"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>

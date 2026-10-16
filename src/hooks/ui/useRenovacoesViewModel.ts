@@ -9,7 +9,7 @@ import {
   renovacaoKeys,
 } from "../api/useRenovacoes";
 import { supabase } from "@/integrations/supabase/client";
-import { useProfile } from "@/hooks";
+import { useProfile, useDebounce } from "@/hooks";
 import { RenovacaoStatus } from "@/types/enums";
 import { toast } from "sonner";
 
@@ -48,16 +48,48 @@ export function useRenovacoesViewModel() {
   const [statusFilter, setStatusFilter] = useState<string>(FILTER_ALL);
   const [escolaFilter, setEscolaFilter] = useState<string>(FILTER_ALL);
   const [periodoFilter, setPeriodoFilter] = useState<string>(FILTER_ALL);
-  const [searchTerm, setSearchTerm] = useState<string>(() => searchParams.get("search") || "");
+  const [searchTerm, setSearchTermState] = useState<string>(() => searchParams.get("search") || "");
+
+  const setSearchTerm = useCallback(
+    (novoTermo: string) => {
+      setSearchTermState(novoTermo);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (novoTermo && novoTermo.trim()) {
+          next.set("search", novoTermo);
+        } else {
+          next.delete("search");
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  useEffect(() => {
+    const paramSearch = searchParams.get("search") || "";
+    if (paramSearch !== searchTerm) {
+      setSearchTermState(paramSearch);
+    }
+  }, [searchParams]);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
+
+  const debouncedSearch = useDebounce(searchTerm, 350);
+
+  const effectiveSearch = useMemo(() => {
+    const trimmed = debouncedSearch.trim();
+    if (trimmed.length === 1) return undefined;
+    return trimmed || undefined;
+  }, [debouncedSearch]);
 
   const { data, isLoading, isFetching, refetch } = useRenovacoesList({
     ano_destino: anoDestino,
     status: (statusFilter === FILTER_ALL || statusFilter === "sem_telefone") ? undefined : statusFilter,
     escola_id: escolaFilter === FILTER_ALL ? undefined : escolaFilter,
     periodo: periodoFilter === FILTER_ALL ? undefined : periodoFilter,
-    search: searchTerm || undefined,
+    search: effectiveSearch,
   });
 
   const updateRenovacaoMutation = useUpdateRenovacao();

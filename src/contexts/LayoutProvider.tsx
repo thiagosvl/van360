@@ -1907,6 +1907,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={closeReajusteLoteDialog}
           anoDestino={reajusteLoteDialogState.props.anoDestino}
+          passageiroIds={reajusteLoteDialogState.props.passageiroIds}
         />
       )}
 

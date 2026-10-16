@@ -240,6 +240,7 @@ export interface OpenImportarContratoDialogProps {
 
 export interface OpenReajusteLoteDialogProps {
   anoDestino: number;
+  passageiroIds?: string[];
 }
 
 export interface OpenEditarReservaDialogProps {

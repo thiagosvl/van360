@@ -85,6 +85,7 @@ export interface ReajusteLotePayload {
   tipo_reajuste?: RenovacaoReajusteTipo;
   valor?: number;
   valor_reajuste?: number;
+  passageiro_ids?: string[] | null;
   escola_id?: string | null;
   escola_ids?: string[] | null;
   data_inicio_transporte?: string;
