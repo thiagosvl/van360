@@ -27,6 +27,7 @@ export const STORAGE_KEYS = {
   LAST_APP_OPEN_TIMESTAMP: "van360_last_app_open_timestamp",
   DISMISS_QUICK_REGISTRATION_ALUNOS: "van360:dismiss:quick-registration-alunos",
   DISMISS_QUICK_REGISTRATION_HOME: "van360:dismiss:quick-registration-home",
+  DISMISS_APP_DOWNLOAD_BANNER: "van360:dismiss:app-download-banner",
   DISMISS_DEMONSTRACOES_HOME: "van360:dismiss:demonstracoes-home",
   REFERRAL_CODE: "van360_referral_code",
   JUST_REGISTERED: "van360_just_registered",

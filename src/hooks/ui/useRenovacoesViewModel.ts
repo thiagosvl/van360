@@ -9,15 +9,9 @@ import {
 import { useDebounce } from "@/hooks";
 import { RenovacaoStatus, FilterDefaults } from "@/types/enums";
 import { toast } from "sonner";
+import { getDefaultAnoDestino } from "@/utils/domain/renovacao/renovacaoDisponibilidade";
 
 export const FILTER_ALL = "all";
-
-function getDefaultAnoDestino(): number {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  return currentMonth <= 2 ? currentYear : currentYear + 1;
-}
 
 export function useRenovacoesViewModel() {
   const [searchParams, setSearchParams] = useSearchParams();

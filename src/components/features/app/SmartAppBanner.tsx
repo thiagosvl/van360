@@ -1,4 +1,5 @@
 import React from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   getAppPlatformEligibility,
@@ -11,9 +12,10 @@ import {
 
 interface SmartAppBannerProps {
   className?: string;
+  onDismiss?: () => void;
 }
 
-export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => {
+export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className, onDismiss }) => {
   if (isNativeApp()) return null;
 
   const { isEligibleAndroid, isEligibleIos, hasEligibleApp } = getAppPlatformEligibility();
@@ -26,10 +28,20 @@ export const SmartAppBanner: React.FC<SmartAppBannerProps> = ({ className }) => 
     <section className="px-1">
       <div
         className={cn(
-          "bg-white rounded-[24px] shadow-xs border border-[#e5e5e5] p-5 sm:p-6 lg:p-7 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 text-center sm:text-left transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+          "relative bg-white rounded-[24px] shadow-xs border border-[#e5e5e5] p-5 sm:p-6 lg:p-7 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 text-center sm:text-left transition-all duration-300 animate-in fade-in slide-in-from-top-2",
           className
         )}
       >
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label="Fechar aviso"
+            className="absolute -top-0.5 -right-1 sm:-top-1 sm:-right-1.5 w-6 h-6 rounded-full bg-white border border-[#e5e5e5] shadow-xs flex items-center justify-center text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] transition-all active:scale-90 z-20 cursor-pointer"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
         <div className="space-y-1 flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight leading-snug">
             Baixe o nosso App

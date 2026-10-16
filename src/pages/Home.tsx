@@ -71,6 +71,15 @@ const Home = () => {
     localStorage.setItem(STORAGE_KEYS.DISMISS_QUICK_REGISTRATION_HOME, "true");
   };
 
+  const [isDismissedAppBanner, setIsDismissedAppBanner] = useState(() => {
+    return localStorage.getItem(STORAGE_KEYS.DISMISS_APP_DOWNLOAD_BANNER) === "true";
+  });
+
+  const handleDismissAppBanner = () => {
+    setIsDismissedAppBanner(true);
+    localStorage.setItem(STORAGE_KEYS.DISMISS_APP_DOWNLOAD_BANNER, "true");
+  };
+
   const daysSinceCreation = profile?.created_at ? differenceInCalendarDaysBR(getNowBR(), profile.created_at) : 0;
 
   useEffect(() => {
@@ -286,7 +295,9 @@ const Home = () => {
             </div>
           </div>
 
-          {!isSubConta && <SmartAppBanner />}
+          {!isSubConta && !isDismissedAppBanner && (
+            <SmartAppBanner onDismiss={handleDismissAppBanner} />
+          )}
 
           {!isSubConta && !onboarding.showOnboarding && !isDismissedQuickReg && (
             <section className="px-1">

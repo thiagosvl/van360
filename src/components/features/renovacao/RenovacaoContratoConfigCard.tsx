@@ -82,11 +82,10 @@ export function RenovacaoContratoConfigCard({ anoDestino }: RenovacaoContratoCon
         <Button
           type="button"
           variant="outline"
-          size="sm"
           onClick={() => navigateToContractSetup({ ano: anoDestino })}
-          className="h-8 px-3 rounded-[14px] border border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-xs font-medium gap-1.5 shadow-none shrink-0 cursor-pointer"
+          className="h-9 px-3.5 rounded-[16px] border border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs sm:text-sm font-medium gap-2 shadow-2xs shrink-0 cursor-pointer transition-colors"
         >
-          <Settings2 className="w-3.5 h-3.5 text-[#737373]" />
+          <Settings2 className="w-4 h-4 text-[#737373]" />
           <span>Configurar</span>
         </Button>
       </div>

@@ -2,6 +2,7 @@ import { ComponentType } from "react";
 import { LucideProps, Car, ChartArea, FileText, GraduationCap, Home, TrendingDown, Users, Rocket, BadgeDollarSign, Route, Settings, Users2, Cake, User, Compass, Sparkles } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PermissionKey } from "@/config/permissions";
+import { getDefaultAnoDestino } from "@/utils/domain/renovacao/renovacaoDisponibilidade";
 
 export interface PageItem {
   title: string;
@@ -23,7 +24,7 @@ const pagesItems: PageItem[] = [
     permission: "passageiros.visualizar",
   },
   {
-    title: "Renovação Alunos",
+    title: `Renovação Alunos ${getDefaultAnoDestino()}`,
     href: ROUTES.PRIVATE.MOTORISTA.RENOVATION,
     icon: Sparkles,
     permission: "renovacoes.gerenciar",

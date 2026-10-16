@@ -16,6 +16,7 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/config/permissions";
+import { getDefaultAnoDestino } from "@/utils/domain/renovacao/renovacaoDisponibilidade";
 
 interface AcessoRapidoProps {
   onCadastrarPassageiro: () => void;
@@ -88,7 +89,7 @@ export const AcessoRapido = ({
       },
       {
         id: AcessoRapidoItemKey.RENOVACAO,
-        label: "Renovação Alunos",
+        label: `Renovação Alunos ${getDefaultAnoDestino()}`,
         icon: Sparkles,
         to: ROUTES.PRIVATE.MOTORISTA.RENOVATION,
         show: can(PERMISSIONS.RENOVACOES_GERENCIAR),
