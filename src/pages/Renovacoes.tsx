@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRenovacoesViewModel } from "@/hooks/ui/useRenovacoesViewModel";
 import { useEscolasWithFilters, useProfile } from "@/hooks";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -403,7 +403,8 @@ export default function Renovacoes() {
     clearSelection();
   }, [statusFilter, escolaFilter, periodoFilter, searchTerm, anoDestino, clearSelection]);
 
-  const [hasAutoOpenedPeriodo, setHasAutoOpenedPeriodo] = useState<number | null>(null);
+  const hasAutoOpenedPeriodoRef = useRef<number | null>(null);
+  const hasAutoOpenedTutorialRef = useRef<boolean>(false);
 
   const handleOpenConfigurarPeriodo = () => {
     openConfigurarPeriodoAnoDialog({
@@ -421,17 +422,18 @@ export default function Renovacoes() {
     if (!canManage || isLoading || !periodoConfig) return;
 
     if (!periodoConfig.configurado) {
-      if (hasAutoOpenedPeriodo !== anoDestino) {
-        setHasAutoOpenedPeriodo(anoDestino);
+      if (hasAutoOpenedPeriodoRef.current !== anoDestino) {
+        hasAutoOpenedPeriodoRef.current = anoDestino;
         handleOpenConfigurarPeriodo();
       }
     } else {
       const alreadyDismissed = localStorage.getItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED);
-      if (!alreadyDismissed) {
+      if (!alreadyDismissed && !hasAutoOpenedTutorialRef.current) {
+        hasAutoOpenedTutorialRef.current = true;
         openTutorialRenovacaoDialog({ anoDestino });
       }
     }
-  }, [canManage, isLoading, periodoConfig, anoDestino, hasAutoOpenedPeriodo, openConfigurarPeriodoAnoDialog, openTutorialRenovacaoDialog]);
+  }, [canManage, isLoading, periodoConfig, anoDestino, openConfigurarPeriodoAnoDialog, openTutorialRenovacaoDialog]);
 
   const formatPeriodoTexto = () => {
     if (
