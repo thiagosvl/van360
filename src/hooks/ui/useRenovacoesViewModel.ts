@@ -142,7 +142,10 @@ export function useRenovacoesViewModel() {
     },
   };
 
-  const todosPassageiros = data?.passageiros || [];
+  const todosPassageiros = useMemo(() => {
+    const list = data?.passageiros ? [...data.passageiros] : [];
+    return list.sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR", { sensitivity: "base" }));
+  }, [data?.passageiros]);
 
   const passageirosSemTelefone = useMemo(() => {
     return todosPassageiros.filter((p) => !p.responsavel_principal?.telefone);
