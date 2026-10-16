@@ -59,10 +59,10 @@ export function PublicRenovacaoEscolaCard({ condicoes }: PublicRenovacaoEscolaCa
             {condicoes.periodo.alterado ? (
               <div className="flex items-baseline justify-end gap-1.5 flex-wrap">
                 <span className="line-through text-destructive text-xs sm:text-sm font-normal capitalize">
-                  {condicoes.periodo.atual}
+                  {formatPeriodo(condicoes.periodo.atual)}
                 </span>
                 <span className="text-foreground font-semibold text-xs sm:text-sm capitalize">
-                  {condicoes.periodo.novo}
+                  {formatPeriodo(condicoes.periodo.novo)}
                 </span>
               </div>
             ) : (
@@ -87,10 +87,10 @@ export function PublicRenovacaoEscolaCard({ condicoes }: PublicRenovacaoEscolaCa
             {condicoes.modalidade.alterado ? (
               <div className="flex items-baseline justify-end gap-1.5 flex-wrap">
                 <span className="line-through text-destructive text-xs sm:text-sm font-normal">
-                  {condicoes.modalidade.atual}
+                  {formatModalidade(condicoes.modalidade.atual)}
                 </span>
                 <span className="text-foreground font-semibold text-xs sm:text-sm">
-                  {condicoes.modalidade.novo}
+                  {formatModalidade(condicoes.modalidade.novo)}
                 </span>
               </div>
             ) : (
