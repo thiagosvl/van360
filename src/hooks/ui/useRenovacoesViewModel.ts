@@ -338,6 +338,7 @@ export function useRenovacoesViewModel() {
     passageirosSemTelefone,
     semTelefoneCount: passageirosSemTelefone.length,
     pendentesAptosCount,
+    periodoConfig: data?.periodo_config,
     isLoading,
     isFetching,
     hasData: Boolean(data),

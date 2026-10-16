@@ -216,6 +216,7 @@ export interface OpenConfirmarGerarContratoDialogProps {
   diaVencimento?: number;
   dataInicio?: string;
   dataFim?: string;
+  ano?: number;
   isSubstituicao?: boolean;
   contratoIdParaSubstituir?: string;
   onSuccess?: () => void;
@@ -265,6 +266,11 @@ export interface OpenEditarDadosPublicosRenovacaoDialogProps {
 
 export interface OpenTutorialRenovacaoDialogProps {
   anoDestino: number;
+}
+
+export interface OpenConfigurarPeriodoAnoDialogProps {
+  anoDestino: number;
+  onSuccess?: () => void;
 }
 
 export interface OpenRegistrarAusenciaProps {
@@ -533,6 +539,8 @@ export interface LayoutContextType {
   closeEditarDadosPublicosRenovacaoDialog: () => void;
   openTutorialRenovacaoDialog: (props: OpenTutorialRenovacaoDialogProps) => void;
   closeTutorialRenovacaoDialog: () => void;
+  openConfigurarPeriodoAnoDialog: (props: OpenConfigurarPeriodoAnoDialogProps) => void;
+  closeConfigurarPeriodoAnoDialog: () => void;
 
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;

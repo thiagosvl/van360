@@ -13,6 +13,8 @@ import {
   ResponderRenovacaoResponse,
   NotificarRenovacaoResponse,
   NotificarLoteRenovacaoResponse,
+  PeriodoRenovacaoConfig,
+  SalvarPeriodoRenovacaoConfigPayload,
 } from "@/types/renovacao";
 import { toast } from "sonner";
 
@@ -21,6 +23,7 @@ export const renovacaoKeys = {
   lists: () => [...renovacaoKeys.all, "list"] as const,
   list: (params: ListRenovacoesParams) => [...renovacaoKeys.lists(), params] as const,
   contratoConfig: (ano: number) => [...renovacaoKeys.all, "contrato-config", ano] as const,
+  periodoConfig: (ano: number) => [...renovacaoKeys.all, "periodo-config", ano] as const,
   public: (token: string) => [...renovacaoKeys.all, "public", token] as const,
 };
 
@@ -297,6 +300,44 @@ export function useSalvarRenovacaoContratoConfig() {
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
       toast.error("Erro ao salvar configuração de contrato", {
+        description: error.response?.data?.error || "Verifique os dados e tente novamente.",
+      });
+    },
+  });
+}
+
+export function usePeriodoRenovacaoConfig(ano: number) {
+  return useQuery({
+    queryKey: renovacaoKeys.periodoConfig(ano),
+    queryFn: async () => {
+      const response = await apiClient.get<PeriodoRenovacaoConfig>("/renovacoes/periodo-config", {
+        params: { ano },
+      });
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useSalvarPeriodoRenovacaoConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: SalvarPeriodoRenovacaoConfigPayload) => {
+      const response = await apiClient.put<PeriodoRenovacaoConfig>(
+        "/renovacoes/periodo-config",
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.periodoConfig(variables.ano) }),
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+      ]);
+    },
+    onError: (error: AxiosError<{ error?: string; message?: string }>) => {
+      toast.error("Erro ao salvar período da renovação", {
         description: error.response?.data?.error || "Verifique os dados e tente novamente.",
       });
     },

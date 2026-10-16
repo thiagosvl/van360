@@ -17,6 +17,7 @@ export interface ConfirmarGerarContratoDialogProps {
   diaVencimento?: number;
   dataInicio?: string;
   dataFim?: string;
+  ano?: number;
   isSubstituicao?: boolean;
   contratoIdParaSubstituir?: string;
   onSuccess?: () => void;
@@ -30,6 +31,7 @@ export function ConfirmarGerarContratoDialog({
   diaVencimento,
   dataInicio,
   dataFim,
+  ano,
   isSubstituicao = false,
   contratoIdParaSubstituir,
   onSuccess,
@@ -76,6 +78,7 @@ export function ConfirmarGerarContratoDialog({
         diaVencimento: resolvedDia ? Number(resolvedDia) : undefined,
         dataInicio: dataInicio || targetPassageiro.data_inicio_transporte || undefined,
         dataFim: dataFim || targetPassageiro.data_fim_transporte || undefined,
+        ano: ano || (targetPassageiro.ano_letivo ? Number(targetPassageiro.ano_letivo) : undefined),
         notificarResponsavel,
       });
     }

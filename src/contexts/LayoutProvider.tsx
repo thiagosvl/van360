@@ -67,6 +67,7 @@ import { EditarReservaDialog } from "@/components/dialogs/EditarReservaDialog";
 import { ConfirmarDisparoWabaDialog } from "@/components/dialogs/ConfirmarDisparoWabaDialog";
 import { EditarDadosPublicosRenovacaoDialog } from "@/components/dialogs/EditarDadosPublicosRenovacaoDialog";
 import { TutorialRenovacaoDialog } from "@/components/dialogs/TutorialRenovacaoDialog";
+import { ConfigurarPeriodoAnoDialog } from "@/components/dialogs/ConfigurarPeriodoAnoDialog";
 import {
   OpenPixPaymentDialogProps,
   OpenSaaSCheckoutDialogProps,
@@ -105,6 +106,7 @@ import {
   OpenConfirmarDisparoWabaDialogProps,
   OpenEditarDadosPublicosRenovacaoDialogProps,
   OpenTutorialRenovacaoDialogProps,
+  OpenConfigurarPeriodoAnoDialogProps,
   OpenFretamentoFormProps,
   OpenPasseioFormProps,
   OpenNovoFretamentoOuPasseioProps,
@@ -448,6 +450,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [tutorialRenovacaoDialogState, setTutorialRenovacaoDialogState] = useState<{
     open: boolean;
     props?: OpenTutorialRenovacaoDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [configurarPeriodoAnoDialogState, setConfigurarPeriodoAnoDialogState] = useState<{
+    open: boolean;
+    props?: OpenConfigurarPeriodoAnoDialogProps;
   }>({
     open: false,
   });
@@ -973,6 +982,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setTutorialRenovacaoDialogState({ open: false }));
   };
 
+  const openConfigurarPeriodoAnoDialog = (props: OpenConfigurarPeriodoAnoDialogProps) => {
+    setConfigurarPeriodoAnoDialogState({ open: true, props });
+  };
+
+  const closeConfigurarPeriodoAnoDialog = () => {
+    safeCloseDialog(() => setConfigurarPeriodoAnoDialogState({ open: false }));
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -1056,6 +1073,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeEditarDadosPublicosRenovacaoDialog,
         openTutorialRenovacaoDialog,
         closeTutorialRenovacaoDialog,
+        openConfigurarPeriodoAnoDialog,
+        closeConfigurarPeriodoAnoDialog,
 
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
@@ -1862,6 +1881,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           diaVencimento={confirmarGerarContratoDialogState.props.diaVencimento}
           dataInicio={confirmarGerarContratoDialogState.props.dataInicio}
           dataFim={confirmarGerarContratoDialogState.props.dataFim}
+          ano={confirmarGerarContratoDialogState.props.ano}
           isSubstituicao={confirmarGerarContratoDialogState.props.isSubstituicao}
           contratoIdParaSubstituir={confirmarGerarContratoDialogState.props.contratoIdParaSubstituir}
           onSuccess={confirmarGerarContratoDialogState.props.onSuccess}
@@ -1948,6 +1968,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={closeTutorialRenovacaoDialog}
           anoDestino={tutorialRenovacaoDialogState.props.anoDestino}
+        />
+      )}
+
+      {configurarPeriodoAnoDialogState.open && configurarPeriodoAnoDialogState.props && (
+        <ConfigurarPeriodoAnoDialog
+          isOpen={true}
+          onClose={closeConfigurarPeriodoAnoDialog}
+          anoDestino={configurarPeriodoAnoDialogState.props.anoDestino}
+          onSuccess={configurarPeriodoAnoDialogState.props.onSuccess}
         />
       )}
 

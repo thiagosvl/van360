@@ -19,9 +19,10 @@ import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
 import { Badge } from "@/components/ui/badge";
-import { Users, ArrowLeft, HelpCircle } from "lucide-react";
+import { Users, ArrowLeft, HelpCircle, Clock, CalendarDays } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
@@ -32,6 +33,8 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { RenovacaoSkeleton } from "@/components/skeletons/RenovacaoSkeleton";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { getMonthNameBR } from "@/utils/dateUtils";
+import { formatDateToBR } from "@/utils/formatters/date";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +54,7 @@ export default function Renovacoes() {
     openEditarReservaDialog,
     openConfirmarDisparoWabaDialog,
     openTutorialRenovacaoDialog,
+    openConfigurarPeriodoAnoDialog,
     openResponsavelFormDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -77,6 +81,7 @@ export default function Renovacoes() {
     passageiros,
     semTelefoneCount,
     pendentesAptosCount,
+    periodoConfig,
     isLoading,
     isFetching,
     hasData,
@@ -345,14 +350,79 @@ export default function Renovacoes() {
     clearSelection();
   }, [statusFilter, escolaFilter, periodoFilter, searchTerm, anoDestino, clearSelection]);
 
+  const [hasAutoOpenedPeriodo, setHasAutoOpenedPeriodo] = useState<number | null>(null);
+
+  const handleOpenConfigurarPeriodo = () => {
+    openConfigurarPeriodoAnoDialog({
+      anoDestino,
+      onSuccess: () => {
+        const dismissed = localStorage.getItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED);
+        if (!dismissed) {
+          openTutorialRenovacaoDialog({ anoDestino });
+        }
+      },
+    });
+  };
+
   useEffect(() => {
-    if (!canManage || isLoading) return;
-    const alreadyDismissed = localStorage.getItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED);
-    if (!alreadyDismissed) {
-      localStorage.setItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED, "true");
-      openTutorialRenovacaoDialog({ anoDestino });
+    if (!canManage || isLoading || !periodoConfig) return;
+
+    if (!periodoConfig.configurado) {
+      if (hasAutoOpenedPeriodo !== anoDestino) {
+        setHasAutoOpenedPeriodo(anoDestino);
+        handleOpenConfigurarPeriodo();
+      }
+    } else {
+      const alreadyDismissed = localStorage.getItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED);
+      if (!alreadyDismissed) {
+        openTutorialRenovacaoDialog({ anoDestino });
+      }
     }
-  }, [canManage, isLoading, anoDestino, openTutorialRenovacaoDialog]);
+  }, [canManage, isLoading, periodoConfig, anoDestino, hasAutoOpenedPeriodo, openConfigurarPeriodoAnoDialog, openTutorialRenovacaoDialog, refetch]);
+
+  const formatPeriodoTexto = () => {
+    if (
+      !periodoConfig?.configurado ||
+      !periodoConfig.mes_inicio_cobranca ||
+      !periodoConfig.ano_inicio_cobranca ||
+      !periodoConfig.mes_fim_cobranca ||
+      !periodoConfig.ano_fim_cobranca
+    ) {
+      return "Não configurado";
+    }
+    const mesIni = getMonthNameBR(periodoConfig.mes_inicio_cobranca).slice(0, 3);
+    const mesFim = getMonthNameBR(periodoConfig.mes_fim_cobranca).slice(0, 3);
+    return `${mesIni}/${periodoConfig.ano_inicio_cobranca} a ${mesFim}/${periodoConfig.ano_fim_cobranca}`;
+  };
+
+  const formatTransporteTexto = () => {
+    if (!periodoConfig?.data_inicio_transporte && !periodoConfig?.data_fim_transporte) return null;
+    const ini = periodoConfig?.data_inicio_transporte
+      ? formatDateToBR(new Date(periodoConfig.data_inicio_transporte + "T12:00:00"))
+      : null;
+    const fim = periodoConfig?.data_fim_transporte
+      ? formatDateToBR(new Date(periodoConfig.data_fim_transporte + "T12:00:00"))
+      : null;
+    if (ini && fim) return `${ini} a ${fim}`;
+    if (ini) return `A partir de ${ini}`;
+    if (fim) return `Até ${fim}`;
+    return null;
+  };
+
+  const qtdParcelasMestre = useMemo(() => {
+    if (
+      !periodoConfig?.configurado ||
+      !periodoConfig.mes_inicio_cobranca ||
+      !periodoConfig.ano_inicio_cobranca ||
+      !periodoConfig.mes_fim_cobranca ||
+      !periodoConfig.ano_fim_cobranca
+    ) {
+      return null;
+    }
+    const totalInicio = periodoConfig.ano_inicio_cobranca * 12 + periodoConfig.mes_inicio_cobranca;
+    const totalFim = periodoConfig.ano_fim_cobranca * 12 + periodoConfig.mes_fim_cobranca;
+    return totalFim >= totalInicio ? totalFim - totalInicio + 1 : null;
+  }, [periodoConfig]);
 
   const totalPages = Math.ceil((passageiros.length || 0) / limit);
 
@@ -407,7 +477,91 @@ export default function Renovacoes() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-stretch">
+        {!periodoConfig?.configurado ? (
+          <Banner
+            variant="warning"
+            title={`Período de Cobrança de ${anoDestino} não configurado`}
+            description="Defina os meses de início e término das cobranças para liberar a gestão e confirmações da renovação."
+            action={{
+              label: "Configurar Período Agora",
+              onClick: handleOpenConfigurarPeriodo,
+              className: "w-full sm:w-auto h-10 sm:h-9 text-xs sm:text-sm font-semibold bg-amber-600 hover:bg-amber-700 text-white border-transparent shadow-xs active:scale-95",
+            }}
+            className="border-amber-400/80 bg-amber-500/[0.12] dark:bg-amber-500/20 shadow-xs rounded-[20px] p-4"
+          />
+        ) : (
+          <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-3.5 sm:px-5 sm:py-3.5 shadow-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0 border bg-[#f5f5f5] border-[#e5e5e5] text-[#0a0a0a]">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                  Período de Cobrança
+                </p>
+                <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5 text-xs text-[#737373] mt-0.5">
+                  <span>{formatPeriodoTexto()}</span>
+                  {qtdParcelasMestre !== null && (
+                    <>
+                      <span className="text-[#d4d4d4] font-bold">·</span>
+                      <span className="font-medium text-[#0a0a0a]">
+                        {qtdParcelasMestre} {qtdParcelasMestre === 1 ? "parcela" : "parcelas"}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {formatTransporteTexto() && (
+                  <p className="text-[11px] text-[#737373] mt-0.5 truncate">
+                    Transporte: {formatTransporteTexto()}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenConfigurarPeriodo}
+              className="h-8 px-3 rounded-[12px] text-xs font-semibold shrink-0"
+            >
+              Alterar
+            </Button>
+          </div>
+        )}
+
+        <div className="relative space-y-5">
+          {!periodoConfig?.configurado && !isLoading && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-white/80 backdrop-blur-xs rounded-[24px]">
+              <div className="max-w-md w-full bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-xl text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-14 h-14 rounded-[20px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] mx-auto">
+                  <Clock className="w-7 h-7" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a]">
+                    Defina o Período de Cobrança
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
+                    Para liberar as confirmações e o gerenciamento da renovação de {anoDestino}, é necessário definir os meses de início e término das cobranças.
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    onClick={handleOpenConfigurarPeriodo}
+                    className="w-full h-11 rounded-[18px] font-semibold text-sm shadow-sm"
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Configurar Período Agora
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={cn("space-y-5 transition-all duration-200", !periodoConfig?.configurado && "pointer-events-none select-none filter blur-xs")}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-stretch">
           <RenovacaoKPICard
             kpis={kpis}
             anoDestino={anoDestino}
@@ -585,8 +739,10 @@ export default function Renovacoes() {
             </>
           )}
         </div>
+        </div>
+        </div>
 
-        {!isViewSemTelefone && (
+        {!isViewSemTelefone && periodoConfig?.configurado && (
           <RenovacaoStickyBar
             selectedCount={selectedIds.size}
             onClearSelection={clearSelection}

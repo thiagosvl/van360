@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { STORAGE_KEYS } from "@/constants";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   TrendingUp,
@@ -31,16 +33,21 @@ export function TutorialRenovacaoDialog({
   anoDestino,
 }: TutorialRenovacaoDialogProps) {
   const [step, setStep] = useState(1);
+  const [naoMostrarNovamente, setNaoMostrarNovamente] = useState(false);
   const totalSteps = 4;
   const anoOrigem = anoDestino - 1;
 
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      setNaoMostrarNovamente(false);
     }
   }, [isOpen]);
 
   const handleClose = () => {
+    if (naoMostrarNovamente) {
+      localStorage.setItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED, "true");
+    }
     safeCloseDialog(onClose);
   };
 
@@ -48,7 +55,8 @@ export function TutorialRenovacaoDialog({
     if (step < totalSteps) {
       setStep((s) => s + 1);
     } else {
-      handleClose();
+      localStorage.setItem(STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED, "true");
+      safeCloseDialog(onClose);
     }
   };
 
@@ -88,7 +96,7 @@ export function TutorialRenovacaoDialog({
     >
       <BaseDialog.Header
         title="Como Funciona a Renovação"
-        icon={<HelpCircle className="w-5 h-5 text-primary" />}
+        icon={<HelpCircle className="w-5 h-5 text-[#0a0a0a]" />}
         showSteps
         currentStep={step}
         totalSteps={totalSteps}
@@ -98,7 +106,7 @@ export function TutorialRenovacaoDialog({
       <BaseDialog.Body animate animationKey={step} className="space-y-4">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-semibold bg-primary/10 text-primary">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] border border-[#e5e5e5]">
               {stepTitles[step].badge}
             </span>
             <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] mt-1.5 leading-snug">
@@ -320,28 +328,38 @@ export function TutorialRenovacaoDialog({
         )}
       </BaseDialog.Body>
 
-      <BaseDialog.Footer>
-        {step > 1 ? (
-          <BaseDialog.Action
-            label="Anterior"
-            variant="secondary"
-            onClick={handlePrev}
-            icon={<ArrowLeft className="w-4 h-4" />}
+      <BaseDialog.Footer className="flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <label className="flex items-center gap-2 select-none cursor-pointer text-xs text-[#737373] hover:text-[#0a0a0a]">
+          <Checkbox
+            checked={naoMostrarNovamente}
+            onCheckedChange={(val) => setNaoMostrarNovamente(Boolean(val))}
           />
-        ) : (
-          <BaseDialog.Action
-            label="Fechar"
-            variant="secondary"
-            onClick={handleClose}
-          />
-        )}
+          <span>Não mostrar este tutorial novamente</span>
+        </label>
 
-        <BaseDialog.Action
-          label={step < totalSteps ? "Próximo" : "Entendi, vamos lá!"}
-          variant="primary"
-          onClick={handleNext}
-          icon={step < totalSteps ? <ArrowRight className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-        />
+        <div className="flex items-center gap-2 justify-end">
+          {step > 1 ? (
+            <BaseDialog.Action
+              label="Anterior"
+              variant="secondary"
+              onClick={handlePrev}
+              icon={<ArrowLeft className="w-4 h-4" />}
+            />
+          ) : (
+            <BaseDialog.Action
+              label="Fechar"
+              variant="secondary"
+              onClick={handleClose}
+            />
+          )}
+
+          <BaseDialog.Action
+            label={step < totalSteps ? "Próximo" : "Entendi, vamos lá!"}
+            variant="primary"
+            onClick={handleNext}
+            icon={step < totalSteps ? <ArrowRight className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+          />
+        </div>
       </BaseDialog.Footer>
     </BaseDialog>
   );

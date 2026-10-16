@@ -725,9 +725,6 @@ export function ReajusteLoteDialog({
                       onChange={(e) => {
                         const val = e.target.value;
                         setAnoInicioCobranca(val);
-                        if (val && !anoFimCobranca) {
-                          setAnoFimCobranca(val);
-                        }
                         setCobrancaErrors((prev) => {
                           const updated = { ...prev };
                           delete updated.anoInicioCobranca;
@@ -762,9 +759,6 @@ export function ReajusteLoteDialog({
                       onChange={(e) => {
                         const val = e.target.value;
                         setMesFimCobranca(val);
-                        if (val && !anoFimCobranca) {
-                          setAnoFimCobranca(anoInicioCobranca || String(anoDestino));
-                        }
                         setCobrancaErrors((prev) => {
                           const updated = { ...prev };
                           delete updated.mesFimCobranca;

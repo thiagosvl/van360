@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useUpdateRenovacao } from "@/hooks/api/useRenovacoes";
+import { useUpdateRenovacao, usePeriodoRenovacaoConfig } from "@/hooks/api/useRenovacoes";
 import { useEscolasWithFilters, useProfile, useVeiculosWithFilters } from "@/hooks";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
@@ -55,6 +55,7 @@ export function EditarReservaDialog({
   const { profile } = useProfile();
   const { data: escolasList = [] } = useEscolasWithFilters(profile?.id, { ativo: "true" }) as { data: Escola[] };
   const { data: veiculosList = [] } = useVeiculosWithFilters(profile?.id, { ativo: "true" }) as { data: Veiculo[] };
+  const { data: configPeriodoMestre } = usePeriodoRenovacaoConfig(anoDestino);
 
   const updateMutation = useUpdateRenovacao();
 
@@ -109,12 +110,16 @@ export function EditarReservaDialog({
 
       const dtInicioTransp = passageiro.nova_data_inicio_transporte
         ? formatDateToBR(passageiro.nova_data_inicio_transporte)
-        : "";
+        : (configPeriodoMestre?.data_inicio_transporte
+            ? formatDateToBR(new Date(configPeriodoMestre.data_inicio_transporte + "T12:00:00"))
+            : "");
       setDataInicioTransporte(dtInicioTransp);
 
       const dtFimTransp = passageiro.nova_data_fim_transporte
         ? formatDateToBR(passageiro.nova_data_fim_transporte)
-        : "";
+        : (configPeriodoMestre?.data_fim_transporte
+            ? formatDateToBR(new Date(configPeriodoMestre.data_fim_transporte + "T12:00:00"))
+            : "");
       setDataFimTransporte(dtFimTransp);
 
       if (passageiro.nova_data_inicio_cobranca) {
@@ -123,6 +128,9 @@ export function EditarReservaDialog({
           setAnoInicioCobranca(parts[0]);
           setMesInicioCobranca(parseInt(parts[1], 10).toString());
         }
+      } else if (configPeriodoMestre?.configurado && configPeriodoMestre.mes_inicio_cobranca && configPeriodoMestre.ano_inicio_cobranca) {
+        setAnoInicioCobranca(String(configPeriodoMestre.ano_inicio_cobranca));
+        setMesInicioCobranca(String(configPeriodoMestre.mes_inicio_cobranca));
       } else {
         setMesInicioCobranca("");
         setAnoInicioCobranca("");
@@ -134,12 +142,15 @@ export function EditarReservaDialog({
           setAnoFimCobranca(parts[0]);
           setMesFimCobranca(parseInt(parts[1], 10).toString());
         }
+      } else if (configPeriodoMestre?.configurado && configPeriodoMestre.mes_fim_cobranca && configPeriodoMestre.ano_fim_cobranca) {
+        setAnoFimCobranca(String(configPeriodoMestre.ano_fim_cobranca));
+        setMesFimCobranca(String(configPeriodoMestre.mes_fim_cobranca));
       } else {
         setMesFimCobranca("");
         setAnoFimCobranca("");
       }
     }
-  }, [passageiro, escolasList, veiculosList, anoDestino]);
+  }, [passageiro, escolasList, veiculosList, anoDestino, configPeriodoMestre]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,14 +243,14 @@ export function EditarReservaDialog({
           nova_sala: novaSala || null,
           novo_nome_professor: novoNomeProfessor || null,
           novo_veiculo_id: novoVeiculoId || null,
-          nova_data_inicio_transporte: dataInicioTransporte ? convertDateBrToISO(dataInicioTransporte) : undefined,
-          nova_data_fim_transporte: dataFimTransporte ? convertDateBrToISO(dataFimTransporte) : undefined,
+          nova_data_inicio_transporte: dataInicioTransporte ? convertDateBrToISO(dataInicioTransporte) : null,
+          nova_data_fim_transporte: dataFimTransporte ? convertDateBrToISO(dataFimTransporte) : null,
           nova_data_inicio_cobranca: isIsentoOriginal
-            ? undefined
-            : (mesInicioCobranca && anoInicioCobranca ? `${anoInicioCobranca}-${mesInicioCobranca.padStart(2, "0")}-01` : undefined),
+            ? null
+            : (mesInicioCobranca && anoInicioCobranca ? `${anoInicioCobranca}-${mesInicioCobranca.padStart(2, "0")}-01` : null),
           nova_data_fim_cobranca: isIsentoOriginal
-            ? undefined
-            : (mesFimCobranca && anoFimCobranca ? `${anoFimCobranca}-${mesFimCobranca.padStart(2, "0")}-01` : undefined),
+            ? null
+            : (mesFimCobranca && anoFimCobranca ? `${anoFimCobranca}-${mesFimCobranca.padStart(2, "0")}-01` : null),
         },
       });
 
@@ -401,9 +412,6 @@ export function EditarReservaDialog({
                         onChange={(e) => {
                           const val = e.target.value;
                           setAnoInicioCobranca(val);
-                          if (val && !anoFimCobranca) {
-                            setAnoFimCobranca(val);
-                          }
                           setErrors((prev) => {
                             const updated = { ...prev };
                             delete updated.anoInicioCobranca;
@@ -440,9 +448,6 @@ export function EditarReservaDialog({
                         onChange={(e) => {
                           const val = e.target.value;
                           setMesFimCobranca(val);
-                          if (val && !anoFimCobranca) {
-                            setAnoFimCobranca(anoInicioCobranca || String(anoDestino));
-                          }
                           setErrors((prev) => {
                             const updated = { ...prev };
                             delete updated.mesFimCobranca;

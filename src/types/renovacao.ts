@@ -72,7 +72,30 @@ export interface RenovacaoPassageiroItem {
   contrato_status?: string | null;
 }
 
+export interface PeriodoRenovacaoConfig {
+  configurado: boolean;
+  ano: number;
+  mes_inicio_cobranca: number | null;
+  ano_inicio_cobranca: number | null;
+  mes_fim_cobranca: number | null;
+  ano_fim_cobranca: number | null;
+  data_inicio_transporte?: string | null;
+  data_fim_transporte?: string | null;
+  configurado_em?: string | null;
+}
+
+export interface SalvarPeriodoRenovacaoConfigPayload {
+  ano: number;
+  mes_inicio_cobranca: number;
+  ano_inicio_cobranca: number;
+  mes_fim_cobranca: number;
+  ano_fim_cobranca: number;
+  data_inicio_transporte?: string | null;
+  data_fim_transporte?: string | null;
+}
+
 export interface RenovacaoDashboardResponse {
+  periodo_config?: PeriodoRenovacaoConfig;
   kpis: RenovacaoKPIs;
   passageiros: RenovacaoPassageiroItem[];
 }
