@@ -86,7 +86,8 @@ export {
 } from "./api/usePrePassageiroMutations";
 export {
     useCreateVeiculo, useDeleteVeiculo,
-    useToggleAtivoVeiculo, useUpdateVeiculo
+    useToggleAtivoVeiculo, useUpdateVeiculo,
+    useUpdatePixVeiculo
 } from "./api/useVeiculoMutations";
 
 export {
@@ -94,3 +95,4 @@ export {
 } from "./api/useGastoCategorias";
 
 export { useAppPreferences } from "./business/useAppPreferences";
+export { usePixVeiculoResolver } from "./ui/usePixVeiculoResolver";

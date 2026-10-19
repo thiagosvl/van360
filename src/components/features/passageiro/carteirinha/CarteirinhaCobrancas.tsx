@@ -219,7 +219,9 @@ export const CarteirinhaCobrancas = ({
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const showAjusteBanner = !passageiro.isento && isIncomplete;
 
-  const { modoCobranca: vanModoCobranca } = useMotoristaFinanceiroUi();
+  const { modoCobranca: vanModoCobranca, financeiro } = useMotoristaFinanceiroUi();
+  const chavePixPadraoConta = financeiro?.chave_pix_repasse || profile?.chave_pix || null;
+  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null;
   const modoCobrancaEfetivo = passageiro.modo_cobranca || vanModoCobranca;
   const isModoComLembreteOuAuto =
     modoCobrancaEfetivo === ModoCobrancaEnum.AUTOMATICA ||
@@ -468,8 +470,8 @@ export const CarteirinhaCobrancas = ({
                 passageiro={passageiro}
                 selectedYear={selectedYear}
                 index={idx}
-                chavePix={profile?.chave_pix}
-                tipoChavePix={profile?.tipo_chave_pix}
+                chavePix={chavePixPadraoConta}
+                tipoChavePix={tipoChavePixPadraoConta}
                 onOpenCobrancaDialog={onOpenCobrancaDialog}
                 onEditCobranca={onEditCobranca}
                 onRegistrarPagamento={onRegistrarPagamento}
@@ -572,6 +574,12 @@ const CobrancaItemPassageiro = forwardRef<
 
   const respPrincipal = passageiro.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
+
+  const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || passageiro.veiculo?.chave_pix || chavePix;
+  const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
+    ? cobranca.passageiro.veiculo.tipo_chave_pix
+    : (passageiro.veiculo?.chave_pix ? passageiro.veiculo.tipo_chave_pix : tipoChavePix);
+
   const onEnviarCobranca = !isCancelada && telefoneResponsavel && !isIncomplete && (valorExibicao > 0 || !cobranca.isProjection)
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
@@ -580,8 +588,8 @@ const CobrancaItemPassageiro = forwardRef<
       mes: cobranca.mes,
       valor: valorExibicao,
       dataVencimento: cobranca.data_vencimento,
-      chavePix,
-      tipoChavePix,
+      chavePix: chavePixResolvida,
+      tipoChavePix: tipoChavePixResolvida,
     }))
     : undefined;
 

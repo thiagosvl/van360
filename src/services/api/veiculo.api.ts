@@ -30,4 +30,12 @@ export const veiculoApi = {
     apiClient
       .put(`${endpointBase}/${veiculoId}`, data)
       .then(res => res.data),
+
+  atualizarPixVeiculo: (
+    veiculoId: string,
+    data: { chave_pix: string | null; tipo_chave_pix: string | null }
+  ): Promise<Veiculo> =>
+    apiClient
+      .patch(`${endpointBase}/${veiculoId}/pix`, data)
+      .then(res => res.data),
 };

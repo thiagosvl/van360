@@ -394,6 +394,11 @@ export interface OpenEditarPixDialogProps {
   onSuccess?: () => void | Promise<void>;
 }
 
+export interface OpenEditarPixVeiculoDialogProps {
+  veiculo: Veiculo;
+  onSuccess?: () => void;
+}
+
 export interface OpenConfigurarCobrancaWizardProps {
   modalidade: WizardModalidade;
   aplicar_a_todos?: boolean;
@@ -549,6 +554,8 @@ export interface LayoutContextType {
   // Perfil / Conta
   openAlterarSenhaDialog: () => void;
   openEditarPixDialog: (props?: OpenEditarPixDialogProps) => void;
+  openEditarPixVeiculoDialog: (props: OpenEditarPixVeiculoDialogProps) => void;
+  closeEditarPixVeiculoDialog: () => void;
   openConfigurarCobrancaWizardDialog: (props: OpenConfigurarCobrancaWizardProps) => void;
   closeConfigurarCobrancaWizardDialog: () => void;
   openConfirmarMudancaModoVanDialog: (props: OpenConfirmarMudancaModoVanProps) => void;

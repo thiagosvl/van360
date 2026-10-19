@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useConfiguracoes } from "@/hooks";
 import { useMotoristaFinanceiroApi, useMotoristaFinanceiroExcecoesApi } from "@/hooks/api/useMotoristaFinanceiroApi";
+import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useLayout } from "@/contexts/LayoutContext";
 import { MultaJurosConfigForm } from "./MultaJurosConfigForm";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -14,6 +15,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getWhatsAppUrl } from "@/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { formatarChavePix } from "@/utils/formatters/pix";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { WizardModalidade } from "@/hooks/ui/useConfigurarCobrancaWizardViewModel";
 import { PREVIEW_COBRANCA_MODALIDADE } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
 import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
@@ -35,6 +38,7 @@ import {
   Key,
   Pencil,
   Smartphone,
+  Car,
 } from "lucide-react";
 
 export const MODO_COBRANCA = ModoCobrancaEnum;
@@ -55,9 +59,16 @@ export const PagamentosTab = memo(function PagamentosTab() {
   const {
     openWhatsAppCobrancaPreviewDialog,
     openEditarPixDialog,
+    openEditarPixVeiculoDialog,
     openConfigurarCobrancaWizardDialog,
     openConfirmarMudancaModoVanDialog,
   } = useLayout();
+
+  const { data: veiculosData } = useVeiculos({ usuarioId: user?.id });
+  const veiculos = veiculosData?.list || [];
+  const temMultiplosVeiculos = veiculos.length > 1;
+  const temVeiculoComChavePropria = veiculos.some((v) => Boolean(v.chave_pix && v.chave_pix.trim() !== ""));
+  const deveExibirChavesPorVeiculo = temMultiplosVeiculos || temVeiculoComChavePropria;
 
   const [isChangingModo, setIsChangingModo] = useState(false);
   const [changingTargetModo, setChangingTargetModo] = useState<ModoCobranca | null>(null);
@@ -455,7 +466,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
       </div>
 
       {modoVisual !== MODO_COBRANCA.DESATIVADO && (
-        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-5">
+        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e5e5e5] pb-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
@@ -464,13 +475,17 @@ export const PagamentosTab = memo(function PagamentosTab() {
               <div>
                 <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
                   {modoVisual === MODO_COBRANCA.AUTOMATICA
-                    ? "Chave Pix para Repasse (Obrigatória)"
-                    : "Chave Pix de Recebimento (Opcional)"}
+                    ? (deveExibirChavesPorVeiculo ? "Chave Pix Padrão para Repasse (Obrigatória)" : "Chave Pix para Repasse (Obrigatória)")
+                    : (deveExibirChavesPorVeiculo ? "Chave Pix Padrão de Recebimento (Opcional)" : "Chave Pix de Recebimento (Opcional)")}
                 </h2>
                 <p className="text-xs text-[#737373] mt-0.5">
                   {modoVisual === MODO_COBRANCA.AUTOMATICA
-                    ? "Sua chave Pix onde o dinheiro dos pagamentos recebidos será repassado."
-                    : "Chave Pix enviada aos pais nos lembretes do WhatsApp."}
+                    ? (deveExibirChavesPorVeiculo
+                        ? "Sua chave Pix padrão onde os valores serão repassados. Vans sem chave própria usarão esta chave."
+                        : "Sua chave Pix onde o dinheiro dos pagamentos recebidos será repassado.")
+                    : (deveExibirChavesPorVeiculo
+                        ? "Chave Pix padrão enviada aos pais nos lembretes. Vans sem chave própria usarão esta chave."
+                        : "Chave Pix enviada aos pais nos lembretes do WhatsApp.")}
                 </p>
               </div>
             </div>
@@ -501,15 +516,22 @@ export const PagamentosTab = memo(function PagamentosTab() {
 
           {chavePixDisplay ? (
             <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center gap-3.5 min-w-0">
+              <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
                 <div className="h-10 w-10 rounded-[14px] bg-white text-[#737373] flex items-center justify-center border border-[#e5e5e5] shrink-0">
                   <Key className="w-4.5 h-4.5" />
                 </div>
                 <div className="min-w-0 space-y-0.5">
-                  <span className="text-xs font-medium text-[#737373] block">
-                    Chave Pix ({chavePixDisplay.tipo})
-                  </span>
-                  <p className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight truncate">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-medium text-[#737373]">
+                      Chave Pix ({chavePixDisplay.tipo})
+                    </span>
+                    {deveExibirChavesPorVeiculo && (
+                      <span className="text-[10px] text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[6px] border border-[#e5e5e5] font-medium shrink-0">
+                        Padrão da conta
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight break-all">
                     {chavePixDisplay.chave}
                   </p>
                 </div>
@@ -526,7 +548,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-[18px] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs font-medium transition-colors cursor-pointer border border-[#e5e5e5] shrink-0 disabled:opacity-50 disabled:pointer-events-none"
               >
                 <Pencil className="w-3.5 h-3.5 text-[#737373]" />
-                Alterar Chave Pix
+                {deveExibirChavesPorVeiculo ? "Alterar Chave Padrão" : "Alterar Chave Pix"}
               </button>
             </div>
           ) : (
@@ -561,6 +583,81 @@ export const PagamentosTab = memo(function PagamentosTab() {
                   ? "Adicionar Chave Pix"
                   : "Cadastrar Chave Pix"}
               </button>
+            </div>
+          )}
+
+          {deveExibirChavesPorVeiculo && veiculos.length > 0 && (
+            <div className="pt-4 border-t border-[#e5e5e5] space-y-3">
+              <div>
+                <h3 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] tracking-tight">
+                  Chaves Pix por Veículo
+                </h3>
+                <p className="text-[11px] sm:text-xs text-[#737373]">
+                  Personalize a chave Pix de cada van. Cobranças dos alunos vinculados usarão a chave do respectivo veículo.
+                </p>
+              </div>
+
+              <div className="grid gap-2.5">
+                {veiculos.map((v) => {
+                  const temChavePropria = Boolean(v.chave_pix && v.chave_pix.trim() !== "");
+                  const chaveExibida = temChavePropria
+                    ? formatarChavePix(v.chave_pix, v.tipo_chave_pix)
+                    : chavePixDisplay
+                    ? chavePixDisplay.chave
+                    : null;
+                  const origem = temChavePropria ? "Chave deste veículo" : "Padrão da conta";
+
+                  return (
+                    <div
+                      key={v.id}
+                      className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+                    >
+                      <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                        <div className="h-10 w-10 rounded-[14px] bg-white text-[#737373] flex items-center justify-center border border-[#e5e5e5] shrink-0">
+                          <Car className="w-4.5 h-4.5 text-[#0a0a0a]" />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-xs sm:text-sm uppercase text-[#0a0a0a] tracking-tight">
+                              {formatarPlacaExibicao(v.placa)}
+                            </span>
+                            {v.modelo && (
+                              <span className="text-[11px] text-[#737373] truncate max-w-[130px] sm:max-w-none">
+                                {v.marca} {v.modelo}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {chaveExibida ? (
+                              <>
+                                <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] tracking-tight break-all">
+                                  {chaveExibida}
+                                </span>
+                                <span className="text-[10px] text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[6px] border border-[#e5e5e5] font-medium shrink-0">
+                                  {origem}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-xs text-[#737373] font-normal">
+                                Sem chave Pix configurada
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => openEditarPixVeiculoDialog({ veiculo: v })}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-[18px] bg-white hover:bg-[#f5f5f5] text-[#0a0a0a] text-xs font-medium transition-colors cursor-pointer border border-[#e5e5e5] shrink-0"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-[#737373]" />
+                        {temChavePropria ? "Alterar Chave da Van" : "Definir Chave Deste Veículo"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

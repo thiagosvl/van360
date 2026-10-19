@@ -1,13 +1,17 @@
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain";
-import { Users2 } from "lucide-react";
+import { Users2, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePixVeiculoResolver } from "@/hooks";
 
 interface VeiculoSummaryProps {
   veiculo: Veiculo & { passageiros_ativos_count?: number };
 }
 
 export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
+  const { getPixInfo } = usePixVeiculoResolver();
+  const pixInfo = getPixInfo(veiculo);
+
   return (
     <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
       <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
@@ -49,6 +53,28 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
           </span>
         </div>
       </div>
+
+      {pixInfo && (
+        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
+          <div className="flex items-center gap-1.5 min-w-0 text-[#737373]">
+            <Key className="h-3.5 w-3.5 shrink-0" />
+            <span className="text-xs font-normal text-[#737373] truncate">
+              Chave Pix
+            </span>
+          </div>
+
+          <div className="flex flex-col items-end min-w-0">
+            <span className="text-xs font-semibold text-[#0a0a0a] tracking-tight truncate max-w-[200px]">
+              {pixInfo.chaveFormatada}
+            </span>
+            {!pixInfo.isPropria && (
+              <span className="text-[10px] font-normal text-[#737373]">
+                (Padrão da conta)
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

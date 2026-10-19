@@ -17,6 +17,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { safeCloseDialog, useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
@@ -96,6 +97,11 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const telefoneResponsavel = respPrincipal?.telefone;
   const nomeRespText = respPrincipal?.nome ?? "";
 
+  const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || chavePix;
+  const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
+    ? cobranca.passageiro.veiculo.tipo_chave_pix
+    : tipoChavePix;
+
   const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
@@ -104,8 +110,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
       mes: cobranca.mes,
       valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
       dataVencimento: cobranca.data_vencimento,
-      chavePix,
-      tipoChavePix,
+      chavePix: chavePixResolvida,
+      tipoChavePix: tipoChavePixResolvida,
     }))
     : undefined;
 
@@ -233,6 +239,9 @@ export function CobrancasList({
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { financeiro } = useMotoristaFinanceiroApi();
+  const chavePixPadraoConta = financeiro?.chave_pix_repasse || profile?.chave_pix || null;
+  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null;
   const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const {
     openCobrancaFormDialog,
@@ -324,6 +333,11 @@ export function CobrancasList({
     const respPrincipal = cobranca.passageiro?.responsavel_principal;
     const telefoneResponsavel = respPrincipal?.telefone;
 
+    const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || chavePixPadraoConta;
+    const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
+      ? cobranca.passageiro.veiculo.tipo_chave_pix
+      : tipoChavePixPadraoConta;
+
     const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
       ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
         telefoneResponsavel,
@@ -332,8 +346,8 @@ export function CobrancasList({
         mes: cobranca.mes,
         valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
         dataVencimento: cobranca.data_vencimento,
-        chavePix: profile?.chave_pix,
-        tipoChavePix: profile?.tipo_chave_pix,
+        chavePix: chavePixResolvida,
+        tipoChavePix: tipoChavePixResolvida,
       }))
       : undefined;
 
@@ -434,8 +448,8 @@ export function CobrancasList({
             cobranca={cobranca}
             index={index}
             activeTab={activeTab}
-            chavePix={profile?.chave_pix}
-            tipoChavePix={profile?.tipo_chave_pix}
+            chavePix={chavePixPadraoConta}
+            tipoChavePix={tipoChavePixPadraoConta}
             onVerCarteirinha={props.onVerCarteirinha}
             onEditarCobranca={props.onEditarCobranca}
             onRegistrarPagamento={props.onRegistrarPagamento}
@@ -472,7 +486,6 @@ export function CobrancasList({
         </div>
       </ResponsiveDataList>
 
-      {/* Desktop-triggered ActionSheet (Quick View) */}
       {
         openedCobranca && (
           <ActionSheetWrapper
@@ -481,8 +494,8 @@ export function CobrancasList({
             onOpenChange={(open) => !open && safeCloseDialog(() => setOpenedCobranca(null))}
             props={props}
             onOpenCreateForProjection={handleOpenCreateForProjection}
-            chavePix={profile?.chave_pix}
-            tipoChavePix={profile?.tipo_chave_pix}
+            chavePix={chavePixPadraoConta}
+            tipoChavePix={tipoChavePixPadraoConta}
           />
         )
       }
@@ -490,7 +503,6 @@ export function CobrancasList({
   );
 }
 
-// Wrapper to avoid calling useCobrancaActions for all rows upfront
 function ActionSheetWrapper({
   cobranca,
   open,
@@ -510,6 +522,12 @@ function ActionSheetWrapper({
 }) {
   const respPrincipal = cobranca.passageiro?.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
+
+  const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || chavePix;
+  const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
+    ? cobranca.passageiro.veiculo.tipo_chave_pix
+    : tipoChavePix;
+
   const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
       telefoneResponsavel,
@@ -518,8 +536,8 @@ function ActionSheetWrapper({
       mes: cobranca.mes,
       valor: Number(cobranca.valor) > 0 ? cobranca.valor : Number(cobranca.passageiro?.valor_cobranca || 0),
       dataVencimento: cobranca.data_vencimento,
-      chavePix,
-      tipoChavePix,
+      chavePix: chavePixResolvida,
+      tipoChavePix: tipoChavePixResolvida,
     }))
     : undefined;
 

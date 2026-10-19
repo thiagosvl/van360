@@ -1,9 +1,10 @@
 import { ROUTES } from "@/constants/routes";
 import { ActionItem } from "@/types/actions";
 import { Veiculo } from "@/types/veiculo";
-import { Pencil, ToggleLeft, ToggleRight, Trash2, Users } from "lucide-react";
+import { Key, Pencil, ToggleLeft, ToggleRight, Trash2, Users } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useLayout } from "@/contexts/LayoutContext";
 
 interface UseVeiculoActionsProps {
   veiculo: Veiculo;
@@ -22,8 +23,20 @@ export function useVeiculoActions({
 }: UseVeiculoActionsProps): ActionItem[] {
   const { can } = usePermissions();
   const canManage = can("veiculos.gerenciar");
+  const canConfigurarPix = can("veiculos.gerenciar") || can("financeiro.visualizar");
+  const { openEditarPixVeiculoDialog } = useLayout();
 
   const actions: ActionItem[] = [];
+
+  if (canConfigurarPix) {
+    actions.push({
+      label: "Chave Pix do Veículo",
+      icon: <Key className="h-4 w-4" />,
+      onClick: () => openEditarPixVeiculoDialog({ veiculo }),
+      swipeColor: "bg-emerald-600",
+      hasSeparatorAfter: true,
+    });
+  }
 
   if (canManage) {
     actions.push({

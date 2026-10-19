@@ -4,10 +4,11 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useVeiculoActions } from "@/hooks/ui/useVeiculoActions";
+import { usePixVeiculoResolver, PixVeiculoInfo } from "@/hooks/ui/usePixVeiculoResolver";
 import { cn } from "@/lib/utils";
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { Car, Users2 } from "lucide-react";
+import { Car, Key, Users2 } from "lucide-react";
 import { memo, useState } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { VeiculoActionsMenu } from "./VeiculoActionsMenu";
@@ -28,7 +29,12 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
   onEdit,
   onToggleAtivo,
   onDelete,
-}: { veiculo: Veiculo & { passageiros_ativos_count?: number }; index: number } & VeiculosListProps) {
+  pixInfo,
+}: {
+  veiculo: Veiculo & { passageiros_ativos_count?: number };
+  index: number;
+  pixInfo: PixVeiculoInfo | null;
+} & VeiculosListProps) {
   const actions = useVeiculoActions({
     veiculo,
     navigate,
@@ -71,6 +77,19 @@ const VeiculoMobileCard = memo(function VeiculoMobileCard({
                 {veiculo.marca} {veiculo.modelo}
               </p>
             )}
+            {pixInfo && (
+              <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[#737373] font-normal min-w-0">
+                <Key className="w-3 h-3 text-[#737373] shrink-0" />
+                <span className="truncate max-w-[170px] text-xs text-[#737373] font-normal">
+                  {pixInfo.chaveFormatada}
+                </span>
+                {!pixInfo.isPropria && (
+                  <span className="text-xs text-[#737373] font-normal shrink-0">
+                    (Padrão da conta)
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -86,6 +105,7 @@ export function VeiculosList({
   onDelete,
 }: VeiculosListProps) {
   const [openedVeiculo, setOpenedVeiculo] = useState<(Veiculo & { passageiros_ativos_count?: number }) | null>(null);
+  const { temPixAtivoNaConta, getPixInfo } = usePixVeiculoResolver();
 
   return (
     <>
@@ -102,6 +122,7 @@ export function VeiculosList({
             onToggleAtivo={onToggleAtivo}
             onDelete={onDelete}
             veiculos={veiculos}
+            pixInfo={getPixInfo(veiculo)}
           />
         )}
       >
@@ -115,6 +136,11 @@ export function VeiculosList({
                 <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Alunos Ativos
                 </th>
+                {temPixAtivoNaConta && (
+                  <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
+                    Chave Pix
+                  </th>
+                )}
                 <th className="px-6 py-4 text-left text-[11px] font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Status
                 </th>
@@ -124,59 +150,81 @@ export function VeiculosList({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e5e5]">
-              {veiculos.map((veiculo) => (
-                <tr
-                  key={veiculo.id}
-                  onClick={() => setOpenedVeiculo(veiculo)}
-                  className={cn(
-                    "group transition-colors cursor-pointer",
-                    veiculo.ativo 
-                      ? "hover:bg-[#fafafa]/80" 
-                      : "opacity-60 hover:opacity-90 bg-[#fafafa]/40"
-                  )}
-                >
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] shrink-0">
-                        <Car className="w-4 h-4 text-[#0a0a0a]" />
+              {veiculos.map((veiculo) => {
+                const pixInfo = getPixInfo(veiculo);
+
+                return (
+                  <tr
+                    key={veiculo.id}
+                    onClick={() => setOpenedVeiculo(veiculo)}
+                    className={cn(
+                      "group transition-colors cursor-pointer",
+                      veiculo.ativo 
+                        ? "hover:bg-[#fafafa]/80" 
+                        : "opacity-60 hover:opacity-90 bg-[#fafafa]/40"
+                    )}
+                  >
+                    <td className="px-6 py-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center text-[#0a0a0a] shrink-0">
+                          <Car className="w-4 h-4 text-[#0a0a0a]" />
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-[#0a0a0a] text-sm uppercase tracking-tight">
+                            {formatarPlacaExibicao(veiculo.placa)}
+                          </p>
+                          <p className="text-xs text-[#737373] font-normal">
+                            {veiculo.marca} {veiculo.modelo}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <p className="font-semibold text-[#0a0a0a] text-sm uppercase tracking-tight">
-                          {formatarPlacaExibicao(veiculo.placa)}
-                        </p>
-                        <p className="text-xs text-[#737373] font-normal">
-                          {veiculo.marca} {veiculo.modelo}
-                        </p>
+                    </td>
+                    <td className="px-6 py-4 align-middle">
+                      <div className="flex items-center gap-1.5">
+                        <Users2 className="w-4 h-4 text-[#737373]" />
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-sm font-semibold text-[#0a0a0a]">
+                            {veiculo.passageiros_ativos_count ?? 0}
+                          </span>
+                          <span className="text-xs font-normal text-[#737373]">
+                            {(veiculo.passageiros_ativos_count ?? 0) === 1 ? "aluno" : "alunos"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-1.5">
-                      <Users2 className="w-4 h-4 text-[#737373]" />
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-semibold text-[#0a0a0a]">
-                          {veiculo.passageiros_ativos_count ?? 0}
-                        </span>
-                        <span className="text-xs font-normal text-[#737373]">
-                          {(veiculo.passageiros_ativos_count ?? 0) === 1 ? "aluno" : "alunos"}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <StatusBadge status={veiculo.ativo} />
-                  </td>
-                  <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
-                    <VeiculoActionsMenu
-                      veiculo={veiculo}
-                      navigate={navigate}
-                      onEdit={onEdit}
-                      onToggleAtivo={onToggleAtivo}
-                      onDelete={onDelete}
-                    />
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    {temPixAtivoNaConta && (
+                      <td className="px-6 py-4 align-middle">
+                        {pixInfo ? (
+                          <div className="flex flex-col">
+                            <span className="text-xs font-medium text-[#0a0a0a] tracking-tight">
+                              {pixInfo.chaveFormatada}
+                            </span>
+                            {!pixInfo.isPropria && (
+                              <span className="text-[10px] text-[#737373] font-normal">
+                                (Padrão da conta)
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#737373]">—</span>
+                        )}
+                      </td>
+                    )}
+                    <td className="px-6 py-4 align-middle">
+                      <StatusBadge status={veiculo.ativo} />
+                    </td>
+                    <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
+                      <VeiculoActionsMenu
+                        veiculo={veiculo}
+                        navigate={navigate}
+                        onEdit={onEdit}
+                        onToggleAtivo={onToggleAtivo}
+                        onDelete={onDelete}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

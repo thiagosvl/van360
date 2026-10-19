@@ -105,3 +105,27 @@ export function useToggleAtivoVeiculo() {
   });
 }
 
+export function useUpdatePixVeiculo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { chave_pix: string | null; tipo_chave_pix: string | null };
+    }) => veiculoApi.atualizarPixVeiculo(id, data),
+    onError: (error: unknown) => {
+      toast.error("cadastro.erro.atualizar", {
+        description: getErrorMessage(error, "Erro ao atualizar chave Pix do veículo."),
+      });
+    },
+    onSuccess: () => {
+      toast.success("Chave Pix do veículo atualizada!");
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+    },
+  });
+}
+

@@ -42,7 +42,6 @@ import { isContratoAtivoNaConta } from "@/utils/domain";
 
 export function usePassageirosViewModel() {
   const { can, isSubConta } = usePermissions();
-  const hasInitializedSubContaVeiculo = useRef(false);
   const {
     setPageTitle,
     openConfirmationDialog,
@@ -134,15 +133,6 @@ export function usePassageirosViewModel() {
     deletePassageiroMatricula.isPending ||
     toggleAtivoPassageiro.isPending;
 
-  useEffect(() => {
-    if (isSubConta && profile?.veiculo_id && !hasInitializedSubContaVeiculo.current) {
-      hasInitializedSubContaVeiculo.current = true;
-      if (!searchParams.has("veiculo") && setSelectedVeiculo) {
-        setSelectedVeiculo(profile.veiculo_id);
-      }
-    }
-  }, [isSubConta, profile?.veiculo_id, searchParams, setSelectedVeiculo]);
-
   const currentYear = new Date().getFullYear();
   const [selectedAnoLetivo, setSelectedAnoLetivo] = useState<number>(() => {
     const pAno = searchParams.get("ano");
@@ -173,14 +163,7 @@ export function usePassageirosViewModel() {
       usuarioId: profile?.id,
       search: debouncedSearchTerm,
       escola: selectedEscola === FilterDefaults.TODAS ? undefined : selectedEscola,
-      veiculo:
-        selectedVeiculo === FilterDefaults.TODOS
-          ? isSubConta && profile?.veiculo_id
-            ? profile.veiculo_id
-            : isSubConta
-              ? "all"
-              : undefined
-          : selectedVeiculo,
+      veiculo: selectedVeiculo === FilterDefaults.TODOS ? undefined : selectedVeiculo,
       status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
       periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
       ano_letivo: selectedAnoLetivo,
@@ -189,24 +172,15 @@ export function usePassageirosViewModel() {
     }),
     [
       profile?.id,
-      profile?.veiculo_id,
       debouncedSearchTerm,
       selectedEscola,
       selectedVeiculo,
       selectedStatus,
       selectedPeriodo,
       selectedAnoLetivo,
-      isSubConta,
       page,
       limit,
     ]
-  );
-
-  const isSubContaInitializingVeiculo = Boolean(
-    isSubConta &&
-    profile?.veiculo_id &&
-    !hasInitializedSubContaVeiculo.current &&
-    !searchParams.has("veiculo")
   );
 
   const {
@@ -216,7 +190,6 @@ export function usePassageirosViewModel() {
   } = usePassageiros(passageiroFilters, {
     enabled:
       !!profile?.id &&
-      !isSubContaInitializingVeiculo &&
       (can("passageiros.visualizar") || can("passageiros.gerenciar")),
     onError: () =>
       toast.error("passageiro.erro.carregar", {
