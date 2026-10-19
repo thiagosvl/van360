@@ -20,6 +20,7 @@ import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useUpdatePixVeiculo } from "@/hooks/api/useVeiculoMutations";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Key, Trash2 } from "lucide-react";
@@ -42,6 +43,7 @@ export default function EditarPixVeiculoDialog({
 }: EditarPixVeiculoDialogProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { financeiro } = useMotoristaFinanceiroApi();
   const updatePixMutation = useUpdatePixVeiculo();
 
   const [isRemoving, setIsRemoving] = useState(false);
@@ -85,9 +87,9 @@ export default function EditarPixVeiculoDialog({
   };
 
   const chavePadraoFormatada = (() => {
-    if (!profile?.chave_pix || !profile?.tipo_chave_pix) return null;
-    const tipo = profile.tipo_chave_pix as TipoChavePix;
-    let chave = profile.chave_pix;
+    if (!financeiro?.chave_pix_repasse || !financeiro?.tipo_chave_pix) return null;
+    const tipo = financeiro.tipo_chave_pix as TipoChavePix;
+    let chave = financeiro.chave_pix_repasse;
     if (tipo === TipoChavePix.CPF) chave = cpfMask(chave);
     else if (tipo === TipoChavePix.CNPJ) chave = cnpjMask(chave);
     else if (tipo === TipoChavePix.TELEFONE) chave = phoneMask(chave);

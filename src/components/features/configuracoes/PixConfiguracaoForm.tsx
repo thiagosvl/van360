@@ -61,8 +61,8 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
 
   useEffect(() => {
     if (profile || financeiro) {
-      const tipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
-      let chave = financeiro?.chave_pix_repasse || profile?.chave_pix || "";
+      const tipo = (financeiro?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
+      let chave = financeiro?.chave_pix_repasse || "";
 
       originalTipoRef.current = tipo || null;
       originalChaveRef.current = chave;
@@ -175,7 +175,7 @@ export const PixConfiguracaoForm = React.memo(function PixConfiguracaoForm({
   );
 
   const cobrancaAtivaWatch = Boolean(form.watch("modo_cobranca") === ModoCobrancaEnum.AUTOMATICA && isChavePixValida);
-  const temChavePix = Boolean(financeiro?.chave_pix_repasse || profile?.chave_pix);
+  const temChavePix = Boolean(financeiro?.chave_pix_repasse);
   const isBusy = form.formState.isSubmitting || isUpdating || isRemoving;
 
   useEffect(() => {

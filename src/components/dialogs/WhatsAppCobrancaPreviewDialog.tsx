@@ -2,6 +2,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { useLayout } from "@/contexts/LayoutContext";
 import { getDriverDisplayName } from "@/utils/formatters/user";
 import { KeyRound } from "lucide-react";
@@ -39,6 +40,7 @@ export function WhatsAppCobrancaPreviewDialog({
 }: WhatsAppCobrancaPreviewDialogProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { financeiro } = useMotoristaFinanceiroApi();
   const { openEditarPixDialog } = useLayout();
   const [activeTab, setActiveTab] = useState<"com_pix" | "sem_pix">("sem_pix");
 
@@ -49,7 +51,7 @@ export function WhatsAppCobrancaPreviewDialog({
     customDriverName ||
     getDriverDisplayName(profile, { fallback: "Tio(a) da Van" });
 
-  const activeChavePix = customChavePix !== undefined ? customChavePix : profile?.chave_pix;
+  const activeChavePix = customChavePix !== undefined ? customChavePix : financeiro?.chave_pix_repasse;
 
   const dialogTitle = isModoAutomatica
     ? "Cobrança com Baixa Automática"

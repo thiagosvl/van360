@@ -1,6 +1,4 @@
 import { useMemo } from "react";
-import { useSession } from "@/hooks/business/useSession";
-import { useProfile } from "@/hooks/business/useProfile";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { ModoCobrancaEnum } from "@/types/enums";
 import { Veiculo } from "@/types/veiculo";
@@ -15,14 +13,10 @@ export interface PixVeiculoInfo {
 }
 
 export function usePixVeiculoResolver() {
-  const { user } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
-  const { financeiro, isLoading: isFinanceiroLoading } = useMotoristaFinanceiroApi();
+  const { financeiro, isLoading } = useMotoristaFinanceiroApi();
 
-  const isLoading = isProfileLoading || isFinanceiroLoading;
-
-  const chavePadrao = financeiro?.chave_pix_repasse || profile?.chave_pix || null;
-  const tipoChavePadrao = financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null;
+  const chavePadrao = financeiro?.chave_pix_repasse || null;
+  const tipoChavePadrao = financeiro?.tipo_chave_pix || null;
   const modoCobranca = (financeiro?.modo_cobranca as ModoCobrancaEnum) || ModoCobrancaEnum.DESATIVADO;
 
   const temPixAtivoNaConta = Boolean(chavePadrao && modoCobranca !== ModoCobrancaEnum.DESATIVADO);

@@ -17,6 +17,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import { useConfiguracoes } from "@/hooks/api/useConfiguracoes";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import {
   usePasseioForm,
   type PasseioFormData,
@@ -51,9 +52,10 @@ export function PasseioFormDialog({
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id });
   const veiculos = veiculosData?.list || [];
   const { configuracoes } = useConfiguracoes();
+  const { financeiro } = useMotoristaFinanceiroApi();
 
-  const defaultPixKey = configuracoes?.chave_pix || profile?.chave_pix || "";
-  const defaultPixType = (profile?.tipo_chave_pix as TipoChavePix) || null;
+  const defaultPixKey = financeiro?.chave_pix_repasse || configuracoes?.chave_pix || "";
+  const defaultPixType = (financeiro?.tipo_chave_pix as TipoChavePix) || (configuracoes?.tipo_chave_pix as TipoChavePix) || null;
   const form = usePasseioForm({ editingItem, defaultPixKey, defaultPixType });
   const criarMutation = useCriarFretamentoMutation();
   const atualizarMutation = useAtualizarFretamentoMutation();
@@ -346,10 +348,10 @@ export function PasseioFormDialog({
                         checked={!!field.value}
                         onCheckedChange={(checked) => {
                           field.onChange(checked);
-                          if (checked && !form.getValues("chave_pix") && profile?.chave_pix) {
-                            form.setValue("chave_pix", profile.chave_pix);
-                            if (profile.tipo_chave_pix) {
-                              form.setValue("tipo_chave_pix", profile.tipo_chave_pix as TipoChavePix);
+                          if (checked && !form.getValues("chave_pix") && financeiro?.chave_pix_repasse) {
+                            form.setValue("chave_pix", financeiro.chave_pix_repasse);
+                            if (financeiro.tipo_chave_pix) {
+                              form.setValue("tipo_chave_pix", financeiro.tipo_chave_pix as TipoChavePix);
                             }
                           }
                         }}
@@ -431,21 +433,21 @@ export function PasseioFormDialog({
                     />
                   </div>
 
-                  {profile?.chave_pix && form.watch("chave_pix") !== profile.chave_pix && (
+                  {financeiro?.chave_pix_repasse && form.watch("chave_pix") !== financeiro.chave_pix_repasse && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        form.setValue("chave_pix", profile.chave_pix || "");
-                        if (profile.tipo_chave_pix) {
-                          form.setValue("tipo_chave_pix", profile.tipo_chave_pix as TipoChavePix);
+                        form.setValue("chave_pix", financeiro.chave_pix_repasse || "");
+                        if (financeiro.tipo_chave_pix) {
+                          form.setValue("tipo_chave_pix", financeiro.tipo_chave_pix as TipoChavePix);
                         }
                       }}
                       className="text-xs text-[#0a0a0a] hover:bg-white h-7 px-2.5 rounded-[18px] gap-1 font-medium border border-transparent hover:border-[#e5e5e5]"
                     >
                       <Sparkles className="h-3.5 w-3.5 text-[#737373]" />
-                      <span>Usar PIX do perfil ({profile.chave_pix})</span>
+                      <span>Usar PIX da conta ({financeiro.chave_pix_repasse})</span>
                     </Button>
                   )}
                 </div>

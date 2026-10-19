@@ -26,8 +26,6 @@ export interface Usuario {
   email: string;
   telefone: string;
   data_nascimento?: string;
-  chave_pix?: string;
-  tipo_chave_pix?: string;
   logradouro?: string;
   numero?: string;
   bairro?: string;

@@ -103,11 +103,11 @@ export const PagamentosTab = memo(function PagamentosTab() {
 
   const isLoading = isProfileLoading || isFinanceiroLoading || isConfigLoading;
 
-  const temChavePix = Boolean(financeiro?.chave_pix_repasse || profile?.chave_pix);
+  const temChavePix = Boolean(financeiro?.chave_pix_repasse);
 
   const chavePixDisplay = useMemo(() => {
-    const tipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null) as TipoChavePix | null;
-    const chave = financeiro?.chave_pix_repasse || profile?.chave_pix || "";
+    const tipo = (financeiro?.tipo_chave_pix || null) as TipoChavePix | null;
+    const chave = financeiro?.chave_pix_repasse || "";
     if (!chave || !tipo) return null;
 
     let chaveFormatada = chave;
@@ -119,7 +119,7 @@ export const PagamentosTab = memo(function PagamentosTab() {
     const tipoLabel = TIPOS_CHAVE_PIX_LABEL[tipo] || tipo;
 
     return { tipo: tipoLabel, chave: chaveFormatada };
-  }, [financeiro?.tipo_chave_pix, financeiro?.chave_pix_repasse, profile?.tipo_chave_pix, profile?.chave_pix]);
+  }, [financeiro?.tipo_chave_pix, financeiro?.chave_pix_repasse]);
 
   const taxaEfetiva = financeiro?.taxa_efetiva ?? 2.9;
   const taxaFormatada = formatCurrency(taxaEfetiva);

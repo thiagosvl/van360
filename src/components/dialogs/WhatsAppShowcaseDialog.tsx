@@ -3,6 +3,7 @@ import { safeCloseDialog } from "@/hooks";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { getDriverDisplayName } from "@/utils/formatters/user";
 import { WhatsAppShowcaseEmulator, ShowcaseTabType } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 
@@ -23,6 +24,7 @@ export function WhatsAppShowcaseDialog({
 }: WhatsAppShowcaseDialogProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { financeiro } = useMotoristaFinanceiroApi();
 
   const activeDriverName =
     customDriverName ||
@@ -47,7 +49,7 @@ export function WhatsAppShowcaseDialog({
           driverName={activeDriverName}
           passageiroNome={passageiroNome}
           logoUrl={profile?.logo_url}
-          userChavePix={profile?.chave_pix}
+          userChavePix={financeiro?.chave_pix_repasse}
           layoutMode="tabs"
         />
       </BaseDialog.Body>

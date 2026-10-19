@@ -220,8 +220,8 @@ export const CarteirinhaCobrancas = ({
   const showAjusteBanner = !passageiro.isento && isIncomplete;
 
   const { modoCobranca: vanModoCobranca, financeiro } = useMotoristaFinanceiroUi();
-  const chavePixPadraoConta = financeiro?.chave_pix_repasse || profile?.chave_pix || null;
-  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null;
+  const chavePixPadraoConta = financeiro?.chave_pix_repasse || null;
+  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || null;
   const modoCobrancaEfetivo = passageiro.modo_cobranca || vanModoCobranca;
   const isModoComLembreteOuAuto =
     modoCobrancaEfetivo === ModoCobrancaEnum.AUTOMATICA ||

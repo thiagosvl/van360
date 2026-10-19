@@ -240,8 +240,8 @@ export function CobrancasList({
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { financeiro } = useMotoristaFinanceiroApi();
-  const chavePixPadraoConta = financeiro?.chave_pix_repasse || profile?.chave_pix || null;
-  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || null;
+  const chavePixPadraoConta = financeiro?.chave_pix_repasse || null;
+  const tipoChavePixPadraoConta = financeiro?.tipo_chave_pix || null;
   const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const {
     openCobrancaFormDialog,

@@ -54,8 +54,8 @@ export function useConfigurarCobrancaWizardViewModel({
     modalidade === WIZARD_MODALIDADE.AUTOMATICA ? true : null
   );
 
-  const initialTipo = (financeiro?.tipo_chave_pix || profile?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
-  const initialChave = financeiro?.chave_pix_repasse || profile?.chave_pix || "";
+  const initialTipo = (financeiro?.tipo_chave_pix || undefined) as TipoChavePix | undefined;
+  const initialChave = financeiro?.chave_pix_repasse || "";
 
   const [tipoChave, setTipoChave] = useState<TipoChavePix | undefined>(initialTipo);
   const [chavePix, setChavePix] = useState<string>(() => {
