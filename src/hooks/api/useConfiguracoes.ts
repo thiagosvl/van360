@@ -20,6 +20,7 @@ export interface ConfiguracoesUsuario {
   rastreamento_ativo: boolean;
   rastreamento_modo: "completo" | "apenas_proximo";
   formato_nome_responsavel?: "primeiro_nome" | "completo";
+  formato_nome_aluno?: "curto" | "completo";
   exibir_telefone_lista_alunos?: boolean;
   chave_pix: string | null;
   tipo_chave_pix: string | null;
@@ -42,6 +43,7 @@ export type UpdateConfiguracoesInput = Partial<
     | "rastreamento_ativo"
     | "rastreamento_modo"
     | "formato_nome_responsavel"
+    | "formato_nome_aluno"
     | "exibir_telefone_lista_alunos"
   >
 >;
@@ -76,7 +78,11 @@ export function useConfiguracoes() {
         });
       }
 
-      if (newConfig.formato_nome_responsavel !== undefined || newConfig.exibir_telefone_lista_alunos !== undefined) {
+      if (
+        newConfig.formato_nome_responsavel !== undefined ||
+        newConfig.formato_nome_aluno !== undefined ||
+        newConfig.exibir_telefone_lista_alunos !== undefined
+      ) {
         queryClient.setQueriesData({ queryKey: ["profile"] }, (oldProfile: Usuario | undefined) => {
           if (!oldProfile) return oldProfile;
           return {
@@ -84,6 +90,7 @@ export function useConfiguracoes() {
             configuracoes: {
               ...(oldProfile.configuracoes || {}),
               ...(newConfig.formato_nome_responsavel !== undefined ? { formato_nome_responsavel: newConfig.formato_nome_responsavel } : {}),
+              ...(newConfig.formato_nome_aluno !== undefined ? { formato_nome_aluno: newConfig.formato_nome_aluno } : {}),
               ...(newConfig.exibir_telefone_lista_alunos !== undefined ? { exibir_telefone_lista_alunos: newConfig.exibir_telefone_lista_alunos } : {}),
             },
           };

@@ -2,7 +2,8 @@ import { memo } from "react";
 import { User, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
-import { formatShortName, formatFirstName } from "@/utils/formatters";
+import { formatFirstName } from "@/utils/formatters";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 
 interface RenovacaoSemTelefoneCardProps {
   item: RenovacaoPassageiroItem;
@@ -13,7 +14,8 @@ export const RenovacaoSemTelefoneCard = memo(function RenovacaoSemTelefoneCard({
   item,
   onCadastrarResponsavel,
 }: RenovacaoSemTelefoneCardProps) {
-  const shortName = formatShortName(item.nome, true);
+  const { formatAlunoNome } = useAppPreferences();
+  const alunoNome = formatAlunoNome(item.nome);
   const respName = item.responsavel_principal?.nome
     ? formatFirstName(item.responsavel_principal.nome)
     : null;
@@ -25,7 +27,7 @@ export const RenovacaoSemTelefoneCard = memo(function RenovacaoSemTelefoneCard({
         {item.foto_url ? (
           <img
             src={item.foto_url}
-            alt={shortName}
+            alt={alunoNome}
             className="h-10 w-10 rounded-full object-cover shrink-0 border border-[#e5e5e5]"
           />
         ) : (
@@ -36,7 +38,7 @@ export const RenovacaoSemTelefoneCard = memo(function RenovacaoSemTelefoneCard({
 
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-[#0a0a0a] text-sm leading-tight truncate">
-            {shortName}
+            {alunoNome}
           </h3>
 
           <div className="text-xs text-[#737373] truncate mt-1 flex items-center gap-1.5 font-normal">

@@ -16,12 +16,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import { useComplementarPagamentoViewModel } from "@/hooks/ui/useComplementarPagamentoViewModel";
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog, useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { ComplementarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import { Cobranca } from "@/types/cobranca";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
-import { formatCurrency, formatFirstName, formatShortName, getMesAbreviado } from "@/utils/formatters";
+import { formatCurrency, formatFirstName, getMesAbreviado } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, CreditCard, User, Wallet } from "lucide-react";
@@ -55,6 +55,7 @@ export default function ComplementarPagamentoDialog({
   observacao,
   onPaymentRecorded,
 }: ComplementarPagamentoDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const {
     form,
     openCalendar,
@@ -108,7 +109,7 @@ export default function ComplementarPagamentoDialog({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-foreground leading-tight truncate">
-                  {formatShortName(passageiroNome, true)}
+                  {formatAlunoNome(passageiroNome)}
                 </p>
                 {responsavelNome && (
                   <p className="text-[11px] text-muted-foreground font-medium leading-tight truncate mt-0.5">

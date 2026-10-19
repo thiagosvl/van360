@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
 import { ContratoListItem } from "@/types/contract";
 import { Passageiro } from "@/types/passageiro";
-import { formatShortName } from "@/utils/formatters";
 import { formatFirstName } from "@/utils/formatters/name";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 
 interface ImportarContratoDialogProps {
   isOpen: boolean;
@@ -34,6 +34,7 @@ export function ImportarContratoDialog({
   passageiro,
   onSuccess,
 }: ImportarContratoDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const { user } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
@@ -234,7 +235,7 @@ export function ImportarContratoDialog({
                   <p className="text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
                     {isLoadingFixed && !currentSelectedPassageiro?.nome
                       ? "Carregando aluno..."
-                      : (currentSelectedPassageiro?.nome ? formatShortName(currentSelectedPassageiro.nome, true) : "Aluno selecionado")}
+                      : (currentSelectedPassageiro?.nome ? formatAlunoNome(currentSelectedPassageiro.nome) : "Aluno selecionado")}
                   </p>
                   <p className="text-xs text-[#737373] font-normal truncate mt-0.5">
                     {currentSelectedPassageiro?.responsavel_principal?.nome
@@ -314,7 +315,7 @@ export function ImportarContratoDialog({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-[#0a0a0a] truncate">
-                            {formatShortName(p.nome, true)}
+                            {formatAlunoNome(p.nome)}
                           </p>
                           {respPrimeiroNome && (
                             <p className="text-[11px] text-[#737373] font-normal mt-0.5 truncate">

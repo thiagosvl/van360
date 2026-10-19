@@ -4,8 +4,9 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { formatarEnderecoParcialRota } from "@/utils/formatters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import type { ItineraryItem } from "@/hooks/ui/useConfigurarRotaViewModel";
 import type { Passageiro } from "@/types/passageiro";
@@ -37,6 +38,7 @@ export function AdicionarParadaDialog({
   onOpenCadastrarEndereco,
   onAddEscola,
 }: AdicionarParadaDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const [activeTab, setActiveTab] = useState<"passageiros" | "escolas">("passageiros");
   const [searchAlunos, setSearchAlunos] = useState("");
   const [searchEscolas, setSearchEscolas] = useState("");
@@ -205,7 +207,7 @@ export function AdicionarParadaDialog({
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="text-xs font-semibold text-[#0a0a0a] truncate">
-                              {formatShortName(p.nome, true)}
+                              {formatAlunoNome(p.nome)}
                             </span>
                             {p.turma && (
                               <span className="text-[#737373] font-normal text-[10px] inline-flex items-center gap-1 shrink-0">
@@ -247,7 +249,7 @@ export function AdicionarParadaDialog({
                       <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="text-xs font-semibold text-[#0a0a0a] truncate">
-                            {formatShortName(p.nome, true)}
+                            {formatAlunoNome(p.nome)}
                           </span>
                           {p.turma && (
                             <span className="text-[#737373] font-normal text-[10px] inline-flex items-center gap-1 shrink-0">

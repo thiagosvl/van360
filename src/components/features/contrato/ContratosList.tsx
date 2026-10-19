@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus, ContratoTab } from "@/types/enums";
-import { formatShortName } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { useAppPreferences } from "@/hooks";
 import { Clock, Download, Eye, FileCheck2, FileSignature, FileText, FileX2, Loader2, User, Users } from "lucide-react";
@@ -114,7 +113,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     onVisualizarFinal,
   });
 
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
 
   const isSemContrato = item.tipo === "passageiro";
   const isImportado = item?.provider === ContratoProvider.IMPORTADO;
@@ -154,7 +153,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-[#0a0a0a] text-sm truncate leading-snug">
-              {formatShortName(nomeExibicao, true)}
+              {formatAlunoNome(nomeExibicao)}
             </span>
             <span
               className={cn(
@@ -201,7 +200,7 @@ export const ContratosList = memo(function ContratosList({
   isDownloading,
   ...actions
 }: ContratosListProps) {
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
 
   const getEmptyState = () => {
     if (busca) {
@@ -317,7 +316,7 @@ export const ContratosList = memo(function ContratosList({
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-[#0a0a0a] text-sm truncate">
-                          {formatShortName(nomePassageiro, true)}
+                          {formatAlunoNome(nomePassageiro)}
                         </span>
                         <span
                           className={cn(

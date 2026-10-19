@@ -4,12 +4,8 @@ import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
-import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Pencil, User } from "lucide-react";
-
+import { PassageiroFormModes } from "@/types/enums";
+import { Pencil } from "lucide-react";
 import { safeCloseDialog } from "@/hooks";
 
 interface CobrancaEditDialogProps {

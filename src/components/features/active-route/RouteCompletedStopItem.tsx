@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, School, UserMinus, RotateCcw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RouteNodeType, RouteStopStatus, RouteSentido, RouteExecutionPassenger } from "@/types/route";
-import { formatShortName } from "@/utils/formatters";
+import { formatNomeAlunoExibicao } from "@/utils/formatters/name";
 
 interface RouteCompletedStopItemProps {
   parada: RouteExecutionPassenger | any;
@@ -67,7 +67,7 @@ export function RouteCompletedStopItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#0a0a0a] break-words">
-              {isEscolaItem ? parada.escola?.nome : formatShortName(parada.passageiro?.nome || parada.nome, true)}
+              {isEscolaItem ? parada.escola?.nome : formatNomeAlunoExibicao(parada.passageiro?.nome || parada.nome)}
             </span>
           </div>
           <p className="text-[11px] text-[#737373] font-normal leading-tight mt-0.5">

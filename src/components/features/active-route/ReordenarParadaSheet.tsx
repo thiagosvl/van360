@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MapPin, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { RouteNodeType, ExecucaoParada } from "@/types/route";
-import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { formatNomeAlunoExibicao, formatarEnderecoParcialRota } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
 interface ReordenarParadaSheetProps {
@@ -52,7 +52,7 @@ const getNodeDisplayInfo = (node: any, escolasList?: any[]) => {
   } else {
     const passObj = node.passageiro || node;
     const rawName = node.passageiro?.nome || node.nome || "";
-    const name = formatShortName(rawName, true);
+    const name = formatNomeAlunoExibicao(rawName);
     const subtext = formatarEnderecoParcialRota(passObj) || "";
     return { name, subtext };
   }

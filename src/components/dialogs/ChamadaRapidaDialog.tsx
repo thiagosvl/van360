@@ -3,11 +3,11 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Users, Check, X, User } from "lucide-react";
 import { RouteStopStatus } from "@/types/route";
-import { formatShortName, getInitials } from "@/utils/formatters";
+import { getInitials } from "@/utils/formatters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 export interface EscolaChamadaItem {
@@ -37,6 +37,7 @@ export function ChamadaRapidaDialog({
   initialStatusMap,
   onSalvar,
 }: ChamadaRapidaDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const [statusMap, setStatusMap] = useState<Record<string, RouteStopStatus>>({});
   const [activeTab, setActiveTab] = useState<string>("");
 
@@ -181,7 +182,7 @@ export function ChamadaRapidaDialog({
             activeAlunos.map((aluno) => {
               const currentStatus = statusMap[aluno.passageiroId] || RouteStopStatus.EMBARCADO;
               const isPresente = currentStatus === RouteStopStatus.EMBARCADO;
-              const nomeFormatado = formatShortName(aluno.nome, true);
+              const nomeFormatado = formatAlunoNome(aluno.nome);
 
               return (
                 <div

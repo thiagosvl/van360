@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
-import { formatCurrency, formatMonthYearToBR, formatShortName } from "@/utils/formatters";
+import { formatCurrency, formatMonthYearToBR } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { useAppPreferences } from "@/hooks";
@@ -14,7 +14,7 @@ interface ContratoSummaryProps {
 }
 
 export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const nomePassageiro = item.passageiro?.nome || item.nome;
   const respObj = item.passageiro?.responsavel_principal || item.responsavel_principal;
   const isMissingResponsible = isResponsavelIncompleto(respObj?.nome, respObj?.telefone);
@@ -74,7 +74,7 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
       </div>
 
       <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
-        {formatShortName(nomePassageiro, true)}
+        {formatAlunoNome(nomePassageiro)}
       </h2>
 
       {nomeResponsavel ? (

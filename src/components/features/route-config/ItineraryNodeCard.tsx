@@ -3,7 +3,7 @@ import { School, Trash2, ArrowUp, ArrowDown, Info, Plus, Home, ListOrdered } fro
 import { RouteNodeType, RouteSentido } from "@/types/route";
 import { Passageiro } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
-import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { formatarEnderecoParcialRota, formatNomeAlunoExibicao } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 import { toast } from "@/utils/notifications/toast";
 
@@ -121,7 +121,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                             <div className="text-xs leading-snug">
                               <span className="font-semibold text-[#0a0a0a]">⬇️ Desembarque ({desces.length}): </span>
                               <span className="text-[#737373] font-normal">
-                                {desces.map(d => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
+                                {desces.map(d => formatNomeAlunoExibicao(d.passageiro?.nome || d.nome || "")).join(", ")}
                               </span>
                             </div>
                           )}
@@ -129,7 +129,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                             <div className="text-xs leading-snug">
                               <span className="font-semibold text-[#0a0a0a]">⬆️ Embarque ({subes.length}): </span>
                               <span className="text-[#737373] font-normal">
-                                {subes.map(s => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
+                                {subes.map(s => formatNomeAlunoExibicao(s.passageiro?.nome || s.nome || "")).join(", ")}
                               </span>
                             </div>
                           )}
@@ -145,7 +145,7 @@ export const ItineraryNodeCard: React.FC<ItineraryNodeCardProps> = ({
                   <div className="flex-1 min-w-0 pr-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-semibold text-sm text-[#0a0a0a] break-words leading-snug">
-                        {formatShortName(item.nome, true)}
+                        {formatNomeAlunoExibicao(item.nome)}
                       </span>
                       {nodeError && (
                         <button

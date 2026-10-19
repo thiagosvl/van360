@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MapPin, School, User, Check, UserMinus, ArrowUp, ArrowDown, Loader2, Play, UserCheck, CheckCheck, ListOrdered, Users, ChevronDown } from "lucide-react";
 import { RouteNodeType, RouteStopStatus, RouteSentido, ExecucaoParada } from "@/types/route";
-import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { formatarEnderecoParcialRota } from "@/utils/formatters";
 import { podeReordenarParada } from "@/utils/domain/route/routeRules";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
 
@@ -64,6 +65,7 @@ export function ActiveRouteCurrentCard({
   onOpenChamadaDialog,
   onOpenReordenarSheet,
 }: ActiveRouteCurrentCardProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const [isEmbarquesExpanded, setIsEmbarquesExpanded] = useState(false);
   const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
   const displayOrdem = parada.ordem || 0;
@@ -274,7 +276,7 @@ export function ActiveRouteCurrentCard({
                                 <div className="flex items-center gap-2 min-w-0 pr-2">
                                   <User className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                                   <span className="text-xs font-medium text-[#0a0a0a]">
-                                    {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
+                                    {formatAlunoNome(aluno.passageiro?.nome || aluno.nome)}
                                   </span>
                                 </div>
                                 {isPendente ? (
@@ -339,7 +341,7 @@ export function ActiveRouteCurrentCard({
                         <div className="flex items-center gap-2 min-w-0 pr-2">
                           <User className="w-3.5 h-3.5 text-[#737373] shrink-0" />
                           <span className="text-xs font-medium text-[#0a0a0a]">
-                            {formatShortName(aluno.passageiro?.nome || aluno.nome, true)}
+                            {formatAlunoNome(aluno.passageiro?.nome || aluno.nome)}
                           </span>
                         </div>
                         {isConcluido ? (
@@ -366,7 +368,7 @@ export function ActiveRouteCurrentCard({
           <div className="flex flex-col gap-1 text-left min-w-0">
             <div className="flex items-center justify-between gap-2 w-full">
               <span className="text-[#0a0a0a] font-bold text-base sm:text-lg tracking-tight block">
-                {formatShortName(parada.passageiro?.nome || parada.nome, true)}
+                {formatAlunoNome(parada.passageiro?.nome || parada.nome)}
               </span>
             </div>
 

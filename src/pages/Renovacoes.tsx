@@ -36,7 +36,8 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { getMonthNameBR } from "@/utils/dateUtils";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatFirstName, formatShortName } from "@/utils/formatters/name";
+import { formatFirstName } from "@/utils/formatters/name";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { Banner } from "@/components/ui/Banner";
 
 export default function Renovacoes() {
@@ -46,6 +47,7 @@ export default function Renovacoes() {
   });
 
   const { can } = usePermissions();
+  const { formatAlunoNome } = useAppPreferences();
   const canManage = can("renovacoes.gerenciar");
   const isMobile = useIsMobile();
 
@@ -250,7 +252,7 @@ export default function Renovacoes() {
         description: (
           <div className="space-y-3">
             <p>
-              A vaga de <strong>{formatShortName(nomeAluno, true)}</strong> será confirmada para o ano letivo de <strong>{anoDestino}</strong> e a matrícula será gerada imediatamente.
+              A vaga de <strong>{formatAlunoNome(nomeAluno)}</strong> será confirmada para o ano letivo de <strong>{anoDestino}</strong> e a matrícula será gerada imediatamente.
             </p>
           </div>
         ),
@@ -288,7 +290,7 @@ export default function Renovacoes() {
         description: (
           <div className="space-y-3">
             <p>
-              Tem certeza que deseja marcar a vaga de <strong>{formatShortName(nomeAluno, true)}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
+              Tem certeza que deseja marcar a vaga de <strong>{formatAlunoNome(nomeAluno)}</strong> como não renovada para o ano letivo de <strong>{anoDestino}</strong>?
               {eraConfirmado ? ` A matrícula de ${anoDestino} será removida.` : ""}
             </p>
             {temContrato && (
@@ -335,7 +337,7 @@ export default function Renovacoes() {
         description: (
           <div className="space-y-3">
             <p>
-              A vaga de <strong>{formatShortName(nomeAluno, true)}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
+              A vaga de <strong>{formatAlunoNome(nomeAluno)}</strong> voltará para o status pendente para o ano letivo de <strong>{anoDestino}</strong>.
               {eraConfirmado ? ` A matrícula de ${anoDestino} será removida até nova confirmação.` : ""}
             </p>
             {temContrato && (

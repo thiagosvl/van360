@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
-import { formatCurrency, formatShortName, formatFirstName } from "@/utils/formatters";
+import { formatCurrency, formatFirstName } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { buildRenovacaoWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
@@ -22,6 +22,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNotificarLoteRenovacao } from "@/hooks/api/useRenovacoes";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
   onOpenEditarReserva,
   isUpdating,
 }: RenovacaoPassengerCardProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const [isExpanded, setIsExpanded] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
@@ -159,7 +161,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
     await openBrowserLink(url);
   };
 
-  const shortName = formatShortName(item.nome, true);
+  const alunoNome = formatAlunoNome(item.nome);
   const respName = item.responsavel_principal?.nome
     ? formatFirstName(item.responsavel_principal.nome)
     : null;
@@ -183,14 +185,14 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
             disabled={isUpdating}
             onCheckedChange={() => onToggleSelect(item.passageiro_id)}
             onClick={(e) => e.stopPropagation()}
-            aria-label={`Selecionar ${shortName}`}
+            aria-label={`Selecionar ${alunoNome}`}
             className="h-4 w-4 rounded-[5px] border-[#d4d4d4] data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shrink-0 cursor-pointer"
           />
 
           {item.foto_url ? (
             <img
               src={item.foto_url}
-              alt={shortName}
+              alt={alunoNome}
               className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0 border border-[#e5e5e5]"
             />
           ) : (
@@ -201,7 +203,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
 
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-[#0a0a0a] text-sm leading-tight">
-              {shortName}
+              {alunoNome}
             </h3>
 
             <div className="flex items-center gap-1.5 text-xs text-[#737373] font-normal truncate mt-0.5">

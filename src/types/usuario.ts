@@ -65,6 +65,7 @@ export interface Usuario {
 
   configuracoes?: {
     formato_nome_responsavel?: "primeiro_nome" | "completo";
+    formato_nome_aluno?: "curto" | "completo";
     exibir_telefone_lista_alunos?: boolean;
   };
 }

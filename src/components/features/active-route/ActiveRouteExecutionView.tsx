@@ -16,7 +16,8 @@ import { ActiveRouteUpcomingCard } from "./ActiveRouteUpcomingCard";
 import { ReordenarParadaSheet } from "./ReordenarParadaSheet";
 import { ChamadaEscolaDialog } from "@/components/dialogs/ChamadaEscolaDialog";
 import ConfirmStartRouteDialog from "@/components/dialogs/ConfirmStartRouteDialog";
-import { formatFirstName, formatShortName } from "@/utils/formatters/name";
+import { formatFirstName } from "@/utils/formatters/name";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { useProcessarChamadaEscola, useDeleteRoute } from "@/hooks/api/useRouteMutations";
 import { formatarEnderecoParcialRota } from "@/utils/formatters/address";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
@@ -123,6 +124,7 @@ export function ActiveRouteExecutionView({
   });
 
   const { can } = usePermissions();
+  const { formatAlunoNome } = useAppPreferences();
 
   const removerAusenciaMutation = useRemoverAusenciaMutation();
   const [desfazendoStopId, setDesfazendoStopId] = useState<string | null>(null);
@@ -130,7 +132,7 @@ export function ActiveRouteExecutionView({
   const handleDesfazerParada = (parada: any) => {
     const isAusente = parada.status === RouteStopStatus.AUSENTE || parada.is_ausente;
     const isEscola = parada.tipo_no === RouteNodeType.ESCOLA;
-    const nomeItem = isEscola ? (parada.escola?.nome || "Escola") : formatShortName(parada.passageiro?.nome || parada.nome);
+    const nomeItem = isEscola ? (parada.escola?.nome || "Escola") : formatAlunoNome(parada.passageiro?.nome || parada.nome);
 
     const dialogTitle = isAusente
       ? "Desfazer Ausência?"

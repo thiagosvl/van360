@@ -18,7 +18,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { parseLocalDate, getShortWeekDayBR, getNowBR, toPersistenceString } from "@/utils/dateUtils";
-import { formatShortName, getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
+import { getInitials, formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { toast } from "@/utils/notifications/toast";
 import { Calendar, CalendarCheck2, Bus, User, UserPlus, ChevronDown, Loader2, Search, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -118,7 +118,7 @@ export function ProximasAusenciasDialog({
 
   const { user } = useSession();
   const { donoContaId } = useProfile(user?.id);
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const usuarioId = donoContaId || user?.id || "";
 
   const queryClient = useQueryClient();
@@ -426,7 +426,7 @@ export function ProximasAusenciasDialog({
 
         <div className="flex flex-col min-w-0 flex-1">
           <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
-            {formatShortName(aluno.nome, true)}
+            {formatAlunoNome(aluno.nome)}
           </span>
 
           {(aluno.turma || aluno.escolaNome) && (
@@ -572,7 +572,7 @@ export function ProximasAusenciasDialog({
                               <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <span className="truncate font-semibold text-[#0a0a0a]">
-                                    {formatShortName(aluno.nome, true)}
+                                    {formatAlunoNome(aluno.nome)}
                                   </span>
                                   {aluno.turma && (
                                     <span className="text-[10px] text-[#737373] font-medium px-1.5 py-0.2 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] shrink-0">

@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, School, UserMinus, ArrowUp, ArrowDown, Loader2, Home, ListOrdered } from "lucide-react";
 import { RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
-import { formatShortName, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { formatarEnderecoParcialRota } from "@/utils/formatters";
 import { podeReordenarParada } from "@/utils/domain/route/routeRules";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
 
@@ -57,6 +58,7 @@ export function ActiveRouteUpcomingCard({
   onOpenReordenarSheet,
   chamadaRapidaSavedMap,
 }: ActiveRouteUpcomingCardProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const isEscolaItem = parada.tipo_no === RouteNodeType.ESCOLA;
   const pass = parada.passageiro;
   const responsaveisAdicionais = pass?.responsaveis || [];
@@ -107,7 +109,7 @@ export function ActiveRouteUpcomingCard({
                 <h4 className="text-sm font-semibold text-[#0a0a0a] break-words leading-snug">
                   {isEscolaItem
                     ? parada.escola?.nome
-                    : formatShortName(parada.passageiro?.nome || parada.nome || "", true)}
+                    : formatAlunoNome(parada.passageiro?.nome || parada.nome || "")}
                 </h4>
               </div>
               {!isEscolaItem && (
@@ -170,7 +172,7 @@ export function ActiveRouteUpcomingCard({
                     <span className="font-semibold text-[#0a0a0a]">⬇️ Desembarque ({descesAtivos.length}):{" "}</span>
                     {descesAtivos.length > 0 && (
                       <span className="text-[#737373] font-normal">
-                        {descesAtivos.map((d) => formatShortName(d.passageiro?.nome || d.nome || "", true)).join(", ")}
+                        {descesAtivos.map((d) => formatAlunoNome(d.passageiro?.nome || d.nome || "")).join(", ")}
                       </span>
                     )}
                   </div>
@@ -178,7 +180,7 @@ export function ActiveRouteUpcomingCard({
                     <span className="font-semibold text-[#0a0a0a]">⬆️ Embarque ({subesAtivos.length}):{" "}</span>
                     {subesAtivos.length > 0 && (
                       <span className="text-[#737373] font-normal">
-                        {subesAtivos.map((s) => formatShortName(s.passageiro?.nome || s.nome || "", true)).join(", ")}
+                        {subesAtivos.map((s) => formatAlunoNome(s.passageiro?.nome || s.nome || "")).join(", ")}
                       </span>
                     )}
                   </div>

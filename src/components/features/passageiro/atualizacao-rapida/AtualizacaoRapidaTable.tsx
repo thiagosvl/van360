@@ -4,13 +4,14 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 import { periodos } from "@/utils/formatters/periodo";
-import { formatShortName, formatFirstName } from "@/utils/formatters/name";
+import { formatFirstName } from "@/utils/formatters/name";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { ExternalLink } from "lucide-react";
 import { NativeSelect } from "@/components/ui/native-select";
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 export type AtualizacaoRapidaEditableField =
@@ -57,6 +58,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
   escolas,
   veiculos,
 }: AtualizacaoRapidaTableProps) {
+  const { formatAlunoNome } = useAppPreferences();
   return (
     <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
@@ -131,7 +133,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                       <div className="min-w-0">
                         <span className="font-semibold text-[#0a0a0a] block leading-tight text-xs truncate">
-                          {formatShortName(p.nome, true)}
+                          {formatAlunoNome(p.nome)}
                         </span>
                         <span className="text-[10px] text-[#737373] font-normal block truncate leading-tight mt-0.5">
                           {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Responsável não informado"}

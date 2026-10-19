@@ -69,7 +69,8 @@ import { buildReciboWhatsAppMessage, buildContratoWhatsAppUrl, buildContratoAssi
 import { Cobranca } from "@/types/cobranca";
 
 import { Passageiro } from "@/types/passageiro";
-import { formatFirstName, formatShortName } from "@/utils/formatters/name";
+import { formatFirstName } from "@/utils/formatters/name";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { getNowBR, getStartOfDayBR, parseLocalDate } from "@/utils/dateUtils";
 import {
   obterUrlDocumentoContrato,
@@ -106,6 +107,7 @@ export default function PassageiroCarteirinha() {
   } = useLayout();
   const { iniciarFluxoGerarContrato } = useGerarContratoFlow();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
+  const { formatAlunoNome } = useAppPreferences();
 
   const canViewFinancials =
     can(PERMISSIONS.FINANCEIRO_VISUALIZAR) ||
@@ -779,7 +781,7 @@ export default function PassageiroCarteirinha() {
       if (!passageiro_id) return;
       openCobrancaFormDialog({
         passageiroId: passageiro_id,
-        passageiroNome: formatShortName(passageiro?.nome, true),
+        passageiroNome: formatAlunoNome(passageiro?.nome),
         passageiroResponsavelNome: formatFirstName(passageiro?.responsavel_principal?.nome),
         valorCobranca: Number(passageiro?.valor_cobranca),
         diaVencimento: Number(passageiro?.dia_vencimento),

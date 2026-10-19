@@ -1,5 +1,5 @@
 import { Cobranca } from "@/types/cobranca";
-import { formatCurrency, formatDateToBR, formatShortName, formatDiasAtraso, getMesAbreviado } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR, formatDiasAtraso, getMesAbreviado } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ interface CobrancaSummaryProps {
 }
 
 export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummaryProps) => {
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const isProjection = cobranca.isProjection === true;
   const isCancelada = !isProjection && cobranca.status === CobrancaStatus.CANCELADA;
   const isPago = !isProjection && !isCancelada && cobranca.status === CobrancaStatus.PAGO;
@@ -62,7 +62,7 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
       </div>
 
       <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
-        {formatShortName(cobranca.passageiro?.nome, true)}
+        {formatAlunoNome(cobranca.passageiro?.nome)}
       </h2>
 
       {cobranca.passageiro?.responsavel_principal?.nome && (

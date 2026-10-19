@@ -21,9 +21,6 @@ import { safeCloseDialog, useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
-import {
-  formatShortName,
-} from "@/utils/formatters";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet, CalendarClock, History, MessageSquare } from "lucide-react";
@@ -132,8 +129,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
-  const { formatoNomeResponsavel } = useAppPreferences();
-  const shortName = formatShortName(cobranca?.passageiro?.nome, true);
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
+  const alunoNome = formatAlunoNome(cobranca?.passageiro?.nome);
   const firstNomeResponsavel = formatNomeResponsavelExibicao(respPrincipal?.nome, formatoNomeResponsavel);
 
   const statusColor = isPaid
@@ -172,7 +169,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
         <div className="flex-grow min-w-0 pr-20 sm:pr-24">
           <div className="flex items-center gap-1 min-w-0">
             <p className="font-semibold text-sm text-[#0a0a0a] truncate leading-tight">
-              {shortName}
+              {alunoNome}
             </p>
             {cobranca.observacao?.trim() && (
               <MessageSquare className="h-3.5 w-3.5 text-[#737373] shrink-0" />
@@ -236,7 +233,7 @@ export function CobrancasList({
 }: CobrancasListProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const {
     openCobrancaFormDialog,
     openConfirmationDialog,
@@ -269,7 +266,7 @@ export function CobrancasList({
 
     openCobrancaFormDialog({
       passageiroId: cobranca.passageiro_id,
-      passageiroNome: formatShortName(cobranca.passageiro?.nome, true),
+      passageiroNome: formatAlunoNome(cobranca.passageiro?.nome),
       passageiroResponsavelNome: formatNomeResponsavelExibicao(cobranca.passageiro?.responsavel_principal?.nome),
       valorCobranca: Number(cobranca.valor),
       diaVencimento: Number(cobranca.passageiro?.dia_vencimento || 10),
@@ -361,7 +358,7 @@ export function CobrancasList({
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
                 <p className="font-semibold text-sm text-[#0a0a0a]">
-                  {formatShortName(cobranca?.passageiro?.nome, true)}
+                  {formatAlunoNome(cobranca?.passageiro?.nome)}
                 </p>
                 {cobranca.observacao?.trim() && (
                   <MessageSquare className="h-3.5 w-3.5 text-[#737373] shrink-0" />

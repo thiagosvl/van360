@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { formatShortName } from "@/utils/formatters/name";
 import { User } from "lucide-react";
 import { Aniversariante } from "@/types/passageiro";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useAppPreferences } from "@/hooks";
 import { ROUTES } from "@/constants/routes";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 
@@ -14,6 +14,7 @@ interface PassageirosSemDataListProps {
 export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListProps) {
   const navigate = useNavigate();
   const { can } = usePermissions();
+  const { formatAlunoNome } = useAppPreferences();
   const canEditPassageiro = can("passageiros.gerenciar") || can("passageiros.visualizar");
 
   if (!passageiros || passageiros.length === 0) return null;
@@ -51,7 +52,7 @@ export function PassageirosSemDataList({ passageiros }: PassageirosSemDataListPr
                   "font-semibold text-xs sm:text-[13px] truncate leading-tight",
                   p.ativo === false ? "text-[#737373]" : "text-[#0a0a0a]"
                 )}>
-                  {formatShortName(p.nome, true)}
+                  {formatAlunoNome(p.nome)}
                 </span>
                 <span className="text-[11px] text-[#737373] font-normal truncate leading-tight mt-0.5">
                   {p.veiculo ? formatarPlacaExibicao(p.veiculo.placa) : (p.escola?.nome || "Sem vínculo")}

@@ -1,5 +1,5 @@
 import { PrePassageiro } from "@/types/prePassageiro";
-import { formatRelativeTime, formatShortName, formatarTelefone } from "@/utils/formatters";
+import { formatRelativeTime, formatarTelefone } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { useAppPreferences } from "@/hooks";
 import { Clock, Phone, User2 } from "lucide-react";
@@ -9,7 +9,7 @@ interface PrePassageiroSummaryProps {
 }
 
 export const PrePassageiroSummary = ({ prePassageiro }: PrePassageiroSummaryProps) => {
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const respName = formatNomeResponsavelExibicao(prePassageiro.nome_responsavel, formatoNomeResponsavel);
 
   return (
@@ -25,7 +25,7 @@ export const PrePassageiroSummary = ({ prePassageiro }: PrePassageiroSummaryProp
       </div>
 
       <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
-        {formatShortName(prePassageiro.nome, true)}
+        {formatAlunoNome(prePassageiro.nome)}
       </h2>
 
       {prePassageiro.created_at && (

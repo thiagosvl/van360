@@ -3,7 +3,8 @@ import { Route, School, Calendar, Timer } from "lucide-react";
 import { RouteCompletedStopItem } from "./RouteCompletedStopItem";
 import { cn } from "@/lib/utils";
 import { RouteExecutionStatus, RouteNodeType } from "@/types/route";
-import { formatShortName, formatarDuracao, formatarDataCurtaBR, formatarHoraMinuto } from "@/utils/formatters";
+import { formatarDuracao, formatarDataCurtaBR, formatarHoraMinuto } from "@/utils/formatters";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 
 interface ActiveRouteHistoryViewProps {
   execucao: any;
@@ -22,6 +23,7 @@ export function ActiveRouteHistoryView({
   totalStops,
   progressPercentage,
 }: ActiveRouteHistoryViewProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const isCancelada = execucao?.status === RouteExecutionStatus.CANCELADA;
 
   const displayParadasConcluidas = [...paradasConcluidas].sort((a, b) => a.ordem - b.ordem);
@@ -146,7 +148,7 @@ export function ActiveRouteHistoryView({
                   <h4 className="text-xs font-semibold text-left break-words leading-tight pr-2 text-[#0a0a0a]">
                     {isEscolaItem
                       ? `🏫 ${parada.escola?.nome}`
-                      : formatShortName(parada.passageiro?.nome || "", true)}
+                      : formatAlunoNome(parada.passageiro?.nome || "")}
                   </h4>
                   <p className="text-[10px] text-[#737373] font-normal leading-none mt-0.5 text-left truncate">
                     Parada não realizada

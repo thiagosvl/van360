@@ -10,7 +10,7 @@ import {
   FirstChargeStep as Step,
   useFirstChargeViewModel,
 } from "@/hooks/ui/useFirstChargeViewModel";
-import { formatShortName } from "@/utils/formatters";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { getNowBR } from "@/utils/dateUtils";
 
 export interface FirstChargeDialogProps {
@@ -45,13 +45,15 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
     isLoading,
   } = useFirstChargeViewModel({ passageiro, onClose, isOpen, isFirstPassageiro, onSuccess });
 
+  const { formatAlunoNome } = useAppPreferences();
+
   if (!isOpen || (!showContractStep && !showPaymentStep)) {
     return null;
   }
 
   const currentMonthName = getNowBR().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
-  const firstNamePassageiro = formatShortName(passageiro.nome);
+  const alunoNome = formatAlunoNome(passageiro.nome);
 
   const showSteps = showContractStep && showPaymentStep;
   const totalSteps = step === "PAYMENT_METHOD" ? 3 : 2;
@@ -107,7 +109,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
               </h3>
               <p className="text-xs text-[#737373] leading-relaxed">
                 Gostaria de gerar o contrato digital para{" "}
-                <strong className="text-[#0a0a0a] font-medium">{firstNamePassageiro}</strong>?
+                <strong className="text-[#0a0a0a] font-medium">{alunoNome}</strong>?
               </p>
             </div>
             <div className="space-y-2.5">
@@ -202,7 +204,7 @@ export default function FirstChargeDialog({ isOpen, onClose, passageiro, isFirst
                 A parcela de {currentMonthNameCapitalized} já foi paga?
               </h3>
               <p className="text-xs text-[#737373] leading-relaxed">
-                Defina o status inicial da parcela deste mês para {firstNamePassageiro}.
+                Defina o status inicial da parcela deste mês para {alunoNome}.
               </p>
             </div>
             <div className="space-y-2.5">

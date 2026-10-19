@@ -1,5 +1,5 @@
 import { RouteNodeType, RouteSentido, RouteStopStatus } from "@/types/route";
-import { formatShortName } from "@/utils/formatters";
+import { formatNomeAlunoExibicao } from "@/utils/formatters";
 
 export interface ItineraryNode {
   id: string;
@@ -165,7 +165,7 @@ export function gerarErrosPorNo(itinerario: ItineraryNode[]): Record<string, str
       const pass = item.passageiro;
       const escolaId = item.escola_id || pass?.escola_id || pass?.escola?.id;
       const alunoNome = pass?.nome || item.nome || "Aluno";
-      const nomeAluno = formatShortName(alunoNome, true);
+      const nomeAluno = formatNomeAlunoExibicao(alunoNome);
 
       if (!escolaId) continue;
 

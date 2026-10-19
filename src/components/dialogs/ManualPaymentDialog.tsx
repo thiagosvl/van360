@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { RegistrarPagamentoManualDTO } from "@/types/dtos/cobranca.dto";
 import { Cobranca } from "@/types/cobranca";
 import { getNowBR, parseLocalDate } from "@/utils/dateUtils";
-import { formatFirstName, formatShortName, getStatusColor, getStatusText } from "@/utils/formatters";
+import { formatFirstName, getStatusColor, getStatusText } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -62,7 +62,7 @@ export default function ManualPaymentDialog({
     onPaymentRecorded,
   });
 
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -94,7 +94,7 @@ export default function ManualPaymentDialog({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[#0a0a0a] leading-tight truncate">
-                  {formatShortName(passageiroNome, true)}
+                  {formatAlunoNome(passageiroNome)}
                 </p>
                 {responsavelNome && (
                   <p className="text-xs text-[#737373] font-normal leading-tight truncate mt-0.5">

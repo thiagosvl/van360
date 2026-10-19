@@ -27,7 +27,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { modalidades, periodos, formatCurrency, formatFirstName, formatShortName } from "@/utils/formatters";
+import { modalidades, periodos, formatCurrency, formatFirstName } from "@/utils/formatters";
+import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { monthOptions } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 
@@ -302,7 +303,7 @@ export function EditarReservaDialog({
         title={passageiro?.nome ? `Renovação • ${formatFirstName(passageiro.nome)}` : "Reserva de Vaga"}
         subtitle={
           passageiro?.responsavel_principal?.nome
-            ? `${formatShortName(passageiro.responsavel_principal.nome, true)}`
+            ? `${formatNomeResponsavelExibicao(passageiro.responsavel_principal.nome)}`
             : "Condições da proposta e valores para o próximo ano letivo"
         }
         icon={<Sparkles className="w-5 h-5 text-[#0a0a0a]" />}

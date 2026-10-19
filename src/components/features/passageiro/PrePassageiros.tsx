@@ -23,12 +23,10 @@ import {
 import { useProfile } from "@/hooks/business/useProfile";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { Passageiro } from "@/types/passageiro";
 import { cn } from "@/lib/utils";
 import {
   formatarTelefone,
   formatRelativeTime,
-  formatShortName,
   getInitials,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
@@ -73,7 +71,7 @@ export default function PrePassageiros({
   } = useLayout();
 
   const { profile } = useProfile();
-  const { formatoNomeResponsavel } = useAppPreferences();
+  const { formatoNomeResponsavel, formatAlunoNome } = useAppPreferences();
   const { data: resumo } = useUsuarioResumo(profile?.id);
 
   const totalPassageiros = countPassageirosProp ?? (resumo?.contadores?.passageiros?.ativos ?? resumo?.contadores?.passageiros?.total ?? 0);
@@ -150,13 +148,13 @@ export default function PrePassageiros({
     const actions: ActionItem[] = [
       ...(showReviewOption
         ? [
-            {
-              label: "Revisar",
-              icon: <Eye className="w-4 h-4" />,
-              description: "Finalizar cadastro do aluno",
-              onClick: () => handleFinalizeClick(prePassageiro),
-            },
-          ]
+          {
+            label: "Revisar",
+            icon: <Eye className="w-4 h-4" />,
+            description: "Finalizar cadastro do aluno",
+            onClick: () => handleFinalizeClick(prePassageiro),
+          },
+        ]
         : []),
       {
         label: "Excluir",
@@ -246,7 +244,7 @@ export default function PrePassageiros({
                         </div>
                         <div className="flex flex-col min-w-0">
                           <p className="font-semibold text-[#0a0a0a] text-sm truncate">
-                            {formatShortName(prePassageiro.nome, true)}
+                            {formatAlunoNome(prePassageiro.nome)}
                           </p>
                           <p className={cn(
                             "text-xs text-[#737373]",
@@ -344,7 +342,7 @@ export default function PrePassageiros({
                       </div>
                       <div className="flex flex-col min-w-0">
                         <p className="font-semibold text-[#0a0a0a] text-sm">
-                          {formatShortName(prePassageiro.nome, true)}
+                          {formatAlunoNome(prePassageiro.nome)}
                         </p>
                         <p className={cn(
                           "text-xs text-[#737373] mt-0.5",
@@ -368,7 +366,7 @@ export default function PrePassageiros({
                     <div className="flex-grow min-w-0 pr-2">
                       <div className="flex items-center gap-1.5">
                         <p className="font-semibold text-[#0a0a0a] text-sm truncate leading-tight">
-                          {formatShortName(prePassageiro.nome, true)}
+                          {formatAlunoNome(prePassageiro.nome)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-1">

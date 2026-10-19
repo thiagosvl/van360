@@ -13,7 +13,8 @@ import { TipoResponsavel } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { NavigationApp } from "@/constants";
 import { openExternalNavigation } from "@/utils/browser";
-import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota, formatShortName } from "@/utils/formatters";
+import { formatFirstName, formatParentesco, formatarEnderecoCompleto, formatarEnderecoParcialRota } from "@/utils/formatters";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 export interface AddressDialogData {
@@ -40,6 +41,7 @@ export function AddressDetailsDialog({
   selectedDialogRespTab,
   setSelectedDialogRespTab,
 }: AddressDetailsDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const isOpen = addressDialogData.open && addressDialogData.tipoNo === RouteNodeType.PASSAGEIRO;
 
   const openNavigation = (app: NavigationApp, address: string, lat?: number, lng?: number) => {
@@ -145,7 +147,7 @@ export function AddressDetailsDialog({
           <div>
             <span className="text-[11px] font-normal text-[#737373] block leading-none mb-0.5">Aluno</span>
             <h3 className="text-sm font-semibold text-[#0a0a0a] tracking-tight">
-              {formatShortName(pass?.nome || addressDialogData.title, true)}
+              {formatAlunoNome(pass?.nome || addressDialogData.title)}
             </h3>
           </div>
         </div>

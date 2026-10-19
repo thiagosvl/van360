@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users, Check, X, User } from "lucide-react";
 import { RouteStopStatus, ExecucaoParada, ChamadaEscolaItem } from "@/types/route";
-import { formatShortName, getInitials } from "@/utils/formatters";
+import { getInitials } from "@/utils/formatters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 interface ChamadaEscolaDialogProps {
@@ -25,6 +26,7 @@ export function ChamadaEscolaDialog({
   isSubmitting,
   onConfirmChamada,
 }: ChamadaEscolaDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const [statusMap, setStatusMap] = useState<Record<string, RouteStopStatus>>({});
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export function ChamadaEscolaDialog({
               const currentStatus = statusMap[aluno.id] || RouteStopStatus.EMBARCADO;
               const isPresente = currentStatus === RouteStopStatus.EMBARCADO;
               const nomeCompleto = aluno.passageiro?.nome || aluno.nome || "";
-              const nomeFormatado = formatShortName(nomeCompleto, true);
+              const nomeFormatado = formatAlunoNome(nomeCompleto);
               const turma = aluno.passageiro?.turma;
 
               return (

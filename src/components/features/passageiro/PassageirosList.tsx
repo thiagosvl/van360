@@ -13,7 +13,6 @@ import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatarTelefoneExibicao,
-  formatShortName,
   formatSala,
 } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
@@ -41,8 +40,8 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   PassageirosListProps,
   "passageiros"
 >) {
-  const { formatoNomeResponsavel, exibirTelefoneListaAlunos } = useAppPreferences();
-  const shortName = formatShortName(passageiro?.nome, true);
+  const { formatoNomeResponsavel, exibirTelefoneListaAlunos, formatAlunoNome } = useAppPreferences();
+  const alunoNome = formatAlunoNome(passageiro?.nome);
   const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome, formatoNomeResponsavel);
   const respTelefone = passageiro?.responsavel_principal?.telefone;
   const schoolName = passageiro.escola?.nome;
@@ -67,7 +66,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           "font-semibold text-sm leading-tight truncate",
           passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
         )}>
-          {shortName}
+          {alunoNome}
         </p>
         <div className="flex flex-col gap-0.5 mt-1 min-w-0">
           <p className="text-xs text-[#737373] truncate">
@@ -103,7 +102,7 @@ export function PassageirosList({
   ...props
 }: PassageirosListProps) {
   const { can } = usePermissions();
-  const { formatoNomeResponsavel, exibirTelefoneListaAlunos } = useAppPreferences();
+  const { formatoNomeResponsavel, exibirTelefoneListaAlunos, formatAlunoNome } = useAppPreferences();
   const canViewFinancials = can("financeiro.visualizar") || can("cobrancas.gerenciar") || can("passageiros.cobranca_visualizar");
 
   return (
@@ -148,7 +147,7 @@ export function PassageirosList({
           </TableHeader>
           <TableBody>
             {passageiros.map((passageiro) => {
-              const shortName = formatShortName(passageiro?.nome, true);
+              const alunoNome = formatAlunoNome(passageiro?.nome);
               const respName = formatNomeResponsavelExibicao(passageiro?.responsavel_principal?.nome, formatoNomeResponsavel);
 
               return (
@@ -175,7 +174,7 @@ export function PassageirosList({
                           "font-semibold text-sm truncate",
                           passageiro.ativo ? "text-[#0a0a0a]" : "text-[#737373]"
                         )}>
-                          {shortName}
+                          {alunoNome}
                         </p>
                         <p className={cn(
                           "text-xs text-[#737373] truncate",

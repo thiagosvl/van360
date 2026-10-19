@@ -6,7 +6,7 @@ import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { formatarTelefone } from "@/utils/formatters/phone";
-import { formatShortName } from "@/utils/formatters";
+import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { Loader2, Users, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +25,7 @@ export function ConfirmarDisparoWabaDialog({
   anoDestino,
   onSuccess,
 }: ConfirmarDisparoWabaDialogProps) {
+  const { formatAlunoNome } = useAppPreferences();
   const notificarMutation = useNotificarLoteRenovacao();
   const [isSending, setIsSending] = useState(false);
 
@@ -128,7 +129,7 @@ export function ConfirmarDisparoWabaDialog({
               </div>
             ) : (
               aptos.map((p) => {
-                const shortName = formatShortName(p.nome, true);
+                const alunoNome = formatAlunoNome(p.nome);
                 const tel = p.responsavel_principal?.telefone || "";
                 return (
                   <div
@@ -136,7 +137,7 @@ export function ConfirmarDisparoWabaDialog({
                     className="flex items-center justify-between px-3.5 py-2.5 text-xs"
                   >
                     <span className="font-semibold text-[#0a0a0a] truncate mr-2">
-                      {shortName}
+                      {alunoNome}
                     </span>
                     <span className="text-[#737373] font-mono shrink-0">
                       {formatarTelefone(tel)}
