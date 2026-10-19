@@ -179,26 +179,35 @@ export function ConfiguracoesToggleTabSkeleton({
 
 export function PreferenciasTabSkeleton() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px]" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-5 w-48 rounded-[8px]" />
-          <Skeleton className="h-3.5 w-72 rounded-[6px]" />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <Skeleton className="h-4 w-44 rounded-[8px]" />
-          <Skeleton className="h-3 w-64 rounded-[6px]" />
+    <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <Skeleton className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px]" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-48 rounded-[8px]" />
+            <Skeleton className="h-3.5 w-72 rounded-[6px]" />
+          </div>
         </div>
 
-        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 flex items-center justify-between">
-              <Skeleton className="h-4 w-32 rounded-[6px]" />
-              <Skeleton className="h-4 w-4 rounded-full" />
+        <div className="space-y-6">
+          {[1, 2, 3].map((section) => (
+            <div
+              key={section}
+              className={cn("space-y-3", section > 1 && "pt-5 border-t border-[#e5e5e5]")}
+            >
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-44 rounded-[8px]" />
+                <Skeleton className="h-3 w-64 rounded-[6px]" />
+              </div>
+
+              <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden">
+                {[1, 2].map((i) => (
+                  <div key={i} className="p-4 flex items-center justify-between">
+                    <Skeleton className="h-4 w-32 rounded-[6px]" />
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>

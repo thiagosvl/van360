@@ -63,26 +63,27 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
-          <SlidersHorizontal className="w-5 h-5 text-[#0a0a0a]" />
+    <div className="space-y-5 sm:space-y-6">
+      <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#e5e5e5] pb-4">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-[14px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
+            <SlidersHorizontal className="w-5 h-5 text-[#0a0a0a]" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+              Preferências do Aplicativo
+            </h2>
+            <p className="text-xs text-[#737373] mt-0.5">
+              Personalize a forma como as informações são apresentadas no seu aplicativo.
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
-            Preferências do Aplicativo
-          </h2>
-          <p className="text-xs text-[#737373] mt-0.5">
-            Personalize a forma como as informações são apresentadas no seu aplicativo.
-          </p>
-        </div>
-      </div>
 
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">
-            Exibição do Nome do Aluno
-          </h3>
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
+              Exibição do Nome do Aluno
+            </h3>
           <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
             Escolha como o nome do aluno deve ser apresentado nas listagens e telas do aplicativo.
           </p>
@@ -149,7 +150,7 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
         <div>
           <h3 className="text-sm font-semibold text-[#0a0a0a]">
             Exibição do Nome do Responsável
@@ -159,137 +160,138 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
           </p>
         </div>
 
-          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => handleSelectFormato("primeiro_nome")}
-              disabled={isBusy}
+        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => handleSelectFormato("primeiro_nome")}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              formatoAtual === "primeiro_nome" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
               className={cn(
-                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-                formatoAtual === "primeiro_nome" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                formatoAtual === "primeiro_nome"
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
               )}
             >
-              <div
-                className={cn(
-                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                  formatoAtual === "primeiro_nome"
-                    ? "border-primary bg-primary"
-                    : "border-[#e5e5e5] bg-transparent"
-                )}
-              >
-                {updatingKey === "primeiro_nome" ? (
-                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-                ) : formatoAtual === "primeiro_nome" ? (
-                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-                ) : null}
-              </div>
-              <span className="text-sm font-medium text-[#0a0a0a]">
-                Apenas Primeiro Nome
-              </span>
-            </button>
+              {updatingKey === "primeiro_nome" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : formatoAtual === "primeiro_nome" ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Apenas Primeiro Nome
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => handleSelectFormato("completo")}
-              disabled={isBusy}
+          <button
+            type="button"
+            onClick={() => handleSelectFormato("completo")}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              formatoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
               className={cn(
-                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-                formatoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                formatoAtual === "completo"
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
               )}
             >
-              <div
-                className={cn(
-                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                  formatoAtual === "completo"
-                    ? "border-primary bg-primary"
-                    : "border-[#e5e5e5] bg-transparent"
-                )}
-              >
-                {updatingKey === "completo" ? (
-                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-                ) : formatoAtual === "completo" ? (
-                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-                ) : null}
-              </div>
-              <span className="text-sm font-medium text-[#0a0a0a]">
-                Nome Completo
-              </span>
-            </button>
-          </div>
+              {updatingKey === "completo" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : formatoAtual === "completo" ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Nome Completo
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+        <div>
+          <h3 className="text-sm font-semibold text-[#0a0a0a]">
+            Telefone do Responsável na Lista de Alunos
+          </h3>
+          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+            Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
+          </p>
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-[#0a0a0a]">
-              Telefone do Responsável na Lista de Alunos
-            </h3>
-            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
-              Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
-            </p>
-          </div>
-
-          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => handleToggleTelefone(false)}
-              disabled={isBusy}
+        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => handleToggleTelefone(false)}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              !exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
               className={cn(
-                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-                !exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                !exibirTelefoneAtual
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
               )}
             >
-              <div
-                className={cn(
-                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                  !exibirTelefoneAtual
-                    ? "border-primary bg-primary"
-                    : "border-[#e5e5e5] bg-transparent"
-                )}
-              >
-                {updatingKey === "telefone_false" ? (
-                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-                ) : !exibirTelefoneAtual ? (
-                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-                ) : null}
-              </div>
-              <span className="text-sm font-medium text-[#0a0a0a]">
-                Não Exibir Telefone
-              </span>
-            </button>
+              {updatingKey === "telefone_false" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : !exibirTelefoneAtual ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Não Exibir Telefone
+            </span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => handleToggleTelefone(true)}
-              disabled={isBusy}
+          <button
+            type="button"
+            onClick={() => handleToggleTelefone(true)}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
               className={cn(
-                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-                exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                exibirTelefoneAtual
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
               )}
             >
-              <div
-                className={cn(
-                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                  exibirTelefoneAtual
-                    ? "border-primary bg-primary"
-                    : "border-[#e5e5e5] bg-transparent"
-                )}
-              >
-                {updatingKey === "telefone_true" ? (
-                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-                ) : exibirTelefoneAtual ? (
-                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-                ) : null}
-              </div>
-              <span className="text-sm font-medium text-[#0a0a0a]">
-                Exibir Telefone
-              </span>
-            </button>
-          </div>
+              {updatingKey === "telefone_true" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : exibirTelefoneAtual ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Exibir Telefone
+            </span>
+          </button>
         </div>
+      </div>
     </div>
+  </div>
   );
 });
