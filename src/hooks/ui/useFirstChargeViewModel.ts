@@ -5,7 +5,7 @@ import { CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { calculateSafeDueDate, toLocalDateString, getNowBR, toISODateTimeBR } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useCreateContrato } from "@/hooks/api/useContratos";
@@ -14,7 +14,7 @@ import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { shouldGeneratePassengerProjection } from "@/utils/domain/cobrancaProjection";
-import { isContratoAtivoNaConta } from "@/utils/domain";
+import { isContratoAtivoNaConta, hasPendenciasParaGerarContrato } from "@/utils/domain";
 
 interface FirstChargeViewModelProps {
   passageiro: Passageiro;
@@ -49,6 +49,7 @@ export function useFirstChargeViewModel({
   const [wantsContract, setWantsContract] = useState<boolean>(false);
   const [notificarResponsavel, setNotificarResponsavel] = useState<boolean>(true);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+  const contractCreationTriggeredRef = useRef(false);
 
   const [customValue] = useState<string>(
     passageiro.valor_cobranca ? String(passageiro.valor_cobranca) : "",
@@ -61,6 +62,7 @@ export function useFirstChargeViewModel({
 
   useEffect(() => {
     if (isOpen) {
+      contractCreationTriggeredRef.current = false;
       setStep(showContractStep ? "CONTRACT_CHECK" : "PAYMENT_STATUS");
       setPaymentStatus(null);
       setPaymentMethod("");
@@ -150,21 +152,32 @@ export function useFirstChargeViewModel({
       }
 
       if (wantsContract) {
-        openGerarContratoValidadorDialog({
-          passageiroId: passageiro.id!,
-          initialPassageiro: passageiro,
-          onSuccess: async (id, _bypassed, updatedValues, updatedPassageiro) => {
-            const finalPass = updatedPassageiro || passageiro;
-            await createContrato.mutateAsync({
-              passageiroId: id,
-              valorMensal: updatedValues?.valorMensal,
-              diaVencimento: updatedValues?.diaVencimento,
-              dataInicio: finalPass?.data_inicio_transporte || undefined,
-              dataFim: finalPass?.data_fim_transporte || undefined,
-              notificarResponsavel: notificarResponsavel === true,
-            });
-          }
-        });
+        if (!hasPendenciasParaGerarContrato(passageiro)) {
+          await createContrato.mutateAsync({
+            passageiroId: passageiro.id,
+            valorMensal: passageiro.valor_cobranca ? Number(passageiro.valor_cobranca) : undefined,
+            diaVencimento: passageiro.dia_vencimento ? Number(passageiro.dia_vencimento) : undefined,
+            dataInicio: passageiro.data_inicio_transporte || undefined,
+            dataFim: passageiro.data_fim_transporte || undefined,
+            notificarResponsavel: notificarResponsavel === true,
+          });
+        } else {
+          openGerarContratoValidadorDialog({
+            passageiroId: passageiro.id!,
+            initialPassageiro: passageiro,
+            onSuccess: async (id, _bypassed, updatedValues, updatedPassageiro) => {
+              const finalPass = updatedPassageiro || passageiro;
+              await createContrato.mutateAsync({
+                passageiroId: id,
+                valorMensal: updatedValues?.valorMensal,
+                diaVencimento: updatedValues?.diaVencimento,
+                dataInicio: finalPass?.data_inicio_transporte || undefined,
+                dataFim: finalPass?.data_fim_transporte || undefined,
+                notificarResponsavel: notificarResponsavel === true,
+              });
+            }
+          });
+        }
       }
       safeCloseDialog(onClose);
       if (onSuccess) {

@@ -201,7 +201,7 @@ export function QuickStartPassageiroDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={(open) => !open && handleCloseDialog()}
-      maxWidth={isCompleto ? "2xl" : "2xl"}
+      maxWidth={isCompleto ? "2xl" : "lg"}
     >
       <BaseDialog.Header
         title="Cadastro de Aluno"
@@ -359,82 +359,78 @@ export function QuickStartPassageiroDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-5 gap-3">
-                <div className="col-span-3">
-                  <FormField
-                    control={form.control}
-                    name="veiculo_id"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                          Veículo <span className="text-[#e7000b]">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <NativeSelect
-                            value={field.value || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === "add-new-vehicle") {
-                                openVeiculoFormDialog({
-                                  allowBatchCreation: false,
-                                  onSuccess: (veiculo) => {
-                                    if (veiculo?.id) {
-                                      setNewVeiculo(veiculo);
-                                      form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
-                                    }
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="veiculo_id"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Veículo <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "add-new-vehicle") {
+                              openVeiculoFormDialog({
+                                allowBatchCreation: false,
+                                onSuccess: (veiculo) => {
+                                  if (veiculo?.id) {
+                                    setNewVeiculo(veiculo);
+                                    form.setValue("veiculo_id", veiculo.id, { shouldValidate: true });
                                   }
-                                });
-                              } else {
-                                field.onChange(val);
-                              }
-                            }}
-                            icon={<Car className="h-4 w-4 text-[#737373]" />}
-                            error={!!fieldState.error}
-                          >
-                            <option value="">Selecionar</option>
-                            {veiculosDisplay.map((v) => (
-                              <option key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</option>
-                            ))}
-                            <option value="add-new-vehicle">
-                              + Cadastrar Veículo
-                            </option>
-                          </NativeSelect>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                                }
+                              });
+                            } else {
+                              field.onChange(val);
+                            }
+                          }}
+                          icon={<Car className="h-4 w-4 text-[#737373]" />}
+                          error={!!fieldState.error}
+                        >
+                          <option value="">Selecionar</option>
+                          {veiculosDisplay.map((v) => (
+                            <option key={v.id} value={v.id}>{formatarPlacaExibicao(v.placa)}</option>
+                          ))}
+                          <option value="add-new-vehicle">
+                            + Cadastrar Veículo
+                          </option>
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="col-span-2">
-                  <FormField
-                    control={form.control}
-                    name="ano_letivo"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                          Ano Letivo <span className="text-[#e7000b]">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <NativeSelect
-                            value={field.value || ""}
-                            onChange={field.onChange}
-                            icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
-                            error={!!fieldState.error}
-                          >
-                            <option value="">Ano</option>
-                            {anoLetivoOptions.map((y) => (
-                              <option key={y} value={y}>
-                                {y}
-                              </option>
-                            ))}
-                          </NativeSelect>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="ano_letivo"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                        Ano Letivo <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          icon={<CalendarDays className="h-4 w-4 text-[#737373]" />}
+                          error={!!fieldState.error}
+                        >
+                          <option value="">Ano</option>
+                          {anoLetivoOptions.map((y) => (
+                            <option key={y} value={y}>
+                              {y}
+                            </option>
+                          ))}
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="flex items-center gap-3 p-3.5 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5]">

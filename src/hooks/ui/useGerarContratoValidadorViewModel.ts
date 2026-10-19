@@ -1,17 +1,15 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
 import { parseCurrencyToNumber } from "@/utils/formatters";
 import { cpfMask, phoneMask, moneyMask } from "@/utils/masks";
-import { parseLocalDate, getNowBR } from "@/utils/dateUtils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Passageiro } from "@/types/passageiro";
 import { usePassageiro } from "@/hooks/api/usePassageiro";
 import { useUpdatePassageiro } from "@/hooks/api/usePassageiroMutations";
 import { safeCloseDialog } from "@/hooks";
 import { toast } from "@/utils/notifications/toast";
-import { ParentescoResponsavel, PassageiroPeriodo } from "@/types/enums";
+import { ParentescoResponsavel } from "@/types/enums";
 import { avaliarPendenciasContrato } from "@/utils/domain";
 
 export const gerarContratoValidadorSchema = z
@@ -22,9 +20,6 @@ export const gerarContratoValidadorSchema = z
     parentesco_responsavel: z.string().optional(),
     valor_cobranca: z.union([z.number(), z.string()]).optional(),
     dia_vencimento: z.string().optional(),
-    periodo: z.string().optional(),
-    data_inicio_transporte: z.string().optional(),
-    data_fim_transporte: z.string().optional(),
   });
 
 export type ValidadorFormValues = z.infer<typeof gerarContratoValidadorSchema>;
@@ -52,13 +47,6 @@ function getInitialFormValues(passageiro?: Passageiro): ValidadorFormValues {
     parentesco_responsavel: resp?.parentesco || "",
     valor_cobranca: passageiro?.valor_cobranca ? moneyMask(passageiro.valor_cobranca) : "",
     dia_vencimento: passageiro?.dia_vencimento ? passageiro.dia_vencimento.toString() : "",
-    periodo: (passageiro?.periodo as PassageiroPeriodo) || "",
-    data_inicio_transporte: passageiro?.data_inicio_transporte
-      ? formatDateToBR(passageiro.data_inicio_transporte)
-      : "",
-    data_fim_transporte: passageiro?.data_fim_transporte
-      ? formatDateToBR(passageiro.data_fim_transporte)
-      : "",
   };
 }
 
@@ -78,8 +66,6 @@ export function useGerarContratoValidadorViewModel({
     initialData: initialPassageiro,
   });
 
-  const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
-  const [openCalendarFim, setOpenCalendarFim] = useState(false);
   const updatePassageiro = useUpdatePassageiro();
   const isSubmitting = updatePassageiro.isPending;
 
@@ -92,10 +78,6 @@ export function useGerarContratoValidadorViewModel({
     needsValor,
     needsVencimento,
     needsFinanceiroGroup,
-    needsDataInicio,
-    needsDataFim,
-    needsPeriodo,
-    needsTransporteGroup,
   } = useMemo(() => avaliarPendenciasContrato(passageiro), [passageiro]);
 
   const dynamicSchema = useMemo(() => {
@@ -162,54 +144,6 @@ export function useGerarContratoValidadorViewModel({
           });
         }
       }
-
-      if (needsPeriodo) {
-        if (!data.periodo || data.periodo.trim() === "") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Selecione o período escolar",
-            path: ["periodo"],
-          });
-        }
-      }
-
-      if (needsDataInicio) {
-        if (!data.data_inicio_transporte || data.data_inicio_transporte.trim() === "") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Data de início é obrigatória",
-            path: ["data_inicio_transporte"],
-          });
-        }
-      }
-
-      if (needsDataFim) {
-        if (!data.data_fim_transporte || data.data_fim_transporte.trim() === "") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Data de término é obrigatória",
-            path: ["data_fim_transporte"],
-          });
-        }
-      }
-
-      const inicioStr = data.data_inicio_transporte || (passageiro?.data_inicio_transporte ? formatDateToBR(passageiro.data_inicio_transporte) : "");
-      const fimStr = data.data_fim_transporte || (passageiro?.data_fim_transporte ? formatDateToBR(passageiro.data_fim_transporte) : "");
-
-      if (inicioStr && fimStr) {
-        try {
-          const start = parseLocalDate(convertDateBrToISO(inicioStr)!);
-          const end = parseLocalDate(convertDateBrToISO(fimStr)!);
-          if (end <= start) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Término deve ser maior que o Início",
-              path: ["data_fim_transporte"],
-            });
-          }
-        } catch {
-        }
-      }
     });
   }, [
     needsNomeResp,
@@ -218,11 +152,6 @@ export function useGerarContratoValidadorViewModel({
     needsParentesco,
     needsValor,
     needsVencimento,
-    needsPeriodo,
-    needsDataInicio,
-    needsDataFim,
-    passageiro?.data_inicio_transporte,
-    passageiro?.data_fim_transporte,
   ]);
 
   const form = useForm<ValidadorFormValues>({
@@ -230,32 +159,16 @@ export function useGerarContratoValidadorViewModel({
     defaultValues: getInitialFormValues(initialPassageiro),
   });
 
-  const onSuccessRef = useRef(onSuccess);
-  const onCloseRef = useRef(onClose);
   const lastLoadedPassengerIdRef = useRef<string | null>(null);
-  const hasBypassedRef = useRef(false);
-
-  useEffect(() => {
-    onSuccessRef.current = onSuccess;
-    onCloseRef.current = onClose;
-  }, [onSuccess, onClose]);
 
   useEffect(() => {
     if (!isOpen) {
-      hasBypassedRef.current = false;
       lastLoadedPassengerIdRef.current = null;
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || !passageiro || hasBypassedRef.current) return;
-
-    if (!needsResponsavelGroup && !needsFinanceiroGroup && !needsTransporteGroup) {
-      hasBypassedRef.current = true;
-      safeCloseDialog(onCloseRef.current);
-      onSuccessRef.current(passageiro.id, true, undefined, passageiro);
-      return;
-    }
+    if (!isOpen || !passageiro) return;
 
     if (lastLoadedPassengerIdRef.current !== passageiro.id) {
       lastLoadedPassengerIdRef.current = passageiro.id;
@@ -263,17 +176,10 @@ export function useGerarContratoValidadorViewModel({
     } else if (!form.formState.isDirty) {
       form.reset(getInitialFormValues(passageiro));
     }
-  }, [
-    isOpen,
-    passageiro,
-    form,
-    needsResponsavelGroup,
-    needsFinanceiroGroup,
-    needsTransporteGroup,
-  ]);
+  }, [isOpen, passageiro, form]);
 
   const handleSubmit = async (data: ValidadorFormValues) => {
-    if (!passageiroId || !passageiro) return;
+    if (!passageiroId || !passageiro || isSubmitting) return;
 
     try {
       const payload: Record<string, unknown> = {};
@@ -293,26 +199,6 @@ export function useGerarContratoValidadorViewModel({
 
       if (needsVencimento && data.dia_vencimento) {
         payload.dia_vencimento = Number(data.dia_vencimento);
-      }
-
-      if (needsPeriodo && data.periodo) {
-        payload.periodo = data.periodo;
-      }
-
-      if (needsDataInicio && data.data_inicio_transporte) {
-        payload.data_inicio_transporte = convertDateBrToISO(data.data_inicio_transporte);
-      }
-
-      if (needsDataFim && data.data_fim_transporte) {
-        payload.data_fim_transporte = convertDateBrToISO(data.data_fim_transporte);
-      }
-
-      if (!passageiro.data_inicio_cobranca && payload.data_inicio_transporte) {
-        payload.data_inicio_cobranca = payload.data_inicio_transporte;
-      }
-
-      if (!passageiro.data_fim_cobranca && payload.data_fim_transporte) {
-        payload.data_fim_cobranca = payload.data_fim_transporte;
       }
 
       const res = await updatePassageiro.mutateAsync({
@@ -343,22 +229,13 @@ export function useGerarContratoValidadorViewModel({
   };
 
   const handleFillMock = () => {
-    const today = getNowBR();
-    const endOfYear = new Date(today.getFullYear(), 11, 20);
-
-    const start = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-    const end = endOfYear.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-
     form.reset({
       nome_responsavel: "Fernanda Cristina Silva",
-      telefone_responsavel: "(11) 98765-4321",
+      telefone_responsavel: "(11) 95118-6951",
       cpf_responsavel: "395.423.918-38",
       parentesco_responsavel: ParentescoResponsavel.MAE,
       valor_cobranca: 350,
       dia_vencimento: "10",
-      periodo: PassageiroPeriodo.MANHA,
-      data_inicio_transporte: start,
-      data_fim_transporte: end,
     });
   };
 
@@ -372,10 +249,6 @@ export function useGerarContratoValidadorViewModel({
     isLoadingPassageiro,
     isSubmitting,
     handleSubmit,
-    openCalendarInicio,
-    setOpenCalendarInicio,
-    openCalendarFim,
-    setOpenCalendarFim,
     handleFillMock,
     onFormError,
     needsNomeResp,
@@ -386,9 +259,5 @@ export function useGerarContratoValidadorViewModel({
     needsValor,
     needsVencimento,
     needsFinanceiroGroup,
-    needsDataInicio,
-    needsDataFim,
-    needsPeriodo,
-    needsTransporteGroup,
   };
 }

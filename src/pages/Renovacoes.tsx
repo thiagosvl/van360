@@ -21,7 +21,7 @@ import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft, HelpCircle, Clock, Car, Settings2, ChevronDown } from "lucide-react";
+import { Users, ArrowLeft, HelpCircle, Clock, Settings2, ChevronDown } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
 import { PassageiroResponsavel } from "@/types/passageiro";
 import { Escola } from "@/types/escola";
@@ -33,8 +33,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { RenovacaoSkeleton } from "@/components/skeletons/RenovacaoSkeleton";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { getMonthNameBR, parseLocalDate } from "@/utils/dateUtils";
-import { formatDateToBR } from "@/utils/formatters/date";
+import { getMonthNameBR } from "@/utils/dateUtils";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatFirstName, formatShortName } from "@/utils/formatters/name";
@@ -452,29 +451,6 @@ export default function Renovacoes() {
     return `${mesIni}/${anoIni} a ${mesFim}/${anoFim}`;
   };
 
-  const formatTransporteTexto = () => {
-    if (!periodoConfig?.data_inicio_transporte && !periodoConfig?.data_fim_transporte) return null;
-    const iniDate = periodoConfig.data_inicio_transporte ? parseLocalDate(periodoConfig.data_inicio_transporte) : null;
-    const fimDate = periodoConfig.data_fim_transporte ? parseLocalDate(periodoConfig.data_fim_transporte) : null;
-
-    if (iniDate && fimDate) {
-      const mesIni = getMonthNameBR(iniDate.getMonth() + 1).slice(0, 3);
-      const anoIni = String(iniDate.getFullYear()).slice(-2);
-      const mesFim = getMonthNameBR(fimDate.getMonth() + 1).slice(0, 3);
-      const anoFim = String(fimDate.getFullYear()).slice(-2);
-      return `${mesIni}/${anoIni} a ${mesFim}/${anoFim}`;
-    }
-    if (iniDate) {
-      const mesIni = getMonthNameBR(iniDate.getMonth() + 1).slice(0, 3);
-      return `A partir de ${mesIni}/${String(iniDate.getFullYear()).slice(-2)}`;
-    }
-    if (fimDate) {
-      const mesFim = getMonthNameBR(fimDate.getMonth() + 1).slice(0, 3);
-      return `Até ${mesFim}/${String(fimDate.getFullYear()).slice(-2)}`;
-    }
-    return null;
-  };
-
   const qtdParcelasMestre = useMemo(() => {
     if (
       !periodoConfig?.configurado ||
@@ -600,7 +576,6 @@ export default function Renovacoes() {
                 <RenovacaoPeriodoConfigCard
                   anoDestino={anoDestino}
                   periodoTexto={formatPeriodoTexto()}
-                  transporteTexto={formatTransporteTexto()}
                   qtdParcelas={qtdParcelasMestre}
                   onConfigurar={handleOpenConfigurarPeriodo}
                 />
@@ -640,7 +615,6 @@ export default function Renovacoes() {
                       <RenovacaoPeriodoConfigCard
                         anoDestino={anoDestino}
                         periodoTexto={formatPeriodoTexto()}
-                        transporteTexto={formatTransporteTexto()}
                         qtdParcelas={qtdParcelasMestre}
                         onConfigurar={handleOpenConfigurarPeriodo}
                       />

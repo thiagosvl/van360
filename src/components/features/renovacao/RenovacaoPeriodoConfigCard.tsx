@@ -1,10 +1,9 @@
-import { CalendarDays, Clock, Car, Settings2 } from "lucide-react";
+import { CalendarDays, Clock, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface RenovacaoPeriodoConfigCardProps {
   anoDestino: number;
   periodoTexto: string;
-  transporteTexto: string | null;
   qtdParcelas: number | null;
   onConfigurar: () => void;
 }
@@ -12,7 +11,6 @@ interface RenovacaoPeriodoConfigCardProps {
 export function RenovacaoPeriodoConfigCard({
   anoDestino,
   periodoTexto,
-  transporteTexto,
   qtdParcelas,
   onConfigurar,
 }: RenovacaoPeriodoConfigCardProps) {
@@ -25,7 +23,7 @@ export function RenovacaoPeriodoConfigCard({
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">
-              Período Letivo
+              Período de Cobrança
             </h3>
             <span className="text-[11px] text-[#737373]">
               Regras gerais de {anoDestino}
@@ -33,34 +31,22 @@ export function RenovacaoPeriodoConfigCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+        <div className="pt-1">
           <div className="space-y-0.5">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0a0a0a]">
               <Clock className="w-3.5 h-3.5 text-[#737373] shrink-0" />
               <span>Cobrança</span>
             </div>
             <p className="text-xs text-[#737373] pl-5">
-              {periodoTexto}
+              {periodoTexto} {qtdParcelas ? `(${qtdParcelas}x)` : ""}
             </p>
           </div>
-
-          {transporteTexto && (
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0a0a0a]">
-                <Car className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                <span>Transporte</span>
-              </div>
-              <p className="text-xs text-[#737373] pl-5">
-                {transporteTexto}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
       <div className="pt-2.5 border-t border-[#f0f0f0] flex items-center justify-between gap-2">
         <span className="text-[11px] sm:text-xs text-[#737373] truncate">
-          Cobrança e transporte padrão
+          {qtdParcelas ? `${qtdParcelas} parcelas configuradas` : "Definir parcelas da renovação"}
         </span>
         <Button
           type="button"

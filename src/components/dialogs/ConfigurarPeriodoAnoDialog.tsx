@@ -1,17 +1,12 @@
 import { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { monthOptions, parseLocalDate } from "@/utils/dateUtils";
-import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
+import { monthOptions } from "@/utils/dateUtils";
 import { usePeriodoRenovacaoConfig, useSalvarPeriodoRenovacaoConfig } from "@/hooks/api/useRenovacoes";
-import { CalendarDays, Car, Clock, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CalendarDays, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 export interface ConfigurarPeriodoAnoDialogProps {
@@ -27,19 +22,13 @@ export function ConfigurarPeriodoAnoDialog({
   anoDestino,
   onSuccess,
 }: ConfigurarPeriodoAnoDialogProps) {
-  const { data: configPeriodo, isLoading } = usePeriodoRenovacaoConfig(anoDestino);
+  const { data: configPeriodo } = usePeriodoRenovacaoConfig(anoDestino);
   const salvarMutation = useSalvarPeriodoRenovacaoConfig();
 
   const [mesInicioCobranca, setMesInicioCobranca] = useState("");
   const [anoInicioCobranca, setAnoInicioCobranca] = useState("");
   const [mesFimCobranca, setMesFimCobranca] = useState("");
   const [anoFimCobranca, setAnoFimCobranca] = useState("");
-
-  const [dataInicioTransporte, setDataInicioTransporte] = useState("");
-  const [dataFimTransporte, setDataFimTransporte] = useState("");
-
-  const [openCalendarInicioTransp, setOpenCalendarInicioTransp] = useState(false);
-  const [openCalendarFimTransp, setOpenCalendarFimTransp] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -53,23 +42,11 @@ export function ConfigurarPeriodoAnoDialog({
         setAnoInicioCobranca(configPeriodo.ano_inicio_cobranca ? String(configPeriodo.ano_inicio_cobranca) : String(anoDestino));
         setMesFimCobranca(configPeriodo.mes_fim_cobranca ? String(configPeriodo.mes_fim_cobranca) : "");
         setAnoFimCobranca(configPeriodo.ano_fim_cobranca ? String(configPeriodo.ano_fim_cobranca) : "");
-        setDataInicioTransporte(
-          configPeriodo.data_inicio_transporte
-            ? formatDateToBR(new Date(configPeriodo.data_inicio_transporte + "T12:00:00"))
-            : ""
-        );
-        setDataFimTransporte(
-          configPeriodo.data_fim_transporte
-            ? formatDateToBR(new Date(configPeriodo.data_fim_transporte + "T12:00:00"))
-            : ""
-        );
       } else {
         setMesInicioCobranca("");
         setAnoInicioCobranca("");
         setMesFimCobranca("");
         setAnoFimCobranca("");
-        setDataInicioTransporte(`01/02/${anoDestino}`);
-        setDataFimTransporte(`31/12/${anoDestino}`);
       }
     }
   }, [isOpen, configPeriodo, anoDestino]);
@@ -112,21 +89,6 @@ export function ConfigurarPeriodoAnoDialog({
       }
     }
 
-    if (!dataInicioTransporte) {
-      newErrors.dataInicioTransporte = "Informe o início do transporte";
-    }
-    if (!dataFimTransporte) {
-      newErrors.dataFimTransporte = "Informe o término do transporte";
-    }
-
-    if (dataInicioTransporte && dataFimTransporte) {
-      const d1 = new Date(convertDateBrToISO(dataInicioTransporte));
-      const d2 = new Date(convertDateBrToISO(dataFimTransporte));
-      if (d2 < d1) {
-        newErrors.dataFimTransporte = "Término do transporte deve ser posterior ao início";
-      }
-    }
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -139,15 +101,14 @@ export function ConfigurarPeriodoAnoDialog({
         ano_inicio_cobranca: Number(anoInicioCobranca),
         mes_fim_cobranca: Number(mesFimCobranca),
         ano_fim_cobranca: Number(anoFimCobranca),
-        data_inicio_transporte: dataInicioTransporte ? convertDateBrToISO(dataInicioTransporte) : null,
-        data_fim_transporte: dataFimTransporte ? convertDateBrToISO(dataFimTransporte) : null,
+        data_inicio_transporte: null,
+        data_fim_transporte: null,
       });
 
       toast.success(`Período de cobrança de ${anoDestino} salvo com sucesso!`);
       onSuccess?.();
       handleClose();
     } catch {
-      // toast tratado na mutation
     }
   };
 
@@ -168,7 +129,7 @@ export function ConfigurarPeriodoAnoDialog({
 
       <BaseDialog.Body className="space-y-5">
         <Banner variant="info">
-          Defina o período de cobrança padrão e transporte para o ano letivo de {anoDestino}. Ele será aplicado a todos os alunos, mas você poderá alterar individualmente para cada aluno depois.
+          Defina o período de cobrança padrão para o ano letivo de {anoDestino}. Ele será aplicado a todos os alunos, mas você poderá alterar individualmente para cada aluno depois.
         </Banner>
 
         <section className="space-y-4 pt-1">
@@ -309,165 +270,6 @@ export function ConfigurarPeriodoAnoDialog({
               {(errors.mesFimCobranca || errors.anoFimCobranca) && (
                 <p className="text-xs text-[#e7000b] mt-1">{errors.mesFimCobranca || errors.anoFimCobranca}</p>
               )}
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4 pt-1">
-          <div className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-[#0a0a0a]">
-            <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
-              <Car className="w-4 h-4" />
-            </div>
-            Período do Transporte
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-[#0a0a0a] font-medium text-xs">
-                Início do Transporte <span className="text-[#e7000b]">*</span>
-              </Label>
-              <Popover open={openCalendarInicioTransp} onOpenChange={setOpenCalendarInicioTransp}>
-                <PopoverTrigger asChild>
-                  <div className="relative group">
-                    <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
-                        !dataInicioTransporte && "text-[#737373]",
-                        errors.dataInicioTransporte && "border-[#e7000b]"
-                      )}
-                    >
-                      {dataInicioTransporte || "dd/mm/aaaa"}
-                    </Button>
-                    {dataInicioTransporte && (
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-1"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setDataInicioTransporte("");
-                          if (errors.dataInicioTransporte) setErrors((prev) => ({ ...prev, dataInicioTransporte: "" }));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setDataInicioTransporte("");
-                            if (errors.dataInicioTransporte) setErrors((prev) => ({ ...prev, dataInicioTransporte: "" }));
-                          }
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={
-                      dataInicioTransporte
-                        ? parseLocalDate(convertDateBrToISO(dataInicioTransporte))
-                        : undefined
-                    }
-                    onSelect={(date) => {
-                      if (date) {
-                        setDataInicioTransporte(formatDateToBR(date));
-                        setOpenCalendarInicioTransp(false);
-                      } else {
-                        setDataInicioTransporte("");
-                      }
-                      if (errors.dataInicioTransporte || errors.dataFimTransporte) {
-                        setErrors((prev) => {
-                          const updated = { ...prev };
-                          delete updated.dataInicioTransporte;
-                          delete updated.dataFimTransporte;
-                          return updated;
-                        });
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.dataInicioTransporte && <p className="text-xs text-[#e7000b] mt-1">{errors.dataInicioTransporte}</p>}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-[#0a0a0a] font-medium text-xs">
-                Fim do Transporte <span className="text-[#e7000b]">*</span>
-              </Label>
-              <Popover open={openCalendarFimTransp} onOpenChange={setOpenCalendarFimTransp}>
-                <PopoverTrigger asChild>
-                  <div className="relative group">
-                    <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
-                        !dataFimTransporte && "text-[#737373]",
-                        errors.dataFimTransporte && "border-[#e7000b]"
-                      )}
-                    >
-                      {dataFimTransporte || "dd/mm/aaaa"}
-                    </Button>
-                    {dataFimTransporte && (
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-1"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setDataFimTransporte("");
-                          if (errors.dataFimTransporte) setErrors((prev) => ({ ...prev, dataFimTransporte: "" }));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setDataFimTransporte("");
-                            if (errors.dataFimTransporte) setErrors((prev) => ({ ...prev, dataFimTransporte: "" }));
-                          }
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={
-                      dataFimTransporte
-                        ? parseLocalDate(convertDateBrToISO(dataFimTransporte))
-                        : undefined
-                    }
-                    onSelect={(date) => {
-                      if (date) {
-                        setDataFimTransporte(formatDateToBR(date));
-                        setOpenCalendarFimTransp(false);
-                      } else {
-                        setDataFimTransporte("");
-                      }
-                      if (errors.dataInicioTransporte || errors.dataFimTransporte) {
-                        setErrors((prev) => {
-                          const updated = { ...prev };
-                          delete updated.dataInicioTransporte;
-                          delete updated.dataFimTransporte;
-                          return updated;
-                        });
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.dataFimTransporte && <p className="text-xs text-[#e7000b] mt-1">{errors.dataFimTransporte}</p>}
             </div>
           </div>
         </section>

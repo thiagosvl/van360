@@ -22,7 +22,7 @@ export function PublicRenovacaoAlunoCard({
   onEditarDados,
 }: PublicRenovacaoAlunoCardProps) {
   const temPeriodoCobranca = Boolean(condicoes.data_inicio_cobranca || condicoes.data_fim_cobranca);
-  const temPeriodoTransporte = Boolean(condicoes.data_inicio_transporte || condicoes.data_fim_transporte);
+  const temPeriodoTransporte = Boolean(condicoes.data_inicio_transporte && condicoes.data_fim_transporte);
 
   return (
     <article className="bg-white rounded-[24px] border border-border p-5 sm:p-6 shadow-xs space-y-5">

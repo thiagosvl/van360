@@ -3,10 +3,7 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { useUpdateRenovacao, usePeriodoRenovacaoConfig } from "@/hooks/api/useRenovacoes";
 import { useEscolasWithFilters, useProfile, useVeiculosWithFilters } from "@/hooks";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
@@ -28,13 +25,10 @@ import {
   Sparkles,
   DoorOpen,
   ArrowRight,
-  X,
 } from "lucide-react";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { modalidades, periodos, formatCurrency, formatFirstName, formatShortName } from "@/utils/formatters";
-import { convertDateBrToISO, formatDateToBR } from "@/utils/formatters/date";
-import { monthOptions, parseLocalDate } from "@/utils/dateUtils";
-import { ptBR } from "date-fns/locale";
+import { monthOptions } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 
 interface EditarReservaDialogProps {
@@ -75,11 +69,6 @@ export function EditarReservaDialog({
   const [novaSala, setNovaSala] = useState("");
   const [novoNomeProfessor, setNovoNomeProfessor] = useState("");
   const [novoVeiculoId, setNovoVeiculoId] = useState("");
-  const [dataInicioTransporte, setDataInicioTransporte] = useState<string>("");
-  const [dataFimTransporte, setDataFimTransporte] = useState<string>("");
-
-  const [openCalendarInicioTransp, setOpenCalendarInicioTransp] = useState(false);
-  const [openCalendarFimTransp, setOpenCalendarFimTransp] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [initialValues, setInitialValues] = useState<{
@@ -96,8 +85,6 @@ export function EditarReservaDialog({
     novaSala: string;
     novoNomeProfessor: string;
     novoVeiculoId: string;
-    dataInicioTransporte: string;
-    dataFimTransporte: string;
   } | null>(null);
 
   const anoOptions = [anoDestino.toString(), (anoDestino + 1).toString()];
@@ -133,20 +120,6 @@ export function EditarReservaDialog({
 
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
       setNovoVeiculoId(veiculoId);
-
-      const dtInicioTransp = passageiro.nova_data_inicio_transporte
-        ? formatDateToBR(passageiro.nova_data_inicio_transporte)
-        : (configPeriodoMestre?.data_inicio_transporte
-          ? formatDateToBR(new Date(configPeriodoMestre.data_inicio_transporte + "T12:00:00"))
-          : "");
-      setDataInicioTransporte(dtInicioTransp);
-
-      const dtFimTransp = passageiro.nova_data_fim_transporte
-        ? formatDateToBR(passageiro.nova_data_fim_transporte)
-        : (configPeriodoMestre?.data_fim_transporte
-          ? formatDateToBR(new Date(configPeriodoMestre.data_fim_transporte + "T12:00:00"))
-          : "");
-      setDataFimTransporte(dtFimTransp);
 
       let anoIni = "";
       let mesIni = "";
@@ -192,8 +165,6 @@ export function EditarReservaDialog({
         novaSala: sala,
         novoNomeProfessor: nomeProfessor,
         novoVeiculoId: veiculoId,
-        dataInicioTransporte: dtInicioTransp,
-        dataFimTransporte: dtFimTransp,
       });
     }
   }, [passageiro, escolasList, veiculosList, anoDestino, configPeriodoMestre]);
@@ -217,8 +188,6 @@ export function EditarReservaDialog({
     if (novaSala !== initialValues.novaSala) return true;
     if (novoNomeProfessor !== initialValues.novoNomeProfessor) return true;
     if (novoVeiculoId !== initialValues.novoVeiculoId) return true;
-    if (dataInicioTransporte !== initialValues.dataInicioTransporte) return true;
-    if (dataFimTransporte !== initialValues.dataFimTransporte) return true;
 
     return false;
   }, [
@@ -237,8 +206,6 @@ export function EditarReservaDialog({
     novaSala,
     novoNomeProfessor,
     novoVeiculoId,
-    dataInicioTransporte,
-    dataFimTransporte,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -286,31 +253,6 @@ export function EditarReservaDialog({
       newErrors.novaEscolaId = "Selecione a escola";
     }
 
-    let dataInicioDate: Date | null = null;
-    let dataFimDate: Date | null = null;
-
-    if (dataInicioTransporte && dataInicioTransporte.trim().length > 0) {
-      const parsed = parseLocalDate(convertDateBrToISO(dataInicioTransporte));
-      if (isNaN(parsed.getTime())) {
-        newErrors.dataInicioTransporte = "Data de início inválida";
-      } else {
-        dataInicioDate = parsed;
-      }
-    }
-
-    if (dataFimTransporte && dataFimTransporte.trim().length > 0) {
-      const parsed = parseLocalDate(convertDateBrToISO(dataFimTransporte));
-      if (isNaN(parsed.getTime())) {
-        newErrors.dataFimTransporte = "Data de término inválida";
-      } else {
-        dataFimDate = parsed;
-      }
-    }
-
-    if (dataInicioDate && dataFimDate && dataFimDate < dataInicioDate) {
-      newErrors.dataFimTransporte = "O fim deve ser igual ou posterior ao início";
-    }
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error("Por favor, preencha os campos obrigatórios destacados.");
@@ -332,8 +274,6 @@ export function EditarReservaDialog({
           nova_sala: novaSala || null,
           novo_nome_professor: novoNomeProfessor || null,
           novo_veiculo_id: novoVeiculoId || null,
-          nova_data_inicio_transporte: dataInicioTransporte ? convertDateBrToISO(dataInicioTransporte) : null,
-          nova_data_fim_transporte: dataFimTransporte ? convertDateBrToISO(dataFimTransporte) : null,
           nova_data_inicio_cobranca: isIsentoOriginal
             ? null
             : (mesInicioCobranca && anoInicioCobranca ? `${anoInicioCobranca}-${mesInicioCobranca.padStart(2, "0")}-01` : null),
@@ -730,146 +670,6 @@ export function EditarReservaDialog({
                     className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Início do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
-                </Label>
-                <Popover open={openCalendarInicioTransp} onOpenChange={setOpenCalendarInicioTransp}>
-                  <PopoverTrigger asChild>
-                    <div className="relative group">
-                      <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
-                          !dataInicioTransporte && "text-[#737373]",
-                          errors.dataInicioTransporte && "border-[#e7000b]"
-                        )}
-                      >
-                        {dataInicioTransporte || "dd/mm/aaaa"}
-                      </Button>
-                      {dataInicioTransporte && (
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setDataInicioTransporte("");
-                            if (errors.dataInicioTransporte) setErrors((prev) => ({ ...prev, dataInicioTransporte: "" }));
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setDataInicioTransporte("");
-                              if (errors.dataInicioTransporte) setErrors((prev) => ({ ...prev, dataInicioTransporte: "" }));
-                            }
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </div>
-                      )}
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        dataInicioTransporte
-                          ? parseLocalDate(convertDateBrToISO(dataInicioTransporte))
-                          : undefined
-                      }
-                      onSelect={(date) => {
-                        if (date) {
-                          setDataInicioTransporte(formatDateToBR(date));
-                          setOpenCalendarInicioTransp(false);
-                        } else {
-                          setDataInicioTransporte("");
-                        }
-                        if (errors.dataInicioTransporte || errors.dataFimTransporte) {
-                          setErrors((prev) => ({ ...prev, dataInicioTransporte: "", dataFimTransporte: "" }));
-                        }
-                      }}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.dataInicioTransporte && <p className="text-xs text-[#e7000b] mt-1">{errors.dataInicioTransporte}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Fim do Transporte <span className="text-[#737373] font-normal text-xs">(opcional)</span>
-                </Label>
-                <Popover open={openCalendarFimTransp} onOpenChange={setOpenCalendarFimTransp}>
-                  <PopoverTrigger asChild>
-                    <div className="relative group">
-                      <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-10 pr-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-left font-normal hover:bg-white justify-start focus:border-[#0a0a0a] text-sm text-[#0a0a0a] shadow-none",
-                          !dataFimTransporte && "text-[#737373]",
-                          errors.dataFimTransporte && "border-[#e7000b]"
-                        )}
-                      >
-                        {dataFimTransporte || "dd/mm/aaaa"}
-                      </Button>
-                      {dataFimTransporte && (
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] cursor-pointer z-10 flex p-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setDataFimTransporte("");
-                            if (errors.dataFimTransporte) setErrors((prev) => ({ ...prev, dataFimTransporte: "" }));
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setDataFimTransporte("");
-                              if (errors.dataFimTransporte) setErrors((prev) => ({ ...prev, dataFimTransporte: "" }));
-                            }
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </div>
-                      )}
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-[20px] sm:rounded-[24px] border-[#e5e5e5] bg-white shadow-xl" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        dataFimTransporte
-                          ? parseLocalDate(convertDateBrToISO(dataFimTransporte))
-                          : undefined
-                      }
-                      onSelect={(date) => {
-                        if (date) {
-                          setDataFimTransporte(formatDateToBR(date));
-                          setOpenCalendarFimTransp(false);
-                        } else {
-                          setDataFimTransporte("");
-                        }
-                        if (errors.dataFimTransporte) {
-                          setErrors((prev) => ({ ...prev, dataFimTransporte: "" }));
-                        }
-                      }}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.dataFimTransporte && <p className="text-xs text-[#e7000b] mt-1">{errors.dataFimTransporte}</p>}
               </div>
             </div>
           </section>

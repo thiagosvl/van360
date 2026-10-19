@@ -2,6 +2,7 @@ import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { SignaturePad, SignaturePadRef } from "@/components/common/SignaturePad";
 import { LogoUpload } from "@/components/forms/LogoUpload";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
@@ -12,6 +13,7 @@ import { ContractSection, DEFAULT_SECOES_CONTRATO } from "@/constants/defaults";
 import { ROUTES } from "@/constants/routes";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -99,6 +101,7 @@ export default function ConfigurarModeloContrato() {
   const queryClient = useQueryClient();
   const { openConfirmationDialog, closeConfirmationDialog, setPageTitle } = useLayout();
   const { profile, refreshProfile } = useProfile();
+  const { can } = usePermissions();
   const [isLocallyActive, setIsLocallyActive] = useState(false);
   const [activeTab, setActiveTab] = useState<SetupTab>("clauses");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -605,6 +608,10 @@ export default function ConfigurarModeloContrato() {
       setIsSubmitting(false);
     }
   };
+
+  if (!can("contratos.gerenciar")) {
+    return <AccessRestrictedState moduleName="Gestão de Contratos" />;
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-32 pt-1 sm:pt-2">

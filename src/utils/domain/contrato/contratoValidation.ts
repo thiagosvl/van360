@@ -43,10 +43,6 @@ export interface PendenciasContratoResult {
   needsValor: boolean;
   needsVencimento: boolean;
   needsFinanceiroGroup: boolean;
-  needsDataInicio: boolean;
-  needsDataFim: boolean;
-  needsPeriodo: boolean;
-  needsTransporteGroup: boolean;
   hasPendencias: boolean;
 }
 
@@ -68,18 +64,8 @@ export function avaliarPendenciasContrato(
   const needsVencimento = !passageiro?.isento && !passageiro?.dia_vencimento;
   const needsFinanceiroGroup = needsValor || needsVencimento;
 
-  const needsDataInicio =
-    !passageiro?.data_inicio_transporte ||
-    String(passageiro.data_inicio_transporte).trim() === "";
-  const needsDataFim =
-    !passageiro?.data_fim_transporte ||
-    String(passageiro.data_fim_transporte).trim() === "";
-  const needsPeriodo =
-    !passageiro?.periodo || String(passageiro.periodo).trim() === "";
-  const needsTransporteGroup = needsDataInicio || needsDataFim || needsPeriodo;
-
   const hasPendencias =
-    needsResponsavelGroup || needsFinanceiroGroup || needsTransporteGroup;
+    needsResponsavelGroup || needsFinanceiroGroup;
 
   return {
     needsNomeResp,
@@ -90,10 +76,6 @@ export function avaliarPendenciasContrato(
     needsValor,
     needsVencimento,
     needsFinanceiroGroup,
-    needsDataInicio,
-    needsDataFim,
-    needsPeriodo,
-    needsTransporteGroup,
     hasPendencias,
   };
 }
