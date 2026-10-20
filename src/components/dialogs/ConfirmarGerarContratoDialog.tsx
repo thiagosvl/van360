@@ -45,7 +45,7 @@ export function ConfirmarGerarContratoDialog({
   const isSubmitting = createContrato.isPending || substituirContrato.isPending;
 
   const cachedPassageiro = passageiro?.id ? queryClient.getQueryData<Passageiro>(["passageiro", passageiro.id]) : null;
-  const currentPassageiro = cachedPassageiro ? { ...cachedPassageiro, ...passageiro } : passageiro;
+  const currentPassageiro = cachedPassageiro ? { ...passageiro, ...cachedPassageiro } : passageiro;
 
   const valorExibicao = valorMensal ?? (currentPassageiro?.valor_cobranca ? Number(currentPassageiro.valor_cobranca) : undefined);
   const diaExibicao = diaVencimento ?? currentPassageiro?.dia_vencimento ?? undefined;
