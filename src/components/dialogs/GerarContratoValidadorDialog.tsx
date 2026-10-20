@@ -83,6 +83,15 @@ export function GerarContratoValidadorDialog({
 
   const hasNoPendencias = !needsResponsavelGroup && !needsFinanceiroGroup;
 
+  const visibleRespCount = [
+    needsNomeResp,
+    needsTelefoneResp,
+    needsCpfResp,
+    needsParentesco,
+  ].filter(Boolean).length;
+
+  const visibleFinCount = [needsValor, needsVencimento].filter(Boolean).length;
+
   return (
     <BaseDialog
       open={isOpen}
@@ -136,7 +145,7 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="nome_responsavel"
                         render={({ field, fieldState }) => (
-                          <FormItem className={cn("space-y-1.5", (!needsTelefoneResp && !needsCpfResp && !needsParentesco) ? "col-span-1 sm:col-span-2" : "col-span-1")}>
+                          <FormItem className={cn("space-y-1.5", (visibleRespCount === 1 || visibleRespCount >= 3) ? "col-span-1 sm:col-span-2" : "col-span-1")}>
                             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                               Nome do Responsável <span className="text-[#e7000b]">*</span>
                             </FormLabel>
@@ -164,7 +173,7 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="telefone_responsavel"
                         render={({ field, fieldState }) => (
-                          <FormItem className="col-span-1 space-y-1.5">
+                          <FormItem className={cn("space-y-1.5", visibleRespCount === 1 ? "col-span-1 sm:col-span-2" : "col-span-1")}>
                             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                               WhatsApp <span className="text-[#e7000b]">*</span>
                             </FormLabel>
@@ -195,7 +204,7 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="cpf_responsavel"
                         render={({ field, fieldState }) => (
-                          <FormItem className="col-span-1 space-y-1.5">
+                          <FormItem className={cn("space-y-1.5", visibleRespCount === 1 ? "col-span-1 sm:col-span-2" : "col-span-1")}>
                             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                               CPF do Responsável <span className="text-[#e7000b]">*</span>
                             </FormLabel>
@@ -226,7 +235,7 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="parentesco_responsavel"
                         render={({ field, fieldState }) => (
-                          <FormItem className="col-span-1 space-y-1.5">
+                          <FormItem className={cn("space-y-1.5", (visibleRespCount === 1 || (visibleRespCount === 3 && !needsNomeResp)) ? "col-span-1 sm:col-span-2" : "col-span-1")}>
                             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                               Parentesco <span className="text-[#e7000b]">*</span>
                             </FormLabel>
@@ -268,13 +277,15 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="valor_cobranca"
                         render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Valor da Parcela"
-                            required
-                            labelClassName="text-[#0a0a0a] font-medium text-xs"
-                            inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors"
-                          />
+                          <div className={visibleFinCount === 1 ? "col-span-1 sm:col-span-2" : "col-span-1"}>
+                            <MoneyInput
+                              field={field}
+                              label="Valor da Parcela"
+                              required
+                              labelClassName="text-[#0a0a0a] font-medium text-xs"
+                              inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-colors"
+                            />
+                          </div>
                         )}
                       />
                     )}
@@ -284,7 +295,7 @@ export function GerarContratoValidadorDialog({
                         control={form.control}
                         name="dia_vencimento"
                         render={({ field, fieldState }) => (
-                          <FormItem className="col-span-1 space-y-1.5">
+                          <FormItem className={cn("space-y-1.5", visibleFinCount === 1 ? "col-span-1 sm:col-span-2" : "col-span-1")}>
                             <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                               Dia do Vencimento <span className="text-[#e7000b]">*</span>
                             </FormLabel>
