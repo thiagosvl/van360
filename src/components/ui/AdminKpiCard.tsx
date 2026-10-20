@@ -11,6 +11,7 @@ export interface AdminKpiCardProps {
   icon: React.ReactNode;
   onClick?: () => void;
   className?: string;
+  valueClassName?: string;
 }
 
 export function AdminKpiCard({
@@ -22,6 +23,7 @@ export function AdminKpiCard({
   icon,
   onClick,
   className,
+  valueClassName,
 }: AdminKpiCardProps) {
   const formattedValue = typeof value === "number" ? value.toLocaleString("pt-BR") : value;
 
@@ -37,10 +39,16 @@ export function AdminKpiCard({
     >
       <div className="flex justify-between items-start gap-3">
         <div className="space-y-1.5 min-w-0 flex-1">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block leading-tight truncate">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block leading-tight truncate" title={title}>
             {title}
           </span>
-          <p className="text-2xl sm:text-3xl font-semibold font-headline text-foreground tracking-tight leading-none pt-0.5 truncate">
+          <p
+            title={String(formattedValue)}
+            className={cn(
+              "text-xl sm:text-2xl xl:text-3xl font-semibold font-headline text-foreground tracking-tight leading-none pt-0.5 truncate",
+              valueClassName
+            )}
+          >
             {formattedValue}
           </p>
           {subtext && (

@@ -204,7 +204,7 @@ export function RepasseLogsList({
         />
       ) : (
         <>
-          <div className="hidden lg:block overflow-x-auto rounded-3xl border border-border bg-card shadow-xs">
+          <div className="hidden md:block overflow-x-auto [scrollbar-width:thin] rounded-3xl border border-border bg-card shadow-xs">
             <table className="w-full text-left text-xs">
               <thead className="border-b border-border/60 text-xs font-semibold text-muted-foreground">
                 <tr>
@@ -357,7 +357,7 @@ export function RepasseLogsList({
             </table>
           </div>
 
-          <div className="lg:hidden space-y-3">
+          <div className="md:hidden space-y-3">
             {repasses.map((item) => {
               const isRetrying = isRetryingId === item.id;
               const canRetry = item.status_repasse === "FALHA" || item.status_repasse === "PENDENTE";

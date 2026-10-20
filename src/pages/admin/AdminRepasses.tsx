@@ -112,6 +112,77 @@ export default function AdminRepasses() {
 
   const totalPages = Math.ceil((repassesQuery.data?.total || 0) / Number(limit)) || 1;
 
+  const financialKpis = [
+    {
+      title: "Total repassado",
+      value: formatCurrency(kpis.total_repassado),
+      subtext: "Líquido aos motoristas",
+      cardBorder: "border-emerald-500/30 shadow-xs",
+      iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+      icon: <DollarSign className="h-5 w-5" />,
+      valueClassName: "text-xl sm:text-2xl xl:text-3xl",
+    },
+    {
+      title: "Taxa retida Van360",
+      value: formatCurrency(kpis.total_taxa_plataforma),
+      subtext: "Receita bruta da plataforma",
+      cardBorder: "border-primary/30 shadow-xs",
+      iconBg: "bg-primary/10 text-primary border-primary/20",
+      icon: <ArrowUpRight className="h-5 w-5" />,
+      valueClassName: "text-xl sm:text-2xl xl:text-3xl",
+    },
+    {
+      title: "Custos gateway BaaS",
+      value: formatCurrency(kpis.total_custo_provedor),
+      subtext: "R$ 1,85/rep (Pix + Saque)",
+      cardBorder: "border-amber-500/30 shadow-xs",
+      iconBg: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+      icon: <Building2 className="h-5 w-5" />,
+      valueClassName: "text-xl sm:text-2xl xl:text-3xl",
+    },
+    {
+      title: "Lucro líquido Van360",
+      value: formatCurrency(kpis.total_lucro_liquido),
+      subtext: "Margem real da plataforma",
+      cardBorder: "border-emerald-500/40 shadow-xs",
+      iconBg: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+      icon: <TrendingUp className="h-5 w-5" />,
+      valueClassName: "text-xl sm:text-2xl xl:text-3xl",
+    },
+  ];
+
+  const operationalKpis = [
+    {
+      title: "Repasses concluídos",
+      value: kpis.total_sucesso,
+      subtext: "Transferências liquidadas",
+      cardBorder: "border-border shadow-xs",
+      iconBg: "bg-secondary text-emerald-500 border-border",
+      icon: <CheckCircle2 className="h-5 w-5" />,
+      valueClassName: "text-2xl sm:text-3xl",
+    },
+    {
+      title: "Falhas / atenção",
+      value: kpis.total_falhas,
+      subtext:
+        kpis.total_falhas > 0
+          ? `${kpis.total_falhas} repasse(s) requerem atenção`
+          : "Nenhuma pendência crítica",
+      cardBorder:
+        kpis.total_falhas > 0
+          ? "border-destructive/50 shadow-xs animate-pulse"
+          : "border-border shadow-xs",
+      iconBg:
+        kpis.total_falhas > 0
+          ? "bg-destructive/20 text-destructive border-destructive/30"
+          : "bg-secondary text-muted-foreground border-border",
+      icon: <AlertTriangle className="h-5 w-5" />,
+      valueClassName: "text-2xl sm:text-3xl",
+    },
+  ];
+
+  const allKpis = [...financialKpis, ...operationalKpis];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
@@ -162,72 +233,52 @@ export default function AdminRepasses() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        <AdminKpiCard
-          title="Total repassado"
-          value={formatCurrency(kpis.total_repassado)}
-          subtext="Líquido aos motoristas"
-          cardBorder="border-emerald-500/30 shadow-xs"
-          iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-          icon={<DollarSign className="h-5 w-5" />}
-        />
+      <div className="lg:hidden flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 touch-pan-x">
+        {allKpis.map((card) => (
+          <div key={card.title} className="w-[240px] sm:w-[260px] shrink-0">
+            <AdminKpiCard
+              title={card.title}
+              value={card.value}
+              subtext={card.subtext}
+              cardBorder={card.cardBorder}
+              iconBg={card.iconBg}
+              icon={card.icon}
+              valueClassName={card.valueClassName}
+            />
+          </div>
+        ))}
+      </div>
 
-        <AdminKpiCard
-          title="Taxa retida Van360"
-          value={formatCurrency(kpis.total_taxa_plataforma)}
-          subtext="Receita bruta da plataforma"
-          cardBorder="border-primary/30 shadow-xs"
-          iconBg="bg-primary/10 text-primary border-primary/20"
-          icon={<ArrowUpRight className="h-5 w-5" />}
-        />
+      <div className="hidden lg:block space-y-4">
+        <div className="grid grid-cols-4 gap-4">
+          {financialKpis.map((card) => (
+            <AdminKpiCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              subtext={card.subtext}
+              cardBorder={card.cardBorder}
+              iconBg={card.iconBg}
+              icon={card.icon}
+              valueClassName={card.valueClassName}
+            />
+          ))}
+        </div>
 
-        <AdminKpiCard
-          title="Custos gateway BaaS"
-          value={formatCurrency(kpis.total_custo_provedor)}
-          subtext="R$ 1,85/rep (Pix + Saque)"
-          cardBorder="border-amber-500/30 shadow-xs"
-          iconBg="bg-amber-500/10 text-amber-500 border-amber-500/20"
-          icon={<Building2 className="h-5 w-5" />}
-        />
-
-        <AdminKpiCard
-          title="Lucro líquido Van360"
-          value={formatCurrency(kpis.total_lucro_liquido)}
-          subtext="Margem real da plataforma"
-          cardBorder="border-emerald-500/40 shadow-xs"
-          iconBg="bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-          icon={<TrendingUp className="h-5 w-5" />}
-        />
-
-        <AdminKpiCard
-          title="Repasses concluídos"
-          value={kpis.total_sucesso}
-          subtext="Transferências liquidadas"
-          cardBorder="border-border shadow-xs"
-          iconBg="bg-secondary text-emerald-500 border-border"
-          icon={<CheckCircle2 className="h-5 w-5" />}
-        />
-
-        <AdminKpiCard
-          title="Falhas / atenção"
-          value={kpis.total_falhas}
-          subtext={
-            kpis.total_falhas > 0
-              ? `${kpis.total_falhas} repasse(s) requerem atenção`
-              : "Nenhuma pendência crítica"
-          }
-          cardBorder={
-            kpis.total_falhas > 0
-              ? "border-destructive/50 shadow-xs animate-pulse"
-              : "border-border shadow-xs"
-          }
-          iconBg={
-            kpis.total_falhas > 0
-              ? "bg-destructive/20 text-destructive border-destructive/30"
-              : "bg-secondary text-muted-foreground border-border"
-          }
-          icon={<AlertTriangle className="h-5 w-5" />}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          {operationalKpis.map((card) => (
+            <AdminKpiCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              subtext={card.subtext}
+              cardBorder={card.cardBorder}
+              iconBg={card.iconBg}
+              icon={card.icon}
+              valueClassName={card.valueClassName}
+            />
+          ))}
+        </div>
       </div>
 
       {filters.motoristaId && (
