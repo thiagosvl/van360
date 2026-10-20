@@ -74,9 +74,6 @@ const createEditarDadosPublicosSchema = (temEscolasDisponiveis: boolean) =>
         : z.string().optional(),
       periodo: z.string().min(1, "Selecione o turno"),
       modalidade: z.string().min(1, "Selecione a modalidade"),
-      turma: z.string().optional(),
-      sala: z.string().optional(),
-      nome_professor: z.string().optional(),
       observacoes: z.string().optional(),
     }),
   });
@@ -114,9 +111,6 @@ export function EditarDadosPublicosRenovacaoDialog({
         escola_id: "",
         periodo: "",
         modalidade: "",
-        turma: "",
-        sala: "",
-        nome_professor: "",
         observacoes: "",
       },
     },
@@ -145,9 +139,6 @@ export function EditarDadosPublicosRenovacaoDialog({
           escola_id: initialEscolaId,
           periodo: condicoes.periodo.novo || condicoes.periodo.atual || "",
           modalidade: condicoes.modalidade.novo || condicoes.modalidade.atual || "",
-          turma: condicoes.turma?.novo || passageiro.turma || "",
-          sala: condicoes.sala?.novo || passageiro.sala || "",
-          nome_professor: condicoes.nome_professor?.novo || passageiro.nome_professor || "",
           observacoes: passageiro.observacoes || "",
         },
       });
@@ -171,9 +162,6 @@ export function EditarDadosPublicosRenovacaoDialog({
           escola_id: values.passageiro.escola_id || undefined,
           periodo: values.passageiro.periodo || undefined,
           modalidade: values.passageiro.modalidade || undefined,
-          turma: values.passageiro.turma?.trim() || undefined,
-          sala: values.passageiro.sala?.trim() || undefined,
-          nome_professor: values.passageiro.nome_professor?.trim() || undefined,
           observacoes: values.passageiro.observacoes?.trim() || undefined,
         },
       };
@@ -306,68 +294,7 @@ export function EditarDadosPublicosRenovacaoDialog({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="passageiro.turma"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-foreground font-medium text-xs">
-                        Turma <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          placeholder="Ex: 3º Ano B"
-                          className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground placeholder:text-muted-foreground shadow-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="passageiro.sala"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-foreground font-medium text-xs">
-                        Sala <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          placeholder="Ex: Sala 04"
-                          className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground placeholder:text-muted-foreground shadow-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="passageiro.nome_professor"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-foreground font-medium text-xs">
-                        Professor(a) <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          placeholder="Ex: Profa. Juliana"
-                          className="h-10 sm:h-11 rounded-[18px] bg-muted/60 border-border focus:bg-white focus:border-foreground text-sm text-foreground placeholder:text-muted-foreground shadow-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}
@@ -375,7 +302,7 @@ export function EditarDadosPublicosRenovacaoDialog({
                   render={({ field }) => (
                     <FormItem className="sm:col-span-3 space-y-1.5">
                       <FormLabel className="text-foreground font-medium text-xs">
-                        Observações Adicionais <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
+                        Observações <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
                       </FormLabel>
                       <FormControl>
                         <Textarea

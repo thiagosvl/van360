@@ -133,7 +133,7 @@ export const RenovacaoPassengerCard = memo(function RenovacaoPassengerCard({
         anoDestino,
         passageiroIds: [item.passageiro_id],
       });
-      toast.success(`Mensagem de renovação enviada para o responsável de ${item.nome}!`);
+      toast.success(`Mensagem de renovação enviada para o responsável de ${formatFirstName(item.nome)}!`);
     } catch {
       toast.error("Erro ao enviar notificação pelo WhatsApp.");
     } finally {

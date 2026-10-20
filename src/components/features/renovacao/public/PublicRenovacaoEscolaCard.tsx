@@ -1,17 +1,12 @@
-import { Clock, DoorClosed, GraduationCap, MapPin, School, UserCheck } from "lucide-react";
-import { cleanProfessor, cleanSala, formatModalidade, formatPeriodo } from "@/utils/formatters";
+import { Clock, MapPin, School } from "lucide-react";
+import { formatModalidade, formatPeriodo } from "@/utils/formatters";
 import type { PublicRenovacaoResponse } from "@/types/renovacao";
 
 interface PublicRenovacaoEscolaCardProps {
   condicoes: PublicRenovacaoResponse["condicoes"];
-  passageiro?: PublicRenovacaoResponse["passageiro"];
 }
 
-export function PublicRenovacaoEscolaCard({ condicoes, passageiro }: PublicRenovacaoEscolaCardProps) {
-  const turmaExibicao = condicoes.turma?.novo || passageiro?.turma;
-  const salaExibicao = condicoes.sala?.novo || passageiro?.sala;
-  const professorExibicao = condicoes.nome_professor?.novo || passageiro?.nome_professor;
-
+export function PublicRenovacaoEscolaCard({ condicoes }: PublicRenovacaoEscolaCardProps) {
   return (
     <article className="bg-white rounded-[24px] border border-border p-5 sm:p-6 shadow-xs space-y-4">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -101,96 +96,6 @@ export function PublicRenovacaoEscolaCard({ condicoes, passageiro }: PublicRenov
             ) : (
               <span className="font-semibold text-foreground text-xs sm:text-sm">
                 {formatModalidade(condicoes.modalidade.novo)}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[12px] bg-muted/60 text-foreground flex items-center justify-center shrink-0 border border-border">
-              <GraduationCap className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground font-normal block">Turma</span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            {condicoes.turma?.alterado ? (
-              <div className="space-y-0.5">
-                {condicoes.turma.atual && (
-                  <span className="line-through text-destructive text-xs block font-normal">
-                    {condicoes.turma.atual}
-                  </span>
-                )}
-                <span className="text-foreground font-semibold text-xs sm:text-sm block">
-                  {condicoes.turma.novo}
-                </span>
-              </div>
-            ) : (
-              <span className="font-semibold text-foreground text-xs sm:text-sm block">
-                {turmaExibicao || "A definir"}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[12px] bg-muted/60 text-foreground flex items-center justify-center shrink-0 border border-border">
-              <DoorClosed className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground font-normal block">Sala</span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            {condicoes.sala?.alterado ? (
-              <div className="space-y-0.5">
-                {condicoes.sala.atual && (
-                  <span className="line-through text-destructive text-xs block font-normal">
-                    {cleanSala(condicoes.sala.atual)}
-                  </span>
-                )}
-                <span className="text-foreground font-semibold text-xs sm:text-sm block">
-                  {cleanSala(condicoes.sala.novo)}
-                </span>
-              </div>
-            ) : (
-              <span className="font-semibold text-foreground text-xs sm:text-sm block">
-                {salaExibicao ? cleanSala(salaExibicao) : "A definir"}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[12px] bg-muted/60 text-foreground flex items-center justify-center shrink-0 border border-border">
-              <UserCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground font-normal block">Professor(a)</span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            {condicoes.nome_professor?.alterado ? (
-              <div className="space-y-0.5">
-                {condicoes.nome_professor.atual && (
-                  <span className="line-through text-destructive text-xs block font-normal">
-                    {cleanProfessor(condicoes.nome_professor.atual)}
-                  </span>
-                )}
-                <span className="text-foreground font-semibold text-xs sm:text-sm block">
-                  {cleanProfessor(condicoes.nome_professor.novo)}
-                </span>
-              </div>
-            ) : (
-              <span className="font-semibold text-foreground text-xs sm:text-sm block">
-                {professorExibicao ? cleanProfessor(professorExibicao) : "A definir"}
               </span>
             )}
           </div>

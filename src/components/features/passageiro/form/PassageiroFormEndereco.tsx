@@ -18,7 +18,7 @@ export function PassageiroFormEndereco({ isExternal = false }: PassageiroFormEnd
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                Observações Adicionais <span className="text-[#737373] font-normal text-xs">(opcional)</span>
+                Observações <span className="text-[#737373] font-normal text-xs">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea

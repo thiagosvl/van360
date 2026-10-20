@@ -180,7 +180,6 @@ export default function PublicRenovacaoPage() {
     <div className="min-h-screen bg-muted/40 flex flex-col font-sans">
       <PublicHeader
         title={`Renovação ${ano_destino}`}
-        subtitle={motorista.apelido || motorista.nome}
         icon={RefreshCw}
         containerClassName="max-w-lg px-3.5 sm:px-6"
       />
@@ -216,7 +215,6 @@ export default function PublicRenovacaoPage() {
 
           <PublicRenovacaoEscolaCard
             condicoes={condicoes}
-            passageiro={passageiro}
           />
 
           <PublicRenovacaoEmbarqueCard

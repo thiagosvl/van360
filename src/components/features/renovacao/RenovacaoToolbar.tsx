@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { School, Clock, SlidersHorizontal, ListFilter, RotateCcw, Check, Search, X } from "lucide-react";
+import { School, Clock, ListFilter, RotateCcw, Check, Search, X } from "lucide-react";
 import { FilterDefaults } from "@/types/enums";
 import { periodos } from "@/utils/formatters/periodo";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
@@ -162,9 +162,8 @@ export const RenovacaoToolbar = memo(function RenovacaoToolbar({
   const filterTriggerButton = (
     <Button
       variant="outline"
-      className={`h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-sm font-medium gap-2 px-3.5 transition-all shadow-none flex-1 sm:flex-initial justify-center cursor-pointer ${
-        hasActiveFilters ? "border-[#0a0a0a]" : ""
-      }`}
+      className={`h-10 sm:h-11 rounded-[18px] border-[#e5e5e5] bg-white hover:bg-[#fafafa] text-[#0a0a0a] text-sm font-medium gap-2 px-3.5 transition-all shadow-none flex-1 sm:flex-initial justify-center cursor-pointer ${hasActiveFilters ? "border-[#0a0a0a]" : ""
+        }`}
     >
       <ListFilter className="h-4 w-4 text-[#737373]" />
       <span>Filtros</span>

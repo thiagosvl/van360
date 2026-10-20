@@ -19,11 +19,8 @@ import {
   DollarSign,
   Car,
   Sun,
-  Users,
   Compass,
-  User,
   Sparkles,
-  DoorOpen,
   ArrowRight,
 } from "lucide-react";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
@@ -66,9 +63,6 @@ export function EditarReservaDialog({
   const [novaEscolaId, setNovaEscolaId] = useState("");
   const [novoPeriodo, setNovoPeriodo] = useState("");
   const [novaModalidade, setNovaModalidade] = useState("ida_volta");
-  const [novaTurma, setNovaTurma] = useState("");
-  const [novaSala, setNovaSala] = useState("");
-  const [novoNomeProfessor, setNovoNomeProfessor] = useState("");
   const [novoVeiculoId, setNovoVeiculoId] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -82,9 +76,6 @@ export function EditarReservaDialog({
     novaEscolaId: string;
     novoPeriodo: string;
     novaModalidade: string;
-    novaTurma: string;
-    novaSala: string;
-    novoNomeProfessor: string;
     novoVeiculoId: string;
   } | null>(null);
 
@@ -109,15 +100,6 @@ export function EditarReservaDialog({
 
       const modalidade = passageiro.nova_modalidade || passageiro.modalidade_atual || "ida_volta";
       setNovaModalidade(modalidade);
-
-      const turma = passageiro.nova_turma || passageiro.turma_atual || "";
-      setNovaTurma(turma);
-
-      const sala = passageiro.nova_sala || passageiro.sala_atual || "";
-      setNovaSala(sala);
-
-      const nomeProfessor = passageiro.novo_nome_professor || passageiro.nome_professor_atual || "";
-      setNovoNomeProfessor(nomeProfessor);
 
       const veiculoId = passageiro.novo_veiculo_id || passageiro.veiculo_id_atual || (veiculosList[0]?.id ?? "");
       setNovoVeiculoId(veiculoId);
@@ -162,9 +144,6 @@ export function EditarReservaDialog({
         novaEscolaId: escolaId,
         novoPeriodo: periodo,
         novaModalidade: modalidade,
-        novaTurma: turma,
-        novaSala: sala,
-        novoNomeProfessor: nomeProfessor,
         novoVeiculoId: veiculoId,
       });
     }
@@ -185,9 +164,6 @@ export function EditarReservaDialog({
     if (novaEscolaId !== initialValues.novaEscolaId) return true;
     if (novoPeriodo !== initialValues.novoPeriodo) return true;
     if (novaModalidade !== initialValues.novaModalidade) return true;
-    if (novaTurma !== initialValues.novaTurma) return true;
-    if (novaSala !== initialValues.novaSala) return true;
-    if (novoNomeProfessor !== initialValues.novoNomeProfessor) return true;
     if (novoVeiculoId !== initialValues.novoVeiculoId) return true;
 
     return false;
@@ -203,9 +179,6 @@ export function EditarReservaDialog({
     novaEscolaId,
     novoPeriodo,
     novaModalidade,
-    novaTurma,
-    novaSala,
-    novoNomeProfessor,
     novoVeiculoId,
   ]);
 
@@ -271,9 +244,6 @@ export function EditarReservaDialog({
           nova_escola_id: novaEscolaId || null,
           novo_periodo: novoPeriodo || null,
           nova_modalidade: novaModalidade || null,
-          nova_turma: novaTurma || null,
-          nova_sala: novaSala || null,
-          novo_nome_professor: novoNomeProfessor || null,
           novo_veiculo_id: novoVeiculoId || null,
           nova_data_inicio_cobranca: isIsentoOriginal
             ? null
@@ -626,51 +596,6 @@ export function EditarReservaDialog({
                     </option>
                   ))}
                 </NativeSelect>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Turma <span className="text-[#737373] font-normal text-xs">(opcional)</span>
-                </Label>
-                <div className="relative">
-                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                  <Input
-                    value={novaTurma}
-                    onChange={(e) => setNovaTurma(e.target.value)}
-                    placeholder="Ex: 5º Ano B"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Sala <span className="text-[#737373] font-normal text-xs">(opcional)</span>
-                </Label>
-                <div className="relative">
-                  <DoorOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                  <Input
-                    value={novaSala}
-                    onChange={(e) => setNovaSala(e.target.value)}
-                    placeholder="Ex: Sala 12"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[#0a0a0a] font-medium text-xs">
-                  Nome do Professor <span className="text-[#737373] font-normal text-xs">(opcional)</span>
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                  <Input
-                    value={novoNomeProfessor}
-                    onChange={(e) => setNovoNomeProfessor(e.target.value)}
-                    placeholder="Ex: Profa. Márcia"
-                    className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none w-full"
-                  />
-                </div>
               </div>
             </div>
           </section>
