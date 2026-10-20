@@ -19,6 +19,9 @@ import {
   User,
   ShieldCheck,
   Trash2,
+  Filter,
+  GraduationCap,
+  QrCode,
 } from "lucide-react";
 import { AdminRepasseItem, RepasseFiltersState, StatusRepasse } from "@/types/admin-repasse";
 import { Button } from "@/components/ui/button";
@@ -32,7 +35,7 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useAdminDeleteRepasse } from "@/hooks/api/admin/useAdminRepasseHooks";
-import { phoneMask } from "@/utils/masks";
+import { phoneMask, cpfCnpjMask } from "@/utils/masks";
 import { ROUTES } from "@/constants/routes";
 import {
   Select,
@@ -108,7 +111,7 @@ export function RepasseLogsList({
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const deleteRepasseMutation = useAdminDeleteRepasse();
   const [selectedRepasse, setSelectedRepasse] = useState<AdminRepasseItem | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleDeleteRepasse = (item: AdminRepasseItem) => {
     openConfirmationDialog({
@@ -123,12 +126,12 @@ export function RepasseLogsList({
     });
   };
 
-  const handleCopy = (text?: string | null) => {
+  const handleCopy = (text?: string | null, fieldKey = "default") => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    setIsCopied(true);
+    setCopiedField(fieldKey);
     toast.success("Copiado para a área de transferência");
-    setTimeout(() => setIsCopied(false), 2000);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   return (
@@ -140,7 +143,7 @@ export function RepasseLogsList({
             <Input
               value={filters.search}
               onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-              placeholder="Buscar por ID, EndToEndId ou código..."
+              placeholder="Buscar por motorista, pagador, aluno, CPF ou EndToEndId..."
               className="pl-9 pr-9 h-9 w-full rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus-visible:ring-0 focus:border-primary transition-colors"
             />
             {filters.search && (
@@ -232,20 +235,33 @@ export function RepasseLogsList({
 
                       {!hideDriverColumn && (
                         <td className="py-3.5 px-4">
-                          {item.motorista?.id ? (
-                            <Link
-                              to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
-                              className="font-semibold text-primary hover:underline flex items-center gap-1.5"
-                            >
-                              <User className="h-3.5 w-3.5 text-primary shrink-0" />
-                              <span className="truncate max-w-[160px]">{item.motorista.nome}</span>
-                            </Link>
-                          ) : (
-                            <div className="font-semibold text-muted-foreground flex items-center gap-1.5">
-                              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                              <span className="truncate max-w-[160px]">{item.motorista?.nome || "Motorista excluído"}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {item.motorista?.id ? (
+                              <Link
+                                to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
+                                className="font-semibold text-primary hover:underline flex items-center gap-1.5"
+                              >
+                                <User className="h-3.5 w-3.5 text-primary shrink-0" />
+                                <span className="truncate max-w-[150px]">{item.motorista.nome}</span>
+                              </Link>
+                            ) : (
+                              <div className="font-semibold text-muted-foreground flex items-center gap-1.5">
+                                <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                <span className="truncate max-w-[150px]">{item.motorista?.nome || "Motorista excluído"}</span>
+                              </div>
+                            )}
+
+                            {onFiltersChange && item.motorista?.id && (
+                              <button
+                                type="button"
+                                onClick={() => onFiltersChange({ ...filters, motoristaId: item.motorista.id })}
+                                className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-md hover:bg-secondary shrink-0"
+                                title="Filtrar por este motorista"
+                              >
+                                <Filter className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
                           {item.motorista?.telefone && (
                             <span className="text-[11px] text-muted-foreground font-mono block">
                               {phoneMask(item.motorista.telefone)}
@@ -255,9 +271,20 @@ export function RepasseLogsList({
                       )}
 
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-foreground">{item.passageiro.nome}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          Parcela {item.cobranca.mes}/{item.cobranca.ano}
+                        <div className="font-semibold text-foreground flex items-center gap-1.5">
+                          <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <span className="truncate max-w-[170px]">{item.passageiro.nome}</span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5">
+                          <span>Parcela {item.cobranca.mes}/{item.cobranca.ano}</span>
+                          {item.pagador_nome && (
+                            <>
+                              <span>•</span>
+                              <span className="text-foreground/90 font-medium truncate max-w-[160px]" title={`Pagador Pix: ${item.pagador_nome}`}>
+                                Pago por: {item.pagador_nome}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </td>
 
@@ -345,10 +372,18 @@ export function RepasseLogsList({
                       <span className="text-[11px] text-muted-foreground block font-medium">
                         {formatDateTimeToBR(item.created_at)}
                       </span>
-                      <span className="font-semibold text-sm text-foreground">{item.passageiro.nome}</span>
-                      <span className="text-xs text-muted-foreground block">
-                        Parcela {item.cobranca.mes}/{item.cobranca.ano}
+                      <span className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                        <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+                        {item.passageiro.nome}
                       </span>
+                      <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                        <span>Parcela {item.cobranca.mes}/{item.cobranca.ano}</span>
+                        {item.pagador_nome && (
+                          <span className="text-foreground/80 font-medium">
+                            • Pago por: {item.pagador_nome}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {renderStatusBadge(item.status_repasse, item.ultimo_erro)}
                   </div>
@@ -356,18 +391,31 @@ export function RepasseLogsList({
                   {!hideDriverColumn && (
                     <div className="text-xs flex items-center justify-between">
                       <span className="text-muted-foreground">Motorista:</span>
-                      {item.motorista?.id ? (
-                        <Link
-                          to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
-                          className="font-semibold text-primary hover:underline truncate max-w-[200px]"
-                        >
-                          {item.motorista.nome}
-                        </Link>
-                      ) : (
-                        <span className="font-semibold text-muted-foreground truncate max-w-[200px]">
-                          {item.motorista?.nome || "Motorista excluído"}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {item.motorista?.id ? (
+                          <Link
+                            to={ROUTES.PRIVATE.ADMIN.USER_DETAILS.replace(":id", item.motorista.id)}
+                            className="font-semibold text-primary hover:underline truncate max-w-[170px]"
+                          >
+                            {item.motorista.nome}
+                          </Link>
+                        ) : (
+                          <span className="font-semibold text-muted-foreground truncate max-w-[170px]">
+                            {item.motorista?.nome || "Motorista excluído"}
+                          </span>
+                        )}
+
+                        {onFiltersChange && item.motorista?.id && (
+                          <button
+                            type="button"
+                            onClick={() => onFiltersChange({ ...filters, motoristaId: item.motorista.id })}
+                            className="text-muted-foreground hover:text-primary transition-colors p-1"
+                            title="Filtrar por este motorista"
+                          >
+                            <Filter className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -451,25 +499,189 @@ export function RepasseLogsList({
       {selectedRepasse && (
         <AdminBaseDialog
           open={Boolean(selectedRepasse)}
-          onOpenChange={(open) => !open && setSelectedRepasse(null)}
+          onOpenChange={(open) => !open && safeCloseDialog(() => setSelectedRepasse(null))}
           description={`ID do Repasse: ${selectedRepasse.id}`}
           maxWidth="lg"
         >
           <AdminBaseDialog.Header
             title="Detalhes do repasse Pix"
             subtitle={`ID: ${selectedRepasse.id}`}
-            onClose={() => setSelectedRepasse(null)}
+            onClose={() => safeCloseDialog(() => setSelectedRepasse(null))}
           />
           <AdminBaseDialog.Body>
-            <div className="space-y-5 text-xs text-foreground">
-              <div className="grid grid-cols-2 gap-3 bg-secondary/40 p-4 rounded-2xl border border-border">
+            <div className="space-y-4 text-xs text-foreground">
+              <div className="grid grid-cols-2 gap-3 bg-secondary/40 p-3.5 rounded-2xl border border-border">
                 <div>
-                  <span className="text-xs text-muted-foreground font-medium block">Status do repasse</span>
-                  <div className="mt-1">{renderStatusBadge(selectedRepasse.status_repasse)}</div>
+                  <span className="text-[11px] text-muted-foreground font-medium block">Status do repasse</span>
+                  <div className="mt-1">{renderStatusBadge(selectedRepasse.status_repasse, selectedRepasse.ultimo_erro)}</div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted-foreground font-medium block">Provedor gateway</span>
-                  <span className="font-semibold text-foreground mt-1 inline-block">{selectedRepasse.provedor}</span>
+                  <span className="text-[11px] text-muted-foreground font-medium block">Provedor gateway</span>
+                  <span className="font-semibold text-foreground mt-1 inline-block">{selectedRepasse.provedor} (BaaS Pix)</span>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <QrCode className="h-3.5 w-3.5 text-primary" />
+                  Origem do pagamento Pix (Entrada)
+                </h4>
+                <div className="bg-secondary/40 p-3.5 rounded-2xl border border-border space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block">Aluno vinculado</span>
+                      <span className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
+                        <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="truncate">{selectedRepasse.passageiro.nome}</span>
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block font-mono mt-0.5">
+                        Parcela {selectedRepasse.cobranca.mes}/{selectedRepasse.cobranca.ano} • Vencimento: {selectedRepasse.cobranca.data_vencimento ? formatDateTimeToBR(selectedRepasse.cobranca.data_vencimento) : "N/D"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block">Titular pagador Pix</span>
+                      <span className="font-semibold text-foreground block mt-0.5 truncate">
+                        {selectedRepasse.pagador_nome || "Nome não identificado pelo banco"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono block mt-0.5">
+                        CPF/CNPJ: {selectedRepasse.pagador_documento ? cpfCnpjMask(selectedRepasse.pagador_documento) : "Não informado"}
+                        {selectedRepasse.pagador_banco && ` • Banco: ${selectedRepasse.pagador_banco}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border/40 pt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">Data/hora do pagamento Pix:</span>
+                      <span className="text-foreground font-mono font-medium block mt-0.5">
+                        {selectedRepasse.data_pagamento_pai
+                          ? formatDateTimeToBR(selectedRepasse.data_pagamento_pai, { includeTime: true })
+                          : "Pendente"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">End-to-End ID do pagamento (In):</span>
+                      <div className="flex items-center justify-between text-foreground font-mono mt-0.5 break-all">
+                        <span className="text-[11px] truncate max-w-[220px]" title={selectedRepasse.end_to_end_id_in || ""}>
+                          {selectedRepasse.end_to_end_id_in || "Não gerado"}
+                        </span>
+                        {selectedRepasse.end_to_end_id_in && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedRepasse.end_to_end_id_in, "e2e_in")}
+                            className="text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
+                            title="Copiar End-to-End ID de entrada"
+                          >
+                            {copiedField === "e2e_in" ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-primary" />
+                  Destino e repasse ao motorista (Saída)
+                </h4>
+                <div className="bg-secondary/40 p-3.5 rounded-2xl border border-border space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="font-semibold text-foreground block truncate">{selectedRepasse.motorista.nome}</span>
+                      <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-2 mt-0.5">
+                        <span>ID: {selectedRepasse.motorista_id}</span>
+                        {selectedRepasse.motorista.telefone && (
+                          <span>• Tel: {phoneMask(selectedRepasse.motorista.telefone)}</span>
+                        )}
+                      </div>
+                    </div>
+                    {onFiltersChange && selectedRepasse.motorista_id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          onFiltersChange({ ...filters, motoristaId: selectedRepasse.motorista_id });
+                          safeCloseDialog(() => setSelectedRepasse(null));
+                        }}
+                        className="h-7 text-xs rounded-xl gap-1 shrink-0 bg-background"
+                      >
+                        <Search className="h-3 w-3" />
+                        <span>Filtrar motorista</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border/40 pt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">Chave Pix de destino:</span>
+                      <div className="flex items-center justify-between text-foreground font-mono mt-0.5 break-all">
+                        <span className="text-[11px] truncate max-w-[220px]" title={selectedRepasse.chave_pix || ""}>
+                          {selectedRepasse.chave_pix || "Chave cadastrada"}
+                        </span>
+                        {selectedRepasse.chave_pix && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedRepasse.chave_pix, "chave_pix")}
+                            className="text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
+                            title="Copiar Chave Pix"
+                          >
+                            {copiedField === "chave_pix" ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">Data/hora da transferência (Saque):</span>
+                      <span className="text-foreground font-mono font-medium block mt-0.5">
+                        {selectedRepasse.data_repasse_motorista
+                          ? formatDateTimeToBR(selectedRepasse.data_repasse_motorista, { includeTime: true })
+                          : "Pendente"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border/40 pt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">End-to-End ID do saque (Out):</span>
+                      <div className="flex items-center justify-between text-foreground font-mono mt-0.5 break-all">
+                        <span className="text-[11px] truncate max-w-[220px]" title={selectedRepasse.end_to_end_id_out || ""}>
+                          {selectedRepasse.end_to_end_id_out || "Não gerado"}
+                        </span>
+                        {selectedRepasse.end_to_end_id_out && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedRepasse.end_to_end_id_out, "e2e_out")}
+                            className="text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
+                            title="Copiar End-to-End ID de saída"
+                          >
+                            {copiedField === "e2e_out" ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-sans">ID da transação no provedor:</span>
+                      <div className="flex items-center justify-between text-foreground font-mono mt-0.5 break-all">
+                        <span className="text-[11px] truncate max-w-[220px]" title={selectedRepasse.transacao_provedor_id}>
+                          {selectedRepasse.transacao_provedor_id}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(selectedRepasse.transacao_provedor_id, "tx_id")}
+                          className="text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
+                          title="Copiar ID da transação"
+                        >
+                          {copiedField === "tx_id" ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -480,7 +692,7 @@ export function RepasseLogsList({
                 </h4>
                 <div className="grid grid-cols-3 gap-2 bg-secondary/40 p-3 rounded-2xl border border-border text-center">
                   <div>
-                    <span className="text-[11px] text-muted-foreground block">Valor bruto</span>
+                    <span className="text-[11px] text-muted-foreground block">Valor bruto pago</span>
                     <span className="font-semibold text-foreground font-mono">{formatCurrency(selectedRepasse.valor_bruto)}</span>
                   </div>
                   <div>
@@ -488,40 +700,38 @@ export function RepasseLogsList({
                     <span className="font-semibold text-amber-500 font-mono">-{formatCurrency(selectedRepasse.taxa_plataforma)}</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-muted-foreground block">Líquido transferido</span>
+                    <span className="text-[11px] text-muted-foreground block">Líquido motorista</span>
                     <span className="font-semibold text-emerald-500 font-mono">
                       {formatCurrency(selectedRepasse.valor_liquido_motorista)}
                     </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2.5">
-                <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                  Identificadores bancários
-                </h4>
-                <div className="space-y-2 bg-secondary/40 p-3.5 rounded-2xl border border-border font-mono text-xs">
-                  <div>
-                    <span className="text-[11px] text-muted-foreground block font-sans">End-to-End ID do saque (out):</span>
-                    <div className="flex items-center justify-between text-foreground mt-0.5 break-all">
-                      <span>{selectedRepasse.end_to_end_id_out || "Não gerado"}</span>
-                      {selectedRepasse.end_to_end_id_out && (
-                        <button
-                          onClick={() => handleCopy(selectedRepasse.end_to_end_id_out)}
-                          className="text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
-                        >
-                          {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                        </button>
-                      )}
+                {(() => {
+                  const pixIn = selectedRepasse.tarifa_gateway_pix_in || 0.85;
+                  const pixOut = selectedRepasse.tarifa_gateway_saque || 1.00;
+                  const custoTotal = pixIn + pixOut;
+                  const lucroLiquido = selectedRepasse.taxa_plataforma - custoTotal;
+
+                  return (
+                    <div className="bg-secondary/40 p-3 rounded-2xl border border-border space-y-2">
+                      <span className="text-[11px] text-muted-foreground font-semibold flex items-center justify-between">
+                        <span>Custos do provedor BaaS & Margem líquida</span>
+                        <span className="font-mono text-muted-foreground">R$ 1,85 / transação</span>
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-border/40">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Custos gateway (Pix R$ 0,85 + Saque R$ 1,00)</span>
+                          <span className="font-semibold text-destructive font-mono">-{formatCurrency(custoTotal)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Lucro líquido Van360</span>
+                          <span className="font-semibold text-emerald-500 font-mono">+{formatCurrency(lucroLiquido)}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="border-t border-border/60 pt-2">
-                    <span className="text-[11px] text-muted-foreground block font-sans">Transação do provedor:</span>
-                    <span className="text-foreground/80 break-all">{selectedRepasse.transacao_provedor_id}</span>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
 
               {selectedRepasse.status_repasse === "FALHA" && selectedRepasse.ultimo_erro && (
@@ -548,25 +758,6 @@ export function RepasseLogsList({
                   </span>
                 </div>
               )}
-
-              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground border-t border-border/60 pt-3">
-                <div>
-                  <span className="text-muted-foreground block font-sans">Pagamento do responsável:</span>
-                  <span className="text-foreground font-mono">
-                    {selectedRepasse.data_pagamento_pai
-                      ? formatDateTimeToBR(selectedRepasse.data_pagamento_pai)
-                      : "Pendente"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block font-sans">Repasse ao motorista:</span>
-                  <span className="text-foreground font-mono">
-                    {selectedRepasse.data_repasse_motorista
-                      ? formatDateTimeToBR(selectedRepasse.data_repasse_motorista)
-                      : "Pendente"}
-                  </span>
-                </div>
-              </div>
             </div>
           </AdminBaseDialog.Body>
         </AdminBaseDialog>

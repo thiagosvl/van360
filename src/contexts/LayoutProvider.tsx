@@ -14,6 +14,7 @@ import AdminVencimentoDetalhesDialog from "@/components/dialogs/AdminVencimentoD
 import AdminUserActivityHistoryDialog from "@/components/dialogs/AdminUserActivityHistoryDialog";
 import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EditarPixVeiculoDialog from "@/components/dialogs/EditarPixVeiculoDialog";
+import EditarPixPassageiroDialog from "@/components/dialogs/EditarPixPassageiroDialog";
 import ConfigurarCobrancaWizardDialog from "@/components/dialogs/ConfigurarCobrancaWizardDialog";
 import { ConfirmarMudancaModoVanDialog } from "@/components/dialogs/ConfirmarMudancaModoVanDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -97,6 +98,7 @@ import {
   OpenWhatsAppCobrancaPreviewDialogProps,
   OpenEditarPixDialogProps,
   OpenEditarPixVeiculoDialogProps,
+  OpenEditarPixPassageiroDialogProps,
   OpenConfigurarCobrancaWizardProps,
   OpenConfirmarMudancaModoVanProps,
   OpenWhatsAppContratoPreviewDialogProps,
@@ -472,6 +474,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarPixVeiculoDialogState, setEditarPixVeiculoDialogState] = useState<{
     open: boolean;
     props?: OpenEditarPixVeiculoDialogProps;
+  }>({ open: false });
+  const [editarPixPassageiroDialogState, setEditarPixPassageiroDialogState] = useState<{
+    open: boolean;
+    props?: OpenEditarPixPassageiroDialogProps;
   }>({ open: false });
   const [configurarCobrancaWizardDialogState, setConfigurarCobrancaWizardDialogState] = useState<{
     open: boolean;
@@ -1100,6 +1106,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           safeCloseDialog(() =>
             setEditarPixVeiculoDialogState((prev) => ({ ...prev, open: false }))
           ),
+        openEditarPixPassageiroDialog: (props: OpenEditarPixPassageiroDialogProps) =>
+          setEditarPixPassageiroDialogState({ open: true, props }),
+        closeEditarPixPassageiroDialog: () =>
+          safeCloseDialog(() =>
+            setEditarPixPassageiroDialogState((prev) => ({ ...prev, open: false }))
+          ),
         openConfigurarCobrancaWizardDialog: (props: OpenConfigurarCobrancaWizardProps) =>
           setConfigurarCobrancaWizardDialogState({ open: true, props }),
         closeConfigurarCobrancaWizardDialog: () =>
@@ -1571,6 +1583,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setEditarPixVeiculoDialogState({ open: false }))}
           veiculo={editarPixVeiculoDialogState.props.veiculo}
           onSuccess={editarPixVeiculoDialogState.props.onSuccess}
+        />
+      )}
+
+      {editarPixPassageiroDialogState.open && editarPixPassageiroDialogState.props && (
+        <EditarPixPassageiroDialog
+          isOpen={editarPixPassageiroDialogState.open}
+          onClose={() => safeCloseDialog(() => setEditarPixPassageiroDialogState({ open: false }))}
+          passageiro={editarPixPassageiroDialogState.props.passageiro}
+          onSuccess={editarPixPassageiroDialogState.props.onSuccess}
         />
       )}
 

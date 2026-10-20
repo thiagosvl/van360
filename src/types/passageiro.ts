@@ -53,6 +53,8 @@ export interface Passageiro {
   escola?: { id?: string; nome?: string };
   escola_nome?: string;
   veiculo?: { id?: string; placa?: string; modelo?: string; chave_pix?: string | null; tipo_chave_pix?: string | null };
+  chave_pix?: string | null;
+  tipo_chave_pix?: string | null;
 
   status_contrato?: ContratoStatus;
   contrato_id?: string;

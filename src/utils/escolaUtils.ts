@@ -22,6 +22,9 @@ export function formatarNomeTurno(periodo?: string | null): string {
   if (p === PassageiroPeriodo.INTEGRAL || p === "integral") {
     return "Integral";
   }
+  if (p === PassageiroPeriodo.SEMI_INTEGRAL || p === "semi_integral" || p === "semi-integral" || p === "semi integral") {
+    return "Semi-integral";
+  }
 
   return "Outros";
 }
@@ -34,6 +37,7 @@ export function agruparAlunosPorTurno<T extends AlunoComPeriodo>(
     Tarde: [],
     Noite: [],
     Integral: [],
+    "Semi-integral": [],
     Outros: [],
   };
 
@@ -59,6 +63,7 @@ export function calcularResumoAlunosPorTurno<T extends AlunoComPeriodo>(
     Tarde: agrupado.Tarde.length,
     Noite: agrupado.Noite.length,
     Integral: agrupado.Integral.length,
+    "Semi-integral": agrupado["Semi-integral"].length,
     Outros: agrupado.Outros.length,
   };
 }

@@ -137,6 +137,7 @@ export interface PreviewConfig {
   multaRescisao?: { valor: number; tipo: ContractMultaTipo };
   assinaturaCondutorUrl?: string | null;
   logoCondutorUrl?: string | null;
+  exibirVeiculo?: boolean;
 }
 
 export function usePreviewContrato() {

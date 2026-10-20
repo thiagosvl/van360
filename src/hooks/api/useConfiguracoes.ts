@@ -22,6 +22,7 @@ export interface ConfiguracoesUsuario {
   formato_nome_responsavel?: "primeiro_nome" | "completo";
   formato_nome_aluno?: "curto" | "completo";
   exibir_telefone_lista_alunos?: boolean;
+  contrato_exibir_dados_veiculo?: boolean;
   chave_pix: string | null;
   tipo_chave_pix: string | null;
 }
@@ -45,6 +46,7 @@ export type UpdateConfiguracoesInput = Partial<
     | "formato_nome_responsavel"
     | "formato_nome_aluno"
     | "exibir_telefone_lista_alunos"
+    | "contrato_exibir_dados_veiculo"
   >
 >;
 

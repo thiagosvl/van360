@@ -158,7 +158,8 @@ export enum PassageiroPeriodo {
   MANHA = "manha",
   TARDE = "tarde",
   NOITE = "noite",
-  INTEGRAL = "integral"
+  INTEGRAL = "integral",
+  SEMI_INTEGRAL = "semi_integral"
 }
 
 export enum AtividadeEntidadeTipo {

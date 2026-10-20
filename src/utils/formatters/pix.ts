@@ -33,3 +33,9 @@ export function formatarChavePix(chave?: string | null, tipo?: string | null): s
 
   return clean;
 }
+
+export function aplicarMascaraPix(chave?: string | null, tipo?: string | null): string {
+  if (!chave || chave.trim() === "") return "";
+  const res = formatarChavePix(chave, tipo);
+  return res === "—" ? chave : res;
+}

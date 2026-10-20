@@ -28,7 +28,11 @@ import {
   ShieldCheck,
   MessageSquare,
   SlidersHorizontal,
+  Key,
+  Pencil,
 } from "lucide-react";
+import { usePixPassageiroResolver } from "@/hooks/ui/usePixPassageiroResolver";
+import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 import { UnifiedEmptyState } from "@/components/empty";
@@ -91,9 +95,16 @@ export const CarteirinhaCobrancas = ({
     openAnnualReceiptDialog,
     openPassageiroFinanceiroDialog,
     openResponsavelFormDialog,
+    openEditarPixPassageiroDialog,
   } = useLayout();
   const { can } = usePermissions();
   const canManageFinancials = can("passageiros.gerenciar") || can("cobrancas.gerenciar");
+  const { getPixInfo } = usePixPassageiroResolver();
+  const pixInfo = getPixInfo(passageiro, passageiro.veiculo);
+  const tipoLabel = pixInfo.tipo
+    ? (TIPOS_CHAVE_PIX_LABEL[pixInfo.tipo as TipoChavePix] || pixInfo.tipo)
+    : "Pix";
+  const temChaveDedicada = Boolean(passageiro?.chave_pix && passageiro.chave_pix.trim() !== "");
   const elegibilidadeReciboAnual = useReciboAnualElegibilidade({
     passageiro,
     selectedYear,
@@ -421,6 +432,26 @@ export const CarteirinhaCobrancas = ({
         </div>
       )}
 
+      {temChaveDedicada && (
+        <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <Key className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+            <span className="text-[#737373] font-medium shrink-0">Chave Pix ({tipoLabel}):</span>
+            <span className="font-semibold text-[#0a0a0a] truncate select-all">{pixInfo.chaveFormatada}</span>
+          </div>
+          {canManageFinancials && (
+            <button
+              type="button"
+              onClick={() => openEditarPixPassageiroDialog({ passageiro })}
+              className="text-[#737373] hover:text-[#0a0a0a] transition-colors p-1 cursor-pointer shrink-0"
+              title="Editar chave Pix do aluno"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       {showAjusteBanner && (
         <Banner
           variant="info"
@@ -575,10 +606,14 @@ const CobrancaItemPassageiro = forwardRef<
   const respPrincipal = passageiro.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
 
-  const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || passageiro.veiculo?.chave_pix || chavePix;
-  const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
-    ? cobranca.passageiro.veiculo.tipo_chave_pix
-    : (passageiro.veiculo?.chave_pix ? passageiro.veiculo.tipo_chave_pix : tipoChavePix);
+  const chavePixResolvida = cobranca.passageiro?.chave_pix || passageiro.chave_pix || cobranca.passageiro?.veiculo?.chave_pix || passageiro.veiculo?.chave_pix || chavePix;
+  const tipoChavePixResolvida = cobranca.passageiro?.chave_pix
+    ? cobranca.passageiro.tipo_chave_pix
+    : passageiro.chave_pix
+      ? passageiro.tipo_chave_pix
+      : cobranca.passageiro?.veiculo?.chave_pix
+        ? cobranca.passageiro.veiculo.tipo_chave_pix
+        : (passageiro.veiculo?.chave_pix ? passageiro.veiculo.tipo_chave_pix : tipoChavePix);
 
   const onEnviarCobranca = !isCancelada && telefoneResponsavel && !isIncomplete && (valorExibicao > 0 || !cobranca.isProjection)
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({

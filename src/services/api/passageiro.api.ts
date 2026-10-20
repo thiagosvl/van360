@@ -163,4 +163,12 @@ export const passageiroApi = {
     apiClient
       .put(`${endpointBase}/batch`, { passageiros })
       .then(res => res.data),
+
+  atualizarPixPassageiro: (
+    id: string,
+    data: { chave_pix: string | null; tipo_chave_pix: string | null }
+  ): Promise<Passageiro> =>
+    apiClient
+      .patch(`${endpointBase}/${id}/pix`, data)
+      .then(res => res.data),
 };

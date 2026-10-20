@@ -15,6 +15,7 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
     (configuracoes?.formato_nome_aluno as "curto" | "completo") || formatoNomeAluno || "curto";
   const formatoAtual = configuracoes?.formato_nome_responsavel || "primeiro_nome";
   const exibirTelefoneAtual = configuracoes?.exibir_telefone_lista_alunos ?? false;
+  const exibirVeiculoContratoAtual = configuracoes?.contrato_exibir_dados_veiculo ?? true;
   const isBusy = isLoading || isUpdating || updatingKey !== null;
 
   const handleSelectFormatoAluno = async (formato: "curto" | "completo") => {
@@ -51,6 +52,22 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
         novoValor
           ? "Telefone ativado na lista de alunos!"
           : "Telefone ocultado da lista de alunos!"
+      );
+    } catch {
+    } finally {
+      setUpdatingKey(null);
+    }
+  };
+
+  const handleToggleVeiculoContrato = async (novoValor: boolean) => {
+    if (novoValor === exibirVeiculoContratoAtual || isBusy) return;
+    setUpdatingKey(novoValor ? "veiculo_contrato_true" : "veiculo_contrato_false");
+    try {
+      await updateConfiguracoes({ contrato_exibir_dados_veiculo: novoValor });
+      toast.success(
+        novoValor
+          ? "Exibição do veículo ativada nos contratos!"
+          : "Dados do veículo ocultados dos contratos!"
       );
     } catch {
     } finally {
@@ -287,6 +304,77 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
             </div>
             <span className="text-sm font-medium text-[#0a0a0a]">
               Exibir Telefone
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+        <div>
+          <h3 className="text-sm font-semibold text-[#0a0a0a]">
+            Dados do Veículo no Contrato
+          </h3>
+          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+            Escolha se as informações de marca, modelo e placa do veículo devem ser exibidas nos contratos e no modelo de contrato.
+          </p>
+        </div>
+
+        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => handleToggleVeiculoContrato(true)}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
+              className={cn(
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                exibirVeiculoContratoAtual
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
+              )}
+            >
+              {updatingKey === "veiculo_contrato_true" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : exibirVeiculoContratoAtual ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Exibir Veículo no Contrato (Padrão)
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleToggleVeiculoContrato(false)}
+            disabled={isBusy}
+            className={cn(
+              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+              !exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+            )}
+          >
+            <div
+              className={cn(
+                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                !exibirVeiculoContratoAtual
+                  ? "border-primary bg-primary"
+                  : "border-[#e5e5e5] bg-transparent"
+              )}
+            >
+              {updatingKey === "veiculo_contrato_false" ? (
+                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+              ) : !exibirVeiculoContratoAtual ? (
+                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+              ) : null}
+            </div>
+            <span className="text-sm font-medium text-[#0a0a0a]">
+              Não Exibir Veículo no Contrato
             </span>
           </button>
         </div>

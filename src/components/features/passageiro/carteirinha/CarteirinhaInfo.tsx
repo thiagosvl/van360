@@ -30,6 +30,7 @@ import {
   Pencil,
   Power,
   PowerOff,
+  Key,
   Trash2,
   User,
   Bot,
@@ -85,6 +86,8 @@ const CarteirinhaTopCard = ({
   const isMobile = useIsMobile();
   const { can, isSubConta } = usePermissions();
   const canManage = can("passageiros.gerenciar");
+  const canConfigurarPix = can("passageiros.gerenciar") || can("financeiro.visualizar");
+  const { openEditarPixPassageiroDialog } = useLayout();
   const statusContrato = passageiro.status_contrato?.toString().toLowerCase();
   const isPendente =
     statusContrato === ContratoStatus.PENDENTE ||
@@ -240,6 +243,15 @@ const CarteirinhaTopCard = ({
                       label: passageiro.enviar_notificacoes ? "Desativar Lembretes" : "Ativar Lembretes",
                       icon: passageiro.enviar_notificacoes ? <BotOff className="h-4 w-4 text-[#737373]" /> : <Bot className="h-4 w-4 text-[#737373]" />,
                       onClick: onToggleNotificacoesClick,
+                    },
+                  ]
+                : []),
+              ...(canConfigurarPix
+                ? [
+                    {
+                      label: "Chave Pix do Aluno",
+                      icon: <Key className="h-4 w-4 text-[#737373]" />,
+                      onClick: () => openEditarPixPassageiroDialog({ passageiro }),
                     },
                   ]
                 : []),

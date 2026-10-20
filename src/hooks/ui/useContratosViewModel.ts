@@ -113,9 +113,13 @@ export function useContratosViewModel() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  useEffect(() => {
+  const [prevFilterKey, setPrevFilterKey] = useState("");
+  const currentFilterKey = `${activeTab}|${debouncedSearch}|${anoLetivo}`;
+
+  if (currentFilterKey !== prevFilterKey) {
+    setPrevFilterKey(currentFilterKey);
     setPage(1);
-  }, [activeTab, debouncedSearch, anoLetivo]);
+  }
 
   const contratosFilters = useMemo(
     () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo, page, limit }),

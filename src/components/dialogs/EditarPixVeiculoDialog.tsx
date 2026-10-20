@@ -1,28 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import BaseDialog from "@/components/ui/BaseDialog";
 import { Banner } from "@/components/ui/Banner";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
 import { Veiculo } from "@/types/veiculo";
 import { pixKeySchema } from "@/schemas/pix";
-import { cpfMask, cnpjMask, phoneMask, evpMask } from "@/utils/masks";
+import { aplicarMascaraPix } from "@/utils/formatters/pix";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useUpdatePixVeiculo } from "@/hooks/api/useVeiculoMutations";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { PixKeyFields } from "@/components/features/pix/PixKeyFields";
 import { Key, Trash2 } from "lucide-react";
 import { z } from "zod";
 
@@ -41,8 +31,6 @@ export default function EditarPixVeiculoDialog({
   veiculo,
   onSuccess,
 }: EditarPixVeiculoDialogProps) {
-  const { user } = useSession();
-  const { profile } = useProfile(user?.id);
   const { financeiro } = useMotoristaFinanceiroApi();
   const updatePixMutation = useUpdatePixVeiculo();
 
@@ -70,10 +58,7 @@ export default function EditarPixVeiculoDialog({
       originalTipoRef.current = tipo || null;
       originalChaveRef.current = chave;
 
-      if (tipo === TipoChavePix.CPF) chave = cpfMask(chave);
-      else if (tipo === TipoChavePix.CNPJ) chave = cnpjMask(chave);
-      else if (tipo === TipoChavePix.TELEFONE) chave = phoneMask(chave);
-      else if (tipo === TipoChavePix.ALEATORIA) chave = evpMask(chave);
+      chave = aplicarMascaraPix(chave, tipo);
 
       form.reset({
         tipo_chave_pix: tipo,
@@ -89,11 +74,7 @@ export default function EditarPixVeiculoDialog({
   const chavePadraoFormatada = (() => {
     if (!financeiro?.chave_pix_repasse || !financeiro?.tipo_chave_pix) return null;
     const tipo = financeiro.tipo_chave_pix as TipoChavePix;
-    let chave = financeiro.chave_pix_repasse;
-    if (tipo === TipoChavePix.CPF) chave = cpfMask(chave);
-    else if (tipo === TipoChavePix.CNPJ) chave = cnpjMask(chave);
-    else if (tipo === TipoChavePix.TELEFONE) chave = phoneMask(chave);
-    else if (tipo === TipoChavePix.ALEATORIA) chave = evpMask(chave);
+    const chave = aplicarMascaraPix(financeiro.chave_pix_repasse, tipo);
     return `${chave} (${TIPOS_CHAVE_PIX_LABEL[tipo] || tipo})`;
   })();
 
@@ -170,107 +151,11 @@ export default function EditarPixVeiculoDialog({
 
           <Form {...form}>
             <form id="editar-pix-veiculo-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="tipo_chave_pix"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-semibold text-[#0a0a0a]">Tipo de Chave</FormLabel>
-                    <FormControl>
-                      <NativeSelect
-                        value={field.value || ""}
-                        className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a]"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (!val) {
-                            field.onChange(undefined);
-                            form.setValue("chave_pix", "");
-                            return;
-                          }
-
-                          const selecionado = val as TipoChavePix;
-                          field.onChange(selecionado);
-
-                          if (selecionado === originalTipoRef.current) {
-                            let chaveOriginal = originalChaveRef.current;
-                            if (selecionado === TipoChavePix.CPF) chaveOriginal = cpfMask(chaveOriginal);
-                            else if (selecionado === TipoChavePix.CNPJ) chaveOriginal = cnpjMask(chaveOriginal);
-                            else if (selecionado === TipoChavePix.TELEFONE) chaveOriginal = phoneMask(chaveOriginal);
-                            else if (selecionado === TipoChavePix.ALEATORIA) chaveOriginal = evpMask(chaveOriginal);
-                            form.setValue("chave_pix", chaveOriginal);
-                          } else {
-                            let preenchimento = "";
-                            if (profile) {
-                              const cpfLimpo = profile.cpfcnpj ? profile.cpfcnpj.replace(/\D/g, "") : "";
-                              if (selecionado === TipoChavePix.CPF && cpfLimpo.length === 11) {
-                                preenchimento = cpfMask(profile.cpfcnpj);
-                              } else if (selecionado === TipoChavePix.CNPJ && cpfLimpo.length === 14) {
-                                preenchimento = cnpjMask(profile.cpfcnpj);
-                              } else if (selecionado === TipoChavePix.TELEFONE && profile.telefone) {
-                                preenchimento = phoneMask(profile.telefone);
-                              } else if (selecionado === TipoChavePix.EMAIL && (profile.email || user?.email)) {
-                                preenchimento = profile.email || user?.email || "";
-                              }
-                            }
-                            form.setValue("chave_pix", preenchimento);
-                          }
-                        }}
-                      >
-                        <option value="" disabled>Selecionar...</option>
-                        {Object.values(TipoChavePix).map((tipo) => (
-                          <option key={tipo} value={tipo}>
-                            {TIPOS_CHAVE_PIX_LABEL[tipo]}
-                          </option>
-                        ))}
-                      </NativeSelect>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="chave_pix"
-                render={({ field }) => {
-                  const tipo = form.watch("tipo_chave_pix");
-                  return (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-[#0a0a0a]">Chave Pix</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={tipo ? "Digite a chave Pix deste veículo" : "Selecione o tipo de chave primeiro"}
-                          disabled={!tipo || isSaving}
-                          type={tipo === TipoChavePix.TELEFONE ? "tel" : "text"}
-                          inputMode={
-                            tipo === TipoChavePix.CPF ||
-                            tipo === TipoChavePix.CNPJ ||
-                            tipo === TipoChavePix.TELEFONE
-                              ? "numeric"
-                              : "text"
-                          }
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            let maskedVal = val;
-                            if (tipo === TipoChavePix.CPF) {
-                              maskedVal = cpfMask(val);
-                            } else if (tipo === TipoChavePix.CNPJ) {
-                              maskedVal = cnpjMask(val);
-                            } else if (tipo === TipoChavePix.TELEFONE) {
-                              maskedVal = phoneMask(val);
-                            } else if (tipo === TipoChavePix.ALEATORIA) {
-                              maskedVal = evpMask(val);
-                            }
-                            field.onChange(maskedVal);
-                          }}
-                          className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+              <PixKeyFields
+                form={form}
+                isBusy={isSaving}
+                originalTipoRef={originalTipoRef}
+                originalChaveRef={originalChaveRef}
               />
             </form>
           </Form>

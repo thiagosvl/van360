@@ -154,9 +154,13 @@ export function usePassageirosViewModel() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
 
-  useEffect(() => {
+  const [prevFilterKey, setPrevFilterKey] = useState("");
+  const currentFilterKey = `${debouncedSearchTerm}|${selectedEscola}|${selectedVeiculo}|${selectedStatus}|${selectedPeriodo}|${selectedAnoLetivo}`;
+
+  if (currentFilterKey !== prevFilterKey) {
+    setPrevFilterKey(currentFilterKey);
     setPage(1);
-  }, [debouncedSearchTerm, selectedEscola, selectedVeiculo, selectedStatus, selectedPeriodo, selectedAnoLetivo]);
+  }
 
   const passageiroFilters = useMemo(
     () => ({

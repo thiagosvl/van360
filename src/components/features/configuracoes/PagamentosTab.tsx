@@ -168,6 +168,8 @@ export const PagamentosTab = memo(function PagamentosTab() {
       try {
         await updateFinanceiro({
           modo_cobranca: ModoCobrancaEnum.DESATIVADO,
+          chave_pix_repasse: null,
+          tipo_chave_pix: null,
           aplicar_a_todos: aplicarATodos,
         });
         setModoVisual(MODO_COBRANCA.DESATIVADO);

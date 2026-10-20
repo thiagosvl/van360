@@ -2,6 +2,7 @@ import { PassageiroPeriodo } from "@/types/enums";
 
 export const formatPeriodo = (periodo: string): string => {
   if (periodo === PassageiroPeriodo.INTEGRAL) return "Integral";
+  if (periodo === PassageiroPeriodo.SEMI_INTEGRAL || periodo === "semi-integral" || periodo === "semi integral") return "Semi-integral";
   if (periodo === PassageiroPeriodo.MANHA) return "Manhã";
   if (periodo === PassageiroPeriodo.TARDE) return "Tarde";
   if (periodo === PassageiroPeriodo.NOITE) return "Noite";

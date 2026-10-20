@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   RefreshCw,
   ChevronLeft,
@@ -7,7 +8,10 @@ import {
   DollarSign,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
+  Building2,
+  TrendingUp,
+  X,
+  User,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -36,12 +40,14 @@ export default function AdminRepasses() {
   const { setPageTitle } = useLayout();
   const queryClient = useQueryClient();
   const { isConnected } = useAdminRealtimeRepasses();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     setPageTitle("Repasses Pix");
   }, [setPageTitle]);
 
   const initialPeriod = calculateDateRangeForPreset("mes_atual");
+  const urlMotoristaId = searchParams.get("motorista_id") || undefined;
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState("25");
@@ -49,9 +55,18 @@ export default function AdminRepasses() {
   const [filters, setFilters] = useState<RepasseFiltersState>({
     status: "TODOS",
     search: "",
+    motoristaId: urlMotoristaId,
     dataInicio: initialPeriod.dataInicio || "",
     dataFim: initialPeriod.dataFim || "",
   });
+
+  useEffect(() => {
+    const paramId = searchParams.get("motorista_id") || undefined;
+    if (paramId !== filters.motoristaId) {
+      setFilters((prev) => ({ ...prev, motoristaId: paramId }));
+      setPage(1);
+    }
+  }, [searchParams]);
 
   const repassesQuery = useAdminRepasses({
     page,
@@ -60,11 +75,13 @@ export default function AdminRepasses() {
     data_fim: filters.dataFim,
     status: filters.status,
     search: filters.search,
+    motorista_id: filters.motoristaId,
   });
 
   const kpisQuery = useAdminRepasseKpis({
     data_inicio: filters.dataInicio,
     data_fim: filters.dataFim,
+    motorista_id: filters.motoristaId,
   });
 
   const retryMutation = useAdminRetryRepasse();
@@ -73,14 +90,21 @@ export default function AdminRepasses() {
     await queryClient.invalidateQueries({ queryKey: ADMIN_REPASSE_KEYS.all });
   };
 
-  const handleApplyPeriod = (inicio: string, fim: string) => {
-    setFilters((prev) => ({ ...prev, dataInicio: inicio, dataFim: fim }));
+  const handleClearMotoristaFilter = () => {
+    setFilters((prev) => ({ ...prev, motoristaId: undefined }));
     setPage(1);
+    if (searchParams.has("motorista_id")) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("motorista_id");
+      setSearchParams(nextParams);
+    }
   };
 
   const kpis = kpisQuery.data || {
     total_repassado: 0,
     total_taxa_plataforma: 0,
+    total_custo_provedor: 0,
+    total_lucro_liquido: 0,
     total_sucesso: 0,
     total_falhas: 0,
     total_pendentes: 0,
@@ -138,11 +162,11 @@ export default function AdminRepasses() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <AdminKpiCard
           title="Total repassado"
           value={formatCurrency(kpis.total_repassado)}
-          subtext="Líquido transferido aos motoristas"
+          subtext="Líquido aos motoristas"
           cardBorder="border-emerald-500/30 shadow-xs"
           iconBg="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
           icon={<DollarSign className="h-5 w-5" />}
@@ -151,16 +175,34 @@ export default function AdminRepasses() {
         <AdminKpiCard
           title="Taxa retida Van360"
           value={formatCurrency(kpis.total_taxa_plataforma)}
-          subtext="Receita bruta retida da plataforma"
+          subtext="Receita bruta da plataforma"
           cardBorder="border-primary/30 shadow-xs"
           iconBg="bg-primary/10 text-primary border-primary/20"
           icon={<ArrowUpRight className="h-5 w-5" />}
         />
 
         <AdminKpiCard
+          title="Custos gateway BaaS"
+          value={formatCurrency(kpis.total_custo_provedor)}
+          subtext="R$ 1,85/rep (Pix + Saque)"
+          cardBorder="border-amber-500/30 shadow-xs"
+          iconBg="bg-amber-500/10 text-amber-500 border-amber-500/20"
+          icon={<Building2 className="h-5 w-5" />}
+        />
+
+        <AdminKpiCard
+          title="Lucro líquido Van360"
+          value={formatCurrency(kpis.total_lucro_liquido)}
+          subtext="Margem real da plataforma"
+          cardBorder="border-emerald-500/40 shadow-xs"
+          iconBg="bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+
+        <AdminKpiCard
           title="Repasses concluídos"
           value={kpis.total_sucesso}
-          subtext="Transferências Pix liquidadas com sucesso"
+          subtext="Transferências liquidadas"
           cardBorder="border-border shadow-xs"
           iconBg="bg-secondary text-emerald-500 border-border"
           icon={<CheckCircle2 className="h-5 w-5" />}
@@ -171,7 +213,7 @@ export default function AdminRepasses() {
           value={kpis.total_falhas}
           subtext={
             kpis.total_falhas > 0
-              ? `${kpis.total_falhas} repasse(s) requerem retentativa manual`
+              ? `${kpis.total_falhas} repasse(s) requerem atenção`
               : "Nenhuma pendência crítica"
           }
           cardBorder={
@@ -187,6 +229,32 @@ export default function AdminRepasses() {
           icon={<AlertTriangle className="h-5 w-5" />}
         />
       </div>
+
+      {filters.motoristaId && (
+        <div className="flex items-center justify-between gap-3 bg-primary/10 border border-primary/20 px-4 py-2.5 rounded-2xl text-xs">
+          <div className="flex items-center gap-2 text-primary font-medium min-w-0">
+            <User className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+              Filtrando motorista:{" "}
+              {repassesQuery.data?.data.find((r) => r.motorista_id === filters.motoristaId)?.motorista?.nome ? (
+                <strong className="text-foreground font-semibold">
+                  {repassesQuery.data.data.find((r) => r.motorista_id === filters.motoristaId)?.motorista.nome}{" "}
+                </strong>
+              ) : null}
+              <span className="font-mono text-muted-foreground">({filters.motoristaId})</span>
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearMotoristaFilter}
+            className="h-7 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/20 rounded-xl gap-1 shrink-0"
+          >
+            <X className="h-3.5 w-3.5" />
+            <span>Limpar filtro</span>
+          </Button>
+        </div>
+      )}
 
       <RepasseLogsList
         repasses={repassesQuery.data?.data || []}

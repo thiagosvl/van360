@@ -7,7 +7,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/Banner";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
@@ -17,6 +16,9 @@ import { moneyMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2, Save } from "lucide-react";
 import React, { useEffect } from "react";
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
   const { financeiro, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
@@ -47,8 +49,26 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
 
   const cobrarMulta = form.watch("cobrar_multa_atraso");
   const tipoMulta = form.watch("multa_atraso_tipo");
+  const valorMulta = form.watch("multa_atraso_valor");
   const cobrarJuros = form.watch("cobrar_juros_atraso");
   const tipoJuros = form.watch("juros_atraso_tipo");
+  const valorJuros = form.watch("juros_atraso_valor");
+
+  const exemploMultaReais =
+    valorMulta && valorMulta > 0
+      ? tipoMulta === ContractMultaTipo.PERCENTUAL
+        ? (200 * valorMulta) / 100
+        : valorMulta
+      : 0;
+
+  const exemploJurosDiaReais =
+    valorJuros && valorJuros > 0
+      ? tipoJuros === ContractMultaTipo.PERCENTUAL
+        ? (200 * valorJuros) / 100
+        : valorJuros
+      : 0;
+
+  const exemploJurosTresDiasReais = exemploJurosDiaReais * 3;
 
   const handleSubmit = async (values: MultaJurosFormData) => {
     try {
@@ -74,7 +94,7 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
         <div className="bg-[#fafafa] rounded-[18px] p-4 sm:p-5 border border-[#e5e5e5] space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <span className="text-sm font-medium text-[#0a0a0a] block">
+              <span className="text-sm font-semibold text-[#0a0a0a] block">
                 Multa por Atraso
               </span>
               <span className="text-xs text-[#737373] block leading-relaxed">
@@ -97,93 +117,119 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           </div>
 
           {cobrarMulta && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e5e5]">
-              <FormField
-                control={form.control}
-                name="multa_atraso_tipo"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                      Formato da Multa
-                    </FormLabel>
-                    <FormControl>
-                      <div className="inline-flex p-1 bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] w-full">
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
-                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
-                            field.value === ContractMultaTipo.PERCENTUAL
-                              ? "bg-primary text-primary-foreground shadow-xs"
-                              : "text-[#737373] hover:text-[#0a0a0a]"
-                          }`}
-                        >
-                          Percentual (%)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(ContractMultaTipo.FIXO)}
-                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
-                            field.value === ContractMultaTipo.FIXO
-                              ? "bg-primary text-primary-foreground shadow-xs"
-                              : "text-[#737373] hover:text-[#0a0a0a]"
-                          }`}
-                        >
-                          Valor Fixo (R$)
-                        </button>
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-3 pt-3 border-t border-[#e5e5e5]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="multa_atraso_tipo"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        Formato da Multa
+                      </FormLabel>
+                      <FormControl>
+                        <div className="inline-flex p-1 bg-white border border-[#e5e5e5] rounded-[18px] w-full gap-1">
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
+                            className={`flex-1 py-1.5 px-3 text-xs rounded-[14px] transition-all text-center cursor-pointer ${
+                              field.value === ContractMultaTipo.PERCENTUAL
+                                ? "bg-primary/10 text-primary border border-primary/15 font-semibold"
+                                : "border border-transparent text-[#737373] hover:text-[#0a0a0a] font-medium"
+                            }`}
+                          >
+                            Percentual (%)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(ContractMultaTipo.FIXO)}
+                            className={`flex-1 py-1.5 px-3 text-xs rounded-[14px] transition-all text-center cursor-pointer ${
+                              field.value === ContractMultaTipo.FIXO
+                                ? "bg-primary/10 text-primary border border-primary/15 font-semibold"
+                                : "border border-transparent text-[#737373] hover:text-[#0a0a0a] font-medium"
+                            }`}
+                          >
+                            Valor Fixo (R$)
+                          </button>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="multa_atraso_valor"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                      {tipoMulta === ContractMultaTipo.PERCENTUAL ? "Percentual de Multa" : "Valor da Multa"}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={tipoMulta === ContractMultaTipo.PERCENTUAL ? "number" : "text"}
-                          step={tipoMulta === ContractMultaTipo.PERCENTUAL ? "0.1" : undefined}
-                          disabled={isUpdating}
-                          placeholder={tipoMulta === ContractMultaTipo.PERCENTUAL ? "0%" : "0,00"}
-                          value={
-                            field.value !== null && field.value !== undefined
-                              ? tipoMulta === ContractMultaTipo.PERCENTUAL
-                                ? field.value
-                                : moneyMask(field.value)
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              field.onChange(null);
-                              return;
+                <FormField
+                  control={form.control}
+                  name="multa_atraso_valor"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        {tipoMulta === ContractMultaTipo.PERCENTUAL ? "Percentual de Multa" : "Valor da Multa"}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={tipoMulta === ContractMultaTipo.PERCENTUAL ? "number" : "text"}
+                            step={tipoMulta === ContractMultaTipo.PERCENTUAL ? "0.1" : undefined}
+                            disabled={isUpdating}
+                            placeholder={tipoMulta === ContractMultaTipo.PERCENTUAL ? "0%" : "0,00"}
+                            value={
+                              field.value !== null && field.value !== undefined
+                                ? tipoMulta === ContractMultaTipo.PERCENTUAL
+                                  ? field.value
+                                  : moneyMask(field.value)
+                                : ""
                             }
-                            if (tipoMulta === ContractMultaTipo.PERCENTUAL) {
-                              field.onChange(Number(val));
-                            } else {
-                              const rawDigits = val.replace(/\D/g, "");
-                              field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
-                            }
-                          }}
-                          className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-8 text-[#0a0a0a]"
-                        />
-                        {tipoMulta === ContractMultaTipo.PERCENTUAL && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373]">
-                            %
-                          </span>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "") {
+                                field.onChange(null);
+                                return;
+                              }
+                              if (tipoMulta === ContractMultaTipo.PERCENTUAL) {
+                                field.onChange(Number(val));
+                              } else {
+                                const rawDigits = val.replace(/\D/g, "");
+                                field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
+                              }
+                            }}
+                            className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-8 text-[#0a0a0a]"
+                          />
+                          {tipoMulta === ContractMultaTipo.PERCENTUAL && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373] pointer-events-none">
+                              %
+                            </span>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {exemploMultaReais > 0 && (
+                <div className="p-3.5 bg-white rounded-[14px] border border-[#e5e5e5] space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs text-[#737373]">
+                      Simulação em parcela de R$ 200,00:
+                    </span>
+                    <span className="text-xs font-semibold text-[#0a0a0a]">
+                      + {formatCurrency(exemploMultaReais)} de multa única
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#f5f5f5]">
+                    <span className="text-xs text-[#737373]">
+                      Se atrasar (qualquer dia):
+                    </span>
+                    <span className="text-xs font-medium text-[#737373]">
+                      R$ 200,00 + {formatCurrency(exemploMultaReais)} ={" "}
+                      <strong className="font-semibold text-[#0a0a0a]">
+                        {formatCurrency(200 + exemploMultaReais)}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -191,11 +237,11 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
         <div className="bg-[#fafafa] rounded-[18px] p-4 sm:p-5 border border-[#e5e5e5] space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <span className="text-sm font-medium text-[#0a0a0a] block">
-                Juros de Mora (por Atraso)
+              <span className="text-sm font-semibold text-[#0a0a0a] block">
+                Juros de Mora (por Dia de Atraso)
               </span>
               <span className="text-xs text-[#737373] block leading-relaxed">
-                Incidem diariamente durante o período em que a parcela permanecer em aberto.
+                Somados a cada dia de atraso até a data em que o pagamento for realizado.
               </span>
             </div>
             <FormField
@@ -214,91 +260,117 @@ export const MultaJurosConfigForm = React.memo(function MultaJurosConfigForm() {
           </div>
 
           {cobrarJuros && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e5e5]">
-              <FormField
-                control={form.control}
-                name="juros_atraso_tipo"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                      Formato dos Juros
-                    </FormLabel>
-                    <FormControl>
-                      <div className="inline-flex p-1 bg-[#f5f5f5] border border-[#e5e5e5] rounded-[18px] w-full">
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
-                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
-                            field.value === ContractMultaTipo.PERCENTUAL
-                              ? "bg-primary text-primary-foreground shadow-xs"
-                              : "text-[#737373] hover:text-[#0a0a0a]"
-                          }`}
-                        >
-                          % ao mês
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(ContractMultaTipo.FIXO)}
-                          className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-[14px] transition-all text-center ${
-                            field.value === ContractMultaTipo.FIXO
-                              ? "bg-primary text-primary-foreground shadow-xs"
-                              : "text-[#737373] hover:text-[#0a0a0a]"
-                          }`}
-                        >
-                          R$ ao dia
-                        </button>
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-3 pt-3 border-t border-[#e5e5e5]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="juros_atraso_tipo"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        Formato dos Juros
+                      </FormLabel>
+                      <FormControl>
+                        <div className="inline-flex p-1 bg-white border border-[#e5e5e5] rounded-[18px] w-full gap-1">
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(ContractMultaTipo.PERCENTUAL)}
+                            className={`flex-1 py-1.5 px-3 text-xs rounded-[14px] transition-all text-center cursor-pointer ${
+                              field.value === ContractMultaTipo.PERCENTUAL
+                                ? "bg-primary/10 text-primary border border-primary/15 font-semibold"
+                                : "border border-transparent text-[#737373] hover:text-[#0a0a0a] font-medium"
+                            }`}
+                          >
+                            % ao dia
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(ContractMultaTipo.FIXO)}
+                            className={`flex-1 py-1.5 px-3 text-xs rounded-[14px] transition-all text-center cursor-pointer ${
+                              field.value === ContractMultaTipo.FIXO
+                                ? "bg-primary/10 text-primary border border-primary/15 font-semibold"
+                                : "border border-transparent text-[#737373] hover:text-[#0a0a0a] font-medium"
+                            }`}
+                          >
+                            R$ ao dia
+                          </button>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="juros_atraso_valor"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-medium text-[#0a0a0a]">
-                      {tipoJuros === ContractMultaTipo.PERCENTUAL ? "Taxa Mensal" : "Valor Diário"}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={tipoJuros === ContractMultaTipo.PERCENTUAL ? "number" : "text"}
-                          step={tipoJuros === ContractMultaTipo.PERCENTUAL ? "0.1" : undefined}
-                          disabled={isUpdating}
-                          placeholder={tipoJuros === ContractMultaTipo.PERCENTUAL ? "0%" : "0,00"}
-                          value={
-                            field.value !== null && field.value !== undefined
-                              ? tipoJuros === ContractMultaTipo.PERCENTUAL
-                                ? field.value
-                                : moneyMask(field.value)
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              field.onChange(null);
-                              return;
+                <FormField
+                  control={form.control}
+                  name="juros_atraso_valor"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-[#0a0a0a]">
+                        {tipoJuros === ContractMultaTipo.PERCENTUAL ? "Taxa Diária" : "Valor Diário"}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={tipoJuros === ContractMultaTipo.PERCENTUAL ? "number" : "text"}
+                            step={tipoJuros === ContractMultaTipo.PERCENTUAL ? "0.1" : undefined}
+                            disabled={isUpdating}
+                            placeholder={tipoJuros === ContractMultaTipo.PERCENTUAL ? "0%" : "0,00"}
+                            value={
+                              field.value !== null && field.value !== undefined
+                                ? tipoJuros === ContractMultaTipo.PERCENTUAL
+                                  ? field.value
+                                  : moneyMask(field.value)
+                                : ""
                             }
-                            if (tipoJuros === ContractMultaTipo.PERCENTUAL) {
-                              field.onChange(Number(val));
-                            } else {
-                              const rawDigits = val.replace(/\D/g, "");
-                              field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
-                            }
-                          }}
-                          className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-16 text-[#0a0a0a]"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373]">
-                          {tipoJuros === ContractMultaTipo.PERCENTUAL ? "% a.m." : "/ dia"}
-                        </span>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "") {
+                                field.onChange(null);
+                                return;
+                              }
+                              if (tipoJuros === ContractMultaTipo.PERCENTUAL) {
+                                field.onChange(Number(val));
+                              } else {
+                                const rawDigits = val.replace(/\D/g, "");
+                                field.onChange(rawDigits ? Number(rawDigits) / 100 : null);
+                              }
+                            }}
+                            className="h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium pr-16 text-[#0a0a0a]"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#737373] pointer-events-none">
+                            {tipoJuros === ContractMultaTipo.PERCENTUAL ? "% / dia" : "/ dia"}
+                          </span>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {exemploJurosDiaReais > 0 && (
+                <div className="p-3.5 bg-white rounded-[14px] border border-[#e5e5e5] space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs text-[#737373]">
+                      Simulação em parcela de R$ 200,00:
+                    </span>
+                    <span className="text-xs font-semibold text-[#0a0a0a]">
+                      + {formatCurrency(exemploJurosDiaReais)} a cada dia de atraso
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#f5f5f5]">
+                    <span className="text-xs text-[#737373]">
+                      Exemplo se atrasar 3 dias:
+                    </span>
+                    <span className="text-xs font-medium text-[#737373]">
+                      R$ 200,00 + {formatCurrency(exemploJurosTresDiasReais)} (3 dias) ={" "}
+                      <strong className="font-semibold text-[#0a0a0a]">
+                        {formatCurrency(200 + exemploJurosTresDiasReais)}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

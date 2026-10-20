@@ -334,4 +334,30 @@ export function useToggleNotificacoesRotaResponsavel() {
   });
 }
 
+export function useUpdatePixPassageiro() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { chave_pix: string | null; tipo_chave_pix: string | null };
+    }) => passageiroApi.atualizarPixPassageiro(id, data),
+    onError: (error: unknown) => {
+      toast.error("cadastro.erro.atualizar", {
+        description: getErrorMessage(error, "Erro ao atualizar chave Pix do aluno."),
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast.success("Chave Pix do aluno atualizada!");
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-passageiro", variables.id] });
+    },
+  });
+}
+
 

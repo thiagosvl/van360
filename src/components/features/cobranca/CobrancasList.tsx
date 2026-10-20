@@ -333,10 +333,12 @@ export function CobrancasList({
     const respPrincipal = cobranca.passageiro?.responsavel_principal;
     const telefoneResponsavel = respPrincipal?.telefone;
 
-    const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || chavePixPadraoConta;
-    const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
-      ? cobranca.passageiro.veiculo.tipo_chave_pix
-      : tipoChavePixPadraoConta;
+    const chavePixResolvida = cobranca.passageiro?.chave_pix || cobranca.passageiro?.veiculo?.chave_pix || chavePixPadraoConta;
+    const tipoChavePixResolvida = cobranca.passageiro?.chave_pix
+      ? cobranca.passageiro.tipo_chave_pix
+      : (cobranca.passageiro?.veiculo?.chave_pix
+        ? cobranca.passageiro.veiculo.tipo_chave_pix
+        : tipoChavePixPadraoConta);
 
     const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
       ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
@@ -523,10 +525,12 @@ function ActionSheetWrapper({
   const respPrincipal = cobranca.passageiro?.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
 
-  const chavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix || chavePix;
-  const tipoChavePixResolvida = cobranca.passageiro?.veiculo?.chave_pix
-    ? cobranca.passageiro.veiculo.tipo_chave_pix
-    : tipoChavePix;
+  const chavePixResolvida = cobranca.passageiro?.chave_pix || cobranca.passageiro?.veiculo?.chave_pix || chavePix;
+  const tipoChavePixResolvida = cobranca.passageiro?.chave_pix
+    ? cobranca.passageiro.tipo_chave_pix
+    : (cobranca.passageiro?.veiculo?.chave_pix
+      ? cobranca.passageiro.veiculo.tipo_chave_pix
+      : tipoChavePix);
 
   const onEnviarCobranca = (telefoneResponsavel && !isCobrancaSemValor(cobranca))
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({
