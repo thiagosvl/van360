@@ -3,8 +3,12 @@ name: Build e Upload iOS (App Store)
 on:
   workflow_dispatch:
     inputs:
+      app_version:
+        description: 'Versão do App (ex: 1.0.1 - se vazio usa a do package.json)'
+        required: false
+        default: ''
       build_number:
-        description: 'Número do Build (opcional)'
+        description: 'Número do Build (opcional - se vazio usa github.run_number)'
         required: false
         default: ''
 
@@ -64,15 +68,24 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
 
-      - name: Atualizar Build Number
+      - name: Atualizar Versão e Build Number
         run: |
+          APP_VER="${{ github.event.inputs.app_version }}"
+          if [ -z "$APP_VER" ]; then
+            APP_VER=$(node -p "require('./package.json').version")
+          fi
           BUILD_NUM="${{ github.event.inputs.build_number }}"
           if [ -z "$BUILD_NUM" ]; then
             BUILD_NUM="${{ github.run_number }}"
           fi
-          echo "Definindo Build Number para: $BUILD_NUM"
+          echo "Definindo Marketing Version (CFBundleShortVersionString) para: $APP_VER"
+          echo "Definindo Build Number (CFBundleVersion) para: $BUILD_NUM"
           cd ios/App
-          agvtool new-version -all "$BUILD_NUM"
+          xcrun agvtool new-marketing-version "$APP_VER" || true
+          xcrun agvtool new-version -all "$BUILD_NUM" || true
+          sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $APP_VER;/g" App.xcodeproj/project.pbxproj
+          sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $BUILD_NUM;/g" App.xcodeproj/project.pbxproj
+          sed -i '' "s/<string>development<\/string>/<string>production<\/string>/g" App/App.entitlements || true
 
       - name: Criar exportOptions.plist
         run: |
