@@ -60,8 +60,8 @@ export default function PasseioDetalhes() {
   const calculados = usePasseioDetalhesCalculations(detalhes);
 
   useEffect(() => {
-    setPageTitle(calculados?.titulo || "Detalhes do Passeio");
-  }, [setPageTitle, calculados?.titulo]);
+    setPageTitle("Passeio");
+  }, [setPageTitle]);
 
   if (isLoading || !calculados) {
     return (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
@@ -27,12 +27,17 @@ export default function Fretamentos() {
     openPasseioFormDialog,
     openRegistrarPagamentoFretamentoDialog,
     openConfirmationDialog,
+    setPageTitle,
   } = useLayout();
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id });
   const veiculos = veiculosData?.list || [];
+
+  useEffect(() => {
+    setPageTitle("Fretamentos e Passeios");
+  }, [setPageTitle]);
 
   const {
     mes,
