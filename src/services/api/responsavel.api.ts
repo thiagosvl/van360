@@ -31,10 +31,11 @@ export const responsavelApi = {
     return data;
   },
 
-  getCarteirinha: async (passageiroId: string, token: string): Promise<ResponsavelCarteirinhaData> => {
+  getCarteirinha: async (passageiroId: string, token: string, ano?: number): Promise<ResponsavelCarteirinhaData> => {
     const { data } = await apiClient.get<ResponsavelCarteirinhaData>(
       `/public/portal-responsavel/passageiro/${passageiroId}`,
       {
+        params: ano ? { ano } : undefined,
         headers: {
           Authorization: `Bearer ${token}`
         }

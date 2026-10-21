@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useResponsavelAuth } from "@/contexts/ResponsavelAuthContext";
@@ -41,23 +41,8 @@ export function useResponsavelCarteirinhaViewModel() {
     });
   };
 
-  const passageiroId = passageiroSelecionado?.id || null;
-  const { data: rawCarteirinha, isLoading, error, refetch } = useCarteirinhaQuery(passageiroId, token);
-
   const currentYear = new Date().getFullYear();
   const urlAno = Number(searchParams.get("ano"));
-
-  const anosDisponiveis = (() => {
-    const anos = new Set<number>();
-    if (Array.isArray(rawCarteirinha?.anos_matriculados) && rawCarteirinha.anos_matriculados.length > 0) {
-      rawCarteirinha.anos_matriculados.forEach((a) => anos.add(Number(a)));
-    } else if (rawCarteirinha?.ano_letivo) {
-      anos.add(Number(rawCarteirinha.ano_letivo));
-    } else {
-      anos.add(currentYear);
-    }
-    return Array.from(anos).sort((a, b) => a - b);
-  })();
 
   const [selectedYear, setSelectedYearState] = useState<number>(() => {
     if (urlAno && !Number.isNaN(urlAno) && urlAno >= 2020 && urlAno <= 2100) {
@@ -66,16 +51,49 @@ export function useResponsavelCarteirinhaViewModel() {
     return currentYear;
   });
 
+  const passageiroId = passageiroSelecionado?.id || null;
+  const { data: rawCarteirinha, isLoading, error, refetch } = useCarteirinhaQuery(passageiroId, token, selectedYear);
+
+  const anosDisponiveis = useMemo(() => {
+    const anos = new Set<number>();
+    if (Array.isArray(rawCarteirinha?.anos_matriculados) && rawCarteirinha.anos_matriculados.length > 0) {
+      rawCarteirinha.anos_matriculados.forEach((a) => {
+        const num = Number(a);
+        if (!Number.isNaN(num) && num > 0) anos.add(num);
+      });
+    } else if (rawCarteirinha?.ano_letivo) {
+      const num = Number(rawCarteirinha.ano_letivo);
+      if (!Number.isNaN(num) && num > 0) anos.add(num);
+    }
+    return Array.from(anos).sort((a, b) => a - b);
+  }, [rawCarteirinha?.anos_matriculados, rawCarteirinha?.ano_letivo]);
+
+  const hasSetInitialYear = useRef(Boolean(urlAno && !Number.isNaN(urlAno) && urlAno >= 2020 && urlAno <= 2100));
+
   useEffect(() => {
     if (!rawCarteirinha) return;
+
+    if (!hasSetInitialYear.current) {
+      hasSetInitialYear.current = true;
+      if (anosDisponiveis.includes(currentYear)) {
+        setSelectedYearState(currentYear);
+      } else if (anosDisponiveis.length > 0) {
+        setSelectedYearState(anosDisponiveis[anosDisponiveis.length - 1]);
+      } else if (rawCarteirinha.ano_letivo && Number(rawCarteirinha.ano_letivo) > 0) {
+        setSelectedYearState(Number(rawCarteirinha.ano_letivo));
+      }
+      return;
+    }
+
     if (urlAno && anosDisponiveis.includes(urlAno)) {
       if (selectedYear !== urlAno) setSelectedYearState(urlAno);
       return;
     }
-    if (!anosDisponiveis.includes(selectedYear)) {
+
+    if (anosDisponiveis.length > 0 && !anosDisponiveis.includes(selectedYear)) {
       const target = anosDisponiveis.includes(currentYear)
         ? currentYear
-        : anosDisponiveis[anosDisponiveis.length - 1] || currentYear;
+        : anosDisponiveis[anosDisponiveis.length - 1];
       setSelectedYearState(target);
     }
   }, [rawCarteirinha, anosDisponiveis, urlAno, selectedYear, currentYear]);
@@ -89,7 +107,7 @@ export function useResponsavelCarteirinhaViewModel() {
     }, { replace: true });
   };
 
-  const carteirinha = (() => {
+  const carteirinha = useMemo(() => {
     if (!rawCarteirinha) return undefined;
     const mat = (rawCarteirinha.matriculas || []).find((m) => Number(m.ano_letivo) === Number(selectedYear));
     const cobrancasAno = (rawCarteirinha.cobrancas || []).filter(
@@ -99,10 +117,15 @@ export function useResponsavelCarteirinhaViewModel() {
       (r) => Number(r.ano) === Number(selectedYear)
     );
 
+    const contratoAno = mat?.contrato !== undefined
+      ? mat.contrato
+      : (rawCarteirinha.contrato && Number(rawCarteirinha.contrato.ano) === Number(selectedYear) ? rawCarteirinha.contrato : null);
+
     if (!mat) {
       return {
         ...rawCarteirinha,
         ano_letivo: selectedYear,
+        contrato: contratoAno,
         cobrancas: cobrancasAno,
         recibos_anuais: recibosAno,
       };
@@ -129,11 +152,11 @@ export function useResponsavelCarteirinhaViewModel() {
       data_fim_transporte: mat.data_fim_transporte ?? rawCarteirinha.data_fim_transporte,
       data_inicio_cobranca: mat.data_inicio_cobranca ?? rawCarteirinha.data_inicio_cobranca,
       data_fim_cobranca: mat.data_fim_cobranca ?? rawCarteirinha.data_fim_cobranca,
-      contrato: mat.contrato !== undefined ? mat.contrato : rawCarteirinha.contrato,
+      contrato: contratoAno,
       cobrancas: cobrancasAno,
       recibos_anuais: recibosAno,
     };
-  })();
+  }, [rawCarteirinha, selectedYear]);
 
   const handleLogout = () => {
     logout();

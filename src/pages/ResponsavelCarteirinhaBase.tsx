@@ -131,14 +131,6 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
           </h1>
 
           <div className="flex items-center gap-2">
-            {anosDisponiveis.length > 0 && (
-              <AnoLetivoSelect
-                ano={selectedYear}
-                onChangeAno={setSelectedYear}
-                anosDisponiveis={anosDisponiveis}
-                className="h-9"
-              />
-            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -195,6 +187,31 @@ export const ResponsavelCarteirinhaBase: React.FC = () => {
             />
           ) : (
             <>
+              {anosDisponiveis.length > 1 && (
+                <>
+                  <div className="w-full sm:hidden">
+                    <AnoLetivoSelect
+                      ano={selectedYear}
+                      onChangeAno={setSelectedYear}
+                      anosDisponiveis={anosDisponiveis}
+                      label="Ano Letivo"
+                      className="w-full justify-between h-10"
+                    />
+                  </div>
+                  <div className="hidden sm:flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium text-[#737373]">
+                      Matrícula de {selectedYear}
+                    </span>
+                    <AnoLetivoSelect
+                      ano={selectedYear}
+                      onChangeAno={setSelectedYear}
+                      anosDisponiveis={anosDisponiveis}
+                      label="Ano Letivo"
+                    />
+                  </div>
+                </>
+              )}
+
               <ResponsavelCarteirinhaHeader carteirinha={carteirinha} />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

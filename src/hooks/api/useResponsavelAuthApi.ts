@@ -50,12 +50,12 @@ export function useLoginResponsavelMutation() {
   });
 }
 
-export function useCarteirinhaQuery(passageiroId: string | null, token: string | null) {
+export function useCarteirinhaQuery(passageiroId: string | null, token: string | null, ano?: number) {
   return useQuery({
-    queryKey: ["carteirinha-responsavel", passageiroId],
+    queryKey: ["carteirinha-responsavel", passageiroId, ano],
     enabled: Boolean(passageiroId && token),
     staleTime: 1000 * 60 * 5,
-    queryFn: () => responsavelApi.getCarteirinha(passageiroId!, token!)
+    queryFn: () => responsavelApi.getCarteirinha(passageiroId!, token!, ano)
   });
 }
 
