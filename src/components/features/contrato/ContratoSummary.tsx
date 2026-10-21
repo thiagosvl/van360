@@ -50,11 +50,13 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
 
   return (
     <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
-      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
-        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] shrink-0">
-          Contrato do Aluno
-        </span>
+      <div className="pr-8">
+        <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0">
+          {formatAlunoNome(nomePassageiro)}
+        </h2>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-2 mt-1.5 w-full min-w-0">
         {!(isSemContrato && isMissingResponsible) && (
           <span
             className={cn(
@@ -71,26 +73,32 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
             {statusLabel}
           </span>
         )}
+
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] shrink-0">
+          Contrato do Aluno
+        </span>
+
+        {nomeResponsavel ? (
+          <div className="flex items-center gap-1.5 min-w-0 text-[#737373] flex-1">
+            <span className="text-xs text-[#737373]/60">•</span>
+            <p
+              className={cn(
+                "text-xs font-normal leading-snug truncate",
+                formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-1"
+              )}
+            >
+              {nomeResponsavel}
+            </p>
+          </div>
+        ) : isMissingResponsible ? (
+          <div className="flex items-center gap-1.5 min-w-0 text-[#737373] flex-1">
+            <span className="text-xs text-[#737373]/60">•</span>
+            <p className="text-xs font-normal leading-snug truncate">
+              Responsável não cadastrado
+            </p>
+          </div>
+        ) : null}
       </div>
-
-      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
-        {formatAlunoNome(nomePassageiro)}
-      </h2>
-
-      {nomeResponsavel ? (
-        <p
-          className={cn(
-            "text-xs font-normal text-[#737373] mt-0.5 leading-snug w-full min-w-0",
-            formatoNomeResponsavel === "completo" ? "truncate" : "line-clamp-2 break-words"
-          )}
-        >
-          {nomeResponsavel}
-        </p>
-      ) : isMissingResponsible ? (
-        <p className="text-xs font-normal text-[#737373] mt-0.5 leading-snug line-clamp-2 break-words w-full min-w-0">
-          Responsável não cadastrado
-        </p>
-      ) : null}
 
       {isSemContrato && isMissingResponsible && (
         <div className="mt-2.5">

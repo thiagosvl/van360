@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
+import { VeiculoMultiSelect } from "@/components/ui/VeiculoMultiSelect";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import {
   useFretamentoForm,
@@ -26,7 +27,7 @@ import {
 import type { FretamentoDetalhes, TipoPagamento } from "@/services/api/fretamento.api";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { toLocalDateString } from "@/utils/formatters";
-import { Compass, MapPin, Calendar, Car, FileText, CreditCard, Wand2 } from "lucide-react";
+import { Compass, Calendar, Car, FileText, CreditCard, Wand2 } from "lucide-react";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "sonner";
@@ -59,10 +60,8 @@ export function FretamentoFormDialog({
     if (isOpen) {
       form.reset({
         titulo: editingItem?.titulo || "",
-        origem: editingItem?.origem || "",
-        destino: editingItem?.destino || "",
         data_inicio: editingItem?.data_inicio ? editingItem.data_inicio.split("T")[0] : "",
-        veiculo_id: editingItem?.veiculos?.[0]?.veiculo_id || null,
+        veiculos_ids: editingItem?.veiculos?.map((v) => v.veiculo_id) || [],
         valor_total: editingItem?.valor_total ? moneyMask(Number(editingItem.valor_total)) : "",
         observacoes: editingItem?.observacoes || "",
         tem_sinal: false,
@@ -75,12 +74,10 @@ export function FretamentoFormDialog({
 
   const handleFillMock = () => {
     const mock = mockGenerator.fretamento();
-    const veiculoSorteado = veiculos.length > 0 ? veiculos[Math.floor(Math.random() * veiculos.length)].id : null;
+    const veiculoSorteado = veiculos.length > 0 ? [veiculos[Math.floor(Math.random() * veiculos.length)].id] : [];
     form.setValue("titulo", mock.titulo, { shouldValidate: true });
-    form.setValue("origem", mock.origem, { shouldValidate: true });
-    form.setValue("destino", mock.destino, { shouldValidate: true });
     form.setValue("data_inicio", mock.data_viagem, { shouldValidate: true });
-    form.setValue("veiculo_id", veiculoSorteado, { shouldValidate: true });
+    form.setValue("veiculos_ids", veiculoSorteado, { shouldValidate: true });
     form.setValue("valor_total", moneyMask(Number(mock.valor_total)), { shouldValidate: true });
     form.setValue("tem_sinal", true, { shouldValidate: true });
     form.setValue("valor_sinal", moneyMask(Number(mock.sinal_valor)), { shouldValidate: true });
@@ -99,15 +96,15 @@ export function FretamentoFormDialog({
           id: editingItem.id,
           payload: {
             titulo: values.titulo,
-            origem: values.origem,
-            destino: values.destino,
+            origem: null,
+            destino: values.titulo,
             data_inicio: dataInicioIso,
             data_fim: null,
             contratante_nome: null,
             contratante_telefone: null,
             valor_total: valorTotal,
             observacoes: values.observacoes,
-            veiculos_ids: values.veiculo_id ? [values.veiculo_id] : [],
+            veiculos_ids: values.veiculos_ids,
           },
         });
         toast.success("Fretamento atualizado com sucesso!");
@@ -115,15 +112,15 @@ export function FretamentoFormDialog({
         await criarMutation.mutateAsync({
           tipo: "fretamento",
           titulo: values.titulo,
-          origem: values.origem,
-          destino: values.destino,
+          origem: null,
+          destino: values.titulo,
           data_inicio: dataInicioIso,
           data_fim: null,
           contratante_nome: null,
           contratante_telefone: null,
           valor_total: valorTotal,
           observacoes: values.observacoes,
-          veiculos_ids: values.veiculo_id ? [values.veiculo_id] : [],
+          veiculos_ids: values.veiculos_ids,
           sinal_inicial:
             values.tem_sinal && valorSinal && valorSinal > 0
               ? {
@@ -196,54 +193,6 @@ export function FretamentoFormDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
-                name="origem"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Origem / Ponto de Saída</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                        <Input
-                          placeholder="Ex: Terminal Barra Funda"
-                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="destino"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                      Destino <span className="text-[#e7000b]">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                        <Input
-                          placeholder="Ex: Atibaia"
-                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm"
-                          aria-invalid={!!fieldState.error}
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
                 name="data_inicio"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -268,30 +217,23 @@ export function FretamentoFormDialog({
 
               <FormField
                 control={form.control}
-                name="veiculo_id"
+                name="veiculos_ids"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Van Alocada</FormLabel>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">Vans Alocadas (Opcional)</FormLabel>
                     <FormControl>
-                      <NativeSelect
-                        value={field.value || ""}
+                      <VeiculoMultiSelect
+                        veiculos={veiculos}
+                        selectedIds={field.value || []}
                         onChange={field.onChange}
-                        icon={<Car className="h-4 w-4 text-[#737373]" />}
-                      >
-                        <option value="">Selecionar</option>
-                        {veiculos.map((v) => (
-                          <option key={v.id} value={v.id}>
-                            {v.placa} {v.modelo ? `- ${v.modelo}` : ""}
-                          </option>
-                        ))}
-                      </NativeSelect>
+                        placeholder="Selecionar vans (opcional)"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
 
             <FormField
               control={form.control}
@@ -352,7 +294,7 @@ export function FretamentoFormDialog({
                       name="tipo_pagamento_sinal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Pagamento</FormLabel>
+                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Forma de Pagamento</FormLabel>
                           <FormControl>
                             <NativeSelect
                               value={field.value || ""}

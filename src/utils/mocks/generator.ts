@@ -531,8 +531,10 @@ export const mockGenerator = {
     ];
 
     const agora = new Date();
-    agora.setDate(agora.getDate() + randomNumber(3, 20));
-    const dataStr = agora.toISOString().split("T")[0];
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
+    const dataStr = `${ano}-${mes}-${dia}`;
 
     return {
       titulo: titulos[randomNumber(0, titulos.length - 1)],
@@ -564,8 +566,10 @@ export const mockGenerator = {
     ];
 
     const agora = new Date();
-    agora.setDate(agora.getDate() + randomNumber(5, 25));
-    const dataStr = agora.toISOString().split("T")[0];
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
+    const dataStr = `${ano}-${mes}-${dia}`;
 
     return {
       titulo: titulos[randomNumber(0, titulos.length - 1)],

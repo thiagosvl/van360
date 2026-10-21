@@ -5,6 +5,8 @@ import { Gift, Lock, SlidersHorizontal } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
+import { useProfile } from "@/hooks/business/useProfile";
+import { canAccessFretamentos } from "@/utils/domain/fretamentoAccess";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
@@ -21,6 +23,8 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
   const { openReferAndEarnDialog, openPersonalizarMenuDialog } = useLayout();
   const { can, isGestor } = usePermissions();
   const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+  const hasFretamentosAccess = canAccessFretamentos(profile, user);
   const { activeHrefs: activeBottomHrefs, isEligibleToCustomize } = useBottomNavPreferences(user?.id);
 
   const isMobile = !!excludeBottomNavItems;
@@ -29,6 +33,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
     ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
     : pagesItems
   ).filter((item) => {
+    if (item.href === ROUTES.PRIVATE.MOTORISTA.CHARTERS && !hasFretamentosAccess) return false;
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
     return can(item.permission);

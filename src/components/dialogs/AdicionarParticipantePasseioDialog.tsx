@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Tabs } from "@/components/ui/tabs";
+import { AppTabNav } from "@/components/ui/AppTabNav";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,20 +13,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverAnchor,
-} from "@/components/ui/popover";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { MoneyInput } from "@/components/forms/MoneyInput";
-import { usePassageiros, useSession, useProfile, safeCloseDialog } from "@/hooks";
+import { usePassageiros, useSession, useProfile, useDebounce, safeCloseDialog } from "@/hooks";
 import {
   useParticipantePasseioForm,
   type ParticipantePasseioFormData,
 } from "@/hooks/form/useParticipantePasseioForm";
 import { useAdicionarParticipanteMutation } from "@/hooks/api/useFretamentosApi";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
+import type { Passageiro } from "@/types/passageiro";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { formatarEnderecoParcialRota } from "@/utils/formatters";
 import {
@@ -36,9 +34,10 @@ import {
   User,
   Contact,
   Wand2,
-  ChevronsUpDown,
   Check,
   X,
+  Loader2,
+  Plus,
 } from "lucide-react";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -60,11 +59,24 @@ export function AdicionarParticipantePasseioDialog({
 }: AdicionarParticipantePasseioDialogProps) {
   const [origemAba, setOrigemAba] = useState<"base" | "avulso">("base");
   const [buscaAluno, setBuscaAluno] = useState("");
-  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+  const debouncedBusca = useDebounce(buscaAluno, 350);
+  const [alunoSelecionado, setAlunoSelecionado] = useState<Passageiro | null>(null);
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { data: passageirosData } = usePassageiros({ usuarioId: profile?.id });
+
+  const hasMinChars = debouncedBusca.trim().length >= 3;
+  const { data: passageirosData, isLoading: isLoadingPassageiros } = usePassageiros(
+    {
+      usuarioId: profile?.id,
+      search: hasMinChars ? debouncedBusca.trim() : undefined,
+      status: "ativo",
+      limit: 25,
+    },
+    {
+      enabled: Boolean(isOpen && origemAba === "base" && profile?.id && hasMinChars),
+    }
+  );
   const passageiros = passageirosData?.list || [];
   const adicionarMutation = useAdicionarParticipanteMutation();
 
@@ -72,13 +84,11 @@ export function AdicionarParticipantePasseioDialog({
   const form = useParticipantePasseioForm({ valorPadrao });
 
   const isProprioResponsavel = form.watch("is_proprio_responsavel");
-  const selectedPassageiroId = form.watch("passageiro_id");
-  const alunoSelecionado = passageiros.find((p) => p.id === selectedPassageiroId) || null;
 
   useEffect(() => {
     if (isOpen) {
       setBuscaAluno("");
-      setIsComboboxOpen(false);
+      setAlunoSelecionado(null);
       setOrigemAba("base");
       form.reset({
         passageiro_id: null,
@@ -95,6 +105,7 @@ export function AdicionarParticipantePasseioDialog({
 
   const handleFillMock = () => {
     setOrigemAba("avulso");
+    setAlunoSelecionado(null);
     const nomeAluno = mockGenerator.name();
     const nomeResp = mockGenerator.name();
     const phone = mockGenerator.phone();
@@ -110,19 +121,8 @@ export function AdicionarParticipantePasseioDialog({
 
   if (!fretamento) return null;
 
-  const alunosFiltrados = passageiros.filter((p) => {
-    if (!buscaAluno.trim()) return true;
-    const termo = buscaAluno.toLowerCase();
-    const nomeAluno = (p.nome || "").toLowerCase();
-    const resp = p.responsavel_principal || p.responsaveis?.[0];
-    const nomeResp = (resp?.nome || "").toLowerCase();
-    return nomeAluno.includes(termo) || nomeResp.includes(termo);
-  });
-
-  const selecionarAluno = (passageiroId: string) => {
-    const aluno = passageiros.find((p) => p.id === passageiroId);
-    if (!aluno) return;
-
+  const selecionarAluno = (aluno: Passageiro) => {
+    setAlunoSelecionado(aluno);
     const resp = aluno.responsavel_principal || aluno.responsaveis?.[0];
     const enderecoFormatado = resp ? formatarEnderecoParcialRota(resp) : "";
 
@@ -132,16 +132,24 @@ export function AdicionarParticipantePasseioDialog({
     form.setValue("responsavel_nome", resp?.nome || "");
     form.setValue("telefone", resp?.telefone || "");
     form.setValue("endereco", enderecoFormatado);
-    setIsComboboxOpen(false);
     setBuscaAluno("");
   };
 
   const limparAlunoSelecionado = () => {
+    setAlunoSelecionado(null);
     form.setValue("passageiro_id", null);
     form.setValue("nome", "");
     form.setValue("responsavel_nome", "");
     form.setValue("telefone", "");
     form.setValue("endereco", "");
+    setBuscaAluno("");
+  };
+
+  const handleTrocarAba = (novaAba: "base" | "avulso") => {
+    setOrigemAba(novaAba);
+    if (novaAba === "avulso") {
+      limparAlunoSelecionado();
+    }
   };
 
   const onSubmit = async (values: ParticipantePasseioFormData) => {
@@ -196,140 +204,128 @@ export function AdicionarParticipantePasseioDialog({
         )}
       />
 
-      <div className="grid grid-cols-2 gap-1.5 border-b border-[#e5e5e5] bg-[#fafafa] p-2.5 sm:px-6 sm:py-3">
-        <button
-          type="button"
-          onClick={() => {
-            setOrigemAba("base");
+      <div className="p-3 sm:px-6 sm:py-3.5 bg-[#fafafa] border-b border-[#e5e5e5]">
+        <Tabs
+          value={origemAba}
+          onValueChange={(val) => {
+            setOrigemAba(val as "base" | "avulso");
             limparAlunoSelecionado();
           }}
-          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[18px] text-xs font-medium transition-all cursor-pointer ${
-            origemAba === "base"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-transparent text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
-          }`}
+          className="w-full"
         >
-          <UserCheck className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">Aluno Cadastrado</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setOrigemAba("avulso");
-            limparAlunoSelecionado();
-          }}
-          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[18px] text-xs font-medium transition-all cursor-pointer ${
-            origemAba === "avulso"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-transparent text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
-          }`}
-        >
-          <UserPlus className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">Outro Participante</span>
-        </button>
+          <AppTabNav
+            items={[
+              {
+                value: "base",
+                label: "Aluno Cadastrado",
+                icon: <UserCheck className="h-3.5 w-3.5" />,
+              },
+              {
+                value: "avulso",
+                label: "Outro Participante",
+                icon: <UserPlus className="h-3.5 w-3.5" />,
+              },
+            ]}
+            activeTab={origemAba}
+            layout="fill"
+            className="w-full bg-[#f0f0f0]"
+            listClassName="w-full grid grid-cols-2"
+            triggerClassName="w-full font-medium text-xs"
+          />
+        </Tabs>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
           <BaseDialog.Body className="space-y-4 p-5 sm:p-6 overflow-y-auto bg-[#ffffff]">
             {origemAba === "base" && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs block">
-                  Aluno <span className="text-[#e7000b]">*</span>
+                  Aluno Selecionado <span className="text-[#e7000b]">*</span>
                 </FormLabel>
 
-                <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
-                  <PopoverAnchor asChild>
-                    {alunoSelecionado ? (
-                      <div className="flex items-center justify-between p-3 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] transition-all">
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-semibold shadow-xs">
-                            {alunoSelecionado.nome?.charAt(0).toUpperCase() || "A"}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
-                              {alunoSelecionado.nome}
-                            </p>
-                            {(alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome) && (
-                              <p className="text-[11px] text-[#737373] truncate mt-0.5">
-                                Resp: {alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 shrink-0 ml-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsComboboxOpen(true)}
-                            className="h-8 px-2.5 rounded-[14px] text-xs font-medium text-[#0a0a0a] hover:bg-white border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
-                          >
-                            Trocar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={limparAlunoSelecionado}
-                            className="h-8 w-8 rounded-full text-[#737373] hover:text-[#e7000b] hover:bg-white transition-all cursor-pointer"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
+                {alunoSelecionado ? (
+                  <div className="flex items-center justify-between p-3.5 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5] transition-all">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-semibold shadow-xs">
+                        {alunoSelecionado.nome?.charAt(0).toUpperCase() || "A"}
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setIsComboboxOpen(true)}
-                        className="w-full h-10 px-3.5 rounded-[18px] bg-[#f5f5f5] hover:bg-white border border-[#e5e5e5] focus:border-[#0a0a0a] text-left flex items-center justify-between transition-all cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2 text-xs sm:text-sm text-[#737373] truncate">
-                          <Search className="h-4 w-4 text-[#737373] shrink-0" />
-                          <span>Selecione ou busque o aluno...</span>
-                        </div>
-                        <ChevronsUpDown className="h-4 w-4 text-[#737373] shrink-0" />
-                      </button>
-                    )}
-                  </PopoverAnchor>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
+                          {alunoSelecionado.nome}
+                        </p>
+                        {(alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome || alunoSelecionado.escola?.nome) && (
+                          <p className="text-[11px] text-[#737373] truncate mt-0.5">
+                            {[
+                              alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome
+                                ? `Resp: ${alunoSelecionado.responsavel_principal?.nome || alunoSelecionado.responsaveis?.[0]?.nome}`
+                                : null,
+                              alunoSelecionado.escola?.nome,
+                            ]
+                              .filter(Boolean)
+                              .join(" • ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                  <PopoverContent
-                    align="start"
-                    side="bottom"
-                    sideOffset={6}
-                    className="w-[var(--radix-popover-trigger-width)] min-w-[300px] p-0 rounded-[20px] border border-[#e5e5e5] bg-white shadow-xl z-[10000] overflow-hidden"
-                  >
-                    <div className="flex items-center px-3.5 py-2.5 border-b border-[#e5e5e5] bg-[#fafafa]">
-                      <Search className="h-4 w-4 text-[#737373] mr-2 shrink-0" />
-                      <input
-                        autoFocus
-                        placeholder="Buscar por nome do aluno ou responsável..."
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={limparAlunoSelecionado}
+                        className="h-8 px-3 rounded-[14px] text-xs font-medium text-[#0a0a0a] hover:bg-white border border-[#e5e5e5] transition-all cursor-pointer"
+                      >
+                        Trocar Aluno
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
+                      <Input
+                        type="text"
+                        inputMode="search"
+                        placeholder="Buscar aluno por nome ou responsável (mín. 3 letras)..."
                         value={buscaAluno}
                         onChange={(e) => setBuscaAluno(e.target.value)}
-                        className="w-full bg-transparent text-sm text-[#0a0a0a] placeholder:text-[#737373] outline-none"
+                        className="pl-10 pr-9 h-11 rounded-[18px] bg-[#f5f5f5] hover:bg-[#ebebeb]/60 focus:bg-white border-[#e5e5e5] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] transition-all [&::-webkit-search-cancel-button]:hidden"
+                        autoFocus
                       />
                       {buscaAluno && (
                         <button
                           type="button"
                           onClick={() => setBuscaAluno("")}
-                          className="text-[#737373] hover:text-[#0a0a0a] p-0.5"
+                          aria-label="Limpar busca"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0a0a0a] p-1 cursor-pointer transition-colors"
                         >
-                          <X className="h-3.5 w-3.5" />
+                          <X className="h-4 w-4" />
                         </button>
                       )}
                     </div>
 
-                    <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5 overscroll-contain">
-                      {alunosFiltrados.length === 0 ? (
-                        <div className="py-6 px-3 text-center text-xs text-[#737373]">
-                          Nenhum aluno encontrado.
-                        </div>
-                      ) : (
-                        alunosFiltrados.map((aluno) => {
-                          if (!aluno.id) return null;
-                          const isSelected = aluno.id === selectedPassageiroId;
+                    {!hasMinChars ? (
+                      <div className="py-5 px-4 text-center text-xs text-[#737373] bg-[#fafafa] rounded-[18px] border border-dashed border-[#e5e5e5]">
+                        <Search className="h-4 w-4 mx-auto mb-1 text-[#a3a3a3]" />
+                        Digite pelo menos 3 caracteres para buscar alunos.
+                      </div>
+                    ) : isLoadingPassageiros ? (
+                      <div className="flex items-center justify-center py-6 text-[#737373] gap-2 bg-[#fafafa] rounded-[18px] border border-[#e5e5e5]">
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        <span className="text-xs font-medium">Buscando alunos...</span>
+                      </div>
+                    ) : passageiros.length === 0 ? (
+                      <div className="py-6 px-4 text-center text-xs text-[#737373] bg-[#fafafa] rounded-[18px] border border-dashed border-[#e5e5e5]">
+                        Nenhum aluno ativo encontrado para &quot;{debouncedBusca}&quot;.
+                      </div>
+                    ) : (
+                      <div
+                        className="max-h-52 overflow-y-auto space-y-1 p-1.5 border border-[#e5e5e5] rounded-[18px] bg-white divide-y divide-[#f5f5f5]"
+                        onWheel={(e) => e.stopPropagation()}
+                      >
+                        {passageiros.map((aluno) => {
                           const respNome = aluno.responsavel_principal?.nome || aluno.responsaveis?.[0]?.nome;
                           const escolaNome = aluno.escola?.nome || aluno.escola_nome;
 
@@ -337,10 +333,8 @@ export function AdicionarParticipantePasseioDialog({
                             <button
                               key={aluno.id}
                               type="button"
-                              onClick={() => selecionarAluno(aluno.id)}
-                              className={`w-full p-2.5 rounded-[12px] text-left flex items-center justify-between gap-2 transition-colors cursor-pointer ${
-                                isSelected ? "bg-[#f5f5f5]" : "hover:bg-[#fafafa]"
-                              }`}
+                              onClick={() => selecionarAluno(aluno)}
+                              className="w-full p-2.5 rounded-[12px] text-left flex items-center justify-between gap-2 hover:bg-[#fafafa] transition-colors cursor-pointer pt-2"
                             >
                               <div className="min-w-0 flex-1">
                                 <div className="text-xs sm:text-sm font-semibold text-[#0a0a0a] truncate leading-tight">
@@ -352,14 +346,14 @@ export function AdicionarParticipantePasseioDialog({
                                   </div>
                                 )}
                               </div>
-                              {isSelected && <Check className="h-4 w-4 text-[#0a0a0a] shrink-0" />}
+                              <Plus className="h-4 w-4 text-primary shrink-0" />
                             </button>
                           );
-                        })
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -432,7 +426,7 @@ export function AdicionarParticipantePasseioDialog({
                     />
                   </FormControl>
                   <FormLabel className="text-xs font-medium text-[#0a0a0a] cursor-pointer m-0">
-                    O participante é o próprio responsável / Maior de idade
+                    O participante é o próprio responsável
                   </FormLabel>
                 </FormItem>
               )}

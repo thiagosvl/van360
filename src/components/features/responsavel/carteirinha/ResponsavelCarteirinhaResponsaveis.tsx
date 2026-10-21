@@ -19,11 +19,11 @@ export const ResponsavelCarteirinhaResponsaveis: React.FC<ResponsavelCarteirinha
     <CarteirinhaResponsaveis
       passageiro={passageiroConvertido}
       onEditClick={() => {}}
-      canManageOverride={true}
+      canManageOverride={false}
       hideAppAccess={true}
       hideAddress={false}
       hideWhatsappButton={true}
-      hideEditButton={false}
+      hideEditButton={true}
       hideNotificacoesRota={!temRotas}
       isResponsavelPortal={true}
       onRefresh={onRefresh}

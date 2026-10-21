@@ -7,6 +7,7 @@ import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
 import { aplicarMascaraPix } from "@/utils/formatters/pix";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
+import { cn } from "@/lib/utils";
 
 export interface PixFormValues {
   tipo_chave_pix?: TipoChavePix | null;
@@ -19,6 +20,10 @@ interface PixKeyFieldsProps<T extends PixFormValues> {
   originalTipoRef?: React.MutableRefObject<TipoChavePix | null>;
   originalChaveRef?: React.MutableRefObject<string>;
   gridClassName?: string;
+  variant?: "default" | "card";
+  inputClassName?: string;
+  selectClassName?: string;
+  labelClassName?: string;
 }
 
 export function PixKeyFields<T extends PixFormValues>({
@@ -27,9 +32,26 @@ export function PixKeyFields<T extends PixFormValues>({
   originalTipoRef,
   originalChaveRef,
   gridClassName = "grid grid-cols-1 sm:grid-cols-2 gap-4",
+  variant = "default",
+  inputClassName,
+  selectClassName,
+  labelClassName,
 }: PixKeyFieldsProps<T>) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+
+  const isCard = variant === "card";
+  const defaultLabelClass = isCard
+    ? "text-xs font-medium text-[#0a0a0a]"
+    : "text-xs font-semibold text-[#0a0a0a]";
+
+  const defaultSelectClass = isCard
+    ? "h-10 rounded-[18px] bg-white border border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a]"
+    : "h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a]";
+
+  const defaultInputClass = isCard
+    ? "h-10 rounded-[18px] bg-white border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373]"
+    : "h-11 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] focus:border-[#0a0a0a] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373]";
 
   return (
     <div className={gridClassName}>
@@ -38,12 +60,12 @@ export function PixKeyFields<T extends PixFormValues>({
         name={"tipo_chave_pix" as Path<T>}
         render={({ field }) => (
           <FormItem className="space-y-1.5">
-            <FormLabel className="text-xs font-semibold text-[#0a0a0a]">Tipo de Chave</FormLabel>
+            <FormLabel className={cn(defaultLabelClass, labelClassName)}>Tipo de Chave</FormLabel>
             <FormControl>
               <NativeSelect
                 value={(field.value as string) || ""}
                 disabled={isBusy}
-                className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a]"
+                className={cn(defaultSelectClass, selectClassName)}
                 onChange={(e) => {
                   const val = e.target.value;
                   if (!val) {
@@ -104,7 +126,7 @@ export function PixKeyFields<T extends PixFormValues>({
           const tipo = form.watch("tipo_chave_pix" as Path<T>) as TipoChavePix | undefined;
           return (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-xs font-semibold text-[#0a0a0a]">Chave Pix</FormLabel>
+              <FormLabel className={cn(defaultLabelClass, labelClassName)}>Chave Pix</FormLabel>
               <FormControl>
                 <Input
                   placeholder={tipo ? "Digite a chave Pix" : "Selecione o tipo de chave primeiro"}
@@ -122,7 +144,7 @@ export function PixKeyFields<T extends PixFormValues>({
                     const maskedVal = aplicarMascaraPix(e.target.value, tipo);
                     field.onChange(maskedVal);
                   }}
-                  className="h-11 rounded-[18px] bg-[#f5f5f5] border-transparent focus:border-[#e5e5e5] focus:bg-white text-sm text-[#0a0a0a] placeholder:text-[#737373]"
+                  className={cn(defaultInputClass, inputClassName)}
                 />
               </FormControl>
               <FormMessage />

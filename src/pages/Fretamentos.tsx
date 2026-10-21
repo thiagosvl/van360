@@ -1,38 +1,26 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Button } from "@/components/ui/button";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { Progress } from "@/components/ui/progress";
 import { FretamentosToolbar } from "@/components/features/fretamento/FretamentosToolbar";
+import { FretamentoCardItem } from "@/components/features/fretamento/FretamentoCardItem";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useVeiculos, useSession, useProfile } from "@/hooks";
 import { useFretamentoViewModel } from "@/hooks/ui/useFretamentoViewModel";
-import { formatCurrency, formatDateToBR, formatDateTime } from "@/utils/formatters";
+import { useAtualizarFretamentoMutation } from "@/hooks/api/useFretamentosApi";
+import { formatCurrency } from "@/utils/formatters";
+import { toast } from "sonner";
 import {
   Compass,
-  Ticket,
   Plus,
-  MapPin,
-  Calendar,
-  Users,
-  DollarSign,
-  Car,
-  ArrowRight,
-  MoreVertical,
-  CheckCircle2,
-  Trash2,
-  Edit,
-  CreditCard,
-  Clock,
+  CheckCheck,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import type { ActionItem } from "@/types/actions";
 import type { FretamentoItemCalculado } from "@/hooks/business/useFretamentoCalculations";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 
 export default function Fretamentos() {
-  const navigate = useNavigate();
   const {
     openNovoFretamentoOuPasseioDialog,
     openFretamentoFormDialog,
@@ -60,23 +48,28 @@ export default function Fretamentos() {
     clearFilters,
     onApplyFilters,
     itens,
+    itensAtivosEPendentes,
+    itensConcluidos,
     totais,
     isLoading,
     refetchList,
     excluirRegistro,
   } = useFretamentoViewModel();
 
+  const [concluidosExpandidosManual, setConcluidosExpandidosManual] = useState<boolean | null>(null);
+
+  const isConcluidosAberto =
+    concluidosExpandidosManual !== null
+      ? concluidosExpandidosManual
+      : itensAtivosEPendentes.length === 0;
+
   const handleOpenNovoRegistro = () => {
     openNovoFretamentoOuPasseioDialog({
       onSelectFretamento: () => {
-        openFretamentoFormDialog({
-          onSuccess: () => refetchList(),
-        });
+        openFretamentoFormDialog();
       },
       onSelectPasseio: () => {
-        openPasseioFormDialog({
-          onSuccess: () => refetchList(),
-        });
+        openPasseioFormDialog();
       },
     });
   };
@@ -91,12 +84,10 @@ export default function Fretamentos() {
     if (item.tipo === "fretamento") {
       openFretamentoFormDialog({
         editingItem: detalhesMock,
-        onSuccess: () => refetchList(),
       });
     } else {
       openPasseioFormDialog({
         editingItem: detalhesMock,
-        onSuccess: () => refetchList(),
       });
     }
   };
@@ -110,7 +101,6 @@ export default function Fretamentos() {
 
     openRegistrarPagamentoFretamentoDialog({
       fretamento: detalhesMock,
-      onSuccess: () => refetchList(),
     });
   };
 
@@ -123,6 +113,59 @@ export default function Fretamentos() {
       variant: "destructive",
       onConfirm: async () => {
         await excluirRegistro(item.id, item.titulo);
+      },
+    });
+  };
+
+  const atualizarMutation = useAtualizarFretamentoMutation();
+
+  const handleConfirmarConclusao = (item: FretamentoItemCalculado) => {
+    const isPasseio = item.tipo === "passeio";
+    const nomeTipo = isPasseio ? "Passeio" : "Viagem";
+    const temSaldo = item.saldo_restante > 0;
+
+    openConfirmationDialog({
+      title: `Concluir ${nomeTipo}`,
+      description: temSaldo
+        ? `"${item.titulo}" ainda possui saldo pendente de recebimento (${formatCurrency(item.saldo_restante)}). Deseja marcar como concluído mesmo assim? O registro será movido para as viagens concluídas.`
+        : `Deseja marcar "${item.titulo}" como concluído? O registro será movido para as viagens concluídas.`,
+      confirmText: "Sim, concluir",
+      cancelText: "Cancelar",
+      variant: "default",
+      onConfirm: async () => {
+        try {
+          await atualizarMutation.mutateAsync({
+            id: item.id,
+            payload: { status: "concluido" },
+          });
+          toast.success(`"${item.titulo}" marcado como concluído.`);
+        } catch {
+          toast.error("Erro ao atualizar status da viagem.");
+        }
+      },
+    });
+  };
+
+  const handleConfirmarReabertura = (item: FretamentoItemCalculado) => {
+    const isPasseio = item.tipo === "passeio";
+    const nomeTipo = isPasseio ? "Passeio" : "Viagem";
+
+    openConfirmationDialog({
+      title: `Reabrir ${nomeTipo}`,
+      description: `Deseja reabrir "${item.titulo}"? O registro retornará para a lista de viagens em andamento.`,
+      confirmText: "Sim, reabrir",
+      cancelText: "Cancelar",
+      variant: "default",
+      onConfirm: async () => {
+        try {
+          await atualizarMutation.mutateAsync({
+            id: item.id,
+            payload: { status: "confirmado" },
+          });
+          toast.success(`"${item.titulo}" reaberto com sucesso.`);
+        } catch {
+          toast.error("Erro ao reabrir viagem.");
+        }
       },
     });
   };
@@ -213,217 +256,81 @@ export default function Fretamentos() {
           />
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
-          {itens.map((item) => {
-            const isPasseio = item.tipo === "passeio";
-            const dataFormatada = isPasseio ? formatDateTime(item.data_inicio) : formatDateToBR(item.data_inicio);
+        {itensAtivosEPendentes.length > 0 && (
+          <div className="space-y-3">
+            {itensConcluidos.length > 0 && (
+              <div className="flex items-center justify-between text-xs text-[#737373] px-1">
+                <span className="font-semibold text-[#0a0a0a]">
+                  Em Andamento & Próximas Viagens ({itensAtivosEPendentes.length})
+                </span>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+              {itensAtivosEPendentes.map((item) => (
+                <FretamentoCardItem
+                  key={item.id}
+                  item={item}
+                  onOpenRegistrarPagamento={handleOpenRegistrarPagamento}
+                  onOpenEditar={handleOpenEditar}
+                  onConfirmarExclusao={handleConfirmarExclusao}
+                  onConcluirStatus={handleConfirmarConclusao}
+                  onReabrirStatus={handleConfirmarReabertura}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] hover:border-[#737373]/40 transition-all flex flex-col justify-between gap-3.5"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                        {isPasseio ? (
-                          <Ticket className="h-3 w-3 text-[#737373]" />
-                        ) : (
-                          <Compass className="h-3 w-3 text-[#737373]" />
-                        )}
-                        {isPasseio ? "Passeio" : "Fretamento"}
-                      </span>
-
-                      {isPasseio ? (
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${item.isLotado
-                              ? "bg-white text-[#e7000b] border-[#e7000b]/40"
-                              : item.status === "concluido"
-                                ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
-                                : item.status === "cancelado"
-                                  ? "bg-white text-[#e7000b] border-[#e7000b]/40"
-                                  : "bg-[#fafafa] text-[#0a0a0a] border-[#e5e5e5]"
-                            }`}
-                        >
-                          {item.isLotado ? (
-                            "Lotado"
-                          ) : item.status === "concluido" ? (
-                            <>
-                              <CheckCircle2 className="h-3 w-3 text-[#0a0a0a]" />
-                              Concluído
-                            </>
-                          ) : item.status === "cancelado" ? (
-                            "Cancelado"
-                          ) : (
-                            <>
-                              <Users className="h-3 w-3 text-[#737373]" />
-                              Vagas Abertas
-                            </>
-                          )}
-                        </span>
-                      ) : (
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${item.isQuitado
-                              ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
-                              : item.total_pago > 0
-                                ? "bg-[#fafafa] text-[#0a0a0a] border-[#e5e5e5]"
-                                : "bg-white text-[#737373] border-[#e5e5e5]"
-                            }`}
-                        >
-                          {item.isQuitado ? (
-                            <>
-                              <CheckCircle2 className="h-3 w-3 text-[#0a0a0a]" />
-                              Quitado
-                            </>
-                          ) : item.total_pago > 0 ? (
-                            <>
-                              <Clock className="h-3 w-3 text-[#737373]" />
-                              Sinal Pago
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="h-3 w-3 text-[#737373]" />
-                              Pendente
-                            </>
-                          )}
-                        </span>
-                      )}
-                    </div>
-
-                    <ActionsDropdown
-                      title={item.titulo}
-                      description={item.destino}
-                      actions={[
-                        ...(!isPasseio && !item.isQuitado
-                          ? [
-                              {
-                                label: "Registrar Pagamento",
-                                icon: <CreditCard className="h-4 w-4" />,
-                                onClick: () => handleOpenRegistrarPagamento(item),
-                              },
-                            ]
-                          : []),
-                        {
-                          label: "Editar",
-                          icon: <Edit className="h-4 w-4" />,
-                          onClick: () => handleOpenEditar(item),
-                        },
-                        {
-                          label: "Excluir",
-                          icon: <Trash2 className="h-4 w-4" />,
-                          variant: "destructive" as const,
-                          isDestructive: true,
-                          onClick: () => handleConfirmarExclusao(item),
-                        },
-                      ]}
-                    />
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-[#0a0a0a] text-base leading-snug tracking-tight line-clamp-1">
-                      {item.titulo}
-                    </h3>
-                    <div className="flex items-center gap-1.5 text-xs text-[#737373] mt-1">
-                      <MapPin className="h-3.5 w-3.5 text-[#737373] shrink-0" />
-                      <span className="truncate">{item.destino}</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#fafafa] rounded-[14px] border border-[#e5e5e5] p-2.5 sm:p-3 flex flex-col sm:flex-row justify-between gap-1.5 text-xs">
-                    <div className="flex items-center gap-1.5 text-[#0a0a0a] min-w-0">
-                      <Calendar className="h-3.5 w-3.5 text-[#737373] shrink-0" />
-                      <span className="truncate font-medium">{dataFormatada}</span>
-                    </div>
-
-                    {isPasseio ? (
-                      <div className="flex items-center gap-1.5 text-[#0a0a0a] shrink-0">
-                        <Users className="h-3.5 w-3.5 text-[#737373] shrink-0" />
-                        <span className="font-medium">
-                          {item.vagas_totais !== null ? `${item.vagas_ocupadas}/${item.vagas_totais} vagas` : `${item.vagas_ocupadas} inscritos`}
-                        </span>
-                      </div>
-                    ) : item.veiculos?.[0]?.placa ? (
-                      <div className="flex items-center gap-1.5 text-[#0a0a0a] shrink-0">
-                        <Car className="h-3.5 w-3.5 text-[#737373] shrink-0" />
-                        <span className="truncate font-medium">{item.veiculos[0].placa}</span>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs">
-                      <span className="text-[#737373] text-[11px] sm:text-xs">
-                        {isPasseio ? "Arrecadado" : "Recebido"}
-                      </span>
-                      <span className="font-semibold text-[#0a0a0a] text-xs sm:text-sm">
-                        {formatCurrency(item.total_pago)} <span className="text-[#737373] font-normal">de {formatCurrency(Number(item.valor_total || 0))}</span>
-                      </span>
-                    </div>
-                    <Progress
-                      value={item.percentualPago}
-                      className="h-1.5 bg-[#f5f5f5]"
-                      indicatorClassName={item.isQuitado ? "bg-emerald-600" : "bg-primary"}
-                    />
-                  </div>
+        {itensConcluidos.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setConcluidosExpandidosManual(!isConcluidosAberto)}
+              className="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-[18px] bg-[#fafafa] hover:bg-[#f5f5f5] border border-[#e5e5e5] transition-all cursor-pointer group select-none text-left"
+              aria-expanded={isConcluidosAberto}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-8 w-8 rounded-[12px] bg-white border border-[#e5e5e5] flex items-center justify-center shrink-0 text-[#737373] group-hover:text-[#0a0a0a] transition-colors">
+                  <CheckCheck className="h-4 w-4" />
                 </div>
-
-                <div className="pt-2.5 border-t border-[#e5e5e5]">
-                  {isPasseio ? (
-                    <div className="w-full flex items-center justify-between gap-2">
-                      <div className="text-xs text-[#737373]">
-                        {item.vagasRestantes !== null ? (
-                          item.vagasRestantes === 0 ? (
-                            <span className="text-[#e7000b] font-medium">Vagas esgotadas</span>
-                          ) : (
-                            <>
-                              Restam <strong className="text-[#0a0a0a] font-semibold">{item.vagasRestantes} vagas</strong>
-                            </>
-                          )
-                        ) : (
-                          <>
-                            <strong className="text-[#0a0a0a] font-semibold">{item.vagas_ocupadas}</strong> inscritos
-                          </>
-                        )}
-                      </div>
-
-                      <Button
-                        size="sm"
-                        onClick={() => navigate(`/fretamentos-e-passeios/${item.id}`)}
-                        className="h-9 px-3.5 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs border-none shadow-xs transition-all active:scale-[0.98] gap-1.5 cursor-pointer shrink-0"
-                      >
-                        <Users className="h-3.5 w-3.5 text-primary-foreground" />
-                        <span>Ver Participantes</span>
-                        <ArrowRight className="h-3.5 w-3.5 ml-0.5 text-primary-foreground/70" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-full flex items-center justify-between gap-2">
-                      <div className="text-xs text-[#737373]">
-                        A Receber: <strong className="text-[#0a0a0a] font-semibold">{formatCurrency(item.saldo_restante)}</strong>
-                      </div>
-                      {!item.isQuitado ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handleOpenRegistrarPagamento(item)}
-                          className="h-9 px-3.5 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs border-none shadow-xs transition-all active:scale-[0.98] gap-1 cursor-pointer shrink-0"
-                        >
-                          <DollarSign className="h-3.5 w-3.5" />
-                          <span>Registrar Pagamento</span>
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-[#0a0a0a] font-medium flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0a0a]" />
-                          Quitado
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <div className="truncate">
+                  <span className="text-xs sm:text-sm font-semibold text-[#0a0a0a] block">
+                    Concluídas & Quitadas ({itensConcluidos.length})
+                  </span>
+                  <span className="text-[11px] text-[#737373] block truncate">
+                    Viagens passadas 100% liquidadas neste mês
+                  </span>
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              <div className="flex items-center gap-1.5 text-xs font-medium text-[#737373] group-hover:text-[#0a0a0a] shrink-0 pl-2">
+                <span>{isConcluidosAberto ? "Ocultar" : "Mostrar"}</span>
+                {isConcluidosAberto ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </div>
+            </button>
+
+            {isConcluidosAberto && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
+                {itensConcluidos.map((item) => (
+                  <FretamentoCardItem
+                    key={item.id}
+                    item={item}
+                    isDimmed
+                    onOpenRegistrarPagamento={handleOpenRegistrarPagamento}
+                    onOpenEditar={handleOpenEditar}
+                    onConfirmarExclusao={handleConfirmarExclusao}
+                    onConcluirStatus={handleConfirmarConclusao}
+                    onReabrirStatus={handleConfirmarReabertura}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </PullToRefreshWrapper>
   );

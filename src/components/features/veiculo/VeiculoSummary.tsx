@@ -14,11 +14,13 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
 
   return (
     <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
-      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
-        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none">
-          Veículo
-        </span>
+      <div className="pr-8">
+        <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight break-words w-full min-w-0">
+          {formatarPlacaExibicao(veiculo.placa)}
+        </h2>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-2 mt-1.5 w-full min-w-0">
         <div
           className={cn(
             "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
@@ -29,15 +31,20 @@ export const VeiculoSummary = ({ veiculo }: VeiculoSummaryProps) => {
         >
           {veiculo.ativo ? "Ativo" : "Inativo"}
         </div>
+
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none shrink-0">
+          Veículo
+        </span>
+
+        {(veiculo.marca || veiculo.modelo) && (
+          <div className="flex items-center gap-1.5 min-w-0 text-[#737373] flex-1">
+            <span className="text-xs text-[#737373]/60">•</span>
+            <p className="text-xs font-normal leading-snug truncate">
+              {veiculo.marca} {veiculo.modelo}
+            </p>
+          </div>
+        )}
       </div>
-
-      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight break-words w-full min-w-0 mt-0.5">
-        {formatarPlacaExibicao(veiculo.placa)}
-      </h2>
-
-      <p className="text-xs font-normal text-[#737373] mt-0.5 leading-snug line-clamp-2 break-words w-full min-w-0">
-        {veiculo.marca} {veiculo.modelo}
-      </p>
 
       <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
         <div className="flex items-center gap-1.5 min-w-0 text-[#737373]">

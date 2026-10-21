@@ -193,14 +193,7 @@ export const FretamentosToolbar = memo(function FretamentosToolbar({
   );
 
   return (
-    <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
-      <span className="text-xs font-medium text-[#737373] uppercase tracking-[0.05em] self-end sm:self-auto text-right">
-        {totalItens}{" "}
-        {hasActiveFilters
-          ? (totalItens === 1 ? "ENCONTRADA" : "ENCONTRADAS")
-          : (totalItens === 1 ? "VIAGEM" : "VIAGENS")}
-      </span>
-
+    <div className="flex items-center justify-end gap-2 w-full pt-1">
       <div className="flex items-center gap-2 w-full sm:w-auto">
         {isMobile ? (
           <Drawer open={isOpen} onOpenChange={setIsOpen}>

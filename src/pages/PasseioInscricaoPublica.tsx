@@ -18,6 +18,7 @@ import {
   Ticket,
   MapPin,
   Calendar,
+  DollarSign,
   QrCode,
   Copy,
   CheckCircle2,
@@ -134,32 +135,19 @@ export default function PasseioInscricaoPublica() {
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col justify-start items-center py-4 sm:py-10 px-3 sm:px-6 relative">
       <div className="w-full max-w-lg space-y-3 sm:space-y-4">
         <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div className="space-y-1">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                <Ticket className="h-3 w-3 text-[#737373]" />
-                Inscrição para Passeio
-              </span>
-              <h1 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight leading-tight pt-1">
-                {passeio.titulo}
-              </h1>
-              {passeio.motorista_nome && (
-                <p className="text-xs text-[#737373]">
-                  Organizado por <strong className="text-[#0a0a0a] font-medium">{passeio.motorista_nome}</strong>
-                </p>
-              )}
-            </div>
-
-            {passeio.valor_por_pessoa ? (
-              <div className="self-start sm:self-auto shrink-0 text-left sm:text-right px-3 py-2 rounded-[18px] bg-[#fafafa] border border-[#e5e5e5]">
-                <span className="text-[10px] uppercase font-medium text-[#737373] tracking-wider block">
-                  Valor
-                </span>
-                <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] leading-none block mt-0.5">
-                  {formatCurrency(Number(passeio.valor_por_pessoa))}
-                </span>
-              </div>
-            ) : null}
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+              <Ticket className="h-3 w-3 text-[#737373]" />
+              Inscrição para Passeio
+            </span>
+            <h1 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight leading-tight pt-1">
+              {passeio.titulo}
+            </h1>
+            {passeio.motorista_nome && (
+              <p className="text-xs text-[#737373]">
+                Organizado por <strong className="text-[#0a0a0a] font-medium">{passeio.motorista_nome}</strong>
+              </p>
+            )}
           </div>
 
           <div className="divide-y divide-[#e5e5e5] rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-3.5 sm:p-4 text-xs space-y-2.5">
@@ -180,7 +168,7 @@ export default function PasseioInscricaoPublica() {
             </div>
 
             {passeio.origem && (
-              <div className="flex items-start gap-2.5 pt-2.5">
+              <div className="flex items-start gap-2.5 py-2.5">
                 <MapPin className="h-4 w-4 text-[#737373] shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[10px] uppercase font-medium text-[#737373] block tracking-wider">Ponto de Encontro</span>
@@ -188,6 +176,20 @@ export default function PasseioInscricaoPublica() {
                 </div>
               </div>
             )}
+
+            {passeio.valor_por_pessoa ? (
+              <div className="flex items-start gap-2.5 pt-2.5">
+                <DollarSign className="h-4 w-4 text-[#737373] shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[10px] uppercase font-medium text-[#737373] block tracking-wider">
+                    Valor por Participante
+                  </span>
+                  <span className="font-semibold text-[#0a0a0a] text-base leading-snug">
+                    {formatCurrency(Number(passeio.valor_por_pessoa))}
+                  </span>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {passeio.chave_pix && (
@@ -236,29 +238,13 @@ export default function PasseioInscricaoPublica() {
                 <div>
                   <h2 className="text-xl sm:text-2xl font-semibold text-[#0a0a0a] tracking-tight">Presença Confirmada!</h2>
                   <p className="text-xs sm:text-sm text-[#737373] mt-1">
-                    A vaga de <strong className="text-[#0a0a0a] font-medium">{nome}</strong> foi registrada com sucesso.
+                    Sua vaga está garantida.
                   </p>
                 </div>
                 {passeio.chave_pix && (
                   <p className="text-xs text-[#737373] max-w-sm mx-auto leading-relaxed pt-1">
-                    Realize o pagamento utilizando a chave PIX acima e envie o comprovante ao organizador.
+                    Realize o pagamento utilizando a chave PIX acima e envie o comprovante diretamente para o organizador.
                   </p>
-                )}
-                {passeio.motorista_telefone && (
-                  <div className="pt-2">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        const msg = `Olá! Confirmei a presença de *${nome}* no passeio *${passeio.titulo}*. Segue o comprovante de pagamento:`;
-                        const url = buildWhatsAppUrl(passeio.motorista_telefone, msg);
-                        window.open(url, "_blank");
-                      }}
-                      className="w-full h-11 rounded-[18px] text-xs sm:text-sm font-semibold bg-[#25D366] hover:bg-[#20b858] text-white gap-2 border-none shadow-xs transition-all active:scale-[0.98] cursor-pointer"
-                    >
-                      <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
-                      <span>Enviar Comprovante pelo WhatsApp</span>
-                    </Button>
-                  </div>
                 )}
               </div>
             ) : (
@@ -289,7 +275,7 @@ export default function PasseioInscricaoPublica() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-[#0a0a0a] block">
-                      Nome do Participante (Aluno) <span className="text-[#e7000b]">*</span>
+                      Nome Completo <span className="text-[#e7000b]">*</span>
                     </label>
                     <div className="relative">
                       <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -316,14 +302,14 @@ export default function PasseioInscricaoPublica() {
                       htmlFor="proprioResponsavel"
                       className="text-xs font-medium text-[#0a0a0a] cursor-pointer select-none leading-none"
                     >
-                      Eu mesmo sou o participante (maior de idade)
+                      Eu mesmo sou o responsável
                     </label>
                   </div>
 
                   {!isProprioResponsavel && (
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-[#0a0a0a] block">
-                        Nome do Pai / Mãe ou Responsável <span className="text-[#e7000b]">*</span>
+                        Nome do Responsável <span className="text-[#e7000b]">*</span>
                       </label>
                       <div className="relative">
                         <Contact className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -342,7 +328,7 @@ export default function PasseioInscricaoPublica() {
 
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-[#0a0a0a] block">
-                      WhatsApp / Telefone para Contato <span className="text-[#e7000b]">*</span>
+                      Telefone/WhatsApp <span className="text-[#e7000b]">*</span>
                     </label>
                     <div className="relative">
                       <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -376,7 +362,7 @@ export default function PasseioInscricaoPublica() {
 
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-[#0a0a0a] block">
-                      Observações ou Restrições <span className="text-[#737373] font-normal">(Opcional)</span>
+                      Observações <span className="text-[#737373] font-normal">(Opcional)</span>
                     </label>
                     <div className="relative">
                       <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
@@ -401,7 +387,7 @@ export default function PasseioInscricaoPublica() {
                           <span>Confirmando presença...</span>
                         </div>
                       ) : (
-                        <span>Confirmar Presença no Passeio</span>
+                        <span>Confirmar Presença</span>
                       )}
                     </Button>
                   </div>

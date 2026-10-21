@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   useFretamentosListQuery,
   useFretamentoResumoQuery,
@@ -6,6 +6,7 @@ import {
 } from "@/hooks/api/useFretamentosApi";
 import { useFretamentoCalculations } from "@/hooks/business/useFretamentoCalculations";
 import { useFilters } from "@/hooks/ui/useFilters";
+import { useLayout } from "@/contexts/LayoutContext";
 import type { FretamentoTipo, FretamentoStatus } from "@/services/api/fretamento.api";
 import { FilterDefaults } from "@/types/enums";
 import { getNowBR } from "@/utils/dateUtils";
@@ -15,6 +16,12 @@ export type FretamentoTipoFiltro = FretamentoTipo | FilterDefaults.TODOS;
 export type FretamentoStatusFiltro = FretamentoStatus | FilterDefaults.TODOS;
 
 export const useFretamentoViewModel = () => {
+  const { setPageTitle } = useLayout();
+
+  useEffect(() => {
+    setPageTitle("Fretamentos e Passeios");
+  }, [setPageTitle]);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -62,6 +69,7 @@ export const useFretamentoViewModel = () => {
   const {
     data: resumo,
     isLoading: isLoadingResumo,
+    refetch: refetchResumo,
   } = useFretamentoResumoQuery(mes, ano);
 
   const deletarMutation = useDeletarFretamentoMutation();
@@ -123,6 +131,18 @@ export const useFretamentoViewModel = () => {
     }
   };
 
+  const refetchAll = async () => {
+    await Promise.all([refetchList(), refetchResumo()]);
+  };
+
+  const itensAtivosEPendentes = useMemo(() => {
+    return itensFiltrados.filter((item) => !item.isConcluido);
+  }, [itensFiltrados]);
+
+  const itensConcluidos = useMemo(() => {
+    return itensFiltrados.filter((item) => item.isConcluido);
+  }, [itensFiltrados]);
+
   return {
     mes,
     ano,
@@ -143,10 +163,12 @@ export const useFretamentoViewModel = () => {
     clearFilters,
     onApplyFilters,
     itens: itensFiltrados,
+    itensAtivosEPendentes,
+    itensConcluidos,
     totais,
     isLoading: isLoadingList || isLoadingResumo,
     isDeleting: deletarMutation.isPending,
-    refetchList,
+    refetchList: refetchAll,
     excluirRegistro,
   };
 };

@@ -6,6 +6,9 @@ import {
   BOTTOM_NAV_CHANGE_EVENT,
 } from "@/utils/domain/pages/pagesUtils";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+import { canAccessFretamentos } from "@/utils/domain/fretamentoAccess";
 import { ROUTES } from "@/constants/routes";
 
 const DEFAULT_CUSTOMIZABLE_SLOTS: [string, string, string] = [
@@ -40,6 +43,9 @@ function parseStoredSlots(rawValue: string | null): [string, string, string] | n
 
 export function useBottomNavPreferences(userId?: string) {
   const { isGestor, isSubConta, isMonitor, isMotoristaAuxiliar, can } = usePermissions();
+  const { user } = useSession();
+  const { profile } = useProfile(userId || user?.id);
+  const hasFretamentosAccess = canAccessFretamentos(profile, user);
 
   const isEligibleToCustomize = Boolean(
     isGestor && !isSubConta && !isMonitor && !isMotoristaAuxiliar
@@ -77,19 +83,23 @@ export function useBottomNavPreferences(userId?: string) {
   }, [readCustomSlots]);
 
   const activeHrefs = useMemo(() => {
-    if (!isEligibleToCustomize) {
-      return getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor);
-    }
-    return [ROUTES.PRIVATE.MOTORISTA.HOME, ...customSlots];
-  }, [isEligibleToCustomize, isSubConta, isMotoristaAuxiliar, isMonitor, customSlots]);
+    const rawHrefs = !isEligibleToCustomize
+      ? getBottomNavHrefs(isSubConta, isMotoristaAuxiliar, isMonitor)
+      : [ROUTES.PRIVATE.MOTORISTA.HOME, ...customSlots];
+
+    return rawHrefs.filter(
+      (href) => href !== ROUTES.PRIVATE.MOTORISTA.CHARTERS || hasFretamentosAccess
+    );
+  }, [isEligibleToCustomize, isSubConta, isMotoristaAuxiliar, isMonitor, customSlots, hasFretamentosAccess]);
 
   const availableItems = useMemo(() => {
     return pagesItems.filter((item) => {
       if (item.href === ROUTES.PRIVATE.MOTORISTA.HOME) return false;
+      if (item.href === ROUTES.PRIVATE.MOTORISTA.CHARTERS && !hasFretamentosAccess) return false;
       if (!item.permission) return true;
       return can(item.permission);
     });
-  }, [can]);
+  }, [can, hasFretamentosAccess]);
 
   const savePreferences = useCallback(
     (slots: [string, string, string]) => {

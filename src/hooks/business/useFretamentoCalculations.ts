@@ -10,6 +10,8 @@ export interface FretamentoItemCalculado extends FretamentoItemLista {
   isQuitado: boolean;
   isLotado: boolean;
   vagasRestantes: number | null;
+  isPassado: boolean;
+  isConcluido: boolean;
 }
 
 export interface FretamentoDetalhesCalculado extends FretamentoDetalhes {
@@ -23,6 +25,18 @@ export interface FretamentoDetalhesCalculado extends FretamentoDetalhes {
   participantesPendentesCount: number;
   participantesParciaisCount: number;
 }
+
+export const verificarSeViagemPassou = (dataInicio: string, dataFim?: string | null): boolean => {
+  const agora = new Date();
+  const dataReferencia = new Date(dataFim || dataInicio);
+  const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  const dataEventoDia = new Date(
+    dataReferencia.getFullYear(),
+    dataReferencia.getMonth(),
+    dataReferencia.getDate()
+  );
+  return dataEventoDia.getTime() < hoje.getTime();
+};
 
 export const calcularProgressoPagamento = (valorTotal: number, totalPago: number) => {
   if (valorTotal <= 0) return 100;
@@ -46,6 +60,13 @@ export const useFretamentoCalculations = (
       const vagasRestantes = calcularVagasRestantes(item.vagas_totais, item.vagas_ocupadas);
       const isLotado = vagasRestantes !== null && vagasRestantes === 0;
       const isQuitado = item.status_pagamento === "quitado" || (valorTotal > 0 && totalPago >= valorTotal);
+      const isPassado = verificarSeViagemPassou(item.data_inicio, item.data_fim);
+      const isCancelado = item.status === "cancelado";
+      const isSemSaldo = isQuitado || Math.max(0, valorTotal - totalPago) <= 0;
+      const isPasseioSemInscritos = item.tipo === "passeio" && item.vagas_ocupadas === 0;
+
+      const isConcluidoManual = item.status === "concluido";
+      const isConcluido = isCancelado || isConcluidoManual || (isPassado && (isSemSaldo || isPasseioSemInscritos));
 
       return {
         ...item,
@@ -53,6 +74,8 @@ export const useFretamentoCalculations = (
         isQuitado,
         isLotado,
         vagasRestantes,
+        isPassado,
+        isConcluido,
       };
     });
   }, [itens]);

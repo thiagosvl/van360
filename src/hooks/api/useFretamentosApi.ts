@@ -159,8 +159,13 @@ export const useRemoverParticipanteMutation = () => {
 };
 
 export const useInscreverPublicoMutation = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ slug, payload }: { slug: string; payload: AdicionarParticipantePayload }) =>
       fretamentoApi.inscreverPublico(slug, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.publico(variables.slug) });
+    },
   });
 };

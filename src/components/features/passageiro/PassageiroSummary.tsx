@@ -17,11 +17,13 @@ export const PassageiroSummary = ({ passageiro }: PassageiroSummaryProps) => {
 
   return (
     <div className="flex flex-col text-left w-full min-w-0 px-0.5 pt-0.5 pb-1">
-      <div className="flex justify-between items-center mb-1.5 w-full min-w-0 gap-2">
-        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none truncate">
-          Aluno
-        </span>
+      <div className="pr-8">
+        <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0">
+          {formatAlunoNome(passageiro.nome)}
+        </h2>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-2 mt-1.5 w-full min-w-0">
         <div
           className={cn(
             "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
@@ -32,22 +34,23 @@ export const PassageiroSummary = ({ passageiro }: PassageiroSummaryProps) => {
         >
           {passageiro.ativo ? "Ativo" : "Inativo"}
         </div>
+
+        <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] leading-none shrink-0">
+          Aluno
+        </span>
+
+        {passageiro.escola?.nome && (
+          <div className="flex items-center gap-1.5 min-w-0 text-[#737373] flex-1">
+            <span className="text-xs text-[#737373]/60">•</span>
+            <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+            <p className="text-xs font-normal leading-snug truncate">
+              {passageiro.escola.nome}
+              {passageiro.periodo ? ` • ${formatPeriodo(passageiro.periodo)}` : ""}
+              {passageiro.turma ? ` • ${passageiro.turma}` : ""}
+            </p>
+          </div>
+        )}
       </div>
-
-      <h2 className="text-lg sm:text-xl font-bold text-[#0a0a0a] tracking-tight leading-tight line-clamp-2 break-words w-full min-w-0 mt-0.5">
-        {formatAlunoNome(passageiro.nome)}
-      </h2>
-
-      {passageiro.escola?.nome && (
-        <div className="flex items-center gap-1.5 mt-1 w-full min-w-0 text-[#737373]">
-          <GraduationCap className="h-3.5 w-3.5 shrink-0" />
-          <p className="text-xs font-normal leading-snug truncate">
-            {passageiro.escola.nome}
-            {passageiro.periodo ? ` • ${formatPeriodo(passageiro.periodo)}` : ""}
-            {passageiro.turma ? ` • ${passageiro.turma}` : ""}
-          </p>
-        </div>
-      )}
 
       {respName && (
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">

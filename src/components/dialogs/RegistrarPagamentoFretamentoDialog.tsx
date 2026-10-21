@@ -139,56 +139,58 @@ export function RegistrarPagamentoFretamentoDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="tipo_pagamento"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    Forma de Pagamento <span className="text-[#e7000b]">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <NativeSelect
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      icon={<CreditCard className="h-4 w-4 text-[#737373]" />}
-                    >
-                      <option value="PIX">PIX</option>
-                      <option value="dinheiro">Dinheiro</option>
-                      <option value="cartao-credito">Cartão de Crédito</option>
-                      <option value="cartao-debito">Cartão de Débito</option>
-                      <option value="transferencia">Transferência Bancária</option>
-                      <option value="boleto">Boleto</option>
-                    </NativeSelect>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="tipo_pagamento"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Forma de Pagamento <span className="text-[#e7000b]">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        icon={<CreditCard className="h-4 w-4 text-[#737373]" />}
+                      >
+                        <option value="PIX">PIX</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="cartao-credito">Cartão de Crédito</option>
+                        <option value="cartao-debito">Cartão de Débito</option>
+                        <option value="transferencia">Transferência Bancária</option>
+                        <option value="boleto">Boleto</option>
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="data_pagamento"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    Data do Recebimento <span className="text-[#e7000b]">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
-                      <Input
-                        type="date"
-                        className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
-                        aria-invalid={!!fieldState.error}
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="data_pagamento"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs">
+                      Data do Recebimento <span className="text-[#e7000b]">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Calendar className="absolute left-3.5 top-3 h-4 w-4 text-[#737373] z-10 pointer-events-none" />
+                        <Input
+                          type="date"
+                          className="pl-10 h-10 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-[#ffffff] focus:border-[#0a0a0a] text-sm"
+                          aria-invalid={!!fieldState.error}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

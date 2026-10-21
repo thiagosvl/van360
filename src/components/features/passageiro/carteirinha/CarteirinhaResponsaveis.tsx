@@ -233,7 +233,7 @@ export const CarteirinhaResponsaveis = ({
           (currentResp.id === passageiro.responsavel_logado_id || currentResp.responsavel_id === passageiro.responsavel_logado_id)
         );
 
-        const canEditCurrent = isResponsavelPortal ? isOwnProfile : (canManage && !hideEditButton);
+        const canEditCurrent = isResponsavelPortal ? false : (canManage && !hideEditButton);
         const canShowDropdown = !isResponsavelPortal && canManage;
 
         const respAddress = currentResp.logradouro

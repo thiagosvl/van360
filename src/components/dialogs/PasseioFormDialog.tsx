@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
+import { VeiculoMultiSelect } from "@/components/ui/VeiculoMultiSelect";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import { useConfiguracoes } from "@/hooks/api/useConfiguracoes";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
@@ -27,11 +28,12 @@ import {
   useAtualizarFretamentoMutation,
 } from "@/hooks/api/useFretamentosApi";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
-import { moneyMask, moneyToNumber, pixMask } from "@/utils/masks";
-import { Ticket, MapPin, Calendar, Users, QrCode, Car, FileText, Wand2, Sparkles } from "lucide-react";
+import { moneyMask, moneyToNumber } from "@/utils/masks";
+import { Ticket, MapPin, Calendar, Users, Car, FileText, Wand2 } from "lucide-react";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { TipoChavePix } from "@/types/pix";
+import { PixKeyFields } from "@/components/features/pix/PixKeyFields";
 import { toast } from "sonner";
 
 interface PasseioFormDialogProps {
@@ -62,7 +64,6 @@ export function PasseioFormDialog({
 
   const isEditing = !!editingItem;
   const exibirPix = form.watch("exibir_pix");
-  const tipoChave = form.watch("tipo_chave_pix");
 
   useEffect(() => {
     if (isOpen) {
@@ -364,134 +365,34 @@ export function PasseioFormDialog({
               />
 
               {exibirPix && (
-                <div className="space-y-2.5 pt-2 border-t border-[#e5e5e5]">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <FormField
-                      control={form.control}
-                      name="tipo_chave_pix"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Tipo de Chave</FormLabel>
-                          <FormControl>
-                            <NativeSelect
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                const tipo = e.target.value as TipoChavePix;
-                                field.onChange(tipo);
-                                const currentVal = form.getValues("chave_pix") || "";
-                                if (currentVal) {
-                                  form.setValue("chave_pix", pixMask(currentVal, tipo));
-                                } else if (profile) {
-                                  if (tipo === TipoChavePix.CPF && profile.cpfcnpj) {
-                                    form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CPF));
-                                  } else if (tipo === TipoChavePix.CNPJ && profile.cpfcnpj) {
-                                    form.setValue("chave_pix", pixMask(profile.cpfcnpj, TipoChavePix.CNPJ));
-                                  } else if (tipo === TipoChavePix.TELEFONE && profile.telefone) {
-                                    form.setValue("chave_pix", pixMask(profile.telefone, TipoChavePix.TELEFONE));
-                                  } else if (tipo === TipoChavePix.EMAIL && (profile.email || user?.email)) {
-                                    form.setValue("chave_pix", profile.email || user?.email || "");
-                                  }
-                                }
-                              }}
-                              className="bg-white"
-                            >
-                              <option value="">Tipo...</option>
-                              <option value={TipoChavePix.CPF}>CPF</option>
-                              <option value={TipoChavePix.CNPJ}>CNPJ</option>
-                              <option value={TipoChavePix.EMAIL}>E-mail</option>
-                              <option value={TipoChavePix.TELEFONE}>Telefone</option>
-                              <option value={TipoChavePix.ALEATORIA}>Aleatória</option>
-                            </NativeSelect>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="chave_pix"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#0a0a0a] font-medium text-[11px]">Chave PIX</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <QrCode className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
-                              <Input
-                                placeholder="Digite a chave..."
-                                className="pl-10 h-10 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm font-medium"
-                                value={field.value || ""}
-                                onChange={(e) => {
-                                  field.onChange(pixMask(e.target.value, tipoChave));
-                                }}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {financeiro?.chave_pix_repasse && form.watch("chave_pix") !== financeiro.chave_pix_repasse && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        form.setValue("chave_pix", financeiro.chave_pix_repasse || "");
-                        if (financeiro.tipo_chave_pix) {
-                          form.setValue("tipo_chave_pix", financeiro.tipo_chave_pix as TipoChavePix);
-                        }
-                      }}
-                      className="text-xs text-[#0a0a0a] hover:bg-white h-7 px-2.5 rounded-[18px] gap-1 font-medium border border-transparent hover:border-[#e5e5e5]"
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-[#737373]" />
-                      <span>Usar PIX da conta ({financeiro.chave_pix_repasse})</span>
-                    </Button>
-                  )}
+                <div className="pt-2.5 border-t border-[#e5e5e5]">
+                  <PixKeyFields form={form} variant="card" gridClassName="grid grid-cols-1 sm:grid-cols-2 gap-2.5" />
                 </div>
               )}
             </div>
 
             {veiculos.length > 0 && (
-              <div className="space-y-1.5 pt-1">
-                <FormLabel className="text-[#0a0a0a] font-medium text-xs flex items-center gap-1.5">
-                  <Car className="h-4 w-4 text-[#737373]" />
-                  Vans Alocadas (Opcional)
-                </FormLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#fafafa] p-3 rounded-[18px] border border-[#e5e5e5]">
-                  {veiculos.map((v) => {
-                    const currentSelected = form.watch("veiculos_ids") || [];
-                    const isChecked = currentSelected.includes(v.id);
-                    return (
-                      <label
-                        key={v.id}
-                        className="flex items-center gap-2.5 p-2 bg-white rounded-[14px] border border-[#e5e5e5] cursor-pointer hover:border-[#0a0a0a] transition-colors select-none"
-                      >
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              form.setValue("veiculos_ids", [...currentSelected, v.id]);
-                            } else {
-                              form.setValue(
-                                "veiculos_ids",
-                                currentSelected.filter((id) => id !== v.id)
-                              );
-                            }
-                          }}
-                          className="rounded-[6px] border-[#e5e5e5] data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                        />
-                        <div className="text-xs">
-                          <span className="font-semibold text-[#0a0a0a]">{v.placa}</span>
-                          {v.modelo ? <span className="text-[#737373] ml-1">({v.modelo})</span> : null}
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
+              <FormField
+                control={form.control}
+                name="veiculos_ids"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#0a0a0a] font-medium text-xs flex items-center gap-1.5">
+                      <Car className="h-4 w-4 text-[#737373]" />
+                      Vans Alocadas (Opcional)
+                    </FormLabel>
+                    <FormControl>
+                      <VeiculoMultiSelect
+                        veiculos={veiculos}
+                        selectedIds={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Selecionar vans (opcional)"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
 
             <FormField
@@ -522,7 +423,7 @@ export function PasseioFormDialog({
               disabled={isSubmitting}
             />
             <BaseDialog.Action
-              label={isEditing ? "Salvar" : "Criar Passeio"}
+              label={isEditing ? "Salvar" : "Salvar"}
               variant="primary"
               onClick={form.handleSubmit(onSubmit)}
               isLoading={isSubmitting}

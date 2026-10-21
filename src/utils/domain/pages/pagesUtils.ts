@@ -59,11 +59,11 @@ const pagesItems: PageItem[] = [
     icon: TrendingDown,
     permission: "gastos.visualizar",
   },
-  // {
-  //   title: "Fretamentos e Passeios",
-  //   href: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
-  //   icon: Compass,
-  // },
+  {
+    title: "Fretamentos e Passeios",
+    href: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
+    icon: Compass,
+  },
   {
     title: "Escolas",
     href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,

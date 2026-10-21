@@ -254,40 +254,37 @@ export function ActionSheet({
         hideCloseButton
         className="w-full max-w-md p-0 overflow-hidden bg-white rounded-[28px] border border-[#e5e5e5] shadow-2xl flex flex-col max-h-[85vh] gap-0 outline-none"
       >
-        <div className="flex items-center justify-between px-5 pt-4 pb-1">
-          {title ? (
-            <div className="flex flex-col min-w-0 pr-3">
-              <DialogTitle className="font-semibold text-[#0a0a0a] text-base tracking-tight leading-snug">
-                {title}
-              </DialogTitle>
-              {description ? (
-                <DialogDescription className="text-xs font-normal text-[#737373] mt-0.5">
-                  {description}
-                </DialogDescription>
-              ) : (
-                <DialogDescription className="sr-only">Menu de opções</DialogDescription>
-              )}
-            </div>
-          ) : (
-            <>
-              <DialogTitle className="sr-only">Opções</DialogTitle>
-              <DialogDescription className="sr-only">Menu de opções</DialogDescription>
-              <div />
-            </>
-          )}
+        <button
+          type="button"
+          onClick={() => safeCloseDialog(() => onOpenChange(false))}
+          className="absolute right-4 top-4 z-10 rounded-[12px] p-1.5 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors shrink-0 cursor-pointer"
+          aria-label="Fechar"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
-          <button
-            type="button"
-            onClick={() => safeCloseDialog(() => onOpenChange(false))}
-            className="rounded-[12px] p-1.5 text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors shrink-0 cursor-pointer"
-            aria-label="Fechar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        {title ? (
+          <div className="flex flex-col min-w-0 px-5 pt-4 pb-1 pr-12">
+            <DialogTitle className="font-semibold text-[#0a0a0a] text-base tracking-tight leading-snug">
+              {title}
+            </DialogTitle>
+            {description ? (
+              <DialogDescription className="text-xs font-normal text-[#737373] mt-0.5">
+                {description}
+              </DialogDescription>
+            ) : (
+              <DialogDescription className="sr-only">Menu de opções</DialogDescription>
+            )}
+          </div>
+        ) : (
+          <div className="sr-only">
+            <DialogTitle>Opções</DialogTitle>
+            <DialogDescription>Menu de opções</DialogDescription>
+          </div>
+        )}
 
         {children && (
-          <div className="px-5 pt-1 pb-3 w-full">
+          <div className={cn("px-5 w-full", title ? "pt-1 pb-3" : "pt-4 pb-3")}>
             {children}
           </div>
         )}
