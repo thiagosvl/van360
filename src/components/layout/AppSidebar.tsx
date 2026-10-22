@@ -112,7 +112,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
             )}
           >
             <Gift className="h-5 w-5 shrink-0 text-amber-400" />
-            <span className="truncate">Indique e Ganhe</span>
+            <span className="truncate">Indique e Ganhae</span>
           </button>
         )}
 

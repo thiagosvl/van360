@@ -160,16 +160,6 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
         <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5">
           <AppSidebar role={role} isSubscriptionBlocked={isSubscriptionBlocked} />
         </div>
-        <div className="p-4 border-t border-white/5">
-          <button
-            type="button"
-            onClick={handleConfirmSignOut}
-            className="w-full flex items-center gap-3.5 rounded-[18px] px-4 py-2.5 text-[14px] font-medium text-white/60 hover:text-[#e7000b] hover:bg-[#e7000b]/10 transition-colors cursor-pointer group"
-          >
-            <LogOut className="h-5 w-5 shrink-0 text-white/60 group-hover:text-[#e7000b] transition-colors" />
-            <span className="truncate">Sair da conta</span>
-          </button>
-        </div>
       </aside>
 
       <main

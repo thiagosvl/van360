@@ -207,3 +207,24 @@ export function useRestaurarCobranca() {
     },
   });
 }
+
+export function useIsentarEncargosCobranca() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cobrancaId: string) => cobrancaApi.isentarEncargos(cobrancaId),
+    onSuccess: (_, cobrancaId) => {
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["historico"] });
+      toast.success("Multa e juros isentos com sucesso! O novo Pix foi gerado e enviado no WhatsApp.");
+    },
+    onError: (error: unknown) => {
+      toast.error("Erro ao isentar encargos", {
+        description: getErrorMessage(error, "Não foi possível isentar a multa e os juros desta parcela."),
+      });
+    },
+  });
+}

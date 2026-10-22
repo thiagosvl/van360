@@ -135,6 +135,7 @@ export interface OpenCobrancaFormProps {
   diaVencimento?: number;
   mes?: number;
   ano?: number;
+  anoLetivo?: number;
   lockFoiPago?: boolean;
   lockMesAno?: boolean;
   availableMonths?: number[];
@@ -150,6 +151,11 @@ export interface OpenCobrancaDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
   onEdit?: () => void;
   isLoading?: boolean;
+}
+
+export interface OpenIsentarEncargosCobrancaDialogProps {
+  cobranca: Cobranca;
+  onSuccess?: () => void;
 }
 
 
@@ -174,6 +180,7 @@ export interface OpenComplementarPagamentoDialogProps {
   dataVencimento: string;
   mes?: number;
   ano?: number;
+  anoLetivo?: number;
   observacao?: string | null;
   onPaymentRecorded?: (updatedCobranca?: Cobranca | Record<string, unknown>, dataSent?: ComplementarPagamentoManualDTO) => void;
 }
@@ -184,6 +191,7 @@ export interface OpenReceiptDialogProps {
   cobrancaId?: string;
   mes?: number;
   ano?: number;
+  anoLetivo?: number;
   passageiroId?: string;
   nomePassageiro?: string;
   nomeResponsavel?: string | null;
@@ -206,6 +214,7 @@ export interface OpenFirstChargeDialogProps {
 export interface NavigateToContractSetupProps {
   forceOpen?: boolean;
   ano?: number;
+  anoLetivo?: number;
   onSuccess?: (usarContratos?: boolean) => void;
   returnTo?: string;
 }
@@ -219,6 +228,7 @@ export interface OpenConfirmarGerarContratoDialogProps {
   dataInicio?: string;
   dataFim?: string;
   ano?: number;
+  anoLetivo?: number;
   isSubstituicao?: boolean;
   contratoIdParaSubstituir?: string;
   onSuccess?: () => void;
@@ -347,6 +357,7 @@ export interface OpenAdminVencimentoDetalhesDialogProps {
   dia: number;
   mes?: number;
   ano?: number;
+  anoLetivo?: number;
 }
 
 export interface OpenAdminConfigureReferralDialogProps {
@@ -508,6 +519,8 @@ export interface LayoutContextType {
   openResponsavelFormDialog: (props: OpenResponsavelFormProps) => void;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
+  openIsentarEncargosCobrancaDialog: (props: OpenIsentarEncargosCobrancaDialogProps) => void;
+  closeIsentarEncargosCobrancaDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
   openComplementarPagamentoDialog: (props: OpenComplementarPagamentoDialogProps) => void;

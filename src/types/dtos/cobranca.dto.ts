@@ -25,6 +25,7 @@ export interface UpdateCobrancaDTO {
   tipo_pagamento?: CobrancaTipoPagamento;
   valor_pago?: number;
   recibo_url?: string;
+  ano_letivo?: number;
   desativar_lembretes?: boolean;
   observacao?: string | null;
 }

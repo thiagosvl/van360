@@ -164,7 +164,7 @@ export default function EditarPixVeiculoDialog({
       <BaseDialog.Footer>
         {temChavePropria ? (
           <BaseDialog.Action
-            label="Usar padrão da conta"
+            label="Remover"
             variant="outline"
             icon={<Trash2 className="w-4 h-4 text-red-600" />}
             onClick={handleRemoverChavePropria}

@@ -102,6 +102,7 @@ interface UseCobrancaFormProps {
   mes?: number;
   ano?: number;
   lockFoiPago?: boolean;
+  anoLetivo?: number;
   onSuccess?: () => void;
 }
 
@@ -115,6 +116,7 @@ export function useCobrancaForm({
   mes,
   ano,
   lockFoiPago,
+  anoLetivo,
   onSuccess,
 }: UseCobrancaFormProps) {
   const { user } = useSession();
@@ -200,14 +202,17 @@ export function useCobrancaForm({
         passageiro_id: passageiroId,
         mes: Number(data.mes || data.data_vencimento.getMonth() + 1),
         ano: Number(data.ano || data.data_vencimento.getFullYear()),
+        ano_letivo: anoLetivo ? Number(anoLetivo) : (Number(data.ano) || data.data_vencimento.getFullYear()),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
         data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+
         tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         pagamento_manual: data.foi_pago,
         usuario_id: profile.id,
         observacao: data.observacao?.trim() ? data.observacao.trim() : null,
+
       };
 
       createCobranca.mutate(payload, {
@@ -249,14 +254,17 @@ export function useCobrancaForm({
           usuario_id: cobranca.usuario_id || cobranca.passageiro?.usuario_id || profile.id,
           mes: Number(cobranca.mes),
           ano: Number(cobranca.ano),
+          ano_letivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : (anoLetivo || Number(cobranca.ano)),
           valor: valorNumerico,
           data_vencimento: dataVencimentoStr,
           status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
           data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+
           tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
           pagamento_manual: data.foi_pago,
           desativar_lembretes: cobranca.desativar_lembretes ?? false,
           observacao: data.observacao?.trim() ? data.observacao.trim() : null,
+
         };
 
         createCobranca.mutate(createPayload, {
@@ -299,7 +307,10 @@ export function useCobrancaForm({
         tipo_pagamento: data.foi_pago ? (data.tipo_pagamento as CobrancaTipoPagamento) : undefined,
         status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
         data_pagamento: data.foi_pago ? dataPagamentoStr : undefined,
+
         observacao: data.observacao?.trim() ? data.observacao.trim() : null,
+        ano_letivo: anoLetivo ? Number(anoLetivo) : (cobranca.ano_letivo ? Number(cobranca.ano_letivo) : undefined),
+
       };
 
       updateCobranca.mutate({

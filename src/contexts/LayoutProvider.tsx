@@ -134,6 +134,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
+  OpenIsentarEncargosCobrancaDialogProps,
   OpenCobrancaEditDialogProps,
   OpenCobrancaFormProps,
   OpenConfirmationDialogProps,
@@ -343,6 +344,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [cobrancaDeleteDialogState, setCobrancaDeleteDialogState] = useState<{
     open: boolean;
     props?: OpenCobrancaDeleteDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [isentarEncargosCobrancaDialogState, setIsentarEncargosCobrancaDialogState] = useState<{
+    open: boolean;
+    props?: OpenIsentarEncargosCobrancaDialogProps;
   }>({
     open: false,
   });
@@ -775,6 +783,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const openIsentarEncargosCobrancaDialog = (props: OpenIsentarEncargosCobrancaDialogProps) => {
+    setIsentarEncargosCobrancaDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeIsentarEncargosCobrancaDialog = () => {
+    safeCloseDialog(() =>
+      setIsentarEncargosCobrancaDialogState((prev) => ({ ...prev, open: false }))
+    );
+  };
+
   const openCobrancaEditDialog = (props: OpenCobrancaEditDialogProps) => {
     setCobrancaEditDialogState({
       open: true,
@@ -1053,6 +1074,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openResponsavelFormDialog,
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
+        openIsentarEncargosCobrancaDialog,
+        closeIsentarEncargosCobrancaDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
         openComplementarPagamentoDialog,
@@ -1542,6 +1565,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           diaVencimento={cobrancaFormDialogState.props.diaVencimento}
           mes={cobrancaFormDialogState.props.mes}
           ano={cobrancaFormDialogState.props.ano}
+          anoLetivo={cobrancaFormDialogState.props.anoLetivo}
           lockFoiPago={cobrancaFormDialogState.props.lockFoiPago}
           lockMesAno={cobrancaFormDialogState.props.lockMesAno}
           availableMonths={cobrancaFormDialogState.props.availableMonths}

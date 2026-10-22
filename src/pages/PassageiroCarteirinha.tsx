@@ -626,6 +626,7 @@ export default function PassageiroCarteirinha() {
               valor: Number(cobranca.valor),
               data_vencimento: cobranca.data_vencimento,
               status: CobrancaStatus.CANCELADA,
+              ano_letivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : selectedYearNum,
             });
           } else {
             await deleteCobranca.mutateAsync(cobranca.id);
@@ -787,6 +788,7 @@ export default function PassageiroCarteirinha() {
         diaVencimento: Number(passageiro?.dia_vencimento),
         mes,
         ano: ano ?? (yearFilter ? Number(yearFilter) : undefined),
+        anoLetivo: selectedYearNum,
         lockFoiPago,
         lockMesAno,
         availableMonths,

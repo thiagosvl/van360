@@ -16,6 +16,7 @@ interface CobrancaDialogProps {
   diaVencimento: number;
   mes?: number;
   ano?: number;
+  anoLetivo?: number;
   lockFoiPago?: boolean;
   lockMesAno?: boolean;
   availableMonths?: number[];
@@ -32,6 +33,7 @@ export default function CobrancaDialog({
   diaVencimento,
   mes,
   ano,
+  anoLetivo,
   lockFoiPago,
   lockMesAno,
   availableMonths,
@@ -49,6 +51,7 @@ export default function CobrancaDialog({
     valor: valorCobranca,
     mes,
     ano,
+  anoLetivo,
     lockFoiPago,
     onSuccess: () => {
       onCobrancaAdded?.();

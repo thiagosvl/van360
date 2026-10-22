@@ -31,7 +31,7 @@ import {
   Key,
   Pencil,
 } from "lucide-react";
-import { usePixPassageiroResolver } from "@/hooks/ui/usePixPassageiroResolver";
+import { usePixPassageiroResolver, resolverPixPassageiro } from "@/hooks/ui/usePixPassageiroResolver";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
@@ -606,14 +606,14 @@ const CobrancaItemPassageiro = forwardRef<
   const respPrincipal = passageiro.responsavel_principal;
   const telefoneResponsavel = respPrincipal?.telefone;
 
-  const chavePixResolvida = cobranca.passageiro?.chave_pix || passageiro.chave_pix || cobranca.passageiro?.veiculo?.chave_pix || passageiro.veiculo?.chave_pix || chavePix;
-  const tipoChavePixResolvida = cobranca.passageiro?.chave_pix
-    ? cobranca.passageiro.tipo_chave_pix
-    : passageiro.chave_pix
-      ? passageiro.tipo_chave_pix
-      : cobranca.passageiro?.veiculo?.chave_pix
-        ? cobranca.passageiro.veiculo.tipo_chave_pix
-        : (passageiro.veiculo?.chave_pix ? passageiro.veiculo.tipo_chave_pix : tipoChavePix);
+  const cobrancaPixInfo = resolverPixPassageiro(
+    cobranca.passageiro || passageiro,
+    (cobranca.passageiro as Record<string, unknown> | null | undefined)?.veiculo as Partial<import('@/types/veiculo').Veiculo> | undefined || passageiro.veiculo,
+    chavePix,
+    tipoChavePix
+  );
+  const chavePixResolvida = cobrancaPixInfo.chaveOriginal || undefined;
+  const tipoChavePixResolvida = cobrancaPixInfo.tipo || undefined;
 
   const onEnviarCobranca = !isCancelada && telefoneResponsavel && !isIncomplete && (valorExibicao > 0 || !cobranca.isProjection)
     ? () => openBrowserLink(buildCobrancaWhatsAppUrl({

@@ -22,6 +22,7 @@ import {
 } from "@/utils/domain/cobranca/disableActions";
 import { getMesNome } from "@/utils/formatters";
 import {
+  BadgePercent,
   Ban,
   Bell,
   BellOff,
@@ -33,6 +34,7 @@ import {
   User,
   Wallet
 } from "lucide-react";
+import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { isMobilePlatform } from "@/utils/detectPlatform";
 import { shareReceiptFile } from "@/utils/domain/cobranca/shareReceipt";
@@ -88,6 +90,7 @@ export function useCobrancaOperations({
               ano: cobranca.ano,
               status: CobrancaStatus.PENDENTE,
               desativar_lembretes: desativar,
+              ano_letivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : Number(cobranca.ano),
             });
           } else {
             await toggleNotificacoes.mutateAsync({
@@ -137,6 +140,7 @@ export function useCobrancaOperations({
               valor: Number(cobranca.valor),
               data_vencimento: cobranca.data_vencimento,
               status: CobrancaStatus.CANCELADA,
+              ano_letivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : Number(cobranca.ano),
             });
           } else {
             await deleteCobranca.mutateAsync(cobranca.id);
@@ -208,7 +212,7 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
-  const { openComplementarPagamentoDialog } = useLayout();
+  const { openComplementarPagamentoDialog, openIsentarEncargosCobrancaDialog } = useLayout();
   const { trackActivity } = useActivityTracker();
   const {
     cobranca,
@@ -464,6 +468,26 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
+    const isAtrasada = checkCobrancaEmAtraso(cobranca.data_vencimento);
+    const isAutomatica = Boolean(cobranca.pix_copia_cola && cobranca.provedor_cobranca_id);
+
+    if (!isPago && isAtrasada && isAutomatica) {
+      actions.push({
+        label: "Isentar Multa e Juros",
+        icon: <BadgePercent className="h-4 w-4 text-amber-500" />,
+        onClick: () => {
+          document.body.click();
+          openIsentarEncargosCobrancaDialog({
+            cobranca,
+            onSuccess: props.onActionSuccess,
+          });
+        },
+        disabled: isActionLoading,
+        swipeColor: "bg-amber-500",
+        hasSeparatorAfter: true,
+      });
+    }
+
     if (!isPago && onEditarCobranca) {
       actions.push({
         label: "Editar",
@@ -533,6 +557,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     props.onVerRecibo,
     props.onExcluirCobranca,
     props.onDesfazerPagamento,
+    props.onActionSuccess,
     openComplementarPagamentoDialog,
+    openIsentarEncargosCobrancaDialog,
   ]);
 }

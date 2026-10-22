@@ -76,4 +76,7 @@ export const cobrancaApi = {
         apiClient
             .get(`${endpointBase}/passageiro/${passageiroId}/recibo-anual`, { params: { ano } })
             .then(res => res.data),
+
+    isentarEncargos: (cobrancaId: string) =>
+        apiClient.post(`${endpointBase}/${cobrancaId}/isentar-encargos`).then(res => res.data),
 };

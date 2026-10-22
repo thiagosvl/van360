@@ -23,6 +23,7 @@ export default function CobrancaEditDialog({ isOpen, onClose, cobranca, onCobran
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: PassageiroFormModes.EDIT,
     cobranca,
+    anoLetivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : undefined,
     onSuccess: () => {
       onCobrancaUpdated();
       handleClose();
