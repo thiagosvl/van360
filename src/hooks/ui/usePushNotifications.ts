@@ -142,7 +142,10 @@ export const usePushNotifications = () => {
 
     const initAndRegisterPush = async () => {
       const isAuthenticated = Boolean(session?.user?.id || (isResponsavelAuth && responsavelToken));
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {
+        lastDispatchedTokenRef.current = null;
+        return;
+      }
 
       try {
         let permStatus = await PushNotifications.checkPermissions();

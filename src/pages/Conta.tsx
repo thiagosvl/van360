@@ -144,10 +144,16 @@ export const Conta = memo(function Conta() {
     setIsGlobalLoading(true, "Encerrando sessão...");
 
     try {
+      const fcmToken = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
+      if (fcmToken) {
+        try {
+          await apiClient.post("/notifications/push-token/revoke", { token: fcmToken });
+        } catch {
+        }
+      }
       try {
         await apiClient.post("/auth/logout");
       } catch {
-        // Fallback silencioso para prosseguir com o logout local
       }
 
       await sessionManager.signOut();

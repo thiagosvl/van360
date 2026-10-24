@@ -14,3 +14,12 @@ export const usePushToken = () => {
     }
   });
 };
+
+export const useRevokePushToken = () => {
+  return useMutation({
+    mutationFn: async (payload: { token: string }) => {
+      const response = await apiClient.post('/notifications/push-token/revoke', payload);
+      return response.data;
+    }
+  });
+};

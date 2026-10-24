@@ -255,6 +255,22 @@ export const responsavelApi = {
     return data;
   },
 
+  revokePushToken: async (
+    payload: { token: string },
+    authToken?: string
+  ): Promise<{ success: boolean }> => {
+    const headers: Record<string, string> = {};
+    if (authToken) {
+      headers.Authorization = `Bearer ${authToken}`;
+    }
+    const { data } = await apiClient.post<{ success: boolean }>(
+      "/public/portal-responsavel/push-token/revoke",
+      payload,
+      { headers }
+    );
+    return data;
+  },
+
   getRastreamento: async (passageiroId: string, token: string): Promise<TrackingResponse> => {
     const { data } = await apiClient.get<TrackingResponse>(
       `/public/portal-responsavel/passageiro/${passageiroId}/rastreamento`,

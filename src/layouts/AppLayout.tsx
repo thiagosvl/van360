@@ -96,6 +96,13 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
   const handleSignOut = async () => {
     setIsGlobalLoading(true, "Encerrando sessão...");
     try {
+      const fcmToken = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
+      if (fcmToken) {
+        try {
+          await apiClient.post("/notifications/push-token/revoke", { token: fcmToken });
+        } catch {
+        }
+      }
       try {
         await apiClient.post("/auth/logout");
       } catch {

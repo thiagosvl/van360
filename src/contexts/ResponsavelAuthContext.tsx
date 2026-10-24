@@ -29,13 +29,20 @@ export const ResponsavelAuthProvider: React.FC<{ children: React.ReactNode }> = 
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const logout = useCallback(() => {
+    const currentToken = token || localStorage.getItem(STORAGE_TOKEN_KEY);
+    const fcmToken = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
+
+    if (fcmToken) {
+      responsavelApi.revokePushToken({ token: fcmToken }, currentToken || undefined).catch(() => {});
+    }
+
     setToken(null);
     setPassageiros([]);
     setPassageiroSelecionado(null);
 
     localStorage.removeItem(STORAGE_TOKEN_KEY);
     localStorage.removeItem(STORAGE_PASSAGEIRO_ID_KEY);
-  }, []);
+  }, [token]);
 
   const sortPassageiros = (list: ResponsavelPassageiro[]): ResponsavelPassageiro[] => {
     return [...list].sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR", { sensitivity: "base" }));
