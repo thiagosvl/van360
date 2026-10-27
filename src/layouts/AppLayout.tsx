@@ -19,6 +19,7 @@ import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { ROUTES } from "@/constants/routes";
+import { STORAGE_KEYS } from "@/constants";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { cn } from "@/lib/utils";
 import { Banner } from "@/components/ui/Banner";
