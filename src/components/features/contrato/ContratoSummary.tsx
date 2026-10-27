@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ContratoProvider, ContratoStatus } from "@/types/enums";
-import { formatCurrency, formatMonthYearToBR } from "@/utils/formatters";
+import { formatMonthYearToBR } from "@/utils/formatters";
 import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { formatContratoStatus } from "@/utils/formatters/contrato";
 import { useAppPreferences } from "@/hooks";
@@ -23,9 +23,6 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
   const isAssinado = status === ContratoStatus.ASSINADO;
   const isPendente = status === ContratoStatus.PENDENTE;
   const isSemContrato = item.tipo === "passageiro" || (!isAssinado && !isPendente && !item.provider);
-
-  const valor =
-    Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_cobranca) || null;
 
   const isImportado = item.provider === ContratoProvider.IMPORTADO;
   const statusLabel = isImportado
@@ -56,24 +53,7 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
         </h2>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mt-1.5 w-full min-w-0">
-        {!(isSemContrato && isMissingResponsible) && (
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
-              isAssinado
-                ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
-                : isImportado
-                  ? "bg-sky-500/[0.08] text-sky-700 border-sky-500/20"
-                  : isPendente
-                    ? "bg-amber-500/[0.08] text-amber-700 border-amber-500/20"
-                    : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
-            )}
-          >
-            {statusLabel}
-          </span>
-        )}
-
+      <div className="flex items-center gap-2 mt-1.5 w-full min-w-0">
         <span className="text-[11px] font-semibold text-[#737373] uppercase tracking-[0.05em] shrink-0">
           Contrato do Aluno
         </span>
@@ -122,12 +102,22 @@ export const ContratoSummary = ({ item }: ContratoSummaryProps) => {
           )}
         </div>
 
-        {valor && (
-          <div className="flex items-baseline shrink-0">
-            <span className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-none">
-              {formatCurrency(valor)}
+        {!(isSemContrato && isMissingResponsible) && (
+          <div className="flex items-center shrink-0">
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded-[12px] text-[10px] font-semibold uppercase tracking-wider shrink-0 border transition-colors",
+                isAssinado
+                  ? "bg-emerald-500/[0.08] text-emerald-700 border-emerald-500/20"
+                  : isImportado
+                    ? "bg-sky-500/[0.08] text-sky-700 border-sky-500/20"
+                    : isPendente
+                      ? "bg-amber-500/[0.08] text-amber-700 border-amber-500/20"
+                      : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]"
+              )}
+            >
+              {statusLabel}
             </span>
-            <span className="text-xs font-normal text-[#737373] ml-1">/mês</span>
           </div>
         )}
       </div>
