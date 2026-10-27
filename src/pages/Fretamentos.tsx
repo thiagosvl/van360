@@ -4,6 +4,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { FretamentosToolbar } from "@/components/features/fretamento/FretamentosToolbar";
 import { FretamentoCardItem } from "@/components/features/fretamento/FretamentoCardItem";
+import { FretamentoKpiCards } from "@/components/features/fretamento/FretamentoKpiCards";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useVeiculos, useSession, useProfile } from "@/hooks";
 import { useFretamentoViewModel } from "@/hooks/ui/useFretamentoViewModel";
@@ -186,36 +187,14 @@ export default function Fretamentos() {
           }}
         />
 
-        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)]">
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#e5e5e5]">
-            <div className="sm:px-4 first:sm:pl-0 pb-3 sm:pb-0">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
-                Total Previsto
-              </span>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight mt-0.5">
-                {isLoading ? "..." : formatCurrency(totais.totalFaturado)}
-              </div>
-            </div>
-
-            <div className="sm:px-4 py-3 sm:py-0">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
-                Já Recebido
-              </span>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight mt-0.5">
-                {isLoading ? "..." : formatCurrency(totais.totalRecebido)}
-              </div>
-            </div>
-
-            <div className="sm:px-4 last:sm:pr-0 pt-3 sm:pt-0">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
-                A Receber
-              </span>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#0a0a0a] tracking-tight mt-0.5">
-                {isLoading ? "..." : formatCurrency(totais.totalAReceber)}
-              </div>
-            </div>
-          </div>
-        </div>
+        <FretamentoKpiCards
+          totalFaturado={totais.totalFaturado}
+          totalRecebido={totais.totalRecebido}
+          totalAReceber={totais.totalAReceber}
+          percentualRecebido={totais.percentualRecebido}
+          totalViagens={itens.length}
+          isLoading={isLoading}
+        />
 
         <FretamentosToolbar
           totalItens={itens.length}
