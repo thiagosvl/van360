@@ -55,8 +55,8 @@ import { toast } from "sonner";
 
 const STATUS_FILTERS = [
   { value: "open", label: "Em Aberto" },
-  { value: "vencidas", label: "Vencidas" },
   { value: "hoje", label: "Vencem Hoje" },
+  { value: "vencidas", label: "Vencidas" },
   { value: "", label: "Todas" },
   { value: SubscriptionInvoiceStatus.PAID, label: "Pagas" },
   { value: SubscriptionInvoiceStatus.FAILED, label: "Falhas" },
@@ -168,7 +168,28 @@ export default function AdminInvoices() {
   };
 
   const kpiCards = useMemo(() => {
+    const proximos7DiasTexto = stats?.proximos7DiasQtd
+      ? ` • ${moneyMask(stats.proximos7DiasValor)} próx. 7 dias (${stats.proximos7DiasQtd})`
+      : "";
+
     return [
+      {
+        key: "pago_mes",
+        title: "Recebido no mês",
+        value: moneyMask(stats?.pagoMesValor ?? 0),
+        subtext: `${stats?.pagoMesQtd ?? 0} faturas quitadas`,
+        cardBorder:
+          statusFilter === SubscriptionInvoiceStatus.PAID
+            ? "border-emerald-500 shadow-xs ring-2 ring-emerald-500/80"
+            : "border-emerald-500/30 shadow-xs",
+        iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+        icon: <CheckCircle className="h-5 w-5" />,
+        isSelected: statusFilter === SubscriptionInvoiceStatus.PAID,
+        onClick: () => {
+          setStatusFilter(SubscriptionInvoiceStatus.PAID);
+          setPage(1);
+        },
+      },
       {
         key: "open",
         title: "A receber em aberto",
@@ -187,27 +208,10 @@ export default function AdminInvoices() {
         },
       },
       {
-        key: "vencidas",
-        title: "Em atraso (vencidas)",
-        value: moneyMask(stats?.totalVencidasValor ?? 0),
-        subtext: `${stats?.totalVencidasQtd ?? 0} faturas vencidas`,
-        cardBorder:
-          statusFilter === "vencidas"
-            ? "border-destructive shadow-xs ring-2 ring-destructive/80"
-            : "border-destructive/30 shadow-xs",
-        iconBg: "bg-destructive/10 text-destructive border-destructive/20",
-        icon: <AlertTriangle className="h-5 w-5" />,
-        isSelected: statusFilter === "vencidas",
-        onClick: () => {
-          setStatusFilter("vencidas");
-          setPage(1);
-        },
-      },
-      {
         key: "hoje",
         title: "Vencem hoje",
         value: moneyMask(stats?.vencemHojeValor ?? 0),
-        subtext: `${stats?.vencemHojeQtd ?? 0} faturas hoje`,
+        subtext: `${stats?.vencemHojeQtd ?? 0} hoje${proximos7DiasTexto}`,
         cardBorder:
           statusFilter === "hoje"
             ? "border-amber-500 shadow-xs ring-2 ring-amber-500/80"
@@ -221,36 +225,19 @@ export default function AdminInvoices() {
         },
       },
       {
-        key: "proximos7dias",
-        title: "Próximos 7 dias",
-        value: moneyMask(stats?.proximos7DiasValor ?? 0),
-        subtext: `${stats?.proximos7DiasQtd ?? 0} faturas a vencer`,
+        key: "vencidas",
+        title: "Em atraso (vencidas)",
+        value: moneyMask(stats?.totalVencidasValor ?? 0),
+        subtext: `${stats?.totalVencidasQtd ?? 0} faturas vencidas`,
         cardBorder:
-          statusFilter === "proximos7dias"
-            ? "border-sky-500 shadow-xs ring-2 ring-sky-500/80"
-            : "border-sky-500/30 shadow-xs",
-        iconBg: "bg-sky-500/10 text-sky-500 border-sky-500/20",
-        icon: <ShieldCheck className="h-5 w-5" />,
-        isSelected: statusFilter === "proximos7dias",
+          statusFilter === "vencidas"
+            ? "border-destructive shadow-xs ring-2 ring-destructive/80"
+            : "border-destructive/30 shadow-xs",
+        iconBg: "bg-destructive/10 text-destructive border-destructive/20",
+        icon: <AlertTriangle className="h-5 w-5" />,
+        isSelected: statusFilter === "vencidas",
         onClick: () => {
-          setStatusFilter("proximos7dias");
-          setPage(1);
-        },
-      },
-      {
-        key: "pago_mes",
-        title: "Recebido no mês",
-        value: moneyMask(stats?.pagoMesValor ?? 0),
-        subtext: `${stats?.pagoMesQtd ?? 0} faturas quitadas`,
-        cardBorder:
-          statusFilter === SubscriptionInvoiceStatus.PAID
-            ? "border-emerald-500 shadow-xs ring-2 ring-emerald-500/80"
-            : "border-emerald-500/30 shadow-xs",
-        iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-        icon: <CheckCircle className="h-5 w-5" />,
-        isSelected: statusFilter === SubscriptionInvoiceStatus.PAID,
-        onClick: () => {
-          setStatusFilter(SubscriptionInvoiceStatus.PAID);
+          setStatusFilter("vencidas");
           setPage(1);
         },
       },
@@ -272,12 +259,13 @@ export default function AdminInvoices() {
       </div>
 
       {stats && stats.totalVencidasQtd > 0 && (
-        <Banner variant="warning" className="border-destructive/30 bg-destructive/10 text-destructive">
-          Há {stats.totalVencidasQtd} fatura(s) em atraso totalizando {moneyMask(stats.totalVencidasValor)} aguardando baixa ou contato.
-        </Banner>
+        <Banner
+          variant="danger"
+          description={`Há ${stats.totalVencidasQtd} fatura(s) em atraso totalizando ${moneyMask(stats.totalVencidasValor)} aguardando baixa ou contato.`}
+        />
       )}
 
-      <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-0 lg:mb-0 touch-pan-x">
+      <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 pb-2 mb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-0 lg:mb-0 touch-pan-x">
         {kpiCards.map((card) => (
           <div
             key={card.key}
@@ -434,7 +422,7 @@ export default function AdminInvoices() {
                         Método
                       </th>
                       <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground">
-                        Vencimento
+                        Venc. Assinatura
                       </th>
                       <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground text-right">
                         Valor
@@ -449,7 +437,8 @@ export default function AdminInvoices() {
                   </thead>
                   <tbody>
                     {invoices.map((f) => {
-                      const vencimentoYmd = f.data_vencimento ? f.data_vencimento.slice(0, 10) : "";
+                      const dataVencimentoAssinatura = f.assinatura?.data_vencimento || f.assinatura?.trial_ends_at || f.data_vencimento;
+                      const vencimentoYmd = dataVencimentoAssinatura ? dataVencimentoAssinatura.slice(0, 10) : "";
                       const isAberto =
                         f.status === SubscriptionInvoiceStatus.PENDING ||
                         f.status === SubscriptionInvoiceStatus.FAILED;
@@ -551,7 +540,7 @@ export default function AdminInvoices() {
                                     : "text-foreground/80"
                                 )}
                               >
-                                {formatSafeBrazilianDate(f.data_vencimento)}
+                                {formatSafeBrazilianDate(dataVencimentoAssinatura)}
                               </span>
                               {isVencida && (
                                 <span className="inline-block text-[10px] font-medium text-destructive">
@@ -648,7 +637,8 @@ export default function AdminInvoices() {
 
               <div className="md:hidden space-y-3 p-4">
                 {invoices.map((f) => {
-                  const vencimentoYmd = f.data_vencimento ? f.data_vencimento.slice(0, 10) : "";
+                  const dataVencimentoAssinatura = f.assinatura?.data_vencimento || f.assinatura?.trial_ends_at || f.data_vencimento;
+                  const vencimentoYmd = dataVencimentoAssinatura ? dataVencimentoAssinatura.slice(0, 10) : "";
                   const isAberto =
                     f.status === SubscriptionInvoiceStatus.PENDING ||
                     f.status === SubscriptionInvoiceStatus.FAILED;
@@ -719,7 +709,7 @@ export default function AdminInvoices() {
                         </div>
 
                         <div className="col-span-2 pt-2 border-t border-border/60 flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Vencimento:</span>
+                          <span className="text-xs text-muted-foreground">Venc. Assinatura:</span>
                           <span
                             className={cn(
                               "font-semibold font-mono text-xs",
@@ -730,7 +720,7 @@ export default function AdminInvoices() {
                                 : "text-foreground"
                             )}
                           >
-                            {formatSafeBrazilianDate(f.data_vencimento)}
+                            {formatSafeBrazilianDate(dataVencimentoAssinatura)}
                             {isVencida && " (Em atraso)"}
                             {isHoje && " (Hoje)"}
                           </span>

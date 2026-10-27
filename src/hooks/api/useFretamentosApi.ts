@@ -103,6 +103,25 @@ export const useRegistrarPagamentoFretamentoMutation = () => {
   });
 };
 
+export const useAtualizarPagamentoFretamentoMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      fretamentoId,
+      pagamentoId,
+      payload,
+    }: {
+      fretamentoId: string;
+      pagamentoId: string;
+      payload: Partial<RegistrarPagamentoPayload>;
+    }) => fretamentoApi.atualizarPagamento(fretamentoId, pagamentoId, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+    },
+  });
+};
+
 export const useDeletarPagamentoFretamentoMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({

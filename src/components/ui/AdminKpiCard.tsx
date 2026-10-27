@@ -31,7 +31,7 @@ export function AdminKpiCard({
     <Card
       onClick={onClick}
       className={cn(
-        "p-4 sm:p-5 relative overflow-hidden transition-all duration-200 rounded-3xl bg-card border border-border shadow-xs",
+        "p-5 relative overflow-hidden transition-all duration-200 rounded-[24px] bg-card border border-border shadow-xs",
         cardBorder,
         onClick && "cursor-pointer hover:border-primary/40 hover:scale-[1.01]",
         className
@@ -45,19 +45,19 @@ export function AdminKpiCard({
           <p
             title={String(formattedValue)}
             className={cn(
-              "text-xl sm:text-2xl xl:text-3xl font-semibold font-headline text-foreground tracking-tight leading-none pt-0.5 truncate",
+              "text-lg sm:text-xl lg:text-2xl font-semibold font-headline text-foreground tracking-tight leading-tight pt-0.5 truncate",
               valueClassName
             )}
           >
             {formattedValue}
           </p>
           {subtext && (
-            <p className="text-[11px] sm:text-xs font-normal text-muted-foreground mt-1 leading-tight truncate" title={subtext}>
+            <p className="text-[11px] sm:text-xs font-normal text-muted-foreground mt-1 leading-snug line-clamp-2" title={subtext}>
               {subtext}
             </p>
           )}
         </div>
-        <div className={cn("p-2.5 rounded-2xl border border-border/60 shrink-0 flex items-center justify-center bg-secondary/60 text-foreground", iconBg)}>
+        <div className={cn("p-2.5 rounded-[14px] border border-border/60 shrink-0 flex items-center justify-center bg-secondary/60 text-foreground", iconBg)}>
           {icon}
         </div>
       </div>

@@ -150,6 +150,15 @@ export const fretamentoApi = {
   registrarPagamento: (fretamentoId: string, payload: RegistrarPagamentoPayload) =>
     apiClient.post<FretamentoDetalhes>(`${endpoint}/${fretamentoId}/pagamentos`, payload).then((res) => res.data),
 
+  atualizarPagamento: (
+    fretamentoId: string,
+    pagamentoId: string,
+    payload: Partial<RegistrarPagamentoPayload>
+  ) =>
+    apiClient
+      .patch<FretamentoDetalhes>(`${endpoint}/${fretamentoId}/pagamentos/${pagamentoId}`, payload)
+      .then((res) => res.data),
+
   deletarPagamento: (fretamentoId: string, pagamentoId: string) =>
     apiClient.delete<FretamentoDetalhes>(`${endpoint}/${fretamentoId}/pagamentos/${pagamentoId}`).then((res) => res.data),
 

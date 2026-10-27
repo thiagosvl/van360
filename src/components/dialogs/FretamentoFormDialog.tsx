@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/forms/MoneyInput";
+import { Banner } from "@/components/ui/Banner";
 import { VeiculoMultiSelect } from "@/components/ui/VeiculoMultiSelect";
 import { useVeiculos, useSession, useProfile, safeCloseDialog } from "@/hooks";
 import {
@@ -26,7 +27,7 @@ import {
 } from "@/hooks/api/useFretamentosApi";
 import type { FretamentoDetalhes, TipoPagamento } from "@/services/api/fretamento.api";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
-import { toLocalDateString } from "@/utils/formatters";
+import { formatCurrency, toLocalDateString } from "@/utils/formatters";
 import { Compass, Calendar, Car, FileText, CreditCard, Wand2 } from "lucide-react";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -248,6 +249,12 @@ export function FretamentoFormDialog({
                 />
               )}
             />
+
+            {isEditing && editingItem && moneyToNumber(form.watch("valor_total")) < (editingItem.total_pago || 0) && (
+              <Banner variant="warning">
+                O novo valor total é menor que o total já recebido ({formatCurrency(editingItem.total_pago)}). Você pode ajustar os pagamentos em "Gerenciar Pagamentos".
+              </Banner>
+            )}
 
             {!isEditing && (
               <div className="p-3.5 sm:p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[18px] space-y-3">

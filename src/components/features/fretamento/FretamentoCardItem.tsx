@@ -155,10 +155,10 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
             title={item.titulo}
             description={item.destino}
             actions={[
-              ...(!isPasseio && !item.isQuitado
+              ...(!isPasseio
                 ? [
                     {
-                      label: "Registrar Pagamento",
+                      label: "Gerenciar Pagamentos",
                       icon: <CreditCard className="h-4 w-4" />,
                       onClick: () => onOpenRegistrarPagamento(item),
                     },
@@ -315,10 +315,21 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
                 <span>Registrar Pagamento</span>
               </Button>
             ) : (
-              <span className="text-xs text-[#0a0a0a] font-medium flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0a0a]" />
-                Quitado
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-[#0a0a0a] font-medium flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0a0a]" />
+                  Quitado
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onOpenRegistrarPagamento(item)}
+                  className="h-8 px-2.5 rounded-[18px] text-xs text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
+                  title="Ver ou editar pagamentos"
+                >
+                  Ver Pagamentos
+                </Button>
+              </div>
             )}
           </div>
         )}
