@@ -585,7 +585,6 @@ export enum StatusRepasseEnum {
 
 export enum ProvedorPagamentoEnum {
   WOOVI = "WOOVI",
-  ASAAS = "ASAAS",
   EFIPAY = "EFIPAY",
 }
 
