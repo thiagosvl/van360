@@ -99,7 +99,7 @@ export function FloatingVideoBubble({
 
       const hideTimer = setTimeout(() => {
         setShowTooltip(false);
-      }, 5400);
+      }, 8400);
 
       return () => {
         clearTimeout(openTimer);

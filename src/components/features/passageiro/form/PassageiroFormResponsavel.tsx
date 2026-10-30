@@ -94,7 +94,6 @@ export function PassageiroFormResponsavel({
                       placeholder="Digite o nome completo"
                       className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                       aria-invalid={!!fieldState.error}
-                      disabled={isSearching}
                     />
                   </div>
                 </FormControl>
@@ -113,7 +112,6 @@ export function PassageiroFormResponsavel({
                 required
                 labelClassName="text-[#0a0a0a] font-medium text-xs"
                 inputClassName="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
-                disabled={isSearching}
                 isExternal={isExternal}
               />
             )}
@@ -196,7 +194,6 @@ export function PassageiroFormResponsavel({
                       placeholder="exemplo@email.com"
                       className="pl-10 h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                       aria-invalid={!!fieldState.error}
-                      disabled={isSearching}
                     />
                   </div>
                 </FormControl>

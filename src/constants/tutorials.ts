@@ -13,21 +13,22 @@ export function hasValidTutorialVideos(config?: ScreenTutorialConfig): boolean {
 }
 
 const SUPABASE_VIDEOS_BASE_URL = "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos";
+const CLOUDFLARE_VIDEOS_BASE_URL = "https://pub-6302b932ae5749838fec8c6031c88963.r2.dev/videos";
 const defaultTooltipText = 'Ver Demonstração';
 
 export const TUTORIALS_CONFIG = {
   alunos: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/alunos-1.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-alunos-lista.mp4`,
     tooltipText: defaultTooltipText,
     ctaText: "Cadastrar Aluno",
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/alunos-1.mp4`,
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-alunos-lista.mp4`,
         title: "Lista de Alunos e Organização",
       },
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/alunos-2.mp4`,
-        title: "Os Pais Cadastram os Filhos",
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-alunos-solicitacoes.mp4`,
+        title: "Solicitações de Cadastro dos Pais",
       },
     ],
   },
@@ -104,6 +105,16 @@ export const TUTORIALS_CONFIG = {
       {
         url: `${SUPABASE_VIDEOS_BASE_URL}/carteirinha-1.mp4`,
         title: "Carteirinha Digital do Aluno",
+      },
+    ],
+  },
+  rotas: {
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-rotas.mp4`,
+    tooltipText: defaultTooltipText,
+    videos: [
+      {
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-rotas.mp4`,
+        title: "Rotas e Chamada na Escola",
       },
     ],
   },

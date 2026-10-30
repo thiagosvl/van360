@@ -337,7 +337,7 @@ export default function Passageiros() {
         </div>
       </PullToRefreshWrapper>
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="alunos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -349,7 +349,7 @@ export default function Passageiros() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_PASSAGEIROS_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 }

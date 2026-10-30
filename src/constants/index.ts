@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   GUIDE_CONTRATOS_DISMISSED: "van360_guide_dismissed_contratos",
   GUIDE_CARTEIRINHA_DISMISSED: "van360_guide_dismissed_carteirinha",
   GUIDE_RENOVACOES_DISMISSED: "van360_guide_dismissed_renovacoes",
+  GUIDE_ROTAS_DISMISSED: "van360_guide_dismissed_rotas",
   PENDING_DEEP_LINK: "van360_pending_deep_link",
   ACQUISITION_CHANNEL_DISMISSED_DATE: "van360:acquisition_channel_dismissed_date",
   LAST_APP_OPEN_TIMESTAMP: "van360_last_app_open_timestamp",

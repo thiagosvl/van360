@@ -15,10 +15,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { RouteExecutionStatus } from "@/types/route";
 import { cn } from "@/lib/utils";
 import { formatarVeiculoExibicao } from "@/utils/domain";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks/ui/useTutorialsConfig";
+import { STORAGE_KEYS } from "@/constants";
 
 export default function Rotas() {
   const vm = useRotasViewModel();
   const { setPageTitle } = useLayout();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("rotas");
   const [isProximasAusenciasOpen, setIsProximasAusenciasOpen] = useState(false);
   const [selectedVeiculoFilter, setSelectedVeiculoFilter] = useState<string>("TODOS");
 
@@ -151,6 +155,17 @@ export default function Rotas() {
         open={isProximasAusenciasOpen}
         onOpenChange={setIsProximasAusenciasOpen}
       />
+      {shouldShowTutorial && (
+        <VideoCommerce
+          screenName="rotas"
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_ROTAS_DISMISSED}
+        />
+      )}
     </PullToRefreshWrapper>
   );
 }

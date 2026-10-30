@@ -221,7 +221,10 @@ export function usePassageiroFormViewModel({
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     const purePhone = telefoneResponsavelValue?.replace(/\D/g, "");
     if (purePhone && (purePhone.length === 10 || purePhone.length === 11)) {
-      handleSearchResponsavel(purePhone);
+      const timer = setTimeout(() => {
+        handleSearchResponsavel(purePhone);
+      }, 400);
+      return () => clearTimeout(timer);
     }
   }, [telefoneResponsavelValue, handleSearchResponsavel, mode]);
 
