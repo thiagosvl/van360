@@ -1,4 +1,4 @@
-import { CobrancaStatus, CobrancaTipoPagamento } from "./enums";
+﻿import { CobrancaStatus, CobrancaTipoPagamento } from "./enums";
 import { Passageiro } from "./passageiro";
 
 export interface Cobranca {
@@ -26,6 +26,10 @@ export interface Cobranca {
   pix_copia_cola?: string | null;
   pix_qrcode_url?: string | null;
   pix_expiracao?: string | null;
+  boleto_linha_digitavel?: string | null;
+  boleto_codigo_barras?: string | null;
+  boleto_url?: string | null;
+  boleto_nosso_numero?: string | null;
   valor_taxa_plataforma?: number | null;
   repasse_em_processamento?: boolean | null;
 }

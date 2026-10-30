@@ -11,6 +11,7 @@ export interface ListRenovacoesParams {
 export interface RenovacaoKPIs {
   faturamento_atual: number;
   faturamento_projetado: number;
+  faturamento_confirmado?: number;
   percentual_crescimento: number;
   contadores: {
     total_ativos: number;

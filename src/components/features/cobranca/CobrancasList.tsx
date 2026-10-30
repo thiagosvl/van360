@@ -1,4 +1,4 @@
-import { ActionSheet } from "@/components/common/ActionSheet";
+﻿import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -112,6 +112,9 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
       dataVencimento: cobranca.data_vencimento,
       chavePix: chavePixResolvida,
       tipoChavePix: tipoChavePixResolvida,
+      pixCopiaCola: cobranca.pix_copia_cola,
+      boletoUrl: cobranca.boleto_url,
+      boletoLinhaDigitavel: cobranca.boleto_linha_digitavel,
     }))
     : undefined;
 
@@ -347,6 +350,9 @@ export function CobrancasList({
         dataVencimento: cobranca.data_vencimento,
         chavePix: chavePixResolvida,
         tipoChavePix: tipoChavePixResolvida,
+        pixCopiaCola: cobranca.pix_copia_cola,
+        boletoUrl: cobranca.boleto_url,
+        boletoLinhaDigitavel: cobranca.boleto_linha_digitavel,
       }))
       : undefined;
 
@@ -536,6 +542,9 @@ function ActionSheetWrapper({
       dataVencimento: cobranca.data_vencimento,
       chavePix: chavePixResolvida,
       tipoChavePix: tipoChavePixResolvida,
+      pixCopiaCola: cobranca.pix_copia_cola,
+      boletoUrl: cobranca.boleto_url,
+      boletoLinhaDigitavel: cobranca.boleto_linha_digitavel,
     }))
     : undefined;
 

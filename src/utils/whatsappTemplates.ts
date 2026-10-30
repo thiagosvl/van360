@@ -1,4 +1,4 @@
-import { BASE_DOMAIN, TRIAL_DURATION_DAYS } from "@/constants";
+﻿import { BASE_DOMAIN, TRIAL_DURATION_DAYS } from "@/constants";
 import { TipoChavePix, TIPOS_CHAVE_PIX_LABEL } from "@/types/pix";
 import { PassageiroGenero } from "@/types/enums";
 import { PLAY_STORE_URL, APP_STORE_URL } from "@/utils/detectPlatform";
@@ -19,6 +19,9 @@ export interface CobrancaWhatsAppParams {
   dataVencimento: string;
   chavePix?: string | null;
   tipoChavePix?: string | null;
+  pixCopiaCola?: string | null;
+  boletoUrl?: string | null;
+  boletoLinhaDigitavel?: string | null;
 }
 
 export interface ContratoWhatsAppParams {
@@ -132,7 +135,23 @@ export function buildCobrancaWhatsAppMessage(params: CobrancaWhatsAppParams): st
     `• Vencimento: *${vencimento}*`,
   ];
 
-  if (params.chavePix) {
+  if (params.boletoUrl) {
+    linhas.push("");
+    linhas.push("📄 *Link do Boleto (2ª via oficial BB):*");
+    linhas.push(params.boletoUrl);
+  }
+
+  if (params.boletoLinhaDigitavel) {
+    linhas.push("");
+    linhas.push("🔢 *Linha Digitável (Código de Barras):*");
+    linhas.push(params.boletoLinhaDigitavel);
+  }
+
+  if (params.pixCopiaCola) {
+    linhas.push("");
+    linhas.push("📱 *Pix Copia e Cola:*");
+    linhas.push(params.pixCopiaCola);
+  } else if (params.chavePix) {
     const labelTipo = params.tipoChavePix
       ? TIPOS_CHAVE_PIX_LABEL[params.tipoChavePix as TipoChavePix] || params.tipoChavePix
       : "Chave";

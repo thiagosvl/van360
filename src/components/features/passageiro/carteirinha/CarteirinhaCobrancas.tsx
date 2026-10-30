@@ -1,4 +1,4 @@
-import { MobileActionItem } from "@/components/common/MobileActionItem";
+﻿import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPaymentMethodLabel } from "@/constants/paymentMethods";
@@ -625,6 +625,9 @@ const CobrancaItemPassageiro = forwardRef<
       dataVencimento: cobranca.data_vencimento,
       chavePix: chavePixResolvida,
       tipoChavePix: tipoChavePixResolvida,
+      pixCopiaCola: cobranca.pix_copia_cola,
+      boletoUrl: cobranca.boleto_url,
+      boletoLinhaDigitavel: cobranca.boleto_linha_digitavel,
     }))
     : undefined;
 

@@ -1,4 +1,4 @@
-import { useLayout } from "@/contexts/LayoutContext";
+﻿import { useLayout } from "@/contexts/LayoutContext";
 import {
   useDeleteCobranca,
   useDesfazerPagamento,
@@ -28,6 +28,7 @@ import {
   BellOff,
   CheckCircle2,
   FilePen,
+  FileText,
   QrCode,
   Receipt,
   RotateCcw,

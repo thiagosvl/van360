@@ -198,18 +198,30 @@ export function useRenovacoesViewModel() {
 
 
 
-  const kpis = data?.kpis || {
-    faturamento_atual: 0,
-    faturamento_projetado: 0,
-    percentual_crescimento: 0,
-    contadores: {
-      total_ativos: 0,
-      confirmados: 0,
-      pendentes: 0,
-      nao_notificados: 0,
-      saidas: 0,
-    },
-  };
+  const kpis = useMemo(() => {
+    const rawKpis = data?.kpis;
+    const faturamentoConfirmado = rawKpis?.faturamento_confirmado ?? (
+      data?.passageiros
+        ? data.passageiros
+            .filter((p) => p.status === RenovacaoStatus.CONFIRMADO)
+            .reduce((acc, p) => acc + (p.novo_valor_cobranca || 0), 0)
+        : 0
+    );
+
+    return {
+      faturamento_atual: rawKpis?.faturamento_atual || 0,
+      faturamento_projetado: rawKpis?.faturamento_projetado || 0,
+      faturamento_confirmado: faturamentoConfirmado,
+      percentual_crescimento: rawKpis?.percentual_crescimento || 0,
+      contadores: rawKpis?.contadores || {
+        total_ativos: 0,
+        confirmados: 0,
+        pendentes: 0,
+        nao_notificados: 0,
+        saidas: 0,
+      },
+    };
+  }, [data?.kpis, data?.passageiros]);
 
   const todosPassageiros = useMemo(() => {
     const list = data?.passageiros ? [...data.passageiros] : [];
