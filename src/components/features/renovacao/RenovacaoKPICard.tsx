@@ -15,16 +15,17 @@ export function RenovacaoKPICard({
   const percentualConfirmados = Math.round(
     (kpis.contadores.confirmados / totalAlunos) * 100
   );
+  const valorConfirmado = kpis.faturamento_confirmado ?? 0;
 
   return (
     <div className="bg-[#ffffff] rounded-[20px] border border-[#e5e5e5] p-4 sm:p-5 shadow-xs space-y-3.5 h-full flex flex-col justify-between">
       <div>
         <span className="text-[11px] font-medium uppercase tracking-wider text-[#737373] block">
-          Faturamento Projetado
+          Faturamento Confirmado ({anoDestino})
         </span>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a]">
-            {formatCurrency(kpis.faturamento_projetado)}
+            {formatCurrency(valorConfirmado)}
           </span>
           <span className="text-xs text-[#737373] font-normal">/mês</span>
         </div>
