@@ -1201,7 +1201,7 @@ export default function PassageiroCarteirinha() {
         </div>
       </PullToRefreshWrapper>
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="carteirinha"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -1211,7 +1211,7 @@ export default function PassageiroCarteirinha() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_CARTEIRINHA_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 }

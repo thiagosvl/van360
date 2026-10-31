@@ -39,6 +39,8 @@ import { cn } from "@/lib/utils";
 import { formatFirstName } from "@/utils/formatters/name";
 import { useAppPreferences } from "@/hooks/business/useAppPreferences";
 import { Banner } from "@/components/ui/Banner";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks/ui/useTutorialsConfig";
 
 export default function Renovacoes() {
   useSEO({
@@ -48,6 +50,7 @@ export default function Renovacoes() {
 
   const { can } = usePermissions();
   const { formatAlunoNome } = useAppPreferences();
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("renovacoes");
   const canManage = can("renovacoes.gerenciar");
   const isMobile = useIsMobile();
 
@@ -818,6 +821,17 @@ export default function Renovacoes() {
           />
         )}
       </div>
+      {shouldShowTutorial && (
+        <VideoCommerce
+          screenName="renovacoes"
+          previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+          videosData={[...tutorialConfig.videos]}
+          tooltipText={tutorialConfig.tooltipText}
+          positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+          requireScrollOnMobile={false}
+          storageKey={STORAGE_KEYS.GUIDE_RENOVACOES_DISMISSED}
+        />
+      )}
     </PullToRefreshWrapper>
   );
 }

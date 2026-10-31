@@ -122,7 +122,7 @@ export default function Relatorios() {
       </div>
     </PullToRefreshWrapper>
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="relatorios"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -132,7 +132,7 @@ export default function Relatorios() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_RELATORIOS_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 }

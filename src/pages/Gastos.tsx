@@ -227,7 +227,7 @@ export default function Gastos() {
         </div>
       </PullToRefreshWrapper>
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="gastos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -239,7 +239,7 @@ export default function Gastos() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_GASTOS_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 }

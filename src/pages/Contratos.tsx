@@ -328,7 +328,7 @@ const Contratos = () => {
         showDownload={true}
       />
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="contratos"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -340,7 +340,7 @@ const Contratos = () => {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_CONTRATOS_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 };

@@ -14,7 +14,7 @@ export function hasValidTutorialVideos(config?: ScreenTutorialConfig): boolean {
 
 const SUPABASE_VIDEOS_BASE_URL = "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos";
 const CLOUDFLARE_VIDEOS_BASE_URL = "https://pub-6302b932ae5749838fec8c6031c88963.r2.dev/videos";
-const defaultTooltipText = 'Ver Demonstração';
+const defaultTooltipText = 'Veja Como Funciona';
 
 export const TUTORIALS_CONFIG = {
   alunos: {
@@ -33,77 +33,53 @@ export const TUTORIALS_CONFIG = {
     ],
   },
   gastos: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/gastos-2.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-gastos.mp4`,
     tooltipText: defaultTooltipText,
     ctaText: "Registrar Gasto",
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/gastos-2.mp4`,
-        title: "Como Registrar Gastos",
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-gastos.mp4`,
+        title: "Controle de Despesas da Van",
       },
     ],
   },
   relatorios: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/relatorios-1.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-relatorios.mp4`,
     tooltipText: defaultTooltipText,
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/relatorios-1.mp4`,
-        title: "Visão Geral Financeira",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/relatorios-2.mp4`,
-        title: "Relatório de Pagamentos",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/relatorios-3.mp4`,
-        title: "Relatório de Gastos",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/relatorios-4.mp4`,
-        title: "Números Gerais da Van",
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-relatorios.mp4`,
+        title: "Visão Geral e Relatórios de Lucro",
       },
     ],
   },
   parcelas: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/parcelas-1.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-parcelas.mp4`,
     tooltipText: defaultTooltipText,
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/parcelas-1.mp4`,
-        title: "Cobrança Automática",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/parcelas-2.mp4`,
-        title: "Controle de Inadimplência",
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-parcelas.mp4`,
+        title: "Cobrança Automática e Pagamentos",
       },
     ],
   },
   contratos: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/contratos-1.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-contratos.mp4`,
     tooltipText: defaultTooltipText,
     ctaText: "Configurar Contrato",
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/contratos-1.mp4`,
-        title: "Criando Modelo de Contrato",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/contratos-2.mp4`,
-        title: "Gerando Contrato para o Aluno",
-      },
-      {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/contratos-3.mp4`,
-        title: "Contratos Assinados",
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-contratos.mp4`,
+        title: "Criação e Assinatura Digital de Contratos",
       },
     ],
   },
   carteirinha: {
-    previewUrl: `${SUPABASE_VIDEOS_BASE_URL}/carteirinha-1.mp4`,
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-carteirinha.mp4`,
     tooltipText: defaultTooltipText,
     videos: [
       {
-        url: `${SUPABASE_VIDEOS_BASE_URL}/carteirinha-1.mp4`,
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-carteirinha.mp4`,
         title: "Carteirinha Digital do Aluno",
       },
     ],
@@ -115,6 +91,16 @@ export const TUTORIALS_CONFIG = {
       {
         url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-rotas.mp4`,
         title: "Rotas e Chamada na Escola",
+      },
+    ],
+  },
+  renovacoes: {
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-renovacao.mp4`,
+    tooltipText: defaultTooltipText,
+    videos: [
+      {
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-renovacao.mp4`,
+        title: "Renovação de Matrículas para o Próximo Ano",
       },
     ],
   },

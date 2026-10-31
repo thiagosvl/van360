@@ -294,7 +294,7 @@ export default function Cobrancas() {
         </div>
       </PullToRefreshWrapper>
 
-      {/* {shouldShowTutorial && (
+      {shouldShowTutorial && (
         <VideoCommerce
           screenName="parcelas"
           previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
@@ -304,7 +304,7 @@ export default function Cobrancas() {
           requireScrollOnMobile={false}
           storageKey={STORAGE_KEYS.GUIDE_COBRANCAS_DISMISSED}
         />
-      )} */}
+      )}
     </>
   );
 }
