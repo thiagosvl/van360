@@ -1618,7 +1618,7 @@ export default function AdminUserDetails() {
                       <span className="text-[11px] font-medium text-muted-foreground">Lembrete antes do vencimento</span>
                       <span className={cn("text-xs font-medium", data.configuracoes?.cobranca_aviso_previo_ativo !== false ? "text-emerald-400" : "text-muted-foreground")}>
                         {data.configuracoes?.cobranca_aviso_previo_ativo !== false
-                          ? `Ativo (${data.configuracoes?.cobranca_dias_aviso_previo ?? 2} dias antes)`
+                          ? `Ativo (${data.configuracoes?.cobranca_dias_aviso_previo ?? 2} dias antes • ${data.configuracoes?.cobranca_aviso_previo_whatsapp_ativo ? "WhatsApp + Push" : "Apenas Push"})`
                           : "Desativado"}
                       </span>
                     </div>

@@ -850,10 +850,23 @@ export const PagamentosTab = memo(function PagamentosTab() {
 
               <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
                 <span className="text-[10px] text-[#737373]">Enviado via:</span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
-                  <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
-                  App dos Pais (não envia WhatsApp)
-                </span>
+                {configuracoes?.cobranca_aviso_previo_whatsapp_ativo ? (
+                  <>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#25D366]/10 text-[#128C7E] font-medium text-[10px] border border-[#25D366]/20 leading-none">
+                      <WhatsAppIcon className="w-2.5 h-2.5 text-[#25D366]" />
+                      WhatsApp
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                      <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                      App dos Pais
+                    </span>
+                  </>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[8px] bg-[#f5f5f5] text-[#525252] font-medium text-[10px] border border-[#e5e5e5] leading-none">
+                    <Smartphone className="w-2.5 h-2.5 text-[#737373]" />
+                    App dos Pais (não envia WhatsApp)
+                  </span>
+                )}
               </div>
             </div>
           </div>
