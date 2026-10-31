@@ -3,6 +3,7 @@ import { Passageiro } from "@/types/passageiro";
 import { PassageiroBatchUpdateItem } from "@/services/api/passageiro.api";
 
 type EditableField =
+  | "nome"
   | "escola_id"
   | "veiculo_id"
   | "turma"

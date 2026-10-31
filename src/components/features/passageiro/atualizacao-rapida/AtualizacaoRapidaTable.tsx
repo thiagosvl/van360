@@ -15,6 +15,7 @@ import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 export type AtualizacaoRapidaEditableField =
+  | "nome"
   | "escola_id"
   | "veiculo_id"
   | "turma"
@@ -79,11 +80,11 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                   "#"
                 )}
               </th>
-              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-32 sm:min-w-[210px]">Aluno</th>
+              <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-44 sm:min-w-[240px]">Aluno</th>
+              <th className="py-2.5 sm:py-3 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px] whitespace-nowrap">Escola</th>
               <th className="py-2.5 sm:py-3 px-1 sm:px-3 w-24 sm:w-28 min-w-[95px] sm:min-w-[110px]">Valor</th>
               <th className="py-2.5 sm:py-3 px-1 sm:px-3 w-18 sm:w-24 min-w-[68px] sm:min-w-[80px] text-center whitespace-nowrap">Venc.</th>
               <th className="py-2.5 sm:py-3 px-2 sm:px-3 w-32 sm:w-44 min-w-[130px] sm:min-w-[160px] whitespace-nowrap">Veículo</th>
-              <th className="py-2.5 sm:py-3 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px] whitespace-nowrap">Escola</th>
               <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 min-w-[125px] whitespace-nowrap">Período</th>
               <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-24 sm:w-28 min-w-[85px]">Turma</th>
               <th className="py-2.5 sm:py-3 px-1.5 sm:px-3 w-20 sm:w-24 min-w-[75px]">Sala</th>
@@ -96,6 +97,7 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
               const dirty = isDirty(pId);
               const isSelected = selectedIds.has(pId);
 
+              const effectiveNome = String(getEffectiveValue(p, "nome") ?? p.nome ?? "");
               const effectiveEscolaId = String(getEffectiveValue(p, "escola_id") || "");
               const effectiveVeiculoId = String(getEffectiveValue(p, "veiculo_id") || "");
               const effectivePeriodo = String(getEffectiveValue(p, "periodo") || "none");
@@ -129,31 +131,52 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                     </div>
                   </td>
 
-                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-32 sm:min-w-[210px] max-w-[125px] sm:max-w-none">
+                  <td className="py-1.5 sm:py-2.5 px-1.5 sm:px-3 w-44 sm:min-w-[240px] max-w-[180px] sm:max-w-none">
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-                      <div className="min-w-0">
-                        <span className="font-semibold text-[#0a0a0a] block leading-tight text-xs truncate">
-                          {formatAlunoNome(p.nome)}
-                        </span>
-                        <span className="text-[10px] text-[#737373] font-normal block truncate leading-tight mt-0.5">
-                          {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Responsável não informado"}
-                        </span>
-                        {dirty && (
-                          <span className="text-[9px] font-semibold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-[6px] mt-0.5 inline-block">
-                            Alterado
+                      <div className="min-w-0 flex-1">
+                        <Input
+                          type="text"
+                          value={effectiveNome}
+                          onChange={(e) => onUpdateField(pId, "nome", e.target.value, p)}
+                          placeholder="Nome do aluno"
+                          className="h-8 sm:h-8.5 px-2 text-xs bg-[#f5f5f5] rounded-[14px] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] font-semibold text-[#0a0a0a] w-full shadow-none hover:bg-white transition-all truncate"
+                        />
+                        <div className="flex items-center gap-1.5 mt-1 px-1">
+                          <span className="text-[10px] text-[#737373] font-normal truncate leading-tight">
+                            {p.responsavel_principal?.nome ? formatFirstName(p.responsavel_principal.nome) : "Responsável não informado"}
                           </span>
-                        )}
+                          {dirty && (
+                            <span className="text-[9px] font-semibold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-[6px] shrink-0 leading-none">
+                              Alterado
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <Link
                         to={`/alunos/${pId}`}
                         target="_blank"
                         title="Ver carteirinha do aluno"
-                        className="opacity-0 group-hover:opacity-100 hidden sm:inline-flex text-[#737373] hover:text-[#0a0a0a] p-1 rounded-[8px] hover:bg-[#f5f5f5] transition-all shrink-0"
+                        className="opacity-0 group-hover:opacity-100 hidden sm:inline-flex text-[#737373] hover:text-[#0a0a0a] p-1 rounded-[8px] hover:bg-[#f5f5f5] transition-all shrink-0 self-start mt-1"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </Link>
                     </div>
+                  </td>
+
+                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px]">
+                    <NativeSelect
+                      value={effectiveEscolaId}
+                      onChange={(e) => onUpdateField(pId, "escola_id", e.target.value, p)}
+                      className="min-w-[150px] h-8 sm:h-8.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 text-xs rounded-[14px] truncate"
+                    >
+                      {!effectiveEscolaId && <option value="" disabled>Selecione</option>}
+                      {(escolas || []).map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.nome}
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
 
                   <td className="py-1.5 sm:py-2.5 px-1 sm:px-2 w-24 sm:w-28 min-w-[95px] sm:min-w-[110px]">
@@ -205,21 +228,6 @@ export const AtualizacaoRapidaTable = memo(function AtualizacaoRapidaTable({
                       {(veiculos || []).map((v) => (
                         <option key={v.id} value={v.id}>
                           {formatarPlacaExibicao(v.placa)} {v.modelo ? `- ${v.modelo}` : ""}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </td>
-
-                  <td className="py-1.5 sm:py-2.5 px-2 sm:px-3 min-w-[160px] sm:min-w-[190px]">
-                    <NativeSelect
-                      value={effectiveEscolaId}
-                      onChange={(e) => onUpdateField(pId, "escola_id", e.target.value, p)}
-                      className="min-w-[150px] h-8 sm:h-8.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 text-xs rounded-[14px] truncate"
-                    >
-                      {!effectiveEscolaId && <option value="" disabled>Selecione</option>}
-                      {(escolas || []).map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.nome}
                         </option>
                       ))}
                     </NativeSelect>

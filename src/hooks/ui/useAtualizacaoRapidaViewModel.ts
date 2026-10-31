@@ -129,7 +129,8 @@ export function useAtualizacaoRapidaViewModel() {
       if (p.ativo === false) return false;
 
       if (term) {
-        const matchesName = p.nome.toLowerCase().includes(term);
+        const effectiveNome = String(business.getEffectiveValue(p, "nome") ?? p.nome ?? "");
+        const matchesName = effectiveNome.toLowerCase().includes(term);
         const matchesRespPrincipal = p.responsavel_principal?.nome
           ? p.responsavel_principal.nome.toLowerCase().includes(term)
           : false;

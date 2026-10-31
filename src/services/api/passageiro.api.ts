@@ -15,6 +15,7 @@ export interface ListPassageirosResponse {
 
 export interface PassageiroBatchUpdateItem {
   id: string;
+  nome?: string;
   ano_letivo?: number;
   escola_id?: string | null;
   veiculo_id?: string | null;
