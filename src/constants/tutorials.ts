@@ -61,6 +61,10 @@ export const TUTORIALS_CONFIG = {
         url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-parcelas.mp4`,
         title: "Cobrança Automática e Pagamentos",
       },
+      {
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/apresentacao-cobranca-automatica.mp4`,
+        title: "Como Funciona a Cobrança Automática",
+      },
     ],
   },
   contratos: {
