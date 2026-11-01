@@ -18,6 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { VideoCommerce } from "@/components/features/VideoCommerce";
+import { useTutorialsConfig } from "@/hooks/ui/useTutorialsConfig";
+import { STORAGE_KEYS } from "@/constants";
 import type { FretamentoItemCalculado } from "@/hooks/business/useFretamentoCalculations";
 import type { FretamentoDetalhes } from "@/services/api/fretamento.api";
 
@@ -33,6 +36,7 @@ export default function Fretamentos() {
 
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("fretamentos");
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id });
   const veiculos = veiculosData?.list || [];
 
@@ -177,7 +181,8 @@ export default function Fretamentos() {
   };
 
   return (
-    <PullToRefreshWrapper onRefresh={async () => { await refetchList(); }}>
+    <>
+      <PullToRefreshWrapper onRefresh={async () => { await refetchList(); }}>
       <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 pt-1 sm:pt-2">
         <DateNavigation
           mes={mes}
@@ -317,5 +322,20 @@ export default function Fretamentos() {
         )}
       </div>
     </PullToRefreshWrapper>
+
+    {shouldShowTutorial && (
+      <VideoCommerce
+        screenName="fretamentos"
+        previewUrl={tutorialConfig.previewUrl || tutorialConfig.videos[0]?.url || ""}
+        videosData={[...tutorialConfig.videos]}
+        tooltipText={tutorialConfig.tooltipText}
+        ctaText={tutorialConfig.ctaText}
+        onCtaClick={handleOpenNovoRegistro}
+        positionClasses="fixed bottom-[calc(7rem+var(--safe-area-bottom,0px))] sm:bottom-[calc(8rem+var(--safe-area-bottom,0px))] md:bottom-8 left-4 md:left-auto md:right-8 z-40"
+        requireScrollOnMobile={false}
+        storageKey={STORAGE_KEYS.GUIDE_FRETAMENTOS_DISMISSED}
+      />
+    )}
+  </>
   );
 }

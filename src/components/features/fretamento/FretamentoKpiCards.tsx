@@ -43,7 +43,7 @@ export const FretamentoKpiCards = memo(function FretamentoKpiCards({
                 {formatCurrency(totalFaturado)}
               </span>
             )}
-            <span className="text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
+            <span className="hidden sm:inline-block text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
               {totalViagens} {totalViagens === 1 ? "viagem" : "viagens"}
             </span>
           </div>
@@ -69,7 +69,7 @@ export const FretamentoKpiCards = memo(function FretamentoKpiCards({
                 {formatCurrency(totalRecebido)}
               </span>
             )}
-            <span className="text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
+            <span className="hidden sm:inline-block text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
               {percentualRecebido}% arrecadado
             </span>
           </div>
@@ -95,7 +95,7 @@ export const FretamentoKpiCards = memo(function FretamentoKpiCards({
                 {formatCurrency(totalAReceber)}
               </span>
             )}
-            <span className="text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
+            <span className="hidden sm:inline-block text-[11px] sm:text-xs font-normal text-[#737373] shrink-0">
               Saldo pendente
             </span>
           </div>

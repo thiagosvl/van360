@@ -15,8 +15,8 @@ import { pagesItems, PageItem } from "@/utils/domain/pages/pagesUtils";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-import { useProfile } from "@/hooks/business/useProfile";
-import { canAccessFretamentos } from "@/utils/domain/fretamentoAccess";
+
+
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -38,8 +38,7 @@ export default function MenuPage() {
   const navigate = useNavigate();
   const { can, isGestor } = usePermissions();
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
-  const hasFretamentosAccess = canAccessFretamentos(profile, user);
+
   const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
   const { isEligibleToCustomize } = useBottomNavPreferences(user?.id);
   const { openReferAndEarnDialog, openPersonalizarMenuDialog, setPageTitle } = useLayout();
@@ -66,7 +65,7 @@ export default function MenuPage() {
     const regularItems: MenuItem[] = pagesItems
       .filter((item) => item.href !== ROUTES.PRIVATE.MOTORISTA.HOME)
       .filter((item) => {
-        if (item.href === ROUTES.PRIVATE.MOTORISTA.CHARTERS && !hasFretamentosAccess) return false;
+
         if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
         if (!item.permission) return true;
         return can(item.permission);
@@ -99,7 +98,7 @@ export default function MenuPage() {
     });
 
     return [...regularItems, ...additionalItems];
-  }, [can, isGestor, isSubscriptionBlocked, openReferAndEarnDialog, hasFretamentosAccess]);
+  }, [can, isGestor, isSubscriptionBlocked, openReferAndEarnDialog]);
 
   const filteredItems = useMemo(() => {
     const term = searchQuery.trim().toLowerCase();

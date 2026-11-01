@@ -108,6 +108,17 @@ export const TUTORIALS_CONFIG = {
       },
     ],
   },
+  fretamentos: {
+    previewUrl: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-fretamentos-passeios.mp4`,
+    tooltipText: defaultTooltipText,
+    ctaText: "Nova Viagem",
+    videos: [
+      {
+        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-fretamentos-passeios.mp4`,
+        title: "Fretamentos e Passeios Extras",
+      },
+    ],
+  },
 } as const satisfies Record<string, ScreenTutorialConfig>;
 
 export type ScreenTutorialKey = keyof typeof TUTORIALS_CONFIG;
