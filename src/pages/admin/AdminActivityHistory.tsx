@@ -221,13 +221,38 @@ export default function AdminActivityHistory() {
         </CardHeader>
         <CardContent className="pt-4">
           <ActivityMetricsSummary
-            total={usersData?.total}
+            total={usersData?.total_geral ?? usersData?.total}
             total_novos={usersData?.total_novos}
             total_recorrentes={usersData?.total_recorrentes}
             total_trial={usersData?.total_trial}
             total_ativos={usersData?.total_ativos}
             total_vitalicios={usersData?.total_vitalicios}
+            selectedSegment={selectedSegment}
+            onSelectSegment={handleSelectSegment}
           />
+
+          {selectedSegment !== "all" && (
+            <div className="flex items-center gap-2 mb-4 -mt-2">
+              <span className="text-xs text-muted-foreground">Filtrando lista:</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                <span>
+                  {selectedSegment === "novos" && "Novos cadastros"}
+                  {selectedSegment === "recorrentes" && "Recorrentes"}
+                  {selectedSegment === "trial" && "Em trial"}
+                  {selectedSegment === "assinantes" && "Assinantes"}
+                  {selectedSegment === "vitalicios" && "Vitalícios"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSelectSegment("all")}
+                  className="hover:text-foreground text-primary/70 transition-colors text-sm font-bold leading-none cursor-pointer"
+                  title="Remover filtro"
+                >
+                  &times;
+                </button>
+              </span>
+            </div>
+          )}
 
           <div
             className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 ${!isMobileFiltersOpen ? "hidden md:grid" : ""

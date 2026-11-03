@@ -119,11 +119,11 @@ export function ActivityMetricsSummary({
               }
             }}
             className={`p-3 rounded-xl text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between transition-all select-none ${
-              isInteractive ? "cursor-pointer" : ""
+              isInteractive ? "cursor-pointer hover:-translate-y-0.5 active:scale-[0.98]" : ""
             } ${
               isSelected
                 ? "bg-primary/10 border-2 border-primary shadow-sm"
-                : "bg-card border border-border hover:border-primary/40 hover:bg-secondary/40 shadow-xs"
+                : "bg-card border border-border hover:border-primary/60 hover:bg-secondary/60 hover:shadow-md"
             }`}
             title={isInteractive ? `Filtrar por ${item.label.toLowerCase()}` : undefined}
           >

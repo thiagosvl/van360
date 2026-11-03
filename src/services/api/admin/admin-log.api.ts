@@ -46,6 +46,7 @@ export interface AdminUserGroupLogItem {
 export interface AdminLogsByUserResponse {
   data: AdminUserGroupLogItem[];
   total: number;
+  total_geral?: number;
   total_novos?: number;
   total_trial?: number;
   total_ativos?: number;
