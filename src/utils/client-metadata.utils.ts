@@ -7,6 +7,17 @@ export interface ClientRegistrationMetadataPayload {
   metadados_cadastro: Record<string, unknown>;
 }
 
+function readMetaPixelCookies(): { fbp?: string; fbc?: string } | undefined {
+  if (typeof document === "undefined" || !document.cookie) return undefined;
+  const read = (name: string) => {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+    return match ? decodeURIComponent(match[1]) : undefined;
+  };
+  const fbp = read("_fbp");
+  const fbc = read("_fbc");
+  return fbp || fbc ? { fbp, fbc } : undefined;
+}
+
 export function collectClientRegistrationMetadata(
   extra?: Record<string, unknown>
 ): ClientRegistrationMetadataPayload {
@@ -33,6 +44,7 @@ export function collectClientRegistrationMetadata(
     timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined,
     referrer: finalReferrer,
     utm: attribution?.utm || undefined,
+    meta: readMetaPixelCookies(),
     ...extra,
   };
 

@@ -8,6 +8,7 @@ export interface UtmParams {
   term?: string;
   gclid?: string;
   fbclid?: string;
+  fbclid_at?: number;
   wbraid?: string;
   gbraid?: string;
   ttclid?: string;
@@ -78,6 +79,9 @@ export function useAttribution(): void {
         term: utmTerm || existing.utm?.term,
         gclid: gclid || existing.utm?.gclid,
         fbclid: fbclid || existing.utm?.fbclid,
+        fbclid_at: fbclid
+          ? (fbclid === existing.utm?.fbclid && existing.utm?.fbclid_at ? existing.utm.fbclid_at : Date.now())
+          : existing.utm?.fbclid_at,
         wbraid: wbraid || existing.utm?.wbraid,
         gbraid: gbraid || existing.utm?.gbraid,
         ttclid: ttclid || existing.utm?.ttclid,
