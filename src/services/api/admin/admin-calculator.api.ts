@@ -1,4 +1,4 @@
-﻿import { apiClient } from "../client";
+import { apiClient } from "../client";
 
 export interface CalculatorBaselineDTO {
   motoristas: {
@@ -15,6 +15,7 @@ export interface CalculatorBaselineDTO {
     arrReal: number;
     mensalReal: number;
     anualRealDiluido: number;
+    anualTotalContratado?: number;
   };
   passageiros: {
     total: number;
@@ -27,6 +28,7 @@ export interface CalculatorBaselineDTO {
     totalMensagensMes: number;
     custoEstimadoUsd: number;
     custoEstimadoBrl: number;
+    taxaAtrasoD3Pct?: number;
   };
   gateway: {
     pctPix: number;
@@ -34,6 +36,11 @@ export interface CalculatorBaselineDTO {
     taxaPix: number;
     taxaCartao: number;
     impostoSimples: number;
+  };
+  cobrancaAutomatica?: {
+    totalPagasMes: number;
+    spreadUnitario: number;
+    receitaEstimadaSpread: number;
   };
 }
 

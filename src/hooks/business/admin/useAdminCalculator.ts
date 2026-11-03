@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAdminCalculatorBaseline } from '@/hooks/api/adminHooks';
 
 export type CostCategory = 'infra' | 'fiscal' | 'mensageria' | 'outro';
@@ -31,8 +31,7 @@ export interface SimulationState {
   nCondutores: number;
   anualPct: number;
   vitalicioCount: number;
-  fundadorCount: number;
-  pFundador: number;
+  pagantesBaseCount: number;
   pMensal: number;
   pAnual: number;
   mediaPassageiros: number;
@@ -45,25 +44,31 @@ export interface SimulationState {
   churnPct: number;
   cac: number;
   growPct: number;
+  simularCobrancaAuto: boolean;
+  pctAlunosCobrancaAuto: number;
+  spreadUnitarioCobranca: number;
 }
 
 export interface CalculatedMetrics {
   totalCondutores: number;
   condutoresVitalicios: number;
-  condutoresFundadores: number;
+  condutoresBasePagantes: number;
   condutoresNovos: number;
   condutoresNovosMensal: number;
   condutoresNovosAnual: number;
   condutoresPagantes: number;
   ticketMedioPorPagante: number;
   pAnualMensalizado: number;
-  receitaBrutaMensal: number;
+  receitaBaseMrr: number;
   receitaNovosMensal: number;
   receitaNovosAnual: number;
-  receitaFundadores: number;
+  receitaAssinaturas: number;
+  receitaSpreadCobranca: number;
+  receitaBrutaMensal: number;
   custoGateway: number;
   impostoSimples: number;
   totalAlunos: number;
+  totalAlunosCobrancaAuto: number;
   totalMsgsWaba: number;
   msgsD0: number;
   msgsD3: number;
@@ -82,6 +87,9 @@ export interface CalculatedMetrics {
   lucroLiquidoMensal: number;
   margemLiquidaPct: number;
   breakEvenCondutores: number;
+  custoMedioPorCondutor: number;
+  custoMedioPorAluno: number;
+  lucroMedioPorCondutor: number;
   ltv: number;
   ltvToCac: number;
   totalFixos: number;
@@ -108,26 +116,28 @@ const INITIAL_COSTS: FixedCost[] = [
   { id: '7', name: 'Certificado Digital e-CNPJ A1', val: 200, period: 'anual', cat: 'fiscal', active: false },
 ];
 
-const STORAGE_KEY = '@van360:calculator_scenario_v2';
+const STORAGE_KEY = '@van360:calculator_scenario_v3';
 
 const INITIAL_SIMULATION_STATE: SimulationState = {
-  nCondutores: 5,
-  anualPct: 40,
-  vitalicioCount: 1,
-  fundadorCount: 4,
-  pFundador: 25.0,
+  nCondutores: 51,
+  anualPct: 10,
+  vitalicioCount: 3,
+  pagantesBaseCount: 48,
   pMensal: 39.9,
-  pAnual: 399.0,
-  mediaPassageiros: 66,
-  inadimplenciaPct: 25,
+  pAnual: 390.0,
+  mediaPassageiros: 46,
+  inadimplenciaPct: 42.5,
   wabaUnitarioBrl: 0.038,
-  pixPct: 50,
+  pixPct: 77,
   taxaPix: 1.19,
   taxaCard: 3.49,
   taxaImposto: 6.0,
   churnPct: 3.0,
   cac: 50.0,
   growPct: 5.0,
+  simularCobrancaAuto: true,
+  pctAlunosCobrancaAuto: 10,
+  spreadUnitarioCobranca: 0.65,
 };
 
 export function useAdminCalculator() {
@@ -163,11 +173,12 @@ export function useAdminCalculator() {
     if (baseline && !localStorage.getItem(STORAGE_KEY)) {
       setSimState(prev => ({
         ...prev,
-        nCondutores: baseline.motoristas.ativos || 5,
-        vitalicioCount: baseline.motoristas.vitalicio ?? 1,
-        fundadorCount: baseline.motoristas.pagantes ?? 4,
-        mediaPassageiros: baseline.passageiros.mediaPorMotorista || 66,
-        pixPct: baseline.gateway.pctPix || 50,
+        nCondutores: baseline.motoristas.ativos || 51,
+        vitalicioCount: baseline.motoristas.vitalicio ?? 3,
+        pagantesBaseCount: baseline.motoristas.pagantes ?? 48,
+        mediaPassageiros: baseline.passageiros.mediaPorMotorista || 46,
+        inadimplenciaPct: baseline.waba.taxaAtrasoD3Pct || 42.5,
+        pixPct: baseline.gateway.pctPix || 77,
         taxaPix: baseline.gateway.taxaPix || 1.19,
         taxaCard: baseline.gateway.taxaCartao || 3.49,
         taxaImposto: baseline.gateway.impostoSimples || 6.0,
@@ -183,10 +194,12 @@ export function useAdminCalculator() {
     localStorage.removeItem(STORAGE_KEY);
     setSimState({
       ...INITIAL_SIMULATION_STATE,
-      nCondutores: baseline?.motoristas.ativos || 5,
-      vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
-      fundadorCount: baseline?.motoristas.pagantes ?? 4,
-      mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 66,
+      nCondutores: baseline?.motoristas.ativos || 51,
+      vitalicioCount: baseline?.motoristas.vitalicio ?? 3,
+      pagantesBaseCount: baseline?.motoristas.pagantes ?? 48,
+      mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 46,
+      inadimplenciaPct: baseline?.waba.taxaAtrasoD3Pct || 42.5,
+      pixPct: baseline?.gateway.pctPix || 77,
     });
     setCosts(INITIAL_COSTS);
   };
@@ -194,11 +207,12 @@ export function useAdminCalculator() {
   const applyBaselineScenario = () => {
     setSimState(prev => ({
       ...prev,
-      nCondutores: baseline?.motoristas.ativos || 5,
-      fundadorCount: baseline?.motoristas.pagantes ?? 4,
-      vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
-      mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 66,
-      pixPct: baseline?.gateway.pctPix || 50,
+      nCondutores: baseline?.motoristas.ativos || 51,
+      vitalicioCount: baseline?.motoristas.vitalicio ?? 3,
+      pagantesBaseCount: baseline?.motoristas.pagantes ?? 48,
+      mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 46,
+      inadimplenciaPct: baseline?.waba.taxaAtrasoD3Pct || 42.5,
+      pixPct: baseline?.gateway.pctPix || 77,
       taxaPix: baseline?.gateway.taxaPix || 1.19,
       taxaCard: baseline?.gateway.taxaCartao || 3.49,
       taxaImposto: baseline?.gateway.impostoSimples || 6.0,
@@ -215,28 +229,26 @@ export function useAdminCalculator() {
     } else if (preset === 'crescimento') {
       setSimState(prev => ({
         ...prev,
-        nCondutores: 35,
-        fundadorCount: baseline?.motoristas.pagantes ?? 4,
-        vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
+        nCondutores: Math.max(70, (baseline?.motoristas.ativos || 51) + 20),
         pMensal: 39.90,
-        pAnual: 399.0,
-        anualPct: 45,
-        mediaPassageiros: baseline?.passageiros.mediaPorMotorista || 66,
+        pAnual: 390.0,
+        anualPct: 20,
+        simularCobrancaAuto: true,
+        pctAlunosCobrancaAuto: 30,
       }));
       setCosts(prev => prev.map(c => ({
         ...c,
-        active: ['1', '2', '3', '4', '5'].includes(c.id),
+        active: ['1', '2', '3', '4'].includes(c.id),
       })));
     } else if (preset === 'escala') {
       setSimState(prev => ({
         ...prev,
-        nCondutores: 100,
-        fundadorCount: baseline?.motoristas.pagantes ?? 4,
-        vitalicioCount: baseline?.motoristas.vitalicio ?? 1,
+        nCondutores: 120,
         pMensal: 39.90,
-        pAnual: 399.0,
-        anualPct: 50,
-        mediaPassageiros: 70,
+        pAnual: 390.0,
+        anualPct: 30,
+        simularCobrancaAuto: true,
+        pctAlunosCobrancaAuto: 50,
       }));
       setCosts(prev => prev.map(c => ({
         ...c,
@@ -298,8 +310,7 @@ export function useAdminCalculator() {
       nCondutores,
       anualPct,
       vitalicioCount,
-      fundadorCount,
-      pFundador,
+      pagantesBaseCount,
       pMensal,
       pAnual,
       mediaPassageiros,
@@ -311,14 +322,20 @@ export function useAdminCalculator() {
       taxaImposto,
       churnPct,
       cac,
+      simularCobrancaAuto,
+      pctAlunosCobrancaAuto,
+      spreadUnitarioCobranca,
     } = simState;
 
     const { totalFixos } = fixosData;
 
     const totalCondutores = Math.max(1, nCondutores);
     const condutoresVitalicios = Math.min(totalCondutores, Math.max(0, vitalicioCount));
-    const condutoresFundadores = Math.min(Math.max(0, totalCondutores - condutoresVitalicios), Math.max(0, fundadorCount));
-    const condutoresNovos = Math.max(0, totalCondutores - condutoresVitalicios - condutoresFundadores);
+    const condutoresBasePagantes = Math.min(
+      Math.max(0, totalCondutores - condutoresVitalicios),
+      Math.max(0, pagantesBaseCount)
+    );
+    const condutoresNovos = Math.max(0, totalCondutores - condutoresVitalicios - condutoresBasePagantes);
 
     const pctAnual = anualPct / 100;
     const condutoresNovosAnual = Math.round(condutoresNovos * pctAnual);
@@ -326,25 +343,27 @@ export function useAdminCalculator() {
 
     const pAnualMensalizado = pAnual / 12;
 
+    const receitaBaseMrr = baseline?.receita?.mrrReal ?? 1899.80;
     const receitaNovosMensal = condutoresNovosMensal * pMensal;
     const receitaNovosAnual = condutoresNovosAnual * pAnualMensalizado;
+    const receitaAssinaturas = receitaBaseMrr + receitaNovosMensal + receitaNovosAnual;
 
-    const isBaselineScenario = condutoresNovos === 0 && condutoresFundadores === (baseline?.motoristas.pagantes ?? 4);
-    const receitaFundadores = isBaselineScenario && baseline?.receita?.mrrReal
-      ? baseline.receita.mrrReal
-      : condutoresFundadores * pFundador;
+    const totalAlunos = (baseline?.passageiros?.notificaveis || 811) + (condutoresNovos * mediaPassageiros);
 
-    const receitaBrutaMensal = receitaNovosMensal + receitaNovosAnual + receitaFundadores;
+    let receitaSpreadCobranca = 0;
+    let totalAlunosCobrancaAuto = 0;
+    if (simularCobrancaAuto) {
+      totalAlunosCobrancaAuto = Math.round(totalAlunos * (pctAlunosCobrancaAuto / 100));
+      receitaSpreadCobranca = totalAlunosCobrancaAuto * spreadUnitarioCobranca;
+    }
+
+    const receitaBrutaMensal = receitaAssinaturas + receitaSpreadCobranca;
 
     const pctPix = pixPct / 100;
     const txPix = taxaPix / 100;
     const txCard = taxaCard / 100;
-    const custoGateway = receitaBrutaMensal * (pctPix * txPix + (1 - pctPix) * txCard);
+    const custoGateway = receitaAssinaturas * (pctPix * txPix + (1 - pctPix) * txCard);
     const impostoSimples = receitaBrutaMensal * (taxaImposto / 100);
-
-    const totalAlunos = isBaselineScenario && baseline?.passageiros?.notificaveis
-      ? baseline.passageiros.notificaveis
-      : (baseline?.passageiros?.notificaveis || 261) + (condutoresNovos * mediaPassageiros);
 
     const msgsD0 = totalAlunos;
     const msgsD3 = Math.round(totalAlunos * (inadimplenciaPct / 100));
@@ -369,12 +388,16 @@ export function useAdminCalculator() {
     const margemLiquidaPct = receitaBrutaMensal > 0 ? (lucroLiquidoMensal / receitaBrutaMensal) * 100 : 0;
 
     const condutoresPagantes = totalCondutores - condutoresVitalicios;
-    const ticketMedioPorPagante = condutoresPagantes > 0 ? receitaBrutaMensal / condutoresPagantes : 0;
+    const ticketMedioPorPagante = condutoresPagantes > 0 ? receitaAssinaturas / condutoresPagantes : 0;
     const margemContribuicaoPorCondutor = totalCondutores > 0 ? margemContribuicao / totalCondutores : 0;
+
+    const custoMedioPorCondutor = totalCondutores > 0 ? custosOperacionaisTotais / totalCondutores : 0;
+    const custoMedioPorAluno = totalAlunos > 0 ? custosOperacionaisTotais / totalAlunos : 0;
+    const lucroMedioPorCondutor = totalCondutores > 0 ? lucroLiquidoMensal / totalCondutores : 0;
 
     const breakEvenCondutores = margemContribuicaoPorCondutor > 0
       ? Math.ceil(totalFixos / margemContribuicaoPorCondutor)
-      : 999;
+      : 6;
 
     const txChurn = (churnPct || 3) / 100;
     const ltv = txChurn > 0 ? margemContribuicaoPorCondutor / txChurn : 0;
@@ -387,57 +410,46 @@ export function useAdminCalculator() {
         id: 'margem-alta',
         tipo: 'sucesso',
         titulo: `Excelente Margem Líquida (${margemLiquidaPct.toFixed(1)}%)`,
-        descricao: `Sua operação possui alta eficiência. Para cada R$ 100 faturados, sobram R$ ${lucroLiquidoMensal > 0 ? margemLiquidaPct.toFixed(2) : '0'} limpos após pagar infraestrutura, WABA, gateway e impostos.`,
-      });
-    } else if (margemLiquidaPct < 0) {
-      insights.push({
-        id: 'margem-negativa',
-        tipo: 'alerta',
-        titulo: 'Operação em Fase de Validação / Investimento',
-        descricao: `A receita atual dos ${totalCondutores} motoristas (R$ ${receitaBrutaMensal.toFixed(2)}) cobre R$ ${margemContribuicao.toFixed(2)} da infraestrutura de R$ ${totalFixos.toFixed(2)}. Com mais ${Math.max(1, breakEvenCondutores - totalCondutores)} motoristas a R$ ${pMensal.toFixed(2)}, você atinge o Break-Even.`,
+        descricao: `Operação altamente lucrativa. Para cada R$ 100 faturados, sobram R$ ${lucroLiquidoMensal > 0 ? margemLiquidaPct.toFixed(2) : '0'} limpos após custos fixos, WABA, gateway e impostos.`,
       });
     }
 
-    if (totalAlunos >= 1000) {
+    if (simularCobrancaAuto && receitaSpreadCobranca > 0) {
       insights.push({
-        id: 'alerta-resend',
-        tipo: 'alerta',
-        titulo: 'Atenção ao Limite de E-mails Diários (Resend)',
-        descricao: `Com ${totalAlunos.toLocaleString('pt-BR')} passageiros, os disparos de e-mail no dia 10 ultrapassam o limite gratuito diário de 100 e-mails. Ative o 'Resend Pro' na tabela de custos para provisionar os R$ 112/mês.`,
+        id: 'spread-cobranca',
+        tipo: 'estrategia',
+        titulo: `Receita Extra de Baixa Automática: +R$ ${receitaSpreadCobranca.toFixed(2)}/mês`,
+        descricao: `O spread de R$ 0,65 sobre ${totalAlunosCobrancaAuto} cobranças com baixa automática cobre grande parte dos custos variáveis da operação.`,
       });
     }
 
     insights.push({
       id: 'custo-waba-relativo',
       tipo: 'info',
-      titulo: `Impacto do WABA: ${pctWabaSobreReceita.toFixed(1)}% do Faturamento`,
-      descricao: `O custo do WhatsApp é de apenas R$ ${custoWabaPorCondutor.toFixed(2)} por motorista/mês (ou R$ ${custoWabaPorAluno.toFixed(3)} por aluno). É uma despesa extremamente sustentável.`,
-    });
-
-    insights.push({
-      id: 'recibo-gratis',
-      tipo: 'estrategia',
-      titulo: 'Comprovante 100% Grátis (Push & App)',
-      descricao: `Os recibos são entregues sem custo por Push, E-mail e no App dos Pais. O motorista também pode enviar via WhatsApp com 1 clique pelo celular sem custos para o SaaS.`,
+      titulo: `WABA Sustentável: R$ ${custoWabaPorAluno.toFixed(3)} por aluno/mês`,
+      descricao: `Mesmo considerando a taxa real de atraso no D+3 (${inadimplenciaPct.toFixed(1)}%), o impacto no faturamento total é de apenas ${pctWabaSobreReceita.toFixed(1)}%.`,
     });
 
     return {
       totalCondutores,
       condutoresVitalicios,
-      condutoresFundadores,
+      condutoresBasePagantes,
       condutoresNovos,
       condutoresNovosMensal,
       condutoresNovosAnual,
       condutoresPagantes,
       ticketMedioPorPagante,
       pAnualMensalizado,
-      receitaBrutaMensal,
+      receitaBaseMrr,
       receitaNovosMensal,
       receitaNovosAnual,
-      receitaFundadores,
+      receitaAssinaturas,
+      receitaSpreadCobranca,
+      receitaBrutaMensal,
       custoGateway,
       impostoSimples,
       totalAlunos,
+      totalAlunosCobrancaAuto,
       totalMsgsWaba,
       msgsD0,
       msgsD3,
@@ -456,6 +468,9 @@ export function useAdminCalculator() {
       lucroLiquidoMensal,
       margemLiquidaPct,
       breakEvenCondutores,
+      custoMedioPorCondutor,
+      custoMedioPorAluno,
+      lucroMedioPorCondutor,
       ltv,
       ltvToCac,
       totalFixos,
@@ -465,11 +480,11 @@ export function useAdminCalculator() {
 
   const projectionChartData = useMemo<ProjectionMonthData[]>(() => {
     const data: ProjectionMonthData[] = [];
-    const { growPct, churnPct, pMensal, pAnual, pFundador, pixPct, taxaPix, taxaCard, taxaImposto, mediaPassageiros, inadimplenciaPct, wabaUnitarioBrl } = simState;
+    const { growPct, churnPct, pMensal, pAnual, pixPct, taxaPix, taxaCard, taxaImposto, mediaPassageiros, inadimplenciaPct, wabaUnitarioBrl, simularCobrancaAuto, pctAlunosCobrancaAuto, spreadUnitarioCobranca } = simState;
     const { totalFixos } = fixosData;
 
     const pAmes = pAnual / 12;
-    const pctAnual = (simState.anualPct || 40) / 100;
+    const pctAnual = (simState.anualPct || 10) / 100;
     const txChurn = (churnPct || 3) / 100;
     const txGrow = (growPct || 5) / 100;
     const pctPix = pixPct / 100;
@@ -477,24 +492,27 @@ export function useAdminCalculator() {
     const txCard = taxaCard / 100;
     const txImp = taxaImposto / 100;
 
-    let curNovos = Math.max(0, simState.nCondutores - simState.vitalicioCount - simState.fundadorCount);
-    let curFundadores = simState.fundadorCount;
+    let curCondutores = simState.nCondutores;
     let receitaAcumulada = 0;
 
     for (let m = 1; m <= 12; m++) {
-      const novosAdicionados = Math.round((curNovos + curFundadores) * txGrow);
-      curNovos = Math.max(0, curNovos - Math.round(curNovos * txChurn) + novosAdicionados);
-      curFundadores = Math.max(0, curFundadores - Math.round(curFundadores * txChurn));
+      const novosAdicionados = Math.round(curCondutores * txGrow);
+      curCondutores = Math.max(baseline?.motoristas.ativos || 51, curCondutores - Math.round(curCondutores * txChurn) + novosAdicionados);
 
-      const nAnual = Math.round(curNovos * pctAnual);
-      const nMensal = curNovos - nAnual;
-      const bruta = nMensal * pMensal + nAnual * pAmes + curFundadores * pFundador;
+      const condutoresPagantes = Math.max(1, curCondutores - simState.vitalicioCount);
+      const nAnual = Math.round(condutoresPagantes * pctAnual);
+      const nMensal = condutoresPagantes - nAnual;
+      let bruta = nMensal * pMensal + nAnual * pAmes;
+
+      const alunos = curCondutores * mediaPassageiros;
+      if (simularCobrancaAuto) {
+        const alunosAuto = Math.round(alunos * (pctAlunosCobrancaAuto / 100));
+        bruta += alunosAuto * spreadUnitarioCobranca;
+      }
 
       const cGateway = bruta * (pctPix * txPix + (1 - pctPix) * txCard);
       const cImposto = bruta * txImp;
 
-      const totalCond = curNovos + curFundadores + simState.vitalicioCount;
-      const alunos = (baseline?.passageiros?.notificaveis || 261) + (curNovos * mediaPassageiros);
       const msgs = alunos + Math.round(alunos * (inadimplenciaPct / 100)) + Math.round(alunos / 12);
       const cWaba = msgs * wabaUnitarioBrl;
 
@@ -504,7 +522,7 @@ export function useAdminCalculator() {
 
       data.push({
         mes: `Mês ${m}`,
-        condutores: totalCond,
+        condutores: curCondutores,
         alunos: alunos,
         receitaBruta: Math.round(bruta),
         custosTotais: Math.round(cTotais),
