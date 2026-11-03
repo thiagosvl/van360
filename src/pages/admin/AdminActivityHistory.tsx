@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AtividadeAcao, AtividadeEntidadeTipo } from "@/types/enums";
 import { ActivityLogsList } from "@/components/features/admin/ActivityLogsList";
 import { ActivityUserGroupList } from "@/components/features/admin/ActivityUserGroupList";
-import { ActivityMetricsSummary } from "@/components/features/admin/ActivityMetricsSummary";
+import { ActivityMetricsSummary, type ActivitySegment } from "@/components/features/admin/ActivityMetricsSummary";
 import { AdminPeriodFilter } from "@/components/ui/AdminPeriodFilter";
 import { AdminActivityInspectDialog } from "@/components/dialogs/AdminActivityInspectDialog";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -24,6 +24,7 @@ export default function AdminActivityHistory() {
   const [activeTab, setActiveTab] = useState<"feed" | "by_user">("feed");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [inspectLog, setInspectLog] = useState<AdminUserLogItem | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<ActivitySegment>("all");
 
   useEffect(() => {
     setPageTitle("Histórico de Atividades");
@@ -64,6 +65,7 @@ export default function AdminActivityHistory() {
       acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
       entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
       search_cpf: logsFilter.search_cpf || undefined,
+      segmento: selectedSegment === "all" ? undefined : selectedSegment,
     },
     {
       refetchOnWindowFocus: "always",
@@ -83,6 +85,7 @@ export default function AdminActivityHistory() {
       acao: logsFilter.acao === "all" ? undefined : logsFilter.acao,
       entidade: logsFilter.entidade === "all" ? undefined : logsFilter.entidade,
       search_cpf: logsFilter.search_cpf || undefined,
+      segmento: selectedSegment === "all" ? undefined : selectedSegment,
     },
     {
       refetchOnWindowFocus: "always",
@@ -90,6 +93,14 @@ export default function AdminActivityHistory() {
   );
 
   const isFetching = isFetchingUsers || isFetchingLogs;
+
+  const handleSelectSegment = (segment: ActivitySegment) => {
+    setSelectedSegment(segment);
+    setUsersPage(1);
+    if (activeTab !== "by_user") {
+      setActiveTab("by_user");
+    }
+  };
 
   const handleRefresh = () => {
     if (activeTab === "by_user") {

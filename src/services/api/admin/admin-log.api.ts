@@ -61,9 +61,9 @@ export const adminLogApi = {
   getUserLogs: (id: string, params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string }) =>
     apiClient.get<AdminUserLogsResponse>(`${BASE}/users/${id}/logs`, { params }).then(r => r.data),
 
-  getLogs: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) =>
+  getLogs: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string; segmento?: string }) =>
     apiClient.get<AdminUserLogsResponse>(`${BASE}/logs`, { params }).then(r => r.data),
 
-  getLogsByUser: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string }) =>
+  getLogsByUser: (params?: { page?: number; limit?: number; dataInicio?: string; dataFim?: string; acao?: string; entidade?: string; search_cpf?: string; segmento?: string }) =>
     apiClient.get<AdminLogsByUserResponse>(`${BASE}/logs/by-user`, { params }).then(r => r.data),
 };

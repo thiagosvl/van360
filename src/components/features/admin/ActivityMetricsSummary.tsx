@@ -1,5 +1,7 @@
 import { Users, UserPlus, RotateCcw, Sparkles, ShieldCheck, Infinity as InfinityIcon } from "lucide-react";
 
+export type ActivitySegment = "all" | "novos" | "recorrentes" | "trial" | "assinantes" | "vitalicios";
+
 interface ActivityMetricsSummaryProps {
   total?: number;
   total_novos?: number;
@@ -7,6 +9,8 @@ interface ActivityMetricsSummaryProps {
   total_trial?: number;
   total_ativos?: number;
   total_vitalicios?: number;
+  selectedSegment?: ActivitySegment;
+  onSelectSegment?: (segment: ActivitySegment) => void;
 }
 
 export function ActivityMetricsSummary({
@@ -16,78 +20,131 @@ export function ActivityMetricsSummary({
   total_trial = 0,
   total_ativos = 0,
   total_vitalicios = 0,
+  selectedSegment = "all",
+  onSelectSegment,
 }: ActivityMetricsSummaryProps) {
   if (total === undefined) {
     return null;
   }
 
+  const items: Array<{
+    id: ActivitySegment;
+    label: string;
+    sublabel: string;
+    count: number;
+    icon: typeof Users;
+    iconColor: string;
+    valueColor?: string;
+  }> = [
+    {
+      id: "all",
+      label: "Usuários ativos",
+      sublabel: "No período filtrado",
+      count: total,
+      icon: Users,
+      iconColor: "text-primary",
+    },
+    {
+      id: "novos",
+      label: "Novos cadastros",
+      sublabel: "Criaram conta no período",
+      count: total_novos,
+      icon: UserPlus,
+      iconColor: "text-emerald-400",
+      valueColor: "text-emerald-400",
+    },
+    {
+      id: "recorrentes",
+      label: "Recorrentes",
+      sublabel: "Veteranos no período",
+      count: total_recorrentes,
+      icon: RotateCcw,
+      iconColor: "text-purple-400",
+    },
+    {
+      id: "trial",
+      label: "Em trial",
+      sublabel: "Foco de conversão",
+      count: total_trial,
+      icon: Sparkles,
+      iconColor: "text-sky-400",
+      valueColor: "text-sky-400",
+    },
+    {
+      id: "assinantes",
+      label: "Assinantes",
+      sublabel: "Assinatura ativa",
+      count: total_ativos,
+      icon: ShieldCheck,
+      iconColor: "text-emerald-400",
+      valueColor: "text-emerald-400",
+    },
+    {
+      id: "vitalicios",
+      label: "Vitalícios",
+      sublabel: "Acesso vitalício",
+      count: total_vitalicios,
+      icon: InfinityIcon,
+      iconColor: "text-purple-400",
+      valueColor: "text-purple-400",
+    },
+  ];
+
+  const handleCardClick = (id: ActivitySegment) => {
+    if (!onSelectSegment) return;
+    if (selectedSegment === id && id !== "all") {
+      onSelectSegment("all");
+    } else {
+      onSelectSegment(id);
+    }
+  };
+
   return (
     <div className="flex items-stretch gap-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-6 px-6 pb-2 mb-4 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:mb-6 touch-pan-x">
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <Users className="h-3.5 w-3.5 text-primary" />
-          <span>Usuários ativos</span>
-        </div>
-        <div className="text-xl font-semibold text-foreground">
-          {total}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">No período filtrado</p>
-      </div>
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isSelected = selectedSegment === item.id;
+        const isInteractive = Boolean(onSelectSegment);
 
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-          <UserPlus className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Novos cadastros</span>
-        </div>
-        <div className="text-xl font-semibold text-emerald-400">
-          {total_novos}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">Criaram conta no período</p>
-      </div>
+        return (
+          <div
+            key={item.id}
+            role={isInteractive ? "button" : undefined}
+            tabIndex={isInteractive ? 0 : undefined}
+            onClick={() => handleCardClick(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCardClick(item.id);
+              }
+            }}
+            className={`p-3 rounded-xl text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between transition-all select-none ${
+              isInteractive ? "cursor-pointer" : ""
+            } ${
+              isSelected
+                ? "bg-primary/10 border-2 border-primary shadow-sm"
+                : "bg-card border border-border hover:border-primary/40 hover:bg-secondary/40 shadow-xs"
+            }`}
+            title={isInteractive ? `Filtrar por ${item.label.toLowerCase()}` : undefined}
+          >
+            <div className="flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground truncate">
+                <Icon className={`h-3.5 w-3.5 shrink-0 ${item.iconColor}`} />
+                <span className="truncate">{item.label}</span>
+              </div>
+              {isSelected && item.id !== "all" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
+              )}
+            </div>
 
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <RotateCcw className="h-3.5 w-3.5 text-purple-400" />
-          <span>Recorrentes</span>
-        </div>
-        <div className="text-xl font-semibold text-foreground">
-          {total_recorrentes}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">Veteranos no período</p>
-      </div>
+            <div className={`text-xl font-semibold ${item.valueColor || "text-foreground"}`}>
+              {item.count}
+            </div>
 
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-sky-400">
-          <Sparkles className="h-3.5 w-3.5 text-sky-400" />
-          <span>Em trial</span>
-        </div>
-        <div className="text-xl font-semibold text-sky-400">
-          {total_trial}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">Foco de conversão</p>
-      </div>
-
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Assinantes</span>
-        </div>
-        <div className="text-xl font-semibold text-emerald-400">
-          {total_ativos}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">Assinatura ativa</p>
-      </div>
-
-      <div className="p-3 rounded-xl bg-card border border-border text-left space-y-0.5 w-[145px] sm:w-[160px] shrink-0 md:w-auto md:shrink flex flex-col justify-between shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
-          <InfinityIcon className="h-3.5 w-3.5 text-purple-400" />
-          <span>Vitalícios</span>
-        </div>
-        <div className="text-xl font-semibold text-purple-400">
-          {total_vitalicios}
-        </div>
-        <p className="text-[11px] text-muted-foreground font-normal">Acesso vitalício</p>
-      </div>
+            <p className="text-[11px] text-muted-foreground font-normal truncate">{item.sublabel}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }

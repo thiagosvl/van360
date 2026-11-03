@@ -21,6 +21,7 @@ export function useAdminLogs(
     acao?: string;
     entidade?: string;
     search_cpf?: string;
+    segmento?: string;
   },
   options?: {
     refetchOnWindowFocus?: boolean | "always";
@@ -45,6 +46,7 @@ export function useAdminLogsByUser(
     acao?: string;
     entidade?: string;
     search_cpf?: string;
+    segmento?: string;
   },
   options?: {
     enabled?: boolean;

@@ -31,7 +31,6 @@ export function ActivityUserGroupCard({
   const cleanPhone = userGroup.usuario_telefone?.replace(/\D/g, "");
   const activities = userGroup.ultimas_atividades || [];
   const latestLog = activities.length > 0 ? activities[0] : null;
-  const secondaryLogs = activities.slice(1, 3);
 
   const handleCopyPhone = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -192,55 +191,6 @@ export function ActivityUserGroupCard({
             </div>
           </div>
         )}
-
-        {secondaryLogs.map((log) => (
-          <div
-            key={log.id}
-            className="p-2.5 sm:px-3 sm:py-2.5 rounded-lg bg-secondary/40 border border-border/60 flex items-center justify-between gap-3 hover:bg-secondary/70 transition-colors text-left"
-          >
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono font-medium text-muted-foreground shrink-0">
-              <Clock className="h-3 w-3 text-muted-foreground" />
-              {formatRelativeTime(log.created_at)}
-            </span>
-
-            <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-xs text-foreground truncate">
-                {formatActivityDescription(log.descricao)}
-              </p>
-              <div className="flex items-center gap-2 sm:hidden">
-                <span className="text-[10px] font-mono text-muted-foreground">
-                  {formatRelativeTime(log.created_at)}
-                </span>
-                <span
-                  className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-medium border ${getActionBadgeStyle(
-                    log.acao
-                  )}`}
-                >
-                  {log.acao.replace(/_/g, " ")}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span
-                className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border ${getActionBadgeStyle(
-                  log.acao
-                )}`}
-              >
-                {log.acao.replace(/_/g, " ")}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onInspectLog(log)}
-                className="h-6 w-6 p-0 rounded-md bg-secondary text-primary hover:bg-primary hover:text-primary-foreground"
-                title="Inspecionar atividade"
-              >
-                <Eye className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
