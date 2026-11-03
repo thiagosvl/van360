@@ -68,7 +68,7 @@ export function CalculatorScaleSection({ calcHook }: CalculatorScaleSectionProps
             <span className="text-[11px] text-slate-400 font-medium block">Preço Mensal (Novos)</span>
             <AdminMoneyInput
               value={simState.pMensal}
-              onValueChange={(val) => updateSim("pMensal", val)}
+              onChange={(val) => updateSim("pMensal", val)}
               className="h-8 text-sm bg-slate-900 border-slate-700 font-bold text-white"
             />
             <span className="text-[10px] text-slate-400 block">Tabela: R$ 39,90 ou R$ 69,90</span>
@@ -78,7 +78,7 @@ export function CalculatorScaleSection({ calcHook }: CalculatorScaleSectionProps
             <span className="text-[11px] text-slate-400 font-medium block">Preço Anual (Novos)</span>
             <AdminMoneyInput
               value={simState.pAnual}
-              onValueChange={(val) => updateSim("pAnual", val)}
+              onChange={(val) => updateSim("pAnual", val)}
               className="h-8 text-sm bg-slate-900 border-slate-700 font-bold text-white"
             />
             <span className="text-[10px] text-slate-400 block">≈ {formatCurrency(pAnualMensalizado)}/mês diluído</span>

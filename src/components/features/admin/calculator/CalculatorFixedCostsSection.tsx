@@ -77,7 +77,7 @@ export function CalculatorFixedCostsSection({ calcHook }: CalculatorFixedCostsSe
                 <div className="w-24">
                   <AdminMoneyInput
                     value={cost.val}
-                    onValueChange={(val) => updateCost(cost.id, "val", val)}
+                    onChange={(val) => updateCost(cost.id, "val", val)}
                     className="h-7 text-xs bg-slate-900 border-slate-700 text-right font-medium"
                   />
                 </div>

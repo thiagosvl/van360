@@ -60,6 +60,7 @@ export interface CalculatedMetrics {
   ticketMedioPorPagante: number;
   pAnualMensalizado: number;
   receitaBaseMrr: number;
+  receitaFundadores: number;
   receitaNovosMensal: number;
   receitaNovosAnual: number;
   receitaAssinaturas: number;
@@ -441,6 +442,7 @@ export function useAdminCalculator() {
       ticketMedioPorPagante,
       pAnualMensalizado,
       receitaBaseMrr,
+      receitaFundadores: receitaBaseMrr,
       receitaNovosMensal,
       receitaNovosAnual,
       receitaAssinaturas,
