@@ -40,8 +40,16 @@ interface RelatoriosEntradasProps {
 
 export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
   const fretesRealizado = dados.viagens?.fretamentos_realizado || 0;
+  const fretesPrevisto = dados.viagens?.fretamentos_previsto || 0;
+  const fretesPendente = dados.viagens?.fretamentos_pendente || 0;
+
   const passeiosRealizado = dados.viagens?.passeios_realizado || 0;
+  const passeiosPrevisto = dados.viagens?.passeios_previsto || 0;
+  const passeiosPendente = dados.viagens?.passeios_pendente || 0;
+
   const viagensTotal = dados.viagens?.total_realizado || (fretesRealizado + passeiosRealizado);
+  const viagensPrevisto = dados.viagens?.total_previsto || (fretesPrevisto + passeiosPrevisto);
+  const viagensPendente = dados.viagens?.total_pendente || (fretesPendente + passeiosPendente);
 
   return (
     <div className="space-y-4 px-1">
@@ -168,39 +176,62 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
       </div>
 
       <div className="bg-white rounded-[24px] border border-[#e5e5e5] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
-        <div className="p-4 sm:p-5 pb-0 flex items-center justify-between">
+        <div className="p-4 sm:p-5 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center border border-[#e5e5e5] shrink-0">
               <Compass className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
             </div>
-            <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
-              Viagens e Passeios
-            </h3>
+            <div>
+              <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
+                Viagens e Passeios
+              </h3>
+              <p className="text-[11px] text-[#737373]">
+                {viagensPendente > 0
+                  ? `Previsto: ${formatCurrency(viagensPrevisto)} • Pendente: ${formatCurrency(viagensPendente)}`
+                  : "Todos os pagamentos foram quitados"}
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-            Total: {formatCurrency(viagensTotal)}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+              Recebido: {formatCurrency(viagensTotal)}
+            </span>
+          </div>
         </div>
         <div className="p-4 sm:p-5 pt-4 sm:pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="flex items-center justify-between p-3.5 rounded-[16px] bg-[#fafafa] border border-[#f0f0f0]">
               <div className="flex flex-col">
                 <span className="text-xs font-medium text-[#737373]">Fretamentos</span>
-                <span className="text-[11px] text-[#a3a3a3]">Pagamentos recebidos</span>
+                <span className="text-[11px] text-[#a3a3a3]">
+                  {fretesPendente > 0
+                    ? `Pendente: ${formatCurrency(fretesPendente)} de ${formatCurrency(fretesPrevisto)}`
+                    : "Quitado"}
+                </span>
               </div>
-              <span className="font-semibold text-sm sm:text-base text-[#0a0a0a] tracking-tight">
-                {formatCurrency(fretesRealizado)}
-              </span>
+              <div className="flex flex-col items-end">
+                <span className="font-semibold text-sm sm:text-base text-[#0a0a0a] tracking-tight">
+                  {formatCurrency(fretesRealizado)}
+                </span>
+                <span className="text-[10px] text-[#737373] uppercase tracking-wider">recebido</span>
+              </div>
             </div>
 
             <div className="flex items-center justify-between p-3.5 rounded-[16px] bg-[#fafafa] border border-[#f0f0f0]">
               <div className="flex flex-col">
                 <span className="text-xs font-medium text-[#737373]">Passeios</span>
-                <span className="text-[11px] text-[#a3a3a3]">Inscrições recebidas</span>
+                <span className="text-[11px] text-[#a3a3a3]">
+                  {passeiosPendente > 0
+                    ? `Pendente: ${formatCurrency(passeiosPendente)} de ${formatCurrency(passeiosPrevisto)}`
+                    : "Quitado"}
+                </span>
               </div>
-              <span className="font-semibold text-sm sm:text-base text-[#0a0a0a] tracking-tight">
-                {formatCurrency(passeiosRealizado)}
-              </span>
+              <div className="flex flex-col items-end">
+                <span className="font-semibold text-sm sm:text-base text-[#0a0a0a] tracking-tight">
+                  {formatCurrency(passeiosRealizado)}
+                </span>
+                <span className="text-[10px] text-[#737373] uppercase tracking-wider">recebido</span>
+              </div>
             </div>
           </div>
         </div>
