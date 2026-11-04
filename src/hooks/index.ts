@@ -54,6 +54,7 @@ export { useUsuarioResumo } from "./api/useUsuarioResumo";
 export { useVeiculos } from "./api/useVeiculos";
 export { useVeiculosWithFilters } from "./api/useVeiculosWithFilters";
 export { useConfiguracoes } from "./api/useConfiguracoes";
+export { useMotoristaFinanceiroApi } from "./api/useMotoristaFinanceiroApi";
 export {
   useRenovacoesList,
   useReajusteLote,

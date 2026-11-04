@@ -10,12 +10,14 @@ import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
 import { GastoSummary } from "./GastoSummary";
 import { useGastoCategorias } from "@/hooks";
+import { Ticket, Compass } from "lucide-react";
 
 interface GastosListProps {
   gastos: Gasto[];
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
   veiculos?: { id: string; placa: string }[];
+  ocultarBadgeViagem?: boolean;
 }
 
 const GastoMobileCard = memo(function GastoMobileCard({
@@ -24,6 +26,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onEdit,
   onDelete,
   veiculos,
+  ocultarBadgeViagem,
 }: { gasto: Gasto; index: number } & GastosListProps) {
   const { data: categoriasData } = useGastoCategorias();
 
@@ -45,7 +48,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
 
   const gastoDia = getGastoDia(gasto.data);
 
-  const renderHeader = () => <GastoSummary gasto={gasto} veiculoPlaca={placa} />;
+  const renderHeader = () => <GastoSummary gasto={gasto} veiculoPlaca={placa} ocultarBadgeViagem={ocultarBadgeViagem} />;
 
   return (
     <MobileActionItem
@@ -68,6 +71,18 @@ const GastoMobileCard = memo(function GastoMobileCard({
           <p className="text-xs text-[#737373] truncate leading-relaxed mt-0.5">
             {obterDescricaoFormatadaGasto(gasto)}
           </p>
+          {!ocultarBadgeViagem && gasto.fretamento?.titulo && (
+            <div className="mt-1 flex items-center">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] max-w-full truncate">
+                {gasto.fretamento.tipo === "passeio" ? (
+                  <Ticket className="h-2.5 w-2.5 text-[#737373] shrink-0" />
+                ) : (
+                  <Compass className="h-2.5 w-2.5 text-[#737373] shrink-0" />
+                )}
+                <span className="truncate">Viagem: {gasto.fretamento.titulo}</span>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5 min-w-[70px]">
@@ -90,6 +105,7 @@ export const GastosList = memo(function GastosList({
   onEdit,
   onDelete,
   veiculos = [],
+  ocultarBadgeViagem = false,
 }: GastosListProps) {
   const [openedGasto, setOpenedGasto] = useState<Gasto | null>(null);
   const { data: categoriasData } = useGastoCategorias();
@@ -112,6 +128,7 @@ export const GastosList = memo(function GastosList({
             onDelete={onDelete}
             veiculos={veiculos}
             gastos={gastos}
+            ocultarBadgeViagem={ocultarBadgeViagem}
           />
         )}
       >
@@ -174,6 +191,18 @@ export const GastosList = memo(function GastosList({
                       <span className="text-sm text-[#737373] max-w-[200px] block truncate">
                         {obterDescricaoFormatadaGasto(gasto)}
                       </span>
+                      {!ocultarBadgeViagem && gasto.fretamento?.titulo && (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] max-w-[200px] truncate">
+                            {gasto.fretamento.tipo === "passeio" ? (
+                              <Ticket className="h-2.5 w-2.5 text-[#737373] shrink-0" />
+                            ) : (
+                              <Compass className="h-2.5 w-2.5 text-[#737373] shrink-0" />
+                            )}
+                            <span className="truncate">Viagem: {gasto.fretamento.titulo}</span>
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-left align-middle">
                       <span className="font-normal text-[#0a0a0a] text-sm tabular-nums">

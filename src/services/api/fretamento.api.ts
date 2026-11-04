@@ -1,3 +1,4 @@
+import type { Gasto } from "@/types/gasto";
 import { apiClient } from "./client";
 import type { Tables, TablesInsert, TablesUpdate, Enums } from "@/integrations/supabase/types";
 
@@ -22,6 +23,9 @@ export interface FretamentoItemLista extends Fretamento {
     modelo?: string | null;
     vagas_capacidade?: number | null;
   }>;
+  gastos?: Gasto[];
+  total_gastos?: number;
+  lucro_liquido?: number;
   total_pago: number;
   saldo_restante: number;
   vagas_ocupadas: number;
@@ -37,9 +41,13 @@ export interface FretamentoDetalhes extends Fretamento {
   }>;
   pagamentos: FretamentoPagamento[];
   participantes: FretamentoParticipante[];
+  gastos?: Gasto[];
   total_pago: number;
   saldo_restante: number;
   vagas_ocupadas: number;
+  total_gastos?: number;
+  lucro_liquido?: number;
+  margem_lucro?: number;
 }
 
 export interface ResumoFinanceiroFretamento {
@@ -48,6 +56,8 @@ export interface ResumoFinanceiroFretamento {
   total_faturado_previsto: number;
   total_recebido: number;
   total_a_receber: number;
+  total_gastos?: number;
+  lucro_total?: number;
   quantidade_fretamentos: number;
   quantidade_passeios: number;
 }

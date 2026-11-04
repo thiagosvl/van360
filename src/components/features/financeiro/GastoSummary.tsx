@@ -2,14 +2,15 @@ import { Gasto } from "@/types/gasto";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import { formatarPlacaExibicao, getCategoriaMetadata, obterDescricaoFormatadaGasto } from "@/utils/domain";
 import { useGastoCategorias } from "@/hooks";
-import { Calendar, TrendingDown } from "lucide-react";
+import { Calendar, TrendingDown, Compass, Ticket } from "lucide-react";
 
 interface GastoSummaryProps {
   gasto: Gasto;
   veiculoPlaca?: string | null;
+  ocultarBadgeViagem?: boolean;
 }
 
-export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
+export const GastoSummary = ({ gasto, veiculoPlaca, ocultarBadgeViagem = false }: GastoSummaryProps) => {
   const { data: categoriasData } = useGastoCategorias();
   const metadata = getCategoriaMetadata(gasto.categoria, categoriasData);
 
@@ -33,6 +34,19 @@ export const GastoSummary = ({ gasto, veiculoPlaca }: GastoSummaryProps) => {
           {metadata.label}{veiculoInfo}
         </span>
       </div>
+
+      {!ocultarBadgeViagem && gasto.fretamento?.titulo && (
+        <div className="mt-2 flex items-center">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] max-w-full truncate">
+            {gasto.fretamento.tipo === "passeio" ? (
+              <Ticket className="h-3 w-3 text-[#737373] shrink-0" />
+            ) : (
+              <Compass className="h-3 w-3 text-[#737373] shrink-0" />
+            )}
+            <span className="truncate">Viagem: {gasto.fretamento.titulo}</span>
+          </span>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
         <div className="flex items-center gap-1.5 min-w-0 text-[#737373]">

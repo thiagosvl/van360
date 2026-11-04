@@ -32,6 +32,7 @@ export const useFretamentosListQuery = (
     queryKey: FRETAMENTOS_QUERY_KEYS.list(mes, ano, tipo, status),
     queryFn: () => fretamentoApi.listar({ mes, ano, tipo, status }),
     enabled,
+    staleTime: 1000 * 30,
   });
 };
 
@@ -40,6 +41,7 @@ export const useFretamentoResumoQuery = (mes: number, ano: number, enabled: bool
     queryKey: FRETAMENTOS_QUERY_KEYS.resumo(mes, ano),
     queryFn: () => fretamentoApi.resumoFinanceiro({ mes, ano }),
     enabled,
+    staleTime: 1000 * 30,
   });
 };
 
@@ -48,6 +50,7 @@ export const useFretamentoDetalhesQuery = (id: string, enabled: boolean = true) 
     queryKey: FRETAMENTOS_QUERY_KEYS.details(id),
     queryFn: () => fretamentoApi.obterPorId(id),
     enabled: !!id && enabled,
+    staleTime: 1000 * 30,
   });
 };
 

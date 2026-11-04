@@ -8,8 +8,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { useCobrancasViewModel, useLayout, useProfile, usePassageiros } from "@/hooks";
-import { CobrancaTab } from "@/types/enums";
+import { useCobrancasViewModel, useLayout, useProfile, usePassageiros, useMotoristaFinanceiroApi } from "@/hooks";
+import { CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { Banner } from "@/components/ui/Banner";
@@ -73,6 +73,10 @@ export default function Cobrancas() {
   } = useLayout();
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { financeiro, isLoading: isFinanceiroLoading } = useMotoristaFinanceiroApi();
+
+  const lembretesDesativados =
+    !isFinanceiroLoading && financeiro?.modo_cobranca === ModoCobrancaEnum.DESATIVADO;
 
   const { data: passageirosData } = usePassageiros(
     { usuarioId: profile?.id, status: "ativo", limit: 500 },
@@ -156,6 +160,18 @@ export default function Cobrancas() {
             ano={anoFilter}
             onNavigate={handleNavigation}
           />
+
+          {lembretesDesativados && (
+            <div className="px-1">
+              <Banner
+                variant="neutral"
+                title="Lembretes automáticos desativados"
+                description="Toque para ativar os avisos de vencimento no WhatsApp para os responsáveis."
+                onClick={() => navigate("/conta?tab=cobrancas")}
+                className="cursor-pointer"
+              />
+            </div>
+          )}
 
           {alunosSemValor.length > 0 && (
             <div className="px-1">

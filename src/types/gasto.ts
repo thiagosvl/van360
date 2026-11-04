@@ -10,14 +10,20 @@ export interface Gasto {
   categoria: string;
   notas?: string | null;
   veiculo_id?: string | null;
+  fretamento_id?: string | null;
   veiculo?: {
     id: string;
     placa: string;
   } | null;
+  fretamento?: {
+    id: string;
+    titulo: string;
+    tipo: string;
+  } | null;
   parcelamento_id?: string | null;
   numero_parcela?: number | null;
   total_parcelas?: number | null;
-};
+}
 
 export const GASTO_CATEGORIA_LABELS: Record<GastoCategoria, string> = {
   [GastoCategoria.COMBUSTIVEL]: "Combustível",

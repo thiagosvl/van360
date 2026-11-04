@@ -6,6 +6,8 @@ import { FretamentosToolbar } from "@/components/features/fretamento/Fretamentos
 import { FretamentoCardItem } from "@/components/features/fretamento/FretamentoCardItem";
 import { FretamentoKpiCards } from "@/components/features/fretamento/FretamentoKpiCards";
 import { useLayout } from "@/contexts/LayoutContext";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { useVeiculos, useSession, useProfile } from "@/hooks";
 import { useFretamentoViewModel } from "@/hooks/ui/useFretamentoViewModel";
 import { useAtualizarFretamentoMutation } from "@/hooks/api/useFretamentosApi";
@@ -30,10 +32,13 @@ export default function Fretamentos() {
     openFretamentoFormDialog,
     openPasseioFormDialog,
     openRegistrarPagamentoFretamentoDialog,
+    openGerenciarGastosFretamentoDialog,
+    openGastoFormDialog,
     openConfirmationDialog,
     setPageTitle,
   } = useLayout();
 
+  const { can } = usePermissions();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("fretamentos");
@@ -89,6 +94,10 @@ export default function Fretamentos() {
       ...item,
       pagamentos: [],
       participantes: [],
+      gastos: item.gastos || [],
+      total_gastos: item.totalGastos,
+      lucro_liquido: item.lucroLiquido,
+      margem_lucro: item.margemLucro,
     };
 
     if (item.tipo === "fretamento") {
@@ -102,15 +111,46 @@ export default function Fretamentos() {
     }
   };
 
+  const handleOpenRegistrarGasto = (item: FretamentoItemCalculado) => {
+    const primeiroVeiculoId = item.veiculos && item.veiculos.length > 0 ? item.veiculos[0].veiculo_id : undefined;
+    openGastoFormDialog({
+      fretamentoId: item.id,
+      fretamentoTitulo: item.titulo,
+      defaultVeiculoId: primeiroVeiculoId,
+      veiculos: item.veiculos.map((v) => ({ id: v.veiculo_id, placa: v.placa || "" })),
+    });
+  };
+
   const handleOpenRegistrarPagamento = (item: FretamentoItemCalculado) => {
     const detalhesMock: FretamentoDetalhes = {
       ...item,
       pagamentos: [],
       participantes: [],
+      gastos: item.gastos || [],
+      total_gastos: item.totalGastos,
+      lucro_liquido: item.lucroLiquido,
+      margem_lucro: item.margemLucro,
     };
 
     openRegistrarPagamentoFretamentoDialog({
       fretamento: detalhesMock,
+    });
+  };
+
+  const handleOpenGerenciarGastos = (item: FretamentoItemCalculado) => {
+    const detalhesMock: FretamentoDetalhes = {
+      ...item,
+      pagamentos: [],
+      participantes: [],
+      gastos: item.gastos || [],
+      total_gastos: item.totalGastos,
+      lucro_liquido: item.lucroLiquido,
+      margem_lucro: item.margemLucro,
+    };
+
+    openGerenciarGastosFretamentoDialog({
+      fretamento: detalhesMock,
+      onSuccess: () => refetchList(),
     });
   };
 
@@ -179,6 +219,10 @@ export default function Fretamentos() {
       },
     });
   };
+
+  if (!can("fretamentos.gerenciar")) {
+    return <AccessRestrictedState moduleName="Fretamentos e Passeios" />;
+  }
 
   return (
     <>
@@ -260,6 +304,8 @@ export default function Fretamentos() {
                   key={item.id}
                   item={item}
                   onOpenRegistrarPagamento={handleOpenRegistrarPagamento}
+                  onOpenRegistrarGasto={handleOpenRegistrarGasto}
+                  onOpenGerenciarGastos={handleOpenGerenciarGastos}
                   onOpenEditar={handleOpenEditar}
                   onConfirmarExclusao={handleConfirmarExclusao}
                   onConcluirStatus={handleConfirmarConclusao}
@@ -310,6 +356,7 @@ export default function Fretamentos() {
                     item={item}
                     isDimmed
                     onOpenRegistrarPagamento={handleOpenRegistrarPagamento}
+                    onOpenRegistrarGasto={handleOpenRegistrarGasto}
                     onOpenEditar={handleOpenEditar}
                     onConfirmarExclusao={handleConfirmarExclusao}
                     onConcluirStatus={handleConfirmarConclusao}

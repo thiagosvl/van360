@@ -12,6 +12,10 @@ export interface FretamentoItemCalculado extends FretamentoItemLista {
   vagasRestantes: number | null;
   isPassado: boolean;
   isConcluido: boolean;
+  totalGastos: number;
+  lucroLiquido: number;
+  lucroCaixa: number;
+  margemLucro: number;
 }
 
 export interface FretamentoDetalhesCalculado extends FretamentoDetalhes {
@@ -24,6 +28,10 @@ export interface FretamentoDetalhesCalculado extends FretamentoDetalhes {
   participantesPagosCount: number;
   participantesPendentesCount: number;
   participantesParciaisCount: number;
+  totalGastos: number;
+  lucroLiquido: number;
+  lucroCaixa: number;
+  margemLucro: number;
 }
 
 export const verificarSeViagemPassou = (dataInicio: string, dataFim?: string | null): boolean => {
@@ -56,6 +64,14 @@ export const useFretamentoCalculations = (
     return itens.map((item) => {
       const valorTotal = Number(item.valor_total || 0);
       const totalPago = Number(item.total_pago || 0);
+      const totalGastos = Number(
+        item.total_gastos ??
+          (item.gastos ? item.gastos.reduce((acc, g) => acc + Number(g.valor || 0), 0) : 0)
+      );
+      const lucroLiquido = valorTotal - totalGastos;
+      const lucroCaixa = totalPago - totalGastos;
+      const margemLucro = valorTotal > 0 ? Math.round((lucroLiquido / valorTotal) * 100) : 0;
+
       const percentualPago = calcularProgressoPagamento(valorTotal, totalPago);
       const vagasRestantes = calcularVagasRestantes(item.vagas_totais, item.vagas_ocupadas);
       const isLotado = vagasRestantes !== null && vagasRestantes === 0;
@@ -76,32 +92,51 @@ export const useFretamentoCalculations = (
         vagasRestantes,
         isPassado,
         isConcluido,
+        totalGastos,
+        lucroLiquido,
+        lucroCaixa,
+        margemLucro,
       };
     });
   }, [itens]);
 
   const totais = useMemo(() => {
-    if (resumoFinanceiro) {
-      return {
-        totalFaturado: resumoFinanceiro.total_faturado_previsto,
-        totalRecebido: resumoFinanceiro.total_recebido,
-        totalAReceber: resumoFinanceiro.total_a_receber,
-        percentualRecebido: calcularProgressoPagamento(
-          resumoFinanceiro.total_faturado_previsto,
-          resumoFinanceiro.total_recebido
-        ),
-      };
-    }
+    const totalFaturado = resumoFinanceiro
+      ? resumoFinanceiro.total_faturado_previsto
+      : itens.reduce((acc, i) => acc + Number(i.valor_total || 0), 0);
 
-    const totalFaturado = itens.reduce((acc, i) => acc + Number(i.valor_total || 0), 0);
-    const totalRecebido = itens.reduce((acc, i) => acc + Number(i.total_pago || 0), 0);
-    const totalAReceber = Math.max(0, totalFaturado - totalRecebido);
+    const totalRecebido = resumoFinanceiro
+      ? resumoFinanceiro.total_recebido
+      : itens.reduce((acc, i) => acc + Number(i.total_pago || 0), 0);
+
+    const totalAReceber = resumoFinanceiro
+      ? resumoFinanceiro.total_a_receber
+      : Math.max(0, totalFaturado - totalRecebido);
+
+    const totalGastos =
+      resumoFinanceiro?.total_gastos !== undefined
+        ? Number(resumoFinanceiro.total_gastos)
+        : itens.reduce((acc, i) => {
+            const g = Number(
+              i.total_gastos ??
+                (i.gastos ? i.gastos.reduce((a, x) => a + Number(x.valor || 0), 0) : 0)
+            );
+            return acc + g;
+          }, 0);
+
+    const lucroTotal =
+      resumoFinanceiro?.lucro_total !== undefined
+        ? Number(resumoFinanceiro.lucro_total)
+        : totalFaturado - totalGastos;
+
     const percentualRecebido = calcularProgressoPagamento(totalFaturado, totalRecebido);
 
     return {
       totalFaturado,
       totalRecebido,
       totalAReceber,
+      totalGastos,
+      lucroTotal,
       percentualRecebido,
     };
   }, [itens, resumoFinanceiro]);
@@ -118,6 +153,14 @@ export const usePasseioDetalhesCalculations = (detalhes?: FretamentoDetalhes) =>
 
     const valorTotal = Number(detalhes.valor_total || 0);
     const totalPago = Number(detalhes.total_pago || 0);
+    const totalGastos = Number(
+      detalhes.total_gastos ??
+        (detalhes.gastos ? detalhes.gastos.reduce((acc, g) => acc + Number(g.valor || 0), 0) : 0)
+    );
+    const lucroLiquido = valorTotal - totalGastos;
+    const lucroCaixa = totalPago - totalGastos;
+    const margemLucro = valorTotal > 0 ? Math.round((lucroLiquido / valorTotal) * 100) : 0;
+
     const percentualPago = calcularProgressoPagamento(valorTotal, totalPago);
     const vagasRestantes = calcularVagasRestantes(detalhes.vagas_totais, detalhes.vagas_ocupadas);
     const isLotado = vagasRestantes !== null && vagasRestantes === 0;
@@ -151,6 +194,10 @@ export const usePasseioDetalhesCalculations = (detalhes?: FretamentoDetalhes) =>
       participantesPagosCount: participantesPagos.length,
       participantesPendentesCount: participantesPendentes.length,
       participantesParciaisCount: participantesParciais.length,
+      totalGastos,
+      lucroLiquido,
+      lucroCaixa,
+      margemLucro,
     };
   }, [detalhes]);
 };

@@ -11,6 +11,7 @@ import {
   ChartArea,
   Sparkles,
   Route,
+  Compass,
   LucideIcon,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
@@ -30,6 +31,7 @@ enum AcessoRapidoItemKey {
   ROTAS = "rotas",
   EQUIPE = "equipe",
   GASTOS = "gastos",
+  FRETAMENTOS = "fretamentos",
   CONTRATOS = "contratos",
   RELATORIOS = "relatorios",
   ESCOLAS = "escolas",
@@ -51,9 +53,9 @@ export const AcessoRapido = ({
   onCadastrarPassageiro,
   onRegistrarGasto,
 }: AcessoRapidoProps) => {
-  const { can, isMotoristaAuxiliar, isMonitor } = usePermissions();
+  const { can, isMotoristaAuxiliar, isMonitor, isSubConta } = usePermissions();
 
-  if (isMonitor || isMotoristaAuxiliar) {
+  if (isMonitor || isMotoristaAuxiliar || isSubConta) {
     return null;
   }
 
@@ -114,6 +116,13 @@ export const AcessoRapido = ({
         icon: TrendingDown,
         to: ROUTES.PRIVATE.MOTORISTA.EXPENSES,
         show: can(PERMISSIONS.GASTOS_VISUALIZAR),
+      },
+      {
+        id: AcessoRapidoItemKey.FRETAMENTOS,
+        label: "Fretamentos e Passeios",
+        icon: Compass,
+        to: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
+        show: can(PERMISSIONS.FRETAMENTOS_GERENCIAR),
       },
       {
         id: AcessoRapidoItemKey.CONTRATOS,

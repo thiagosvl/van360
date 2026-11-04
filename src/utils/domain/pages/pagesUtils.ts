@@ -63,6 +63,7 @@ const pagesItems: PageItem[] = [
     title: "Fretamentos e Passeios",
     href: ROUTES.PRIVATE.MOTORISTA.CHARTERS,
     icon: Compass,
+    permission: "fretamentos.gerenciar",
   },
   {
     title: "Escolas",
@@ -109,7 +110,7 @@ export const defaultBottomNavHrefs: string[] = [
 ];
 
 export function getBottomNavHrefs(isSubConta: boolean, isMotoristaAuxiliar: boolean, isMonitor: boolean): string[] {
-  if (isMonitor || isMotoristaAuxiliar) {
+  if (isSubConta || isMonitor || isMotoristaAuxiliar) {
     return [
       ROUTES.PRIVATE.MOTORISTA.HOME,
       ROUTES.PRIVATE.MOTORISTA.ROUTES,

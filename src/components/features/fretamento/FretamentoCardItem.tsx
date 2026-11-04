@@ -7,6 +7,7 @@ import { formatCurrency, formatDateToBR, formatDateTime } from "@/utils/formatte
 import { formatarPlacaExibicao } from "@/utils/domain";
 import type { FretamentoItemCalculado } from "@/hooks/business/useFretamentoCalculations";
 import {
+  TrendingDown,
   Compass,
   Ticket,
   MapPin,
@@ -22,11 +23,14 @@ import {
   Clock,
   AlertCircle,
   RotateCcw,
+  Receipt,
 } from "lucide-react";
 
 interface FretamentoCardItemProps {
   item: FretamentoItemCalculado;
   onOpenRegistrarPagamento: (item: FretamentoItemCalculado) => void;
+  onOpenRegistrarGasto?: (item: FretamentoItemCalculado) => void;
+  onOpenGerenciarGastos?: (item: FretamentoItemCalculado) => void;
   onOpenEditar: (item: FretamentoItemCalculado) => void;
   onConfirmarExclusao: (item: FretamentoItemCalculado) => void;
   onConcluirStatus?: (item: FretamentoItemCalculado) => void;
@@ -45,6 +49,8 @@ const formatarListaVeiculos = (veiculosList?: Array<{ placa?: string }>) => {
 export const FretamentoCardItem = memo(function FretamentoCardItem({
   item,
   onOpenRegistrarPagamento,
+  onOpenRegistrarGasto,
+  onOpenGerenciarGastos,
   onOpenEditar,
   onConfirmarExclusao,
   onConcluirStatus,
@@ -59,9 +65,8 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
 
   return (
     <div
-      className={`bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] hover:border-[#737373]/40 transition-all flex flex-col justify-between gap-3.5 ${
-        isDimmed ? "opacity-85 hover:opacity-100" : ""
-      }`}
+      className={`bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-5 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] hover:border-[#737373]/40 transition-all flex flex-col justify-between gap-3.5 ${isDimmed ? "opacity-85 hover:opacity-100" : ""
+        }`}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
@@ -77,17 +82,16 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
 
             {isPasseio ? (
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${
-                  item.status === "cancelado"
-                    ? "bg-white text-[#e7000b] border-[#e7000b]/40"
-                    : temSaldoPendentePassado
-                      ? "bg-amber-50 text-amber-800 border-amber-200"
-                      : item.isConcluido || item.status === "concluido"
-                        ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
-                        : item.isLotado
-                          ? "bg-white text-[#e7000b] border-[#e7000b]/40"
-                          : "bg-[#fafafa] text-[#0a0a0a] border-[#e5e5e5]"
-                }`}
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${item.status === "cancelado"
+                  ? "bg-white text-[#e7000b] border-[#e7000b]/40"
+                  : temSaldoPendentePassado
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : item.isConcluido || item.status === "concluido"
+                      ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
+                      : item.isLotado
+                        ? "bg-white text-[#e7000b] border-[#e7000b]/40"
+                        : "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
+                  }`}
               >
                 {item.status === "cancelado" ? (
                   "Cancelado"
@@ -112,17 +116,16 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
               </span>
             ) : (
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${
-                  item.status === "cancelado"
-                    ? "bg-white text-[#e7000b] border-[#e7000b]/40"
-                    : temSaldoPendentePassado
-                      ? "bg-amber-50 text-amber-800 border-amber-200"
-                      : item.isQuitado
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium border ${item.status === "cancelado"
+                  ? "bg-white text-[#e7000b] border-[#e7000b]/40"
+                  : temSaldoPendentePassado
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : item.isQuitado
+                      ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
+                      : item.total_pago > 0
                         ? "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
-                        : item.total_pago > 0
-                          ? "bg-[#fafafa] text-[#0a0a0a] border-[#e5e5e5]"
-                          : "bg-white text-[#737373] border-[#e5e5e5]"
-                }`}
+                        : "bg-[#f5f5f5] text-[#171717] border-[#e5e5e5]"
+                  }`}
               >
                 {item.status === "cancelado" ? (
                   "Cancelado"
@@ -157,31 +160,49 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
             actions={[
               ...(!isPasseio
                 ? [
-                    {
-                      label: "Gerenciar Pagamentos",
-                      icon: <CreditCard className="h-4 w-4" />,
-                      onClick: () => onOpenRegistrarPagamento(item),
-                    },
-                  ]
+                  {
+                    label: "Gerenciar Pagamentos",
+                    icon: <CreditCard className="h-4 w-4" />,
+                    onClick: () => onOpenRegistrarPagamento(item),
+                  },
+                ]
+                : []),
+              ...(onOpenGerenciarGastos
+                ? [
+                  {
+                    label: "Gerenciar Gastos",
+                    icon: <Receipt className="h-4 w-4" />,
+                    onClick: () => onOpenGerenciarGastos(item),
+                  },
+                ]
+                : []),
+              ...(onOpenRegistrarGasto
+                ? [
+                  {
+                    label: "Registrar Gasto",
+                    icon: <TrendingDown className="h-4 w-4" />,
+                    onClick: () => onOpenRegistrarGasto(item),
+                  },
+                ]
                 : []),
               ...(item.status === "concluido"
                 ? onReabrirStatus
                   ? [
-                      {
-                        label: isPasseio ? "Reabrir Passeio" : "Reabrir Viagem",
-                        icon: <RotateCcw className="h-4 w-4" />,
-                        onClick: () => onReabrirStatus(item),
-                      },
-                    ]
+                    {
+                      label: isPasseio ? "Reabrir Passeio" : "Reabrir Viagem",
+                      icon: <RotateCcw className="h-4 w-4" />,
+                      onClick: () => onReabrirStatus(item),
+                    },
+                  ]
                   : []
                 : onConcluirStatus
                   ? [
-                      {
-                        label: isPasseio ? "Concluir Passeio" : "Concluir Viagem",
-                        icon: <CheckCircle2 className="h-4 w-4 text-[#0a0a0a]" />,
-                        onClick: () => onConcluirStatus(item),
-                      },
-                    ]
+                    {
+                      label: isPasseio ? "Concluir Passeio" : "Concluir Viagem",
+                      icon: <CheckCircle2 className="h-4 w-4 text-[#0a0a0a]" />,
+                      onClick: () => onConcluirStatus(item),
+                    },
+                  ]
                   : []),
               {
                 label: "Editar",
@@ -269,6 +290,26 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
             indicatorClassName={item.isQuitado ? "bg-emerald-600" : "bg-primary"}
           />
         </div>
+
+        <div className="bg-[#fafafa] rounded-[14px] border border-[#e5e5e5] px-3 py-2 flex flex-col min-[360px]:flex-row min-[360px]:items-center justify-between gap-1.5 min-[360px]:gap-3 text-xs">
+          <div className="w-full min-[360px]:w-auto flex items-center justify-between min-[360px]:justify-start gap-2">
+            <span className="text-[#737373]">Gastos:</span>
+            <span className="text-[#0a0a0a] font-semibold">{formatCurrency(item.totalGastos)}</span>
+          </div>
+          <div className="w-full min-[360px]:w-auto flex items-center justify-between min-[360px]:justify-end gap-2">
+            <span className="text-[#737373]">Lucro:</span>
+            <span
+              className={`font-semibold ${item.lucroLiquido > 0
+                ? "text-emerald-700"
+                : item.lucroLiquido < 0
+                  ? "text-red-600"
+                  : "text-[#737373]"
+                }`}
+            >
+              {formatCurrency(item.lucroLiquido)}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="pt-2.5 border-t border-[#e5e5e5]">
@@ -292,27 +333,29 @@ export const FretamentoCardItem = memo(function FretamentoCardItem({
 
             <Button
               size="sm"
+              variant="tonal"
               onClick={() => navigate(`/fretamentos-e-passeios/${item.id}`)}
-              className="h-9 px-3.5 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs border-none shadow-xs transition-all active:scale-[0.98] gap-1.5 cursor-pointer shrink-0"
+              className="h-8 px-2.5 sm:px-3 text-xs font-semibold gap-1.5 shrink-0"
             >
-              <Users className="h-3.5 w-3.5 text-primary-foreground" />
-              <span>Ver Participantes</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-0.5 text-primary-foreground/70" />
+              <span>Ver Detalhes</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         ) : (
           <div className="w-full flex items-center justify-between gap-2">
-            <div className="text-xs text-[#737373]">
+            <div className="text-xs text-[#737373] min-w-0 truncate">
               A Receber: <strong className="text-[#0a0a0a] font-semibold">{formatCurrency(item.saldo_restante)}</strong>
             </div>
             {!item.isQuitado ? (
               <Button
                 size="sm"
+                variant="tonal"
                 onClick={() => onOpenRegistrarPagamento(item)}
-                className="h-9 px-3.5 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs border-none shadow-xs transition-all active:scale-[0.98] gap-1 cursor-pointer shrink-0"
+                className="h-8 px-2.5 sm:px-3 text-xs font-semibold gap-1 shrink-0"
               >
                 <DollarSign className="h-3.5 w-3.5" />
-                <span>Registrar Pagamento</span>
+                <span className="inline min-[360px]:hidden">Pagamento</span>
+                <span className="hidden min-[360px]:inline">Registrar Pagamento</span>
               </Button>
             ) : (
               <div className="flex items-center gap-1.5">

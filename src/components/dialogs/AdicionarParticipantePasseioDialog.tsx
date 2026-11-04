@@ -521,7 +521,7 @@ export function AdicionarParticipantePasseioDialog({
               disabled={isSubmitting}
             />
             <BaseDialog.Action
-              label="Adicionar Participante"
+              label="Confirmar"
               variant="primary"
               onClick={form.handleSubmit(onSubmit)}
               isLoading={isSubmitting}

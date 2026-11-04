@@ -15,15 +15,34 @@ export function usePermissions() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
+  const isSubContaUser = checkIsSubConta(profile);
+
   const can = useCallback(
     (permission: PermissionKey): boolean => {
+      if (isSubContaUser) {
+        const allowedSubContaPermissions: PermissionKey[] = [
+          "passageiros.visualizar",
+          "passageiros.presenca_marcar",
+          "rotas.visualizar",
+          "rotas.iniciar_encerrar",
+          "rotas.executar_paradas",
+          "aniversarios.visualizar",
+        ];
+
+        if (profile?.tipo === UserType.MOTORISTA_AUXILIAR) {
+          allowedSubContaPermissions.push("rotas.criar_editar", "rotas.excluir");
+        }
+
+        return allowedSubContaPermissions.includes(permission);
+      }
+
       const role = profile?.tipo as UserType | undefined;
       if (permission === PERMISSIONS.RENOVACOES_GERENCIAR && !isRenovacaoDisponivel([profile?.id, user?.id])) {
         return false;
       }
       return hasPermission(role, permission);
     },
-    [profile?.tipo, profile?.id, user?.id]
+    [profile?.tipo, profile?.id, user?.id, isSubContaUser]
   );
 
   return {

@@ -1,12 +1,11 @@
-import { gastoApi } from "@/services/api/gasto.api";
+import { gastoApi, type CreateGastoPayload } from "@/services/api/gasto.api";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/business/useProfile";
-
-import { Gasto } from "@/types/gasto";
-import { GastoEscopoAcao } from "@/types/enums";
+import type { GastoEscopoAcao } from "@/types/enums";
+import { FRETAMENTOS_QUERY_KEYS } from "@/hooks/api/useFretamentosApi";
 
 let lastLocalGastoMutationTime = 0;
 const lastRealtimeGastoSyncMap = new Map<string, number>();
@@ -65,18 +64,21 @@ export function useCreateGasto() {
   const { profile, donoContaId } = useProfile();
 
   return useMutation({
-    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: Partial<Gasto> }) => {
+    mutationFn: ({ usuarioId, data }: { usuarioId: string; data: CreateGastoPayload }) => {
       markLocalGastoMutation();
       return gastoApi.createGasto(usuarioId, data);
     },
     onSuccess: (_, variables) => {
       markLocalGastoMutation();
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      if (variables.data?.fretamento_id) {
+        queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      }
       toast.success("gasto.sucesso.criado");
       const targetDonoId = donoContaId || variables.usuarioId;
       broadcastGastoEvent(targetDonoId, variables.data?.veiculo_id, variables.data?.data);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("gasto.erro.criar", {
         description: getErrorMessage(error, "Não foi possível criar o gasto."),
       });
@@ -89,11 +91,11 @@ export function useUpdateGasto() {
   const { profile, donoContaId } = useProfile();
 
   return useMutation({
-    mutationFn: ({ id, data, escopo }: { id: string; data: Partial<Gasto>; escopo?: GastoEscopoAcao }) => {
+    mutationFn: ({ id, data, escopo }: { id: string; data: CreateGastoPayload; escopo?: GastoEscopoAcao }) => {
       markLocalGastoMutation();
       return gastoApi.updateGasto(id, data, escopo);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("gasto.erro.atualizar", {
         description: getErrorMessage(error, "Não foi possível atualizar o gasto."),
       });
@@ -102,6 +104,9 @@ export function useUpdateGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.atualizado");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      if (variables.data?.fretamento_id) {
+        queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      }
       broadcastGastoEvent(donoContaId, variables.data?.veiculo_id, variables.data?.data);
     },
   });
@@ -116,7 +121,7 @@ export function useDeleteGasto() {
       markLocalGastoMutation();
       return gastoApi.deleteGasto(id, escopo);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("gasto.erro.excluir", {
         description: getErrorMessage(error, "Não foi possível excluir o gasto."),
       });
@@ -125,6 +130,7 @@ export function useDeleteGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.excluido");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       broadcastGastoEvent(donoContaId);
     },
   });

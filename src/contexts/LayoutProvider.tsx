@@ -1,4 +1,4 @@
-import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+﻿import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import { ExcluirContaDialog } from "@/components/dialogs/ExcluirContaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
@@ -31,6 +31,7 @@ import { FretamentoFormDialog } from "@/components/dialogs/FretamentoFormDialog"
 import { PasseioFormDialog } from "@/components/dialogs/PasseioFormDialog";
 import { NovoFretamentoOuPasseioDialog } from "@/components/dialogs/NovoFretamentoOuPasseioDialog";
 import { RegistrarPagamentoFretamentoDialog } from "@/components/dialogs/RegistrarPagamentoFretamentoDialog";
+import { GerenciarGastosFretamentoDialog } from "@/components/dialogs/GerenciarGastosFretamentoDialog";
 import { AdicionarParticipantePasseioDialog } from "@/components/dialogs/AdicionarParticipantePasseioDialog";
 import { RegistrarPagamentoParticipanteDialog } from "@/components/dialogs/RegistrarPagamentoParticipanteDialog";
 
@@ -115,6 +116,7 @@ import {
   OpenPasseioFormProps,
   OpenNovoFretamentoOuPasseioProps,
   OpenRegistrarPagamentoFretamentoProps,
+  OpenGerenciarGastosFretamentoProps,
   OpenAdicionarParticipantePasseioProps,
   OpenRegistrarPagamentoParticipanteProps,
 } from "./LayoutContext";
@@ -287,6 +289,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [registrarPagamentoFretamentoDialogState, setRegistrarPagamentoFretamentoDialogState] = useState<{
     open: boolean;
     props?: OpenRegistrarPagamentoFretamentoProps;
+  }>({
+    open: false,
+  });
+
+  const [gerenciarGastosFretamentoDialogState, setGerenciarGastosFretamentoDialogState] = useState<{
+    open: boolean;
+    props?: OpenGerenciarGastosFretamentoProps;
   }>({
     open: false,
   });
@@ -749,6 +758,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setRegistrarPagamentoFretamentoDialogState({ open: false }));
   };
 
+  const openGerenciarGastosFretamentoDialog = (props: OpenGerenciarGastosFretamentoProps) => {
+    setGerenciarGastosFretamentoDialogState({ open: true, props });
+  };
+  const closeGerenciarGastosFretamentoDialog = () => {
+    safeCloseDialog(() => setGerenciarGastosFretamentoDialogState({ open: false }));
+  };
+
   const openAdicionarParticipantePasseioDialog = (props: OpenAdicionarParticipantePasseioProps) => {
     setAdicionarParticipantePasseioDialogState({ open: true, props });
   };
@@ -1067,6 +1083,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeNovoFretamentoOuPasseioDialog,
         openRegistrarPagamentoFretamentoDialog,
         closeRegistrarPagamentoFretamentoDialog,
+        openGerenciarGastosFretamentoDialog,
+        closeGerenciarGastosFretamentoDialog,
         openAdicionarParticipantePasseioDialog,
         closeAdicionarParticipantePasseioDialog,
         openRegistrarPagamentoParticipanteDialog,
@@ -1298,7 +1316,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             if (innerOnSuccess) {
               innerOnSuccess(data, metadata);
             }
-            // Depois fecha o diálogo
+            // Depois fecha o diÃ¡logo
             safeCloseDialog(() =>
               setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
             );
@@ -1395,17 +1413,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             )
           }
           onSuccess={(gasto, keepOpen) => {
-            if (!keepOpen) {
-              safeCloseDialog(() =>
-                setGastoFormDialogState((prev) => ({ ...prev, open: false }))
-              );
-            }
             gastoFormDialogState.props?.onSuccess?.(gasto, keepOpen);
           }}
           gastoToEdit={gastoFormDialogState.props?.gastoToEdit}
           veiculos={gastoFormDialogState.props?.veiculos || []}
           usuarioId={gastoFormDialogState.props?.usuarioId || profile?.id}
           allowBatchCreation={gastoFormDialogState.props?.allowBatchCreation}
+          fretamentoId={gastoFormDialogState.props?.fretamentoId}
+          fretamentoTitulo={gastoFormDialogState.props?.fretamentoTitulo}
+          defaultVeiculoId={gastoFormDialogState.props?.defaultVeiculoId}
         />
       )}
 
@@ -2087,6 +2103,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={closeRegistrarPagamentoFretamentoDialog}
           fretamento={registrarPagamentoFretamentoDialogState.props.fretamento}
           onSuccess={registrarPagamentoFretamentoDialogState.props.onSuccess}
+        />
+      )}
+
+      {gerenciarGastosFretamentoDialogState.open && gerenciarGastosFretamentoDialogState.props && (
+        <GerenciarGastosFretamentoDialog
+          isOpen={true}
+          onClose={closeGerenciarGastosFretamentoDialog}
+          fretamento={gerenciarGastosFretamentoDialogState.props.fretamento}
+          onSuccess={gerenciarGastosFretamentoDialogState.props.onSuccess}
         />
       )}
 

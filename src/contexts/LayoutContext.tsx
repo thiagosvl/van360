@@ -1,4 +1,4 @@
-import { Cobranca } from "@/types/cobranca";
+﻿import { Cobranca } from "@/types/cobranca";
 import { PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -34,6 +34,11 @@ export interface OpenNovoFretamentoOuPasseioProps {
 }
 
 export interface OpenRegistrarPagamentoFretamentoProps {
+  fretamento: FretamentoDetalhes;
+  onSuccess?: () => void;
+}
+
+export interface OpenGerenciarGastosFretamentoProps {
   fretamento: FretamentoDetalhes;
   onSuccess?: () => void;
 }
@@ -109,6 +114,9 @@ export interface OpenGastoFormProps {
   veiculos?: { id: string; placa: string; modelo?: string | null }[];
   usuarioId?: string;
   allowBatchCreation?: boolean;
+  fretamentoId?: string;
+  fretamentoTitulo?: string;
+  defaultVeiculoId?: string;
 }
 
 export interface OpenEscolaFormProps {
@@ -511,6 +519,8 @@ export interface LayoutContextType {
   closeNovoFretamentoOuPasseioDialog: () => void;
   openRegistrarPagamentoFretamentoDialog: (props: OpenRegistrarPagamentoFretamentoProps) => void;
   closeRegistrarPagamentoFretamentoDialog: () => void;
+  openGerenciarGastosFretamentoDialog: (props: OpenGerenciarGastosFretamentoProps) => void;
+  closeGerenciarGastosFretamentoDialog: () => void;
   openAdicionarParticipantePasseioDialog: (props: OpenAdicionarParticipantePasseioProps) => void;
   closeAdicionarParticipantePasseioDialog: () => void;
   openRegistrarPagamentoParticipanteDialog: (props: OpenRegistrarPagamentoParticipanteProps) => void;

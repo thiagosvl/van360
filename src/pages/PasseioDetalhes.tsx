@@ -1,18 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useFretamentoDetalhesQuery,
-  useAtualizarStatusParticipanteMutation,
-  useRemoverParticipanteMutation,
   useAtualizarFretamentoMutation,
 } from "@/hooks/api/useFretamentosApi";
 import { usePasseioDetalhesCalculations } from "@/hooks/business/useFretamentoCalculations";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Banner } from "@/components/ui/Banner";
-import { formatCurrency, formatDateTime, formatarTelefone } from "@/utils/formatters";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabNav, type AppTabItem } from "@/components/ui/AppTabNav";
+import { PasseioKpiCards } from "@/components/features/fretamento/PasseioKpiCards";
+import { PasseioParticipantesSection } from "@/components/features/fretamento/PasseioParticipantesSection";
+import { PasseioGastosSection } from "@/components/features/fretamento/PasseioGastosSection";
+import { formatCurrency, formatDateTime } from "@/utils/formatters";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { buildWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -20,41 +22,31 @@ import { ROUTES } from "@/constants/routes";
 import {
   ArrowLeft,
   Ticket,
+  Users,
   Copy,
-  Plus,
-  Trash2,
   Car,
   MapPin,
   Calendar,
   CheckCircle2,
-  Clock,
-  DollarSign,
-  MoreVertical,
   RotateCcw,
   Pencil,
-  Search,
-  X,
+  TrendingDown,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { toast } from "sonner";
-import type { FretamentoParticipante } from "@/services/api/fretamento.api";
+
+type PasseioTab = "participantes" | "despesas";
 
 export default function PasseioDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const {
-    openAdicionarParticipantePasseioDialog,
-    openRegistrarPagamentoParticipanteDialog,
     openConfirmationDialog,
     openPasseioFormDialog,
     setPageTitle,
   } = useLayout();
 
-  const [busca, setBusca] = useState("");
+  const [activeTab, setActiveTab] = useState<PasseioTab>("participantes");
   const { data: detalhes, isLoading, refetch } = useFretamentoDetalhesQuery(id || "");
-  const statusMutation = useAtualizarStatusParticipanteMutation();
-  const removerMutation = useRemoverParticipanteMutation();
   const atualizarMutation = useAtualizarFretamentoMutation();
 
   const calculados = usePasseioDetalhesCalculations(detalhes);
@@ -63,7 +55,25 @@ export default function PasseioDetalhes() {
     setPageTitle("Passeio");
   }, [setPageTitle]);
 
-  if (isLoading || !calculados) {
+  const tabItems: AppTabItem<PasseioTab>[] = useMemo(
+    () => [
+      {
+        value: "participantes",
+        label: "Participantes",
+        icon: <Users className="h-4 w-4" />,
+        badge: calculados?.participantes.length ?? 0,
+      },
+      {
+        value: "despesas",
+        label: "Despesas",
+        icon: <TrendingDown className="h-4 w-4" />,
+        badge: (calculados?.gastos || []).length,
+      },
+    ],
+    [calculados?.participantes.length, calculados?.gastos]
+  );
+
+  if (isLoading || !calculados || !detalhes) {
     return (
       <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 pt-1 sm:pt-2">
         <div className="h-8 w-48 bg-[#e5e5e5] animate-pulse rounded-[18px]" />
@@ -87,80 +97,26 @@ export default function PasseioDetalhes() {
     const dataFormatada = formatDateTime(calculados.data_inicio);
     const valorFormatado = formatCurrency(Number(calculados.valor_por_pessoa || 0));
 
-    const texto = `Olá pais e responsáveis! No dia ${dataFormatada} realizaremos nosso passeio: *${calculados.titulo}*.\n\n` +
+    const texto =
+      `Olá pais e responsáveis! No dia ${dataFormatada} realizaremos nosso passeio: *${calculados.titulo}*.\n\n` +
       `Local: ${calculados.destino}\n` +
       `Valor por participante: ${valorFormatado}\n` +
-      (calculados.vagasRestantes !== null ? `Vagas limitadas: restam apenas ${calculados.vagasRestantes} vagas!\n\n` : "\n") +
+      (calculados.vagasRestantes !== null
+        ? `Vagas limitadas: restam apenas ${calculados.vagasRestantes} vagas!\n\n`
+        : "\n") +
       `Para confirmar a presença do seu filho, acesse o link abaixo:\n${linkPublico}`;
 
     const url = buildWhatsAppUrl(null, texto);
     window.open(url, "_blank");
   };
 
-  const handleOpenRegistrarPagamento = (p: FretamentoParticipante) => {
-    openRegistrarPagamentoParticipanteDialog({
-      fretamentoId: calculados.id,
-      passeioTitulo: calculados.titulo,
-      participante: p,
-      onSuccess: () => refetch(),
-    });
-  };
-
-  const handleMarcarComoPendente = (p: FretamentoParticipante) => {
-    openConfirmationDialog({
-      title: "Desfazer Pagamento",
-      description: `Deseja retornar o status do pagamento de "${p.nome}" para pendente?`,
-      confirmText: "Sim, marcar pendente",
-      cancelText: "Cancelar",
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await statusMutation.mutateAsync({
-            fretamentoId: calculados.id,
-            participanteId: p.id,
-            payload: {
-              status_pagamento: "pendente",
-              valor_pago: 0,
-              tipo_pagamento: null,
-            },
-          });
-          toast.success(`Pagamento de ${p.nome} retornado para pendente.`);
-        } catch {
-          toast.error("Erro ao atualizar status do pagamento.");
-        }
-      },
-    });
-  };
-
-  const handleConfirmarRemocao = (p: FretamentoParticipante) => {
-    openConfirmationDialog({
-      title: "Remover Participante",
-      description: `Deseja remover ${p.nome} da lista deste passeio?`,
-      confirmText: "Sim, remover",
-      cancelText: "Cancelar",
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await removerMutation.mutateAsync({
-            fretamentoId: calculados.id,
-            participanteId: p.id,
-          });
-          toast.success(`${p.nome} removido do passeio.`);
-        } catch {
-          toast.error("Erro ao remover participante.");
-        }
-      },
-    });
-  };
-
   const handleConfirmarConclusao = () => {
-    if (!calculados) return;
     const temSaldo = calculados.totalPendenteParticipantes > 0;
 
     openConfirmationDialog({
       title: "Concluir Passeio",
       description: temSaldo
-        ? `Este passeio ainda possui valores pendentes de participantes (${formatCurrency(calculados.totalPendenteParticipantes)}). Deseja marcar como concluído mesmo assim? Ele será movido para os passeios concluídos.`
+        ? `Este passeio ainda possui valores pendentes de participantes (${formatCurrency(calculados.totalPendenteParticipantes)}). Deseja marcar como concluído mesmo assim? Ele será movido para as viagens concluídas.`
         : "Deseja marcar este passeio como concluído? Ele será movido para as viagens concluídas.",
       confirmText: "Sim, concluir",
       cancelText: "Cancelar",
@@ -180,8 +136,6 @@ export default function PasseioDetalhes() {
   };
 
   const handleConfirmarReabertura = () => {
-    if (!calculados) return;
-
     openConfirmationDialog({
       title: "Reabrir Passeio",
       description: "Deseja reabrir este passeio? Ele voltará para a lista de viagens em andamento.",
@@ -202,21 +156,12 @@ export default function PasseioDetalhes() {
     });
   };
 
-  const participantesFiltrados = calculados.participantes.filter((p) => {
-    if (!busca.trim()) return true;
-    const termo = busca.toLowerCase();
-    return (
-      p.nome.toLowerCase().includes(termo) ||
-      (p.responsavel_nome && p.responsavel_nome.toLowerCase().includes(termo)) ||
-      (p.telefone && p.telefone.includes(termo))
-    );
-  });
-
   const dataFormatadaCabecalho = formatDateTime(calculados.data_inicio);
 
   return (
     <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
       <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 pt-1 sm:pt-2">
+        {/* Barra superior de ações */}
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -270,6 +215,7 @@ export default function PasseioDetalhes() {
           </div>
         </div>
 
+        {/* Card Principal de Informações */}
         <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -293,7 +239,7 @@ export default function PasseioDetalhes() {
                 </span>
               )}
               {calculados.valor_por_pessoa ? (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-white text-[#0a0a0a] border border-[#e5e5e5]">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] sm:text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
                   {formatCurrency(Number(calculados.valor_por_pessoa))} / pessoa
                 </span>
               ) : null}
@@ -311,49 +257,6 @@ export default function PasseioDetalhes() {
               <span className="flex items-center gap-1.5 font-medium text-[#0a0a0a] truncate">
                 <Calendar className="h-3.5 w-3.5 text-[#737373] shrink-0" />
                 <span className="truncate">{dataFormatadaCabecalho}</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-[#fafafa] rounded-[18px] border border-[#e5e5e5] p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#e5e5e5] text-center gap-2 sm:gap-0">
-            <div className="px-2 py-1.5 sm:py-0">
-              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
-                Vagas
-              </span>
-              <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5">
-                {calculados.vagas_ocupadas}
-                <span className="text-xs font-normal text-[#737373] ml-1">
-                  /{calculados.vagas_totais ?? "∞"}
-                </span>
-              </div>
-              <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
-                {calculados.vagasRestantes !== null
-                  ? (calculados.vagasRestantes === 0 ? "Lotado" : `${calculados.vagasRestantes} livres`)
-                  : "Abertas"}
-              </span>
-            </div>
-
-            <div className="px-2 py-1.5 sm:py-0">
-              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
-                Arrecadado
-              </span>
-              <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5 truncate">
-                {formatCurrency(calculados.totalPagoParticipantes)}
-              </div>
-              <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
-                {calculados.participantesPagosCount} pago(s)
-              </span>
-            </div>
-
-            <div className="px-2 py-1.5 sm:py-0">
-              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#737373] block">
-                A Receber
-              </span>
-              <div className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight mt-0.5 truncate">
-                {formatCurrency(calculados.totalPendenteParticipantes)}
-              </div>
-              <span className="text-[11px] text-[#737373] block mt-0.5 truncate">
-                {calculados.participantesPendentesCount} aberto(s)
               </span>
             </div>
           </div>
@@ -395,286 +298,38 @@ export default function PasseioDetalhes() {
           )}
         </div>
 
-        <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-4 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] space-y-4 sm:space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight">
-                  Participantes
-                  {calculados.participantes.length > 0 && (
-                    <span className="text-xs font-normal text-[#737373] ml-2">
-                      ({calculados.participantes.length})
-                    </span>
-                  )}
-                </h2>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    openAdicionarParticipantePasseioDialog({
-                      fretamento: detalhes,
-                      onSuccess: () => refetch(),
-                    })
-                  }
-                  className="sm:hidden bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs h-8 px-3 rounded-[18px] gap-1.5 shadow-xs transition-all active:scale-[0.98]"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Adicionar</span>
-                </Button>
-              </div>
-              <p className="text-xs text-[#737373] mt-0.5">
-                Confirmações de presença e pagamentos.
-              </p>
-            </div>
+        {/* KPIs do Topo com scroll lateral touch no mobile */}
+        <PasseioKpiCards calculados={calculados} />
 
-            <Button
-              onClick={() =>
-                openAdicionarParticipantePasseioDialog({
-                  fretamento: detalhes,
-                  onSuccess: () => refetch(),
-                })
-              }
-              className="hidden sm:inline-flex bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-xs h-9 sm:h-10 px-4 rounded-[18px] gap-2 border-none shadow-xs transition-all active:scale-[0.98]"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Adicionar Participante</span>
-            </Button>
-          </div>
+        {/* Navegação por Abas */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => setActiveTab(val as PasseioTab)}
+          className="w-full space-y-4"
+        >
+          <AppTabNav
+            items={tabItems}
+            activeTab={activeTab}
+            layout="auto"
+          />
 
-          {calculados.participantes.length > 0 && (
-            <div className="relative group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none group-focus-within:text-[#0a0a0a] transition-colors" />
-              <Input
-                type="text"
-                inputMode="search"
-                placeholder="Buscar participante por nome, responsável ou telefone..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className={cn(
-                  "w-full bg-white text-[#0a0a0a] placeholder:text-[#737373] border border-[#e5e5e5] hover:border-[#737373]/60 focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] rounded-[18px] h-10 sm:h-11 pl-10 text-sm font-normal transition-all shadow-none [&::-webkit-search-cancel-button]:hidden",
-                  busca ? "pr-10" : "pr-4"
-                )}
+          <TabsContent value="participantes" className="outline-none mt-0">
+            <Suspense fallback={<Skeleton className="h-64 w-full rounded-[24px]" />}>
+              <PasseioParticipantesSection
+                calculados={calculados}
+                detalhes={detalhes}
               />
-              {busca && (
-                <button
-                  type="button"
-                  onClick={() => setBusca("")}
-                  aria-label="Limpar busca"
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
+            </Suspense>
+          </TabsContent>
 
-          {calculados.participantes.length === 0 ? (
-            <Banner
-              variant="info"
-              title="Nenhum participante confirmado ainda"
-              description="Compartilhe o link do passeio no WhatsApp ou clique em 'Adicionar Participante' para incluir os primeiros inscritos."
-            />
-          ) : participantesFiltrados.length === 0 ? (
-            <div className="p-6 text-center text-xs text-[#737373] bg-[#fafafa] rounded-[18px] border border-[#e5e5e5]">
-              Nenhum participante encontrado para &quot;{busca}&quot;.
-            </div>
-          ) : (
-            <div className="divide-y divide-[#e5e5e5] border border-[#e5e5e5] rounded-[18px] overflow-hidden bg-white">
-              {participantesFiltrados.map((p) => {
-                const valorTotal = Number(p.valor || 0);
-                const valorPago = Number(p.valor_pago ?? (p.status_pagamento === "pago" ? p.valor : 0));
-                const isPago = p.status_pagamento === "pago" || (valorTotal > 0 && valorPago >= valorTotal);
-                const isParcial = p.status_pagamento === "parcial" || (valorPago > 0 && valorPago < valorTotal);
-                const saldoDevedor = Math.max(0, valorTotal - valorPago);
-
-                const statusBadge = isPago ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0a0a]" />
-                    Quitado
-                  </span>
-                ) : isParcial ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-[#fafafa] text-[#0a0a0a] border border-[#e5e5e5]">
-                    <Clock className="h-3.5 w-3.5 text-[#737373]" />
-                    Sinal
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-[18px] text-xs font-medium bg-white text-[#737373] border border-[#e5e5e5]">
-                    <Clock className="h-3.5 w-3.5 text-[#737373]" />
-                    Pendente
-                  </span>
-                );
-
-                const dropdownActions = [
-                  {
-                    label: isPago ? "Editar Pagamento" : "Informar Pagamento / Sinal",
-                    icon: <DollarSign className="h-4 w-4" />,
-                    onClick: () => handleOpenRegistrarPagamento(p),
-                  },
-                  ...((isPago || isParcial)
-                    ? [
-                      {
-                        label: "Marcar como Pendente",
-                        icon: <RotateCcw className="h-4 w-4" />,
-                        onClick: () => handleMarcarComoPendente(p),
-                      },
-                    ]
-                    : []),
-                  {
-                    label: "Remover do Passeio",
-                    icon: <Trash2 className="h-4 w-4" />,
-                    variant: "destructive" as const,
-                    isDestructive: true,
-                    onClick: () => handleConfirmarRemocao(p),
-                  },
-                ];
-
-                return (
-                  <div key={p.id} className="hover:bg-[#fafafa] transition-colors">
-                    {/* Mobile view (< sm) */}
-                    <div className="sm:hidden p-3.5 space-y-2.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-[#0a0a0a] text-sm leading-tight truncate">{p.nome}</span>
-                            {p.passageiro_id ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                                Aluno da Van
-                              </span>
-                            ) : (
-                              <></>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#737373]">
-                            {p.responsavel_nome && !p.is_proprio_responsavel && (
-                              <span className="truncate">Resp: <strong className="text-[#0a0a0a] font-medium">{p.responsavel_nome}</strong></span>
-                            )}
-                            {p.telefone && (
-                              <a
-                                href={buildWhatsAppUrl(p.telefone)}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-1 text-[#737373] hover:text-[#25D366] font-medium transition-colors"
-                              >
-                                <WhatsAppIcon className="w-3.5 h-3.5 fill-[#25D366] shrink-0" />
-                                <span>{formatarTelefone(p.telefone)}</span>
-                              </a>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 shrink-0">
-                          {statusBadge}
-                          <ActionsDropdown
-                            title={p.nome}
-                            description={p.passageiro_id ? "Aluno vinculado" : "Participante avulso"}
-                            actions={dropdownActions}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between gap-2">
-                        <div>
-                          <span className="font-semibold text-[#0a0a0a] text-sm block leading-none">
-                            {isParcial
-                              ? `${formatCurrency(valorPago)} / ${formatCurrency(valorTotal)}`
-                              : formatCurrency(valorTotal)}
-                          </span>
-                          {isParcial && (
-                            <span className="text-[10px] text-[#737373] font-medium mt-0.5 block">
-                              Resta {formatCurrency(saldoDevedor)}
-                            </span>
-                          )}
-                        </div>
-
-                        {!isPago && (
-                          <Button
-                            variant="tonal"
-                            size="sm"
-                            onClick={() => handleOpenRegistrarPagamento(p)}
-                            className="h-8 px-3 text-xs font-semibold gap-1 shrink-0"
-                          >
-                            <DollarSign className="h-3.5 w-3.5" />
-                            <span>{isParcial ? "Completar" : "Registrar"}</span>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Desktop view (sm:flex) */}
-                    <div className="hidden sm:flex items-center justify-between p-4 gap-4">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-[#0a0a0a] text-sm truncate">{p.nome}</span>
-                          {p.passageiro_id ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
-                              Aluno da Van
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] text-[10px] font-medium bg-white text-[#737373] border border-[#e5e5e5]">
-                              Não é Aluno
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-3 text-xs text-[#737373]">
-                          {p.responsavel_nome && !p.is_proprio_responsavel && (
-                            <span className="truncate">Responsável: <strong className="text-[#0a0a0a] font-medium">{p.responsavel_nome}</strong></span>
-                          )}
-                          {p.telefone && (
-                            <a
-                              href={buildWhatsAppUrl(p.telefone)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-1 text-[#737373] hover:text-[#25D366] font-medium transition-colors"
-                            >
-                              <WhatsAppIcon className="w-3.5 h-3.5 fill-[#25D366] shrink-0" />
-                              <span>{formatarTelefone(p.telefone)}</span>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right">
-                          <span className="font-semibold text-[#0a0a0a] text-sm block leading-none">
-                            {isParcial
-                              ? `${formatCurrency(valorPago)} / ${formatCurrency(valorTotal)}`
-                              : formatCurrency(valorTotal)}
-                          </span>
-                          {isParcial && (
-                            <span className="text-[11px] text-[#737373] font-medium mt-0.5 block">
-                              Resta {formatCurrency(saldoDevedor)}
-                            </span>
-                          )}
-                        </div>
-
-                        {statusBadge}
-
-                        {!isPago && (
-                          <Button
-                            variant="tonal"
-                            size="sm"
-                            onClick={() => handleOpenRegistrarPagamento(p)}
-                            className="h-8 px-3 text-xs font-semibold gap-1.5 shrink-0"
-                          >
-                            <DollarSign className="h-3.5 w-3.5" />
-                            <span>{isParcial ? "Completar Pagamento" : "Registrar Pagamento"}</span>
-                          </Button>
-                        )}
-
-                        <ActionsDropdown
-                          title={p.nome}
-                          description={p.passageiro_id ? "Aluno vinculado" : "Participante avulso"}
-                          actions={dropdownActions}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          <TabsContent value="despesas" className="outline-none mt-0">
+            <Suspense fallback={<Skeleton className="h-64 w-full rounded-[24px]" />}>
+              <PasseioGastosSection
+                calculados={calculados}
+              />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
       </div>
     </PullToRefreshWrapper>
   );

@@ -1,4 +1,5 @@
 import { MoneyInput } from "@/components/forms";
+import { Banner } from "@/components/ui/Banner";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,9 @@ interface GastoFormDialogProps {
   usuarioId?: string;
   onSuccess?: (gasto?: Gasto, keepOpen?: boolean) => void;
   allowBatchCreation?: boolean;
+  fretamentoId?: string;
+  fretamentoTitulo?: string;
+  defaultVeiculoId?: string;
 }
 
 export default function GastoFormDialog({
@@ -91,6 +95,9 @@ export default function GastoFormDialog({
   usuarioId: usuarioIdProp,
   onSuccess,
   allowBatchCreation = false,
+  fretamentoId,
+  fretamentoTitulo,
+  defaultVeiculoId: defaultVeiculoIdProp,
 }: GastoFormDialogProps) {
   const { can, isSubConta } = usePermissions();
   const { user } = useSession();
@@ -116,7 +123,7 @@ export default function GastoFormDialog({
 
   const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
-  const defaultVeiculoId = isSubConta && profile?.veiculo_id ? profile.veiculo_id : "";
+  const defaultVeiculoId = (isSubConta && profile?.veiculo_id ? profile.veiculo_id : "") || defaultVeiculoIdProp || "";
 
   const isActionLoading = createGasto.isPending || updateGasto.isPending || createCategoriaMutation.isPending;
 
@@ -196,6 +203,7 @@ export default function GastoFormDialog({
       ...data,
       valor: moneyToNumber(data.valor),
       veiculo_id: data.veiculo_id && data.veiculo_id !== "none" ? data.veiculo_id : null,
+      fretamento_id: fretamentoId || (gastoToEdit?.fretamento_id ?? null),
       parcelado: data.parcelado || false,
       parcelas: data.parcelado ? Number(data.parcelas) : undefined,
       tipo_calculo_parcela: data.parcelado ? data.tipo_calculo_parcela : undefined,
@@ -292,6 +300,13 @@ export default function GastoFormDialog({
       />
 
       <BaseDialog.Body className="space-y-4">
+        {fretamentoTitulo && (
+          <Banner
+            variant="info"
+            title={`Viagem: ${fretamentoTitulo}`}
+            description="Este gasto será abatido no cálculo de lucro deste frete/passeio e constará nas despesas gerais da empresa."
+          />
+        )}
         <Form {...form}>
           <form
             id="gasto-form"

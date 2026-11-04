@@ -34,9 +34,11 @@ export type PermissionKey =
   // Escolas & Aniversários
   | "escolas.visualizar"
   | "escolas.gerenciar"
-  | "aniversarios.visualizar";
+  | "aniversarios.visualizar"
+  | "fretamentos.gerenciar";
 
 export const PERMISSIONS = {
+  FRETAMENTOS_GERENCIAR: "fretamentos.gerenciar",
   RENOVACOES_GERENCIAR: "renovacoes.gerenciar",
   FINANCEIRO_VISUALIZAR: "financeiro.visualizar",
   COBRANCAS_GERENCIAR: "cobrancas.gerenciar",
