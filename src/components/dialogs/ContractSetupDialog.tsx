@@ -616,6 +616,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           setState: setMultaAtraso,
           icon: Timer,
           iconColor: "text-primary",
+          allowParcelas: false,
           simBaseLabel: "Exemplo",
           simResultLabel: "Total com Atraso",
           simBaseValue: 200,
@@ -623,6 +624,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
             multaAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : (200 + multaAtraso.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+          simDetail:
+            multaAtraso.tipo === ContractMultaTipo.PERCENTUAL
+              ? `+ ${multaAtraso.valor}% (${(200 * (multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
+              : `+ ${multaAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
           simColor: "text-foreground",
           inputFieldLabel: "o valor da multa",
         },
@@ -633,6 +638,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           setState: setJurosAtraso,
           icon: Timer,
           iconColor: "text-primary",
+          allowParcelas: false,
           simBaseLabel: "Exemplo",
           simResultLabel: jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? "Juros p/ mês" : "Juros p/ dia",
           simBaseValue: 200,
@@ -640,6 +646,10 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
             jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
               ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+          simDetail:
+            jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
+              ? `+ ${jurosAtraso.valor}% (${(200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
+              : `+ ${jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
           simColor: "text-foreground",
           inputFieldLabel: "o valor dos juros",
         },
@@ -650,17 +660,27 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           setState: setMultaRescisao,
           icon: Scale,
           iconColor: "text-primary",
-          simBaseLabel: "Exemplo Contrato Anual",
+          allowParcelas: true,
+          simBaseLabel:
+            multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? "Exemplo Contrato Anual" : "Exemplo",
           simResultLabel: "Multa Rescisória",
-          simBaseValue: 2400,
+          simBaseValue: multaRescisao.tipo === ContractMultaTipo.PARCELAS ? 200 : 2400,
           simValue:
-            multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
-              ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-              : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+            multaRescisao.tipo === ContractMultaTipo.PARCELAS
+              ? (200 * (multaRescisao.valor || 0)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
+                  ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                  : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })),
+          simDetail:
+            multaRescisao.tipo === ContractMultaTipo.PARCELAS
+              ? `${multaRescisao.valor || 0} ${(multaRescisao.valor || 0) === 1 ? "parcela vigente" : "parcelas vigentes"}`
+              : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
+                  ? `+ ${multaRescisao.valor}% (${(2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
+                  : `+ ${multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`),
           simColor: "text-foreground",
           inputFieldLabel: "o valor da multa",
         },
-      ].map(({ label, desc, state, setState, icon: Icon, iconColor, simBaseLabel, simResultLabel, simBaseValue, simValue, simColor, inputFieldLabel }) => (
+      ].map(({ label, desc, state, setState, icon: Icon, iconColor, allowParcelas, simBaseLabel, simResultLabel, simBaseValue, simValue, simDetail, simColor, inputFieldLabel }) => (
         <div key={label} className="p-4 sm:p-5 bg-white rounded-[20px] border border-[#e5e5e5] shadow-xs space-y-4">
           <div className="flex gap-3">
             <div className={cn("w-10 h-10 rounded-[14px] bg-primary/10 flex items-center justify-center shrink-0 shadow-xs", iconColor)}>
@@ -677,12 +697,12 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           <div className="space-y-3">
             <div>
               <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Forma de cobrança</Label>
-              <div className="flex bg-[#f5f5f5] p-1 rounded-[14px] w-full border border-[#e5e5e5]">
+              <div className="flex bg-[#f5f5f5] p-1 rounded-[14px] w-full border border-[#e5e5e5] gap-1">
                 <button
                   type="button"
-                  onClick={() => setState({ ...state, tipo: ContractMultaTipo.FIXO })}
+                  onClick={() => { if (state.tipo !== ContractMultaTipo.FIXO) { setState({ tipo: ContractMultaTipo.FIXO, valor: 0 }); } }}
                   className={cn(
-                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all",
+                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all text-center",
                     state.tipo === ContractMultaTipo.FIXO
                       ? "bg-white text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -692,9 +712,9 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
                 </button>
                 <button
                   type="button"
-                  onClick={() => setState({ ...state, tipo: ContractMultaTipo.PERCENTUAL })}
+                  onClick={() => { if (state.tipo !== ContractMultaTipo.PERCENTUAL) { setState({ tipo: ContractMultaTipo.PERCENTUAL, valor: 0 }); } }}
                   className={cn(
-                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all",
+                    "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all text-center",
                     state.tipo === ContractMultaTipo.PERCENTUAL
                       ? "bg-white text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -702,6 +722,20 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
                 >
                   Porcentagem (%)
                 </button>
+                {allowParcelas && (
+                  <button
+                    type="button"
+                    onClick={() => { if (state.tipo !== ContractMultaTipo.PARCELAS) { setState({ tipo: ContractMultaTipo.PARCELAS, valor: 0 }); } }}
+                    className={cn(
+                      "flex-1 py-2 rounded-[10px] text-[11px] font-bold transition-all text-center",
+                      state.tipo === ContractMultaTipo.PARCELAS
+                        ? "bg-white text-foreground shadow-xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Parcelas
+                  </button>
+                )}
               </div>
             </div>
 
@@ -709,11 +743,28 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
               <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Valor da multa</Label>
               <div className="relative">
                 <Input
-                  type="text"
-                  inputMode={state.tipo === ContractMultaTipo.PERCENTUAL ? "decimal" : "numeric"}
-                  value={state.tipo === ContractMultaTipo.PERCENTUAL ? (state.valor === 0 ? "" : state.valor.toString().replace('.', ',')) : (state.valor === 0 ? "" : moneyMask(state.valor))}
+                  type={state.tipo === ContractMultaTipo.PARCELAS ? "number" : "text"}
+                  min={state.tipo === ContractMultaTipo.PARCELAS ? 0 : undefined}
+                  max={state.tipo === ContractMultaTipo.PARCELAS ? 12 : undefined}
+                  step={state.tipo === ContractMultaTipo.PARCELAS ? 1 : undefined}
+                  inputMode={state.tipo === ContractMultaTipo.PARCELAS ? "numeric" : (state.tipo === ContractMultaTipo.PERCENTUAL ? "decimal" : "numeric")}
+                  value={
+                    state.tipo === ContractMultaTipo.PERCENTUAL
+                      ? (state.valor === 0 ? "" : state.valor.toString().replace('.', ','))
+                      : (state.tipo === ContractMultaTipo.PARCELAS
+                          ? (state.valor === 0 ? "" : state.valor.toString())
+                          : (state.valor === 0 ? "" : moneyMask(state.valor)))
+                  }
                   onChange={(e) => {
-                    if (state.tipo === ContractMultaTipo.PERCENTUAL) {
+                    if (state.tipo === ContractMultaTipo.PARCELAS) {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val === '') {
+                        setState({ ...state, valor: 0 });
+                      } else {
+                        const numVal = Math.min(12, Math.max(0, parseInt(val, 10) || 0));
+                        setState({ ...state, valor: numVal });
+                      }
+                    } else if (state.tipo === ContractMultaTipo.PERCENTUAL) {
                       const val = e.target.value.replace(',', '.').replace(/[^\d.]/g, '');
                       const parts = val.split('.');
                       const cleanVal = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : val;
@@ -733,7 +784,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
                     "w-full h-11 rounded-[14px] bg-white border border-[#e5e5e5] focus:border-primary focus:ring-1 focus:ring-primary font-bold text-sm text-foreground pl-4 shadow-xs",
                     state.tipo === ContractMultaTipo.PERCENTUAL ? "pr-10 text-left" : "pr-4 text-left"
                   )}
-                  placeholder={state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00"}
+                  placeholder={state.tipo === ContractMultaTipo.PARCELAS ? "0" : (state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00")}
                 />
                 {state.tipo === ContractMultaTipo.PERCENTUAL && (
                   <span className="absolute right-4 top-3 text-sm font-bold text-muted-foreground/60">%</span>
@@ -762,10 +813,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
                   <div className="text-right">
                     <span className={cn("text-base font-bold leading-none", simColor)}>{simValue}</span>
                     <p className="text-[10px] font-medium text-muted-foreground mt-1 leading-none">
-                      {state.tipo === ContractMultaTipo.PERCENTUAL
-                        ? `+ ${state.valor}% (${(simBaseValue * (state.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
-                        : `+ ${state.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
-                      }
+                      {simDetail}
                     </p>
                   </div>
                 </div>
@@ -932,7 +980,11 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           <p className="text-sm font-black text-foreground tracking-tight">
             {multaRescisao.valor <= 0
               ? "Não informado"
-              : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? `${multaRescisao.valor}%` : moneyMask(multaRescisao.valor))}
+              : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
+                  ? `${multaRescisao.valor}%`
+                  : (multaRescisao.tipo === ContractMultaTipo.PARCELAS
+                      ? `${multaRescisao.valor} ${multaRescisao.valor === 1 ? "parcela" : "parcelas"}`
+                      : moneyMask(multaRescisao.valor)))}
           </p>
         </div>
       </div>

@@ -31,7 +31,8 @@ export enum PushNotificationAction {
 
 export enum ContractMultaTipo {
   PERCENTUAL = "percentual",
-  FIXO = "fixo"
+  FIXO = "fixo",
+  PARCELAS = "parcelas"
 }
 
 export enum CobrancaStatus {

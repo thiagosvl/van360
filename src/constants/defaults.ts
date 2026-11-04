@@ -31,7 +31,7 @@ export const DEFAULT_SECOES_CONTRATO: ContractSection[] = [
     clausulas: [
       "A CONTRATANTE pagará à CONTRATADA o valor mensal acordado, conforme forma de pagamento e parcelamento previamente acordados entre as partes, sendo o pagamento devido integralmente e de forma regular inclusive durante os períodos de férias dos meses de julho, dezembro e janeiro, bem como em casos de recessos, greves, afastamento temporário do aluno por motivo de doença, férias, viagens, pandemia ou qualquer outro motivo, inclusive de força maior.",
       "As parcelas deverão ser pagas até o dia estabelecido nas CONDIÇÕES DE VALOR, durante todo o período de vigência do contrato. Em caso de atraso no pagamento, a CONTRATANTE poderá estar sujeita à multa prevista nas CONDIÇÕES DE VALOR, sendo que, após a notificação do atraso, a CONTRATADA poderá conceder um prazo para regularização. Persistindo o não pagamento da parcela em atraso, a prestação do serviço poderá ser suspensa até que a situação seja regularizada.",
-      "Início do ano terá reajuste da mensalidade e um novo contrato será emitido."
+      "Início do ano terá reajuste da parcela e um novo contrato será emitido."
     ]
   },
   {
@@ -39,7 +39,7 @@ export const DEFAULT_SECOES_CONTRATO: ContractSection[] = [
     titulo: "DA RESCISÃO",
     clausulas: [
       "Em caso de comportamento inadequado, desobediência às normas de segurança ou atitude antissocial, o aluno poderá sofrer advertência por escrito e, em caso de reincidência, ocorrerá a rescisão do contrato motivada.",
-      "O contrato pode ser rescindido imotivadamente por qualquer das partes, com aplicação de multa rescisória conforme percentual descrito nas condições de valor sobre as parcelas pendentes, exceto quando a rescisão for motivada."
+      "O contrato pode ser rescindido imotivadamente por qualquer das partes, com aplicação de multa rescisória conforme estipulado nas Condições de Valor deste contrato (em valor fixo, percentual sobre parcelas pendentes ou equivalente a parcelas vigentes), exceto quando a rescisão for motivada."
     ]
   },
   {

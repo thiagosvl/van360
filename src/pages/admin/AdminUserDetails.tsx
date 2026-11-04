@@ -316,6 +316,9 @@ export default function AdminUserDetails() {
     if (regra.tipo === ContractMultaTipo.PERCENTUAL || regra.tipo === "percentual" || regra.tipo === "%") {
       return `${num}%`;
     }
+    if (regra.tipo === ContractMultaTipo.PARCELAS || regra.tipo === "parcelas" || regra.tipo === "parcela") {
+      return `${num} ${num === 1 ? "parcela" : "parcelas"}`;
+    }
     return formatCurrency(num);
   };
   const updateSub = useUpdateSubscriptionAdmin();

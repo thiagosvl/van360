@@ -875,7 +875,8 @@ export default function ConfigurarModeloContrato() {
                 state: multaAtraso,
                 setState: setMultaAtraso,
                 icon: Timer,
-                simBaseValue: 200,
+                allowParcelas: false,
+                simBaseLabel: "Exemplo R$ 200,00",
                 simResult:
                   multaAtraso.tipo === ContractMultaTipo.PERCENTUAL
                     ? (200 * (1 + multaAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -887,7 +888,8 @@ export default function ConfigurarModeloContrato() {
                 state: jurosAtraso,
                 setState: setJurosAtraso,
                 icon: Percent,
-                simBaseValue: 200,
+                allowParcelas: false,
+                simBaseLabel: "Exemplo R$ 200,00",
                 simResult:
                   jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
                     ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -899,13 +901,17 @@ export default function ConfigurarModeloContrato() {
                 state: multaRescisao,
                 setState: setMultaRescisao,
                 icon: Scale,
-                simBaseValue: 2400,
+                allowParcelas: true,
+                simBaseLabel:
+                  multaRescisao.tipo === ContractMultaTipo.PERCENTUAL ? "Exemplo R$ 2.400,00" : "Exemplo R$ 200,00",
                 simResult:
-                  multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
-                    ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                    : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                  multaRescisao.tipo === ContractMultaTipo.PARCELAS
+                    ? (200 * (multaRescisao.valor || 0)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                    : (multaRescisao.tipo === ContractMultaTipo.PERCENTUAL
+                      ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                      : (multaRescisao.valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })),
               },
-            ].map(({ title, desc, state, setState, icon: Icon, simBaseValue, simResult }) => (
+            ].map(({ title, desc, state, setState, icon: Icon, allowParcelas, simBaseLabel, simResult }) => (
               <div
                 key={title}
                 className="p-5 bg-white rounded-[22px] border border-[#e5e5e5] shadow-xs flex flex-col justify-between gap-4"
@@ -924,12 +930,12 @@ export default function ConfigurarModeloContrato() {
                   </div>
 
                   <div className="space-y-2.5">
-                    <div className="flex bg-[#f5f5f5] p-1 rounded-[14px] border border-[#e5e5e5] w-full">
+                    <div className="flex bg-[#f5f5f5] p-1 rounded-[14px] border border-[#e5e5e5] w-full gap-1">
                       <button
                         type="button"
-                        onClick={() => setState({ ...state, tipo: ContractMultaTipo.FIXO })}
+                        onClick={() => { if (state.tipo !== ContractMultaTipo.FIXO) { setState({ tipo: ContractMultaTipo.FIXO, valor: 0 }); } }}
                         className={cn(
-                          "flex-1 py-1.5 rounded-[10px] text-xs transition-all cursor-pointer",
+                          "flex-1 py-1.5 rounded-[10px] text-xs transition-all cursor-pointer text-center",
                           state.tipo === ContractMultaTipo.FIXO
                             ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
                             : "text-[#737373] hover:text-[#0a0a0a]"
@@ -939,9 +945,9 @@ export default function ConfigurarModeloContrato() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setState({ ...state, tipo: ContractMultaTipo.PERCENTUAL })}
+                        onClick={() => { if (state.tipo !== ContractMultaTipo.PERCENTUAL) { setState({ tipo: ContractMultaTipo.PERCENTUAL, valor: 0 }); } }}
                         className={cn(
-                          "flex-1 py-1.5 rounded-[10px] text-xs transition-all cursor-pointer",
+                          "flex-1 py-1.5 rounded-[10px] text-xs transition-all cursor-pointer text-center",
                           state.tipo === ContractMultaTipo.PERCENTUAL
                             ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
                             : "text-[#737373] hover:text-[#0a0a0a]"
@@ -949,19 +955,46 @@ export default function ConfigurarModeloContrato() {
                       >
                         % Taxa
                       </button>
+                      {allowParcelas && (
+                        <button
+                          type="button"
+                          onClick={() => { if (state.tipo !== ContractMultaTipo.PARCELAS) { setState({ tipo: ContractMultaTipo.PARCELAS, valor: 0 }); } }}
+                          className={cn(
+                            "flex-1 py-1.5 rounded-[10px] text-xs transition-all cursor-pointer text-center",
+                            state.tipo === ContractMultaTipo.PARCELAS
+                              ? "bg-white text-[#0a0a0a] shadow-xs font-semibold"
+                              : "text-[#737373] hover:text-[#0a0a0a]"
+                          )}
+                        >
+                          Parcelas
+                        </button>
+                      )}
                     </div>
 
                     <div className="relative">
                       <Input
-                        type="text"
-                        inputMode={state.tipo === ContractMultaTipo.PERCENTUAL ? "decimal" : "numeric"}
+                        type={state.tipo === ContractMultaTipo.PARCELAS ? "number" : "text"}
+                        min={state.tipo === ContractMultaTipo.PARCELAS ? 0 : undefined}
+                        max={state.tipo === ContractMultaTipo.PARCELAS ? 12 : undefined}
+                        step={state.tipo === ContractMultaTipo.PARCELAS ? 1 : undefined}
+                        inputMode={state.tipo === ContractMultaTipo.PARCELAS ? "numeric" : (state.tipo === ContractMultaTipo.PERCENTUAL ? "decimal" : "numeric")}
                         value={
                           state.tipo === ContractMultaTipo.PERCENTUAL
                             ? (state.valor === 0 ? "" : state.valor.toString().replace('.', ','))
-                            : (state.valor === 0 ? "" : moneyMask(state.valor))
+                            : (state.tipo === ContractMultaTipo.PARCELAS
+                              ? (state.valor === 0 ? "" : state.valor.toString())
+                              : (state.valor === 0 ? "" : moneyMask(state.valor)))
                         }
                         onChange={(e) => {
-                          if (state.tipo === ContractMultaTipo.PERCENTUAL) {
+                          if (state.tipo === ContractMultaTipo.PARCELAS) {
+                            const val = e.target.value.replace(/\D/g, '');
+                            if (val === '') {
+                              setState({ ...state, valor: 0 });
+                            } else {
+                              const numVal = Math.min(12, Math.max(0, parseInt(val, 10) || 0));
+                              setState({ ...state, valor: numVal });
+                            }
+                          } else if (state.tipo === ContractMultaTipo.PERCENTUAL) {
                             const val = e.target.value.replace(',', '.').replace(/[^\d.]/g, '');
                             const parts = val.split('.');
                             const cleanVal = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : val;
@@ -981,7 +1014,7 @@ export default function ConfigurarModeloContrato() {
                           "w-full h-11 rounded-[16px] bg-[#f5f5f5] hover:bg-[#ebebeb]/60 focus:bg-white border-[#e5e5e5] focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] font-semibold text-sm text-[#0a0a0a] pl-3.5 transition-all",
                           state.tipo === ContractMultaTipo.PERCENTUAL ? "pr-8" : "pr-3.5"
                         )}
-                        placeholder={state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00"}
+                        placeholder={state.tipo === ContractMultaTipo.PARCELAS ? "0" : (state.tipo === ContractMultaTipo.PERCENTUAL ? "0" : "R$ 0,00")}
                       />
                       {state.tipo === ContractMultaTipo.PERCENTUAL && (
                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#737373] pointer-events-none">
@@ -994,7 +1027,7 @@ export default function ConfigurarModeloContrato() {
 
                 <div className="p-3 bg-[#fafafa] rounded-[14px] border border-[#e5e5e5] text-xs text-[#737373] space-y-1">
                   <div className="flex justify-between items-center text-[10px] uppercase font-medium">
-                    <span>Exemplo {simBaseValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}:</span>
+                    <span>{simBaseLabel}</span>
                     <span className="font-semibold text-[#0a0a0a]">{simResult}</span>
                   </div>
                 </div>
