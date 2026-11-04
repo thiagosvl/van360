@@ -24,6 +24,7 @@ import { getMessage } from "@/constants/messages";
 import { prePassageiroSchema, PrePassageiroFormData } from "@/schemas/prePassageiroSchema";
 import { useAttribution } from "@/hooks/business/useAttribution";
 import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
+import { getDefaultAnoLetivo } from "@/utils/domain";
 
 export { prePassageiroSchema, type PrePassageiroFormData };
 
@@ -95,7 +96,7 @@ export function usePassageiroExternalForm() {
       nome_professor: "",
       periodo: "",
       modalidade: "",
-      ano_letivo: String(new Date().getFullYear()),
+      ano_letivo: getDefaultAnoLetivo(),
       data_nascimento: "",
       genero: "",
       data_inicio_transporte: "",
@@ -291,7 +292,7 @@ export function usePassageiroExternalForm() {
       nome_professor: "",
       periodo: "",
       modalidade: "",
-      ano_letivo: "",
+      ano_letivo: getDefaultAnoLetivo(),
       data_inicio_transporte: "",
       data_fim_transporte: "",
       horario_entrada: "",
