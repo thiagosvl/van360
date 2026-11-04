@@ -25,10 +25,10 @@ export const TrialBanner = ({ daysLeft, onSubscribe, className }: TrialBannerPro
   return (
     <div
       className={cn(
-        "rounded-[20px] p-3 sm:p-3.5 shadow-xs border transition-all relative w-full flex items-center justify-between gap-2.5 sm:gap-3",
+        "rounded-[20px] p-3 sm:p-3.5 shadow-xs border transition-all relative w-full flex items-center justify-between gap-2.5 sm:gap-3 bg-white",
         isAmber
-          ? "bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border-amber-500/30"
-          : "bg-gradient-to-r from-primary/10 via-primary/5 to-white border-primary/25",
+          ? "bg-gradient-to-r from-amber-50 via-amber-50/50 to-white border-amber-200"
+          : "bg-gradient-to-r from-blue-50/80 via-blue-50/30 to-white border-blue-200",
         className
       )}
     >
@@ -37,8 +37,8 @@ export const TrialBanner = ({ daysLeft, onSubscribe, className }: TrialBannerPro
           className={cn(
             "w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] flex items-center justify-center shrink-0 border transition-transform duration-200",
             isAmber
-              ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
-              : "bg-primary/10 text-primary border-primary/20"
+              ? "bg-amber-100/70 text-amber-700 border-amber-200"
+              : "bg-blue-50 text-blue-600 border-blue-200/80"
           )}
         >
           <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />

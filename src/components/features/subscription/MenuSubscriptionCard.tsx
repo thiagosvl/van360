@@ -39,12 +39,12 @@ export function MenuSubscriptionCard({
     <Link
       to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
       className={cn(
-        "group relative flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-[20px] border shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer",
+        "group relative flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-[20px] border shadow-xs hover:shadow-sm active:scale-[0.99] transition-all cursor-pointer bg-white",
         isExpired
-          ? "bg-gradient-to-r from-red-500/10 via-red-500/5 to-white border-red-500/30 hover:border-red-500/40"
+          ? "bg-gradient-to-r from-red-50 via-red-50/50 to-white border-red-200 hover:border-red-300"
           : isAmber
-            ? "bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border-amber-500/30 hover:border-amber-500/40"
-            : "bg-gradient-to-r from-primary/10 via-primary/5 to-white border-primary/25 hover:border-primary/40",
+            ? "bg-gradient-to-r from-amber-50 via-amber-50/50 to-white border-amber-200 hover:border-amber-300"
+            : "bg-gradient-to-r from-blue-50/80 via-blue-50/30 to-white border-blue-200 hover:border-blue-300",
         className
       )}
     >
@@ -53,10 +53,10 @@ export function MenuSubscriptionCard({
           className={cn(
             "w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105",
             isExpired
-              ? "bg-red-500/10 text-red-700 border-red-500/20"
+              ? "bg-red-100/70 text-red-700 border-red-200"
               : isAmber
-                ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
-                : "bg-primary/10 text-primary border-primary/20"
+                ? "bg-amber-100/70 text-amber-700 border-amber-200"
+                : "bg-blue-50 text-blue-600 border-blue-200/80"
           )}
         >
           <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
