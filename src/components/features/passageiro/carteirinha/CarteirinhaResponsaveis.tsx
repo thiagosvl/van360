@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Check, MoreVertical, Pencil, Trash2, Phone, MapPin, IdCard, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
+import { Plus, Check, Pencil, Trash2, Phone, MapPin, IdCard, UserCheck, Users, Copy, KeyRound, Smartphone, Mail, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { ActionItem } from "@/types/actions";
@@ -27,11 +27,10 @@ import { buildResponsavelAppInviteUrl } from "@/utils/whatsappTemplates";
 
 export interface CarteirinhaResponsaveisProps {
   passageiro: Passageiro;
-  onEditClick: () => void;
+  onEditClick?: () => void;
   canManageOverride?: boolean;
   hideAppAccess?: boolean;
   hideAddress?: boolean;
-  hideWhatsappButton?: boolean;
   hideEditButton?: boolean;
   hideNotificacoesRota?: boolean;
   isResponsavelPortal?: boolean;
@@ -40,11 +39,9 @@ export interface CarteirinhaResponsaveisProps {
 
 export const CarteirinhaResponsaveis = ({
   passageiro,
-  onEditClick,
   canManageOverride,
   hideAppAccess = false,
   hideAddress = false,
-  hideWhatsappButton = false,
   hideEditButton = false,
   hideNotificacoesRota = false,
   isResponsavelPortal = false,
@@ -65,7 +62,6 @@ export const CarteirinhaResponsaveis = ({
     openDefinirResponsavelPrincipalDialog,
   } = useLayout();
 
-  // Lista unificada e deduplicada de responsáveis por ID único
   const allResponsaveis: PassageiroResponsavel[] = useMemo(() => {
     const list: PassageiroResponsavel[] = [];
     const seenIds = new Set<string>();
@@ -228,13 +224,7 @@ export const CarteirinhaResponsaveis = ({
 
         const isPrincipalTab = currentResp.tipo === TipoResponsavel.PRINCIPAL || currentResp.id === principalResp?.id;
 
-        const isOwnProfile = Boolean(
-          passageiro.responsavel_logado_id &&
-          (currentResp.id === passageiro.responsavel_logado_id || currentResp.responsavel_id === passageiro.responsavel_logado_id)
-        );
-
         const canEditCurrent = isResponsavelPortal ? false : (canManage && !hideEditButton);
-        const canShowDropdown = !isResponsavelPortal && canManage;
 
         const respAddress = currentResp.logradouro
           ? formatarEnderecoCompleto(currentResp)
@@ -347,9 +337,61 @@ export const CarteirinhaResponsaveis = ({
           });
         };
 
+        const responsavelActions: ActionItem[] = [
+          ...(!isPrincipalTab
+            ? [
+              {
+                label: "Definir como Principal",
+                icon: <Check className="h-4 w-4 text-[#737373]" />,
+                onClick: handleSetPrincipal,
+              },
+            ]
+            : []),
+          ...(!hideNotificacoesRota
+            ? [
+              {
+                label:
+                  currentResp.notificacoes_rota_habilitadas !== false
+                    ? "Desativar Notificações de Rota"
+                    : "Ativar Notificações de Rota",
+                description: "Alertas de embarque e desembarque",
+                icon:
+                  currentResp.notificacoes_rota_habilitadas !== false ? (
+                    <BellOff className="h-4 w-4 text-[#737373]" />
+                  ) : (
+                    <Bell className="h-4 w-4 text-[#737373]" />
+                  ),
+                onClick: handleToggleNotificacoesRota,
+              },
+            ]
+            : []),
+          ...(!hideAppAccess && canManage && Boolean(currentResp.pin_acesso)
+            ? [
+              {
+                label: "Resetar Senha de Acesso",
+                description: "Redefinir PIN de acesso do responsável",
+                icon: <KeyRound className="h-4 w-4 text-[#e7000b]" />,
+                isDestructive: true,
+                onClick: handleResetPin,
+              },
+            ]
+            : []),
+          ...(!isPrincipalTab
+            ? [
+              {
+                label: "Excluir Responsável",
+                icon: <Trash2 className="h-4 w-4 text-[#e7000b]" />,
+                isDestructive: true,
+                onClick: handleDelete,
+              },
+            ]
+            : []),
+        ];
+
+        const canShowDropdown = !isResponsavelPortal && canManage && responsavelActions.length > 0;
+
         return (
           <div className="space-y-3 animate-in fade-in duration-200 text-left w-full min-w-0">
-            {/* Header de ações fora do card */}
             <div className="flex items-center justify-between gap-3 min-w-0 px-1">
               <span className="text-xs font-semibold text-[#737373]">
                 {respParentesco || "Outro Responsável"}
@@ -381,45 +423,7 @@ export const CarteirinhaResponsaveis = ({
                       title={currentResp.nome}
                       description="Opções do responsável"
                       triggerClassName="h-7 w-7 rounded-[12px] bg-white text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center transition-colors cursor-pointer"
-                      actions={[
-                        ...(!isPrincipalTab
-                          ? [
-                            {
-                              label: "Definir como Principal",
-                              icon: <Check className="h-4 w-4 text-[#737373]" />,
-                              onClick: handleSetPrincipal,
-                            },
-                          ]
-                          : []),
-                        ...(!hideNotificacoesRota
-                          ? [
-                            {
-                              label:
-                                currentResp.notificacoes_rota_habilitadas !== false
-                                  ? "Desativar Notificações de Rota"
-                                  : "Ativar Notificações de Rota",
-                              description: "Alertas de embarque e desembarque",
-                              icon:
-                                currentResp.notificacoes_rota_habilitadas !== false ? (
-                                  <BellOff className="h-4 w-4 text-[#737373]" />
-                                ) : (
-                                  <Bell className="h-4 w-4 text-[#737373]" />
-                                ),
-                              onClick: handleToggleNotificacoesRota,
-                            },
-                          ]
-                          : []),
-                        ...(!isPrincipalTab
-                          ? [
-                            {
-                              label: "Excluir Responsável",
-                              icon: <Trash2 className="h-4 w-4 text-[#e7000b]" />,
-                              isDestructive: true,
-                              onClick: handleDelete,
-                            },
-                          ]
-                          : []),
-                      ]}
+                      actions={responsavelActions}
                     />
                   )}
                 </div>
@@ -446,29 +450,12 @@ export const CarteirinhaResponsaveis = ({
                     <Phone className="h-3.5 w-3.5 text-[#737373] shrink-0" />
                     <span className="text-xs font-normal text-[#737373] leading-none">Telefone / WhatsApp</span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className={cn(
-                      "text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-tight break-words",
-                      !currentResp.telefone && "text-[#a3a3a3] font-normal"
-                    )}>
-                      {phoneMask(currentResp.telefone) || "—"}
-                    </p>
-                    {!hideWhatsappButton && currentResp.telefone && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        onClick={() => {
-                          const cleanPhone = currentResp.telefone!.replace(/\D/g, "");
-                          const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone;
-                          openBrowserLink(`https://wa.me/${formattedPhone}`);
-                        }}
-                        className="h-6 w-6 rounded-[8px] bg-[#25D366] hover:bg-[#20b858] text-white shadow-2xs shrink-0 border-none flex items-center justify-center transition-all cursor-pointer"
-                        title="Abrir no WhatsApp"
-                      >
-                        <WhatsAppIcon className="w-3 h-3" />
-                      </Button>
-                    )}
-                  </div>
+                  <p className={cn(
+                    "text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-tight break-words",
+                    !currentResp.telefone && "text-[#a3a3a3] font-normal"
+                  )}>
+                    {phoneMask(currentResp.telefone) || "—"}
+                  </p>
                 </div>
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-1.5">
@@ -571,54 +558,37 @@ export const CarteirinhaResponsaveis = ({
 
                   {!hideAppAccess && (
                     <div className={cn(
-                      "min-w-0 space-y-1",
+                      "min-w-0 space-y-2.5",
                       !hideNotificacoesRota && "border-t sm:border-t-0 sm:border-l border-[#e5e5e5] pt-2.5 sm:pt-0 sm:pl-4"
                     )}>
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-1.5">
                           <Smartphone className="h-3.5 w-3.5 text-[#737373] shrink-0" />
                           <span className="text-xs font-normal text-[#737373] leading-none">Acesso ao App</span>
                         </div>
 
-                        {currentResp.telefone && (
-                          <ActionsDropdown
-                            align="end"
-                            title="Acesso ao Aplicativo"
-                            description={currentResp.nome}
-                            triggerClassName="h-6 w-6 rounded-[8px] bg-white text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center transition-colors cursor-pointer"
-                            actions={[
-                              {
-                                label: "Convidar para usar o app",
-                                description: "Enviar link de convite por WhatsApp",
-                                icon: <WhatsAppIcon className="h-4 w-4" />,
-                                onClick: () => {
-                                  const url = buildResponsavelAppInviteUrl({
-                                    telefoneResponsavel: currentResp.telefone || "",
-                                    nomeResponsavel: currentResp.nome,
-                                    nomePassageiro: passageiro.nome,
-                                  });
-                                  openBrowserLink(url);
-                                },
-                              },
-                              ...(canManage && Boolean(currentResp.pin_acesso)
-                                ? [
-                                  {
-                                    label: "Resetar Senha de Acesso",
-                                    description: "Redefinir PIN de acesso do responsável",
-                                    icon: <KeyRound className="h-4 w-4 text-[#e7000b]" />,
-                                    isDestructive: true,
-                                    onClick: handleResetPin,
-                                  },
-                                ]
-                                : []),
-                            ]}
-                          />
-                        )}
+                        <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-tight break-words">
+                          Login: {!currentResp.telefone ? "Não cadastrado" : phoneMask(currentResp.telefone)}
+                        </p>
                       </div>
 
-                      <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-tight break-words">
-                        Login: {!currentResp.telefone ? "Não cadastrado" : phoneMask(currentResp.telefone)}
-                      </p>
+                      {currentResp.telefone && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = buildResponsavelAppInviteUrl({
+                              telefoneResponsavel: currentResp.telefone || "",
+                              nomeResponsavel: currentResp.nome,
+                              nomePassageiro: passageiro.nome,
+                            });
+                            openBrowserLink(url);
+                          }}
+                          className="h-9 sm:h-10 px-4 bg-[#25D366] hover:bg-[#20b858] text-white text-sm font-base rounded-[18px] transition-all shadow-xs active:scale-[0.98] w-full flex justify-center items-center gap-2 cursor-pointer"
+                        >
+                          <WhatsAppIcon className="h-4 w-4 fill-current" />
+                          <span>Convidar para usar o app</span>
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

@@ -22,7 +22,7 @@ export const ResponsavelCarteirinhaResponsaveis: React.FC<ResponsavelCarteirinha
       canManageOverride={false}
       hideAppAccess={true}
       hideAddress={false}
-      hideWhatsappButton={true}
+
       hideEditButton={true}
       hideNotificacoesRota={!temRotas}
       isResponsavelPortal={true}
