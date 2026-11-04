@@ -79,6 +79,7 @@ interface UseRelatoriosCalculationsProps {
     };
     saidas: {
       total: number;
+      despesas_escolares?: number;
       margem_operacional: number;
     };
     atrasos: {
@@ -86,6 +87,18 @@ interface UseRelatoriosCalculationsProps {
       count: number;
     };
     ticket_medio: number;
+    custo_por_passageiro?: number;
+    viagens?: {
+      fretamentos_realizado: number;
+      fretamentos_previsto: number;
+      fretamentos_pendente: number;
+      passeios_realizado: number;
+      passeios_previsto: number;
+      passeios_pendente: number;
+      total_realizado: number;
+      total_previsto: number;
+      total_pendente: number;
+    };
   };
   hasVeiculoFilter?: boolean;
   contadores?: {
@@ -169,9 +182,10 @@ export const useRelatoriosCalculations = ({
       ? veiculosListFull.filter((v: any) => v.ativo).length
       : (contadores?.veiculos.ativos ?? 0);
 
-    // Custo por Passageiro
+    // Custo por Passageiro (ignora despesas de fretamentos e passeios)
     const custoPorPassageiro =
-      passageirosAtivosCount > 0 ? gasto / passageirosAtivosCount : 0;
+      financeiro?.custo_por_passageiro ??
+      (passageirosAtivosCount > 0 ? gasto / passageirosAtivosCount : 0);
 
     // Entradas
     const passageirosPagantes = new Set(cobrancas.map((c: any) => c.passageiro_id))
@@ -514,6 +528,7 @@ export const useRelatoriosCalculations = ({
         passageirosPagos,
         formasPagamento,
         vencimentosPorDia,
+        viagens: financeiro?.viagens,
       },
       saidas: {
         total: gasto,

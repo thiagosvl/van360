@@ -38,6 +38,7 @@ export interface SystemSummary {
     };
     saidas: {
       total: number;
+      despesas_escolares?: number;
       margem_operacional: number;
     };
     atrasos: {
@@ -45,6 +46,18 @@ export interface SystemSummary {
       count: number;
     };
     ticket_medio: number;
+    custo_por_passageiro?: number;
+    viagens?: {
+      fretamentos_realizado: number;
+      fretamentos_previsto: number;
+      fretamentos_pendente: number;
+      passeios_realizado: number;
+      passeios_previsto: number;
+      passeios_pendente: number;
+      total_realizado: number;
+      total_previsto: number;
+      total_pendente: number;
+    };
   };
 }
 

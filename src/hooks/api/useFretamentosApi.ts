@@ -7,8 +7,6 @@ import {
   type AdicionarParticipantePayload,
   type FretamentoTipo,
   type FretamentoStatus,
-  type ParticipantePagamentoStatus,
-  type TipoPagamento,
 } from "@/services/api/fretamento.api";
 
 export const FRETAMENTOS_QUERY_KEYS = {
@@ -68,6 +66,7 @@ export const useCriarFretamentoMutation = () => {
     mutationFn: (payload: CriarFretamentoPayload) => fretamentoApi.criar(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -80,6 +79,7 @@ export const useAtualizarFretamentoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.id) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -90,6 +90,7 @@ export const useDeletarFretamentoMutation = () => {
     mutationFn: (id: string) => fretamentoApi.deletar(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -102,6 +103,7 @@ export const useRegistrarPagamentoFretamentoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -121,6 +123,7 @@ export const useAtualizarPagamentoFretamentoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -133,6 +136,7 @@ export const useDeletarPagamentoFretamentoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -145,6 +149,7 @@ export const useAdicionarParticipanteMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -164,6 +169,7 @@ export const useAtualizarStatusParticipanteMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -176,6 +182,7 @@ export const useRemoverParticipanteMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.details(variables.fretamentoId) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
@@ -188,6 +195,7 @@ export const useInscreverPublicoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.publico(variables.slug) });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 };
