@@ -4,6 +4,8 @@ export type BroadcastCategory =
   | 'Novidades'
   | 'Rotas'
   | 'Contratos'
+  | 'Renovacao'
+  | 'Fretamentos'
   | 'Financeiro'
   | 'Alunos'
   | 'Relatorios'
@@ -24,6 +26,8 @@ export const BROADCAST_CATEGORIES: Array<{ id: 'TODAS' | BroadcastCategory; labe
   { id: 'Novidades', label: '✨ Novidades' },
   { id: 'Rotas', label: '📍 Rotas & Itinerário' },
   { id: 'Contratos', label: '✍️ Contratos' },
+  { id: 'Renovacao', label: '🔄 Renovação' },
+  { id: 'Fretamentos', label: '🚌 Fretamentos & Passeios' },
   { id: 'Financeiro', label: '💰 Cobranças & Gastos' },
   { id: 'Alunos', label: '📇 Alunos & Pais' },
   { id: 'Relatorios', label: '📈 Relatórios' },
@@ -31,7 +35,6 @@ export const BROADCAST_CATEGORIES: Array<{ id: 'TODAS' | BroadcastCategory; labe
 ];
 
 export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
-  // 1. Novidades da Plataforma (Geral)
   {
     id: 'novidade_geral',
     name: 'Novidade no Aplicativo (Geral)',
@@ -41,8 +44,6 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_HOME,
     suggestedStatuses: ['TODOS'],
   },
-
-  // 2. Rotas, Itinerário e App dos Pais
   {
     id: 'rotas_itinerario_sem_papel',
     name: 'Chega de Rotas no Papel',
@@ -70,8 +71,6 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_ROUTE,
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
-
-  // 3. Contratos Digitais
   {
     id: 'contratos_envio_whatsapp_pais',
     name: 'Contratos Enviados no WhatsApp dos Pais',
@@ -90,8 +89,51 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_CONTRACTS,
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
-
-  // 4. Cobrança, Parcelas, Pix e Gastos
+  {
+    id: 'renovacao_proximo_ano_geral',
+    name: 'Renovação de Vagas para o Próximo Ano',
+    category: 'Renovacao',
+    title: '🔄 Já começou a renovar as vagas para o próximo ano?',
+    body: 'Reajuste as mensalidades em lote, envie o link de renovação pelo WhatsApp dos pais e acompanhe em tempo real quem já garantiu a vaga na sua van!',
+    defaultAction: PushNotificationAction.OPEN_RENOVATIONS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
+    id: 'renovacao_com_contrato_automatico',
+    name: 'Renovação com Contrato Digital na Hora',
+    category: 'Renovacao',
+    title: '✍️ Renove a vaga e já colha a assinatura do contrato!',
+    body: 'Na renovação pelo Van360, os pais atualizam os dados do aluno, confirmam a vaga para o próximo ano e já assinam o contrato digital na hora pelo celular.',
+    defaultAction: PushNotificationAction.OPEN_RENOVATIONS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
+    id: 'fretamentos_e_passeios_geral',
+    name: 'Organize Fretamentos e Passeios Extras',
+    category: 'Fretamentos',
+    title: '🚌 Faz fretamentos ou passeios escolares?',
+    body: 'Controle suas viagens extras, passeios escolares, pagamentos, despesas e lucro líquido direto pelo aplicativo, sem misturar com as mensalidades da van!',
+    defaultAction: PushNotificationAction.OPEN_CHARTERS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
+    id: 'fretamentos_viagens_fechadas',
+    name: 'Controle de Fretes e Viagens Particulares',
+    category: 'Fretamentos',
+    title: '🚐 Controle seus fretes e viagens fechadas!',
+    body: 'Cadastre seus fretamentos privados, registre valor de sinal, pagamentos, gastos da viagem e saiba exatamente quanto sobrou de lucro em cada frete.',
+    defaultAction: PushNotificationAction.OPEN_CHARTERS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
+    id: 'passeios_escolares_link_pais',
+    name: 'Passeios Escolares com Link para os Pais',
+    category: 'Fretamentos',
+    title: '🎟️ Organize passeios e excursões sem dor de cabeça!',
+    body: 'Crie passeios coletivos, envie o link de inscrição no WhatsApp dos pais, controle as vagas disponíveis e acompanhe quem já pagou pelo celular.',
+    defaultAction: PushNotificationAction.OPEN_CHARTERS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
   {
     id: 'cobranca_lembrete_parcelas_pix',
     name: 'Lembretes das Parcelas com sua Chave Pix',
@@ -120,6 +162,15 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
   {
+    id: 'financeiro_configurar_chave_pix',
+    name: 'Configure sua Chave Pix para Cobranças',
+    category: 'Financeiro',
+    title: '🔑 Já cadastrou sua chave Pix no aplicativo?',
+    body: 'Configure sua chave Pix e os lembretes de vencimento para que os pais recebam o código Copia e Cola direto no WhatsApp antes da parcela vencer!',
+    defaultAction: PushNotificationAction.OPEN_SETTINGS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
     id: 'gastos_combustivel_despesas',
     name: 'Controle de Gastos da sua Van',
     category: 'Financeiro',
@@ -128,8 +179,24 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_EXPENSES,
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
-
-  // 5. Alunos, Carteirinhas e Link de Cadastro
+  {
+    id: 'alunos_convidar_pais_app',
+    name: 'Convide os Pais para o App Van360',
+    category: 'Alunos',
+    title: '📲 Já falou para os pais acessarem o app Van360?',
+    body: 'Os pais também podem baixar o nosso app para acessar a carteirinha do filho, ver recibos, contratos, acompanhar a van e avisar ausências. Convide-os pela carteirinha!',
+    defaultAction: PushNotificationAction.OPEN_PASSENGERS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
+  {
+    id: 'alunos_diferencial_app_pais',
+    name: 'Destaque seu Transporte com o App dos Pais',
+    category: 'Alunos',
+    title: '🌟 Mostre um diferencial profissional para os pais!',
+    body: 'Envie o convite do aplicativo para os responsáveis direto pela carteirinha do aluno. Eles acompanham tudo pelo celular e o seu transporte ganha ainda mais confiança!',
+    defaultAction: PushNotificationAction.OPEN_PASSENGERS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
   {
     id: 'alunos_link_cadastro_pais',
     name: 'Cadastre Alunos Enviando o Link aos Pais',
@@ -148,8 +215,15 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_PASSENGERS,
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
-
-  // 6. Relatórios
+  {
+    id: 'alunos_aniversariantes_mes',
+    name: 'Aniversariantes do Mês na Van',
+    category: 'Alunos',
+    title: '🎂 Veja quem faz aniversário na sua van!',
+    body: 'Acompanhe os alunos aniversariantes do mês no aplicativo e mande uma mensagem de parabéns para encantar os pais e fidelizar seus clientes.',
+    defaultAction: PushNotificationAction.OPEN_BIRTHDAYS,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
   {
     id: 'relatorios_resumo_operacao',
     name: 'Relatórios Claros da sua Van',
@@ -159,8 +233,15 @@ export const BROADCAST_TEMPLATES: BroadcastTemplate[] = [
     defaultAction: PushNotificationAction.OPEN_REPORTS,
     suggestedStatuses: ['ACTIVE', 'TRIAL'],
   },
-
-  // 7. Sistema & SaaS
+  {
+    id: 'sistema_equipe_monitores',
+    name: 'Acesso para Monitores e Auxiliares',
+    category: 'Sistema',
+    title: '👥 Tem monitora ou motorista auxiliar na van?',
+    body: 'Cadastre sua equipe no aplicativo e libere o acesso apenas ao que cada um precisa, como fazer a chamada nas rotas do dia a dia!',
+    defaultAction: PushNotificationAction.OPEN_TEAM,
+    suggestedStatuses: ['ACTIVE', 'TRIAL'],
+  },
   {
     id: 'app_update_restart',
     name: 'Atualização do Aplicativo (Reiniciar)',

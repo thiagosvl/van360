@@ -15,6 +15,8 @@ import {
   Cake,
   UserPlus,
   Compass,
+  Navigation,
+  RefreshCw,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -63,6 +65,18 @@ export const PUSH_NOTIFICATION_ACTION_OPTIONS: PushNotificationActionOption[] = 
     icon: FileSignature,
   },
   {
+    value: PushNotificationAction.OPEN_RENOVATIONS,
+    label: 'Renovações para o Próximo Ano',
+    route: '/renovacoes',
+    icon: RefreshCw,
+  },
+  {
+    value: PushNotificationAction.OPEN_CHARTERS,
+    label: 'Fretamentos e Passeios',
+    route: '/fretamentos-e-passeios',
+    icon: Compass,
+  },
+  {
     value: PushNotificationAction.OPEN_EXPENSES,
     label: 'Gastos da Van',
     route: '/gastos',
@@ -78,7 +92,7 @@ export const PUSH_NOTIFICATION_ACTION_OPTIONS: PushNotificationActionOption[] = 
     value: PushNotificationAction.OPEN_TRACKING,
     label: 'Localização da Van ao Vivo',
     route: '/rotas (mapa)',
-    icon: Compass,
+    icon: Navigation,
   },
   {
     value: PushNotificationAction.OPEN_SUBSCRIPTION,

@@ -63,6 +63,10 @@ export function resolveNotificationRoute(
       return ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
     case PushNotificationAction.OPEN_BIRTHDAYS:
       return ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS;
+    case PushNotificationAction.OPEN_CHARTERS:
+      return ROUTES.PRIVATE.MOTORISTA.CHARTERS;
+    case PushNotificationAction.OPEN_RENOVATIONS:
+      return ROUTES.PRIVATE.MOTORISTA.RENOVATION;
     case PushNotificationAction.OPEN_TRACKING:
       return isResponsavel ? ROUTES.PRIVATE.RESPONSAVEL.HOME : ROUTES.PRIVATE.MOTORISTA.ROUTES;
     default:
