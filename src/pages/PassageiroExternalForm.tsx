@@ -71,17 +71,23 @@ export default function PassageiroExternalForm() {
 
             <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="flex items-center justify-center gap-3 mb-2 min-h-[3.5rem] sm:min-h-[4.5rem]">
-                <img
-                  src={motoristaLogoUrl || "/assets/logo-van360.webp"}
-                  alt={motoristaDisplayName || "Van360"}
-                  {...({ fetchpriority: "high" } as Record<string, string>)}
-                  className={cn(
-                    "select-none drop-shadow-sm transition-all",
-                    motoristaLogoUrl
-                      ? "h-16 sm:h-20 max-w-[220px] object-contain"
-                      : "h-12 w-auto"
-                  )}
-                />
+                {motoristaLogoUrl ? (
+                  <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-[#e5e5e5] bg-white shadow-xs flex items-center justify-center shrink-0 select-none">
+                    <img
+                      src={motoristaLogoUrl}
+                      alt={motoristaDisplayName || "Transporte Escolar"}
+                      {...({ fetchpriority: "high" } as Record<string, string>)}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src="/assets/logo-van360.webp"
+                    alt={motoristaDisplayName || "Van360"}
+                    {...({ fetchpriority: "high" } as Record<string, string>)}
+                    className="h-12 w-auto select-none drop-shadow-sm transition-all"
+                  />
+                )}
               </div>
               <div className="flex flex-col items-center gap-1.5 mt-2">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a]">
