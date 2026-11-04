@@ -295,7 +295,7 @@ const Home = () => {
             </div>
           </div>
 
-          {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && (
+          {!isSubConta && isTrial && trialDaysLeft !== null && (
             <section className="px-1">
               <TrialBanner
                 daysLeft={trialDaysLeft}

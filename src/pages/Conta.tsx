@@ -22,6 +22,7 @@ import { PreferenciasTab } from "@/components/features/configuracoes/Preferencia
 import { AjudaTab } from "@/components/features/configuracoes/AjudaTab";
 import { SegurancaBiometriaTab } from "@/components/features/configuracoes/SegurancaBiometriaTab";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { MenuSubscriptionCard } from "@/components/features/subscription/MenuSubscriptionCard";
 import { useConfiguracoes } from "@/hooks";
 import { ENABLE_LIVE_TRACKING } from "@/constants/tracking";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
@@ -57,9 +58,8 @@ export const Conta = memo(function Conta() {
   const navigate = useNavigate();
   const { user } = useSession();
   const { profile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
-  const { configuracoes } = useConfiguracoes();
-  const { can, isSubConta } = usePermissions();
-  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
+  const { can, isSubConta, isGestor } = usePermissions();
+  const { isBlocked: isSubscriptionBlocked, isTrial, isExpired, trialDaysLeft } = useSubscriptionAccess(user?.id);
 
   const {
     openAlterarSenhaDialog,
@@ -260,6 +260,13 @@ export const Conta = memo(function Conta() {
             )}
           </div>
         </div>
+
+        {isGestor && (isTrial || isExpired || isSubscriptionBlocked) && (
+          <MenuSubscriptionCard
+            trialDaysLeft={trialDaysLeft}
+            isExpired={!isTrial && (isExpired || isSubscriptionBlocked)}
+          />
+        )}
 
         <WhatsAppSupportButton
           variant="clean"
