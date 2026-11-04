@@ -1,12 +1,11 @@
 import { cn } from "@/lib/utils";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { Gift, Lock, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Gift, Lock, Rocket, SlidersHorizontal } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-
-
+import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
@@ -23,7 +22,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
   const { openReferAndEarnDialog, openPersonalizarMenuDialog } = useLayout();
   const { can, isGestor } = usePermissions();
   const { user } = useSession();
-
+  const { isTrial, trialDaysLeft } = useSubscriptionAccess(user?.id);
 
   const { activeHrefs: activeBottomHrefs, isEligibleToCustomize } = useBottomNavPreferences(user?.id);
 
@@ -33,7 +32,6 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
     ? pagesItems.filter((item) => !activeBottomHrefs.includes(item.href))
     : pagesItems
   ).filter((item) => {
-
     if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
     if (!item.permission) return true;
     return can(item.permission);
@@ -47,6 +45,9 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
             isSubscriptionBlocked &&
             item.href !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION &&
             item.href !== ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
+
+          const isSubscriptionItem = item.href === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION;
+          const showTrialBadge = isSubscriptionItem && isGestor && isTrial && trialDaysLeft !== null;
 
           return (
             <NavLink
@@ -90,6 +91,12 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
                   />
                   <span className="truncate">{item.title}</span>
 
+                  {showTrialBadge && (
+                    <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/30 text-white border border-primary/40 leading-none shrink-0">
+                      {trialDaysLeft <= 0 ? "Fim" : `${trialDaysLeft}d`}
+                    </span>
+                  )}
+
                   {isItemBlocked ? (
                     <Lock className="ml-auto h-3.5 w-3.5 text-white/40 shrink-0" />
                   ) : null}
@@ -112,7 +119,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
             )}
           >
             <Gift className="h-5 w-5 shrink-0 text-amber-400" />
-            <span className="truncate">Indique e Ganhae</span>
+            <span className="truncate">Indique e Ganhe</span>
           </button>
         )}
 
@@ -132,6 +139,29 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
           </div>
         )}
       </nav>
+
+      {!isMobile && isGestor && isTrial && trialDaysLeft !== null && (
+        <div className="p-3 mx-2 mb-3 rounded-[20px] bg-white/5 border border-white/10 hover:border-white/20 transition-all text-white shadow-xs">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-7 h-7 rounded-[10px] bg-primary/20 text-primary flex items-center justify-center shrink-0">
+              <Rocket className="w-4 h-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-white leading-tight">Período de Testes</p>
+              <p className="text-[11px] text-white/60 leading-tight">
+                {trialDaysLeft <= 0 ? "Último dia grátis" : `${trialDaysLeft} dias restantes`}
+              </p>
+            </div>
+          </div>
+          <NavLink
+            to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-[12px] bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+          >
+            <span>Ver Planos</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </NavLink>
+        </div>
+      )}
     </div>
   );
 }

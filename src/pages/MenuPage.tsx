@@ -15,12 +15,11 @@ import { pagesItems, PageItem } from "@/utils/domain/pages/pagesUtils";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-
-
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { useLayout } from "@/contexts/LayoutContext";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { MenuSubscriptionCard } from "@/components/features/subscription/MenuSubscriptionCard";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -39,7 +38,7 @@ export default function MenuPage() {
   const { can, isGestor } = usePermissions();
   const { user } = useSession();
 
-  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
+  const { isBlocked: isSubscriptionBlocked, isTrial, isExpired, trialDaysLeft } = useSubscriptionAccess(user?.id);
   const { isEligibleToCustomize } = useBottomNavPreferences(user?.id);
   const { openReferAndEarnDialog, openPersonalizarMenuDialog, setPageTitle } = useLayout();
 
@@ -65,7 +64,6 @@ export default function MenuPage() {
     const regularItems: MenuItem[] = pagesItems
       .filter((item) => item.href !== ROUTES.PRIVATE.MOTORISTA.HOME)
       .filter((item) => {
-
         if (isGestor && item.href === ROUTES.PRIVATE.MOTORISTA.BIRTHDAYS) return false;
         if (!item.permission) return true;
         return can(item.permission);
@@ -166,6 +164,13 @@ export default function MenuPage() {
           </button>
         )}
       </div>
+
+      {isGestor && (isTrial || isExpired || isSubscriptionBlocked) && (
+        <MenuSubscriptionCard
+          trialDaysLeft={trialDaysLeft}
+          isExpired={!isTrial && (isExpired || isSubscriptionBlocked)}
+        />
+      )}
 
       {filteredItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-white rounded-[20px] border border-[#e5e5e5] shadow-xs mt-1">

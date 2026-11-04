@@ -12,11 +12,15 @@ import {
   LayoutGrid,
   FileText,
   X,
+  ArrowRight,
+  Sparkles,
+  Rocket,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { cn } from "@/lib/utils";
 import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatFirstName } from "@/utils/formatters";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
@@ -25,7 +29,8 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const navigate = useNavigate();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const { isBlocked: isSubscriptionBlocked } = useSubscriptionAccess(user?.id);
+  const { isBlocked: isSubscriptionBlocked, isTrial, trialDaysLeft } = useSubscriptionAccess(user?.id);
+  const { isGestor } = usePermissions();
 
   const hasLogo = Boolean(profile?.logo_url && profile.logo_url.trim().length > 0);
   const displayName = profile?.apelido || (profile?.nome ? formatFirstName(profile.nome) : null) || "Minha Conta";
@@ -125,6 +130,21 @@ export function AppNavbar({ role }: { role: "motorista" }) {
         </div>
 
         <div className="flex-1 flex justify-end items-center gap-2">
+          {/* Desktop Trial Status Pill */}
+          {isGestor && isTrial && trialDaysLeft !== null && (
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+              className="hidden md:inline-flex items-center gap-2 h-10 px-3.5 rounded-[18px] bg-primary/10 hover:bg-primary/15 border border-primary/25 text-primary text-xs font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
+              title="Gerenciar assinatura e planos"
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              <span>
+                {trialDaysLeft <= 0 ? "Último dia de teste" : `${trialDaysLeft} dias grátis`}
+              </span>
+              <ArrowRight className="h-3 w-3 ml-0.5 opacity-70" />
+            </button>
+          )}
           {/* Desktop User / Profile Chip */}
           <button
             type="button"

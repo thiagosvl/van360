@@ -295,6 +295,15 @@ const Home = () => {
             </div>
           </div>
 
+          {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && (
+            <section className="px-1">
+              <TrialBanner
+                daysLeft={trialDaysLeft}
+                onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
+              />
+            </section>
+          )}
+
           {!isSubConta && !isDismissedAppBanner && (
             <SmartAppBanner onDismiss={handleDismissAppBanner} />
           )}
@@ -317,17 +326,6 @@ const Home = () => {
             onRegistrarGasto={handleOpenGastoDialog}
           />
 
-          {!isSubConta && !onboarding.showOnboarding && isTrial && trialDaysLeft !== null && daysSinceCreation >= 2 && (
-            <section className="px-1">
-              <h2 className="text-lg font-semibold text-[#0a0a0a] tracking-tight mb-3.5 px-1">
-                Assinatura do Van360
-              </h2>
-              <TrialBanner
-                daysLeft={trialDaysLeft}
-                onSubscribe={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
-              />
-            </section>
-          )}
 
           {/* Aniversariantes */}
           <AniversariantesWidget />

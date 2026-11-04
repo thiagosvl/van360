@@ -5,6 +5,7 @@ import { SubscriptionUtils } from "@/utils/subscription.utils";
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/ui/Banner";
 import { WhatsAppSupportButton } from "@/components/ui/WhatsAppSupportButton";
+import { SubscriptionTestimonialsSection } from "./SubscriptionTestimonialsSection";
 import { Tabs } from "@/components/ui/tabs";
 import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
@@ -50,57 +51,6 @@ interface SubscriptionPlansShowcaseProps {
   initialPeriod?: SubscriptionIdentifer;
 }
 
-interface Testimonial {
-  name: string;
-  role: string;
-  quote: string;
-  rating: string;
-  logo?: string;
-}
-
-const testimonials: Testimonial[] = [
-  {
-    name: "Tio Rodrigo & Tia Paula",
-    role: "Curitiba, PR • 260 alunos",
-    quote:
-      "Desde o mês passado já reduzi a inadimplência de 3 pais. Foram quase 700 reais que talvez eu nem fosse receber, mas o app cobrou os pais sozinho.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/tio-rodrigo-tia-paula.png",
-  },
-  {
-    name: "Tio Beto",
-    role: "São Paulo, SP • 60 alunos",
-    quote:
-      "Os pais assinam o contrato direto pelo link no celular. Agora não preciso mais imprimir e levar o contrato de porta em porta dos pais.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/tio-beto.png",
-  },
-  {
-    name: "Escolar Tio Saulo",
-    role: "Belo Horizonte, MG • 320 alunos",
-    quote:
-      "Deixei minhas planilhas de lado de vez. O app me mostra na hora quem já pagou o mês e quem está pendente com total clareza.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/escolar-tio-saulo.png",
-  },
-  {
-    name: "Tia Lu Kids",
-    role: "Rio de Janeiro, RJ • 90 alunos",
-    quote:
-      "O suporte é rápido de verdade e o melhor é não precisar mais ficar cobrando os pais. O app avisa todo mundo certinho no WhatsApp.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/tia-lu-kids.png",
-  },
-  {
-    name: "Rota Alegre Transporte Escolar",
-    role: "Brasília, DF • 110 alunos",
-    quote:
-      "Na saída da escola, poder fazer a chamada pelo app é muito mais prático do que no papel. Em um minuto já sei certinho quem embarcou.",
-    rating: "5/5",
-    logo: "/assets/depoimentos/rota-alegre-transporte-escolar.png",
-  },
-];
-
 interface ShowcaseFaq {
   question: string;
   answer: string;
@@ -110,7 +60,7 @@ const showcaseFaqs: ShowcaseFaq[] = [
   {
     question: "Qual é a diferença entre o Plano Mensal e o Plano Anual?",
     answer:
-      "Os benefícios são exatamente os mesmos em ambos os planos. A diferença é a economia que você terá contratando o Plano Anual (1 ano pelo preço de 10 meses), além da tranquilidade de não precisar se preocupar todo mês em renovar a assinatura da sua van.",
+      "Os benefícios e recursos são exatamente os mesmos em ambos os planos. A diferença é a economia que você terá contratando o Plano Anual (1 ano pelo preço de 10 meses), além da tranquilidade de não precisar se preocupar todo mês em renovar sua assinatura.",
   },
   {
     question: "Quais são as formas de pagamento disponíveis?",
@@ -120,27 +70,47 @@ const showcaseFaqs: ShowcaseFaq[] = [
   {
     question: "Como funciona o cancelamento? Existe fidelidade?",
     answer:
-      "No Plano Mensal, você não tem carência, fidelidade ou multa: pode cancelar quando quiser com total liberdade pelo app. No Plano Anual, o acesso é garantido pelo período contratado de 12 meses.",
+      "No Plano Mensal, você não tem carência, fidelidade ou multa: pode cancelar quando quiser com total liberdade pelo próprio app. No Plano Anual, o acesso fica garantido pelo período contratado de 12 meses.",
   },
   {
-    question: "Existe limite de rotas, escolas ou vans?",
+    question: "O dinheiro do responsável cai direto na minha conta?",
     answer:
-      "Não há limites para rotas, escolas ou veículos cadastrados. Os planos são dimensionados para atender com folga a capacidade do seu transporte.",
+      "Sim. O lembrete enviado pelo WhatsApp leva a sua própria chave Pix, então os pais pagam diretamente na sua conta. Depois é só dar baixa com um toque e o recibo fica pronto para envio. Se preferir, você também pode ativar a cobrança automática com baixa sem intervenção manual.",
+  },
+  {
+    question: "Os pais precisam baixar algum aplicativo?",
+    answer:
+      "Não precisam. Os lembretes de cobrança, contratos e recibos chegam direto no WhatsApp deles. Se quiserem, os responsáveis também podem acessar o aplicativo da família gratuitamente para consultar a carteirinha do aluno, recibos e avisos.",
+  },
+  {
+    question: "Vou ter que cadastrar aluno por aluno manualmente?",
+    answer:
+      "Não precisa. Você pode compartilhar um link exclusivo pelo WhatsApp para os pais preencherem o cadastro em casa. Você só confere o valor da mensalidade, o vencimento e aprova no app. Se preferir, também pode cadastrar direto no sistema.",
+  },
+  {
+    question: "O contrato digital tem validade jurídica?",
+    answer:
+      "Sim. O responsável assina eletronicamente direto na tela do celular com validade legal plena conforme a legislação brasileira (MP 2.200-2/2001). Você e os pais podem consultar e baixar o contrato em PDF assinado a qualquer momento.",
+  },
+  {
+    question: "E se eu tiver dificuldades para mexer no aplicativo?",
+    answer:
+      "O Van360 foi pensado para o dia a dia do transporte escolar, com telas simples e objetivas. Além de vídeos rápidos mostrando cada funcionalidade, você conta com suporte humanizado de verdade no WhatsApp, inclusive à noite.",
+  },
+  {
+    question: "Existe limite de rotas, escolas ou veículos?",
+    answer:
+      "Não há limites de rotas, escolas ou veículos cadastrados. Os planos são dimensionados para atender com folga toda a capacidade da sua operação.",
   },
   {
     question: "Onde posso usar o Van360?",
     answer:
-      "Em qualquer lugar. Você pode acessar no navegador do celular, tablet ou computador — sem baixar nada. Se preferir, você e os responsáveis também podem baixar o aplicativo oficial na Google Play (Android) ou na App Store (iPhone).",
+      "Funciona tanto no celular (com aplicativo oficial para Android na Google Play e iPhone na App Store) quanto no tablet ou navegador do computador. Seus dados permanecem sincronizados em tempo real.",
   },
   {
-    question: "Meus dados continuam salvos se a assinatura vencer?",
+    question: "Meus dados continuam salvos se a assinatura expirar?",
     answer:
-      "Sim. Todo o seu histórico de alunos, rotas, contratos e parcelas permanece guardado com total segurança no app para quando você reativar seu acesso.",
-  },
-  {
-    question: "Como funcionam os lembretes de cobrança no WhatsApp?",
-    answer:
-      "O app automatiza o envio de avisos de cobrança aos responsáveis com a sua própria chave Pix configurada no app e o valor da parcela, reduzindo a inadimplência sem cobrança manual desgastante.",
+      "Sim. Todo o seu histórico de alunos, contratos, rotas e pagamentos permanece armazenado com segurança em nuvem com backup para quando você reativar sua assinatura.",
   },
 ];
 
@@ -209,7 +179,6 @@ export function SubscriptionPlansShowcase({
   const [isPurchasingIap, setIsPurchasingIap] = useState(false);
   const [isRestoringIap, setIsRestoringIap] = useState(false);
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
-  const [activeTestimonialIdx, setActiveTestimonialIdx] = useState(0);
 
   useEffect(() => {
     if (initialPeriod) {
@@ -328,50 +297,6 @@ export function SubscriptionPlansShowcase({
     { feature: "Acesso de qualquer lugar", benefit: "pelo celular, tablet ou computador, sempre sincronizado" },
     { feature: "Suporte humano no WhatsApp", benefit: "atendimento real, rápido e disponível mesmo à noite" },
   ];
-
-  const [slideDirection, setSlideDirection] = useState<"next" | "prev">("next");
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchDeltaX, setTouchDeltaX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  const minSwipeDistance = 35;
-
-  const handlePrevTestimonial = () => {
-    setSlideDirection("prev");
-    setActiveTestimonialIdx((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
-  };
-
-  const handleNextTestimonial = () => {
-    setSlideDirection("next");
-    setActiveTestimonialIdx((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
-    setIsSwiping(true);
-    setTouchDeltaX(0);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX === null) return;
-    const currentX = e.targetTouches[0].clientX;
-    const diff = currentX - touchStartX;
-    const resisted = Math.sign(diff) * Math.min(65, Math.abs(diff) * 0.6);
-    setTouchDeltaX(resisted);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX !== null) {
-      if (touchDeltaX < -minSwipeDistance) {
-        handleNextTestimonial();
-      } else if (touchDeltaX > minSwipeDistance) {
-        handlePrevTestimonial();
-      }
-    }
-    setIsSwiping(false);
-    setTouchDeltaX(0);
-    setTouchStartX(null);
-  };
 
   const isCurrentMonthly =
     subscription?.status === SubscriptionStatus.ACTIVE &&
@@ -898,135 +823,7 @@ export function SubscriptionPlansShowcase({
         {selectedPeriod === SubscriptionIdentifer.YEARLY ? renderAnnualCard() : renderMonthlyCard()}
       </div>
 
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs space-y-4 select-none touch-pan-y w-full overflow-hidden"
-      >
-        <div className="space-y-4">
-          <div className="text-center space-y-1 pb-1">
-            <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] tracking-tight">
-              Quem usa, recomenda
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Veja o que motoristas de van de todo o Brasil dizem sobre o Van360:
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => {
-                  const numRating = parseInt(testimonials[activeTestimonialIdx].rating.split("/")[0]) || 5;
-                  const isFilled = i < numRating;
-                  return (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "w-4 h-4",
-                        isFilled ? "fill-amber-400 text-amber-400" : "fill-[#e5e5e5] text-[#e5e5e5]"
-                      )}
-                    />
-                  );
-                })}
-              </div>
-              <span className="text-xs font-medium text-[#0a0a0a] ml-1.5">
-                {testimonials[activeTestimonialIdx].rating}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrevTestimonial();
-                }}
-                className="w-8 h-8 rounded-[12px] border border-[#e5e5e5] flex items-center justify-center text-muted-foreground hover:bg-[#f5f5f5] hover:text-foreground transition-colors cursor-pointer"
-                aria-label="Depoimento anterior"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNextTestimonial();
-                }}
-                className="w-8 h-8 rounded-[12px] border border-[#e5e5e5] flex items-center justify-center text-muted-foreground hover:bg-[#f5f5f5] hover:text-foreground transition-colors cursor-pointer"
-                aria-label="Próximo depoimento"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            transform: `translateX(${touchDeltaX}px)`,
-            transition: isSwiping ? "none" : "transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)",
-          }}
-          className="space-y-4"
-        >
-          <div
-            key={activeTestimonialIdx}
-            className={cn(
-              "space-y-4",
-              slideDirection === "next"
-                ? "animate-in fade-in slide-in-from-right-4 duration-300"
-                : "animate-in fade-in slide-in-from-left-4 duration-300"
-            )}
-          >
-            <p className="text-xs sm:text-sm text-foreground/80 italic leading-relaxed min-h-[44px] sm:min-h-[38px] flex items-center">
-              &quot;{testimonials[activeTestimonialIdx].quote}&quot;
-            </p>
-
-            <div className="flex items-center gap-3 pt-2 border-t border-[#e5e5e5]">
-              <div className="w-11 h-11 rounded-full bg-[#f5f5f5] border border-[#e5e5e5] text-foreground flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
-                {testimonials[activeTestimonialIdx].logo ? (
-                  <img
-                    src={testimonials[activeTestimonialIdx].logo}
-                    alt={testimonials[activeTestimonialIdx].name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <Smile className="w-5 h-5 text-foreground" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
-                  {testimonials[activeTestimonialIdx].name}
-                </h5>
-                <p className="text-[11px] text-muted-foreground">
-                  {testimonials[activeTestimonialIdx].role}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-1.5 pt-1">
-          {testimonials.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSlideDirection(i > activeTestimonialIdx ? "next" : "prev");
-                setActiveTestimonialIdx(i);
-              }}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
-                activeTestimonialIdx === i ? "w-5 bg-primary" : "w-1.5 bg-[#e5e5e5]"
-              )}
-              aria-label={`Ir para depoimento ${i + 1}`}
-            />
-          ))}
-        </div>
-      </div>
+      <SubscriptionTestimonialsSection />
 
       <div className="bg-white rounded-[24px] p-5 sm:p-7 border border-[#e5e5e5] shadow-xs space-y-4 w-full">
         <div className="text-center space-y-1">

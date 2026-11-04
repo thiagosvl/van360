@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { WhatsAppShowcaseEmulator } from "@/components/features/demonstracoes/WhatsAppShowcaseEmulator";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { QuemUsaRecomendaCard } from "@/components/features/subscription/QuemUsaRecomendaCard";
+import { SubscriptionTestimonialsSection } from "@/components/features/subscription/SubscriptionTestimonialsSection";
 import { Button } from "@/components/ui/button";
 import { X, Sparkles } from "lucide-react";
 
@@ -67,7 +67,7 @@ export function ShowcaseTransporteEscolarDialog({
 
         <WhatsAppShowcaseEmulator driverName="Tio da Van" layoutMode="tabs" className="w-full" />
 
-        <QuemUsaRecomendaCard className="mt-6" />
+        <SubscriptionTestimonialsSection className="mt-6" />
 
         <div className="w-full h-[calc(var(--safe-area-bottom,0px)+6.5rem)] shrink-0 pointer-events-none" aria-hidden="true" />
       </div>
