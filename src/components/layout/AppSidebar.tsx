@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
-import { ArrowRight, Gift, Lock, Rocket, SlidersHorizontal } from "lucide-react";
+import { Gift, Lock, SlidersHorizontal } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
@@ -140,28 +140,6 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
         )}
       </nav>
 
-      {!isMobile && isGestor && isTrial && trialDaysLeft !== null && (
-        <div className="p-3 mx-2 mb-3 rounded-[20px] bg-white/5 border border-white/10 hover:border-white/20 transition-all text-white shadow-xs">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-7 h-7 rounded-[10px] bg-primary/20 text-primary flex items-center justify-center shrink-0">
-              <Rocket className="w-4 h-4 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-white leading-tight">Período de Testes</p>
-              <p className="text-[11px] text-white/60 leading-tight">
-                {trialDaysLeft <= 0 ? "Último dia grátis" : `${trialDaysLeft} dias restantes`}
-              </p>
-            </div>
-          </div>
-          <NavLink
-            to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-[12px] bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-          >
-            <span>Ver Planos</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </NavLink>
-        </div>
-      )}
     </div>
   );
 }

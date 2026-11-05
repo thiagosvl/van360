@@ -135,14 +135,38 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             <button
               type="button"
               onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}
-              className="hidden md:inline-flex items-center gap-2 h-10 px-3.5 rounded-[18px] bg-primary/10 hover:bg-primary/15 border border-primary/25 text-primary text-xs font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
+              className={cn(
+                "hidden md:flex items-center gap-2.5 h-10 pl-2.5 pr-3 rounded-[18px] border cursor-pointer active:scale-98 text-xs transition-all shadow-xs group",
+                trialDaysLeft <= 1
+                  ? "bg-amber-50/70 border-amber-200 hover:border-amber-300 hover:bg-amber-50"
+                  : "bg-white border-[#e5e5e5] hover:border-primary/40 hover:bg-[#fafafa]"
+              )}
               title="Gerenciar assinatura e planos"
             >
-              <Rocket className="h-3.5 w-3.5" />
-              <span>
-                {trialDaysLeft <= 0 ? "Último dia de teste" : `${trialDaysLeft} dias grátis`}
-              </span>
-              <ArrowRight className="h-3 w-3 ml-0.5 opacity-70" />
+              <div
+                className={cn(
+                  "h-7 w-7 rounded-[10px] flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105",
+                  trialDaysLeft <= 1
+                    ? "bg-amber-100 text-amber-700 border-amber-200"
+                    : "bg-primary/10 text-primary border-primary/20"
+                )}
+              >
+                <Rocket className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex flex-col text-left min-w-0 pr-0.5">
+                <span
+                  className={cn(
+                    "text-xs font-semibold leading-tight truncate",
+                    trialDaysLeft <= 1 ? "text-amber-800" : "text-[#0a0a0a] group-hover:text-primary"
+                  )}
+                >
+                  {trialDaysLeft <= 1 ? "Evite perder o acesso" : "Conheça nossos planos"}
+                </span>
+                <span className="text-[10px] text-[#737373] font-medium leading-tight mt-0.5">
+                  {trialDaysLeft <= 1 ? "Último dia grátis" : `Restam ${trialDaysLeft} dias grátis`}
+                </span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#0a0a0a] group-hover:translate-x-0.5 transition-all shrink-0 ml-0.5" />
             </button>
           )}
           {/* Desktop User / Profile Chip */}
