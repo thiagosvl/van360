@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   ChevronLeft,
@@ -477,9 +477,12 @@ export default function AdminInvoices() {
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-foreground truncate max-w-[200px]">
+                                <Link
+                                  to={`${ROUTES.PRIVATE.ADMIN.USERS}/${f.usuario_id}`}
+                                  className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors block truncate max-w-[200px]"
+                                >
                                   {f.usuario.apelido || f.usuario.nome}
-                                </p>
+                                </Link>
                                 <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">
                                   {f.usuario.nome}
                                 </p>
@@ -674,9 +677,12 @@ export default function AdminInvoices() {
                             </div>
                           )}
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-foreground truncate">
+                            <Link
+                              to={`${ROUTES.PRIVATE.ADMIN.USERS}/${f.usuario_id}`}
+                              className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-colors block truncate"
+                            >
                               {f.usuario.apelido || f.usuario.nome}
-                            </p>
+                            </Link>
                             <p className="text-xs text-muted-foreground truncate">
                               {f.usuario.nome}
                             </p>
