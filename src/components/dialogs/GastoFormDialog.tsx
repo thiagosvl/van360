@@ -59,7 +59,7 @@ const gastoSchema = z.object({
   descricao: z.string().optional(),
   veiculo_id: z.string().optional(),
   parcelado: z.boolean().optional(),
-  parcelas: z.number().int().min(2).max(36).optional(),
+  parcelas: z.number().int().min(2).max(84).optional(),
   tipo_calculo_parcela: z.nativeEnum(GastoTipoCalculoParcela).optional(),
   escopo: z.nativeEnum(GastoEscopoAcao).optional(),
 }).refine((data) => {
@@ -383,7 +383,7 @@ export default function GastoFormDialog({
                                 value={String(field.value || 2)}
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                               >
-                                {Array.from({ length: 35 }, (_, i) => i + 2).map((num) => (
+                                {Array.from({ length: 83 }, (_, i) => i + 2).map((num) => (
                                   <option key={num} value={String(num)}>
                                     {num}x
                                   </option>
