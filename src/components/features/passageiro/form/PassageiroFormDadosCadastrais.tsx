@@ -430,7 +430,7 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="nome_professor"
             render={({ field, fieldState }) => (
-              <FormItem className={cn("col-span-1", !isExternal && "sm:col-span-2", "space-y-1.5")}>
+              <FormItem className="col-span-1 sm:col-span-2 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
                   Professor(a) <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
