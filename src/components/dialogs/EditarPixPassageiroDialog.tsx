@@ -163,7 +163,7 @@ export default function EditarPixPassageiroDialog({
       <BaseDialog.Footer>
         {temChavePropria ? (
           <BaseDialog.Action
-            label="Excluir"
+            label="Remover"
             variant="outline"
             icon={<Trash2 className="w-4 h-4 text-red-600" />}
             onClick={handleRemoverChavePropria}
@@ -179,7 +179,7 @@ export default function EditarPixPassageiroDialog({
           />
         )}
         <BaseDialog.Action
-          label={temChavePropria ? "Salvar Alterações" : "Salvar"}
+          label="Salvar"
           type="submit"
           form="editar-pix-passageiro-form"
           isLoading={isSaving}

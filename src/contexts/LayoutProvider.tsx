@@ -1,4 +1,4 @@
-﻿import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import { ExcluirContaDialog } from "@/components/dialogs/ExcluirContaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
@@ -16,6 +16,9 @@ import EditarPixDialog from "@/components/dialogs/EditarPixDialog";
 import EditarPixVeiculoDialog from "@/components/dialogs/EditarPixVeiculoDialog";
 import EditarPixPassageiroDialog from "@/components/dialogs/EditarPixPassageiroDialog";
 import ConfigurarCobrancaWizardDialog from "@/components/dialogs/ConfigurarCobrancaWizardDialog";
+
+
+import ConhecerCobrancaAutomaticaDialog from "@/components/dialogs/ConhecerCobrancaAutomaticaDialog";
 import { ConfirmarMudancaModoVanDialog } from "@/components/dialogs/ConfirmarMudancaModoVanDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import CadastrarEscolasDialog from "@/components/dialogs/CadastrarEscolasDialog";
@@ -101,6 +104,8 @@ import {
   OpenEditarPixVeiculoDialogProps,
   OpenEditarPixPassageiroDialogProps,
   OpenConfigurarCobrancaWizardProps,
+
+
   OpenConfirmarMudancaModoVanProps,
   OpenWhatsAppContratoPreviewDialogProps,
   OpenReciboPreviewDialogProps,
@@ -505,6 +510,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     props?: OpenConfirmarMudancaModoVanProps;
   }>({ open: false });
   const [acquisitionChannelDialogOpen, setAcquisitionChannelDialogOpen] = useState(false);
+  const [conhecerCobrancaAutomaticaDialogOpen, setConhecerCobrancaAutomaticaDialogOpen] = useState(false);
   const [referAndEarnDialogOpen, setReferAndEarnDialogOpen] = useState(false);
   const [personalizarMenuDialogOpen, setPersonalizarMenuDialogOpen] = useState(false);
   const [excluirContaDialogOpen, setExcluirContaDialogOpen] = useState(false);
@@ -1172,6 +1178,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openShowcaseTransporteEscolarDialog,
         openOnboardingSuccessDialog,
         openAcquisitionChannelDialog: () => setAcquisitionChannelDialogOpen(true),
+        openConhecerCobrancaAutomaticaDialog: () => setConhecerCobrancaAutomaticaDialogOpen(true),
+        closeConhecerCobrancaAutomaticaDialog: () =>
+          safeCloseDialog(() => setConhecerCobrancaAutomaticaDialogOpen(false)),
         openReferAndEarnDialog: () => setReferAndEarnDialogOpen(true),
         openPersonalizarMenuDialog: () => setPersonalizarMenuDialogOpen(true),
         closePersonalizarMenuDialog: () => safeCloseDialog(() => setPersonalizarMenuDialogOpen(false)),
@@ -1614,6 +1623,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={editarPixDialogState.open}
           onClose={() => safeCloseDialog(() => setEditarPixDialogState({ open: false }))}
           onSuccess={editarPixDialogState.props?.onSuccess}
+          isActivatingAutomatica={editarPixDialogState.props?.isActivatingAutomatica}
+          aplicarATodos={editarPixDialogState.props?.aplicarATodos}
         />
       )}
 
@@ -1632,6 +1643,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setEditarPixPassageiroDialogState({ open: false }))}
           passageiro={editarPixPassageiroDialogState.props.passageiro}
           onSuccess={editarPixPassageiroDialogState.props.onSuccess}
+        />
+      )}
+
+      {conhecerCobrancaAutomaticaDialogOpen && (
+        <ConhecerCobrancaAutomaticaDialog
+          isOpen={conhecerCobrancaAutomaticaDialogOpen}
+          onClose={() => safeCloseDialog(() => setConhecerCobrancaAutomaticaDialogOpen(false))}
         />
       )}
 

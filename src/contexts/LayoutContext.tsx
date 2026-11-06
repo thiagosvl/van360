@@ -1,4 +1,4 @@
-﻿import { Cobranca } from "@/types/cobranca";
+import { Cobranca } from "@/types/cobranca";
 import { PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -12,6 +12,8 @@ import type { ShowcaseTabType } from "@/components/features/demonstracoes/WhatsA
 import type { RenovacaoPassageiroItem, RenovacaoKPIs } from "@/types/renovacao";
 import type { FretamentoDetalhes, FretamentoParticipante } from "@/services/api/fretamento.api";
 import type { WizardModalidade } from "@/hooks/ui/useConfigurarCobrancaWizardViewModel";
+
+
 import type { PreviewCobrancaModalidade } from "@/components/dialogs/WhatsAppCobrancaPreviewDialog";
 import {
   createContext,
@@ -411,6 +413,8 @@ export interface OpenWhatsAppCobrancaPreviewDialogProps {
 
 export interface OpenEditarPixDialogProps {
   onSuccess?: () => void | Promise<void>;
+  isActivatingAutomatica?: boolean;
+  aplicarATodos?: boolean;
 }
 
 export interface OpenEditarPixVeiculoDialogProps {
@@ -590,6 +594,8 @@ export interface LayoutContextType {
   closeConfigurarCobrancaWizardDialog: () => void;
   openConfirmarMudancaModoVanDialog: (props: OpenConfirmarMudancaModoVanProps) => void;
   closeConfirmarMudancaModoVanDialog: () => void;
+  openConhecerCobrancaAutomaticaDialog: () => void;
+  closeConhecerCobrancaAutomaticaDialog: () => void;
   openWhatsAppCobrancaPreviewDialog: (props?: OpenWhatsAppCobrancaPreviewDialogProps) => void;
   openWhatsAppContratoPreviewDialog: (props?: OpenWhatsAppContratoPreviewDialogProps) => void;
   openReciboPreviewDialog: (props?: OpenReciboPreviewDialogProps) => void;

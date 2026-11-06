@@ -15,18 +15,26 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PixKeyFields } from "@/components/features/pix/PixKeyFields";
 import { toast } from "sonner";
-import { Key, Trash2 } from "lucide-react";
+import { Key, Sparkles, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 interface EditarPixDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void | Promise<void>;
+  isActivatingAutomatica?: boolean;
+  aplicarATodos?: boolean;
 }
 
 type PixFormData = z.infer<typeof pixKeySchema>;
 
-export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPixDialogProps) {
+export default function EditarPixDialog({
+  isOpen,
+  onClose,
+  onSuccess,
+  isActivatingAutomatica = false,
+  aplicarATodos,
+}: EditarPixDialogProps) {
   const { user } = useSession();
   const { refreshProfile } = useProfile(user?.id);
   const { financeiro, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
@@ -48,6 +56,9 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
 
   const temChave = Boolean(financeiro?.chave_pix_repasse && financeiro?.tipo_chave_pix);
   const modoAtual = (financeiro?.modo_cobranca as ModoCobrancaEnum) || ModoCobrancaEnum.DESATIVADO;
+  const exigeChaveObrigatoria =
+    isActivatingAutomatica || modoAtual === ModoCobrancaEnum.AUTOMATICA;
+  const podeRemoverChave = temChave && !exigeChaveObrigatoria;
 
   useEffect(() => {
     if (isOpen) {
@@ -81,7 +92,23 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
     const chaveLimpa = data.chave_pix?.trim() || null;
     const tipoLimpo = data.tipo_chave_pix || null;
 
-    if (!chaveLimpa) {
+    if (!chaveLimpa || !tipoLimpo) {
+      if (exigeChaveObrigatoria) {
+        if (!tipoLimpo) {
+          form.setError("tipo_chave_pix", {
+            type: "manual",
+            message: "Selecione o tipo de chave Pix.",
+          });
+        }
+        if (!chaveLimpa) {
+          form.setError("chave_pix", {
+            type: "manual",
+            message: "A chave Pix geral é obrigatória na Cobrança Automática.",
+          });
+        }
+        return;
+      }
+
       handleRemoverPix();
       return;
     }
@@ -90,9 +117,19 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
       await updateFinanceiro({
         chave_pix_repasse: chaveLimpa,
         tipo_chave_pix: tipoLimpo,
+        ...(isActivatingAutomatica
+          ? {
+              modo_cobranca: ModoCobrancaEnum.AUTOMATICA,
+              aplicar_a_todos: aplicarATodos,
+            }
+          : {}),
       });
 
-      toast.success("Chave Pix salva com sucesso.");
+      toast.success(
+        isActivatingAutomatica
+          ? "Chave Pix salva e Cobrança Automática ativada!"
+          : "Chave Pix geral salva com sucesso."
+      );
       await refreshProfile();
       await handleSuccess();
     } catch (err: unknown) {
@@ -103,29 +140,23 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
   };
 
   const handleRemoverPix = () => {
-    const isModoAutomatico = modoAtual === ModoCobrancaEnum.AUTOMATICA;
+    if (exigeChaveObrigatoria) return;
 
     openConfirmationDialog({
-      title: "Remover chave Pix padrão?",
-      description: isModoAutomatico
-        ? "A cobrança automática via Pix exige uma chave para repasse. Ao remover esta chave, o modo de cobrança será alterado para Lembretes. Deseja continuar?"
-        : "Deseja realmente remover a chave Pix padrão da conta? Os lembretes passarão a ser enviados sem chave Pix (a menos que o veículo ou aluno possuam chave própria).",
-      confirmText: isModoAutomatico ? "Remover e Mudar para Lembretes" : "Remover Chave",
+      title: "Remover chave Pix geral?",
+      description:
+        "Deseja remover a chave Pix geral da conta? Os lembretes serão enviados sem chave Pix (exceto se o veículo ou aluno tiver chave própria).",
+      confirmText: "Remover Chave",
       cancelText: "Cancelar",
       variant: "destructive",
       onConfirm: async () => {
         try {
           setIsRemoving(true);
-          const updatePayload: Record<string, unknown> = {
+          await updateFinanceiro({
             chave_pix_repasse: null,
             tipo_chave_pix: null,
-          };
-          if (isModoAutomatico) {
-            updatePayload.modo_cobranca = ModoCobrancaEnum.LEMBRETES;
-          }
-
-          await updateFinanceiro(updatePayload);
-          toast.success("Chave Pix removida com sucesso.");
+          });
+          toast.success("Chave Pix geral removida.");
           await refreshProfile();
           await handleSuccess();
         } catch (err: unknown) {
@@ -142,24 +173,39 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
 
   const isSaving = isUpdating || isRemoving;
 
+  const dialogTitle = isActivatingAutomatica
+    ? "Ativar Cobrança Automática"
+    : temChave
+      ? "Chave Pix Geral"
+      : "Cadastrar Chave Pix Geral";
+
+  const dialogSubtitle = isActivatingAutomatica
+    ? "Informe sua chave Pix principal para receber os repasses"
+    : "Vale para todas as vans e alunos sem chave própria";
+
+  const bannerDescription = isActivatingAutomatica
+    ? "A chave Pix geral é obrigatória para receber o dinheiro das parcelas pagas. Se você usa contas separadas por van ou por aluno, poderá configurar logo após ativar."
+    : modoAtual === ModoCobrancaEnum.AUTOMATICA
+      ? "Esta chave recebe os repasses de todas as vans e alunos que não tiverem chave própria configurada."
+      : "Esta chave é enviada nos lembretes do WhatsApp para todas as vans e alunos que não tiverem chave própria.";
+
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
-        title={temChave ? "Chave Pix da Conta" : "Cadastrar Chave Pix"}
-        subtitle="Recebimento e repasse padrão da conta"
-        icon={<Key className="w-5 h-5 text-[#0a0a0a]" />}
+        title={dialogTitle}
+        subtitle={dialogSubtitle}
+        icon={
+          isActivatingAutomatica ? (
+            <Sparkles className="w-5 h-5 text-[#0a0a0a]" />
+          ) : (
+            <Key className="w-5 h-5 text-[#0a0a0a]" />
+          )
+        }
         onClose={handleClose}
       />
       <BaseDialog.Body>
         <div className="space-y-4">
-          <Banner
-            variant="info"
-            description={
-              modoAtual === ModoCobrancaEnum.AUTOMATICA
-                ? "Esta chave recebe os repasses das cobranças automáticas que não tiverem chave própria por veículo ou aluno."
-                : "Esta chave é enviada nos lembretes do WhatsApp quando nem o aluno nem a van possuírem uma chave dedicada."
-            }
-          />
+          <Banner variant="info" description={bannerDescription} />
 
           <Form {...form}>
             <form id="editar-pix-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -174,7 +220,7 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        {temChave ? (
+        {podeRemoverChave ? (
           <BaseDialog.Action
             label="Remover"
             variant="outline"
@@ -192,7 +238,7 @@ export default function EditarPixDialog({ isOpen, onClose, onSuccess }: EditarPi
           />
         )}
         <BaseDialog.Action
-          label={temChave ? "Salvar Alterações" : "Salvar Chave Pix"}
+          label={isActivatingAutomatica ? "Salvar e Ativar" : "Salvar"}
           type="submit"
           form="editar-pix-form"
           isLoading={isSaving}

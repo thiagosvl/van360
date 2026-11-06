@@ -33,6 +33,7 @@ export { useConfirmDialog } from "./ui/useConfirmDialog";
 export { useToast } from "./ui/useToast";
 export { useDebounce } from "./ui/useDebounce";
 export { useTutorialsConfig } from "./ui/useTutorialsConfig";
+export { usePagamentosTabViewModel } from "./ui/usePagamentosTabViewModel";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";

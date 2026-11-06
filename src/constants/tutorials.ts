@@ -12,9 +12,13 @@ export function hasValidTutorialVideos(config?: ScreenTutorialConfig): boolean {
   return config.videos.some((v) => Boolean(v.url && v.url.trim().length > 0));
 }
 
-const SUPABASE_VIDEOS_BASE_URL = "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/videos";
 const CLOUDFLARE_VIDEOS_BASE_URL = "https://pub-6302b932ae5749838fec8c6031c88963.r2.dev/videos";
-const defaultTooltipText = 'Veja Como Funciona';
+const defaultTooltipText = "Veja Como Funciona";
+
+export const VIDEO_APRESENTACAO_COBRANCA_AUTOMATICA: VideoStoryItem = {
+  url: `${CLOUDFLARE_VIDEOS_BASE_URL}/apresentacao-cobranca-automatica.mp4`,
+  title: "Como Funciona a Cobrança Automática",
+};
 
 export const TUTORIALS_CONFIG = {
   alunos: {
@@ -61,10 +65,7 @@ export const TUTORIALS_CONFIG = {
         url: `${CLOUDFLARE_VIDEOS_BASE_URL}/tutorial-parcelas.mp4`,
         title: "Cobrança Automática e Pagamentos",
       },
-      {
-        url: `${CLOUDFLARE_VIDEOS_BASE_URL}/apresentacao-cobranca-automatica.mp4`,
-        title: "Como Funciona a Cobrança Automática",
-      },
+      VIDEO_APRESENTACAO_COBRANCA_AUTOMATICA,
     ],
   },
   contratos: {

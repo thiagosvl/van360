@@ -4,15 +4,26 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
 import { useProfile } from "@/hooks/business/useProfile";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useCobrancas, useCreateCobranca, useDeleteCobranca, useFilters } from "@/hooks";
-import { CobrancaStatus, CobrancaTab } from "@/types/enums";
+import {
+  useCobrancas,
+  useCreateCobranca,
+  useDeleteCobranca,
+  useFilters,
+  usePassageiros,
+  useMotoristaFinanceiroApi,
+  safeCloseDialog,
+} from "@/hooks";
+import { CobrancaStatus, CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
-
 import { getNowBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { normalizeSearchText } from "@/utils/string";
+import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
+import { isPassageiroIncompleto } from "@/utils/domain";
+
+const PASSAGEIRO_STATUS_ATIVO = "ativo" as const;
 
 export function useCobrancasViewModel() {
   const { can, isSubConta } = usePermissions();
@@ -22,6 +33,10 @@ export function useCobrancasViewModel() {
     openCobrancaEditDialog,
     openManualPaymentDialog,
     openReceiptDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openPassageiroFinanceiroDialog,
+    openConhecerCobrancaAutomaticaDialog,
   } = useLayout();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,10 +44,26 @@ export function useCobrancasViewModel() {
 
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { financeiro, isLoading: isFinanceiroLoading } = useMotoristaFinanceiroApi();
 
   const createCobranca = useCreateCobranca();
   const deleteCobranca = useDeleteCobranca();
-  const isActionLoading = deleteCobranca.isPending || createCobranca.isPending;
+
+  const lembretesDesativados =
+    !isFinanceiroLoading && financeiro?.modo_cobranca === ModoCobrancaEnum.DESATIVADO;
+
+  const lembretesAtivos =
+    !isFinanceiroLoading && financeiro?.modo_cobranca === ModoCobrancaEnum.LEMBRETES;
+
+  const { data: passageirosData } = usePassageiros(
+    { usuarioId: profile?.id, status: PASSAGEIRO_STATUS_ATIVO, limit: 500 },
+    { enabled: Boolean(profile?.id) }
+  );
+
+  const alunosSemValorCount = useMemo(() => {
+    const list = passageirosData?.list || [];
+    return list.filter((p) => !p.isento && (!p.valor_cobranca || Number(p.valor_cobranca) <= 0)).length;
+  }, [passageirosData?.list]);
 
   const handleTabChange = useCallback(
     (value: string) => {
@@ -53,12 +84,10 @@ export function useCobrancasViewModel() {
 
   const {
     selectedMes: mesFilter = getNowBR().getMonth() + 1,
-    setSelectedMes: setMesFilter,
     selectedAno: anoFilter = getNowBR().getFullYear(),
-    setSelectedAno: setAnoFilter,
     searchTerm: commonSearch,
     setSearchTerm: setCommonSearch,
-    setFilters
+    setFilters,
   } = useFilters({
     mesParam: "mes",
     anoParam: "ano",
@@ -72,9 +101,12 @@ export function useCobrancasViewModel() {
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  const handleNavigation = useCallback((newMes: number, newAno: number) => {
-    setFilters({ mes: newMes, ano: newAno });
-  }, [setFilters]);
+  const handleNavigation = useCallback(
+    (newMes: number, newAno: number) => {
+      setFilters({ mes: newMes, ano: newAno });
+    },
+    [setFilters]
+  );
 
   useEffect(() => {
     const term = activeTab === CobrancaTab.ARECEBER ? buscaAReceber : buscaRecebidos;
@@ -91,7 +123,7 @@ export function useCobrancasViewModel() {
   useEffect(() => {
     setBuscaAReceber("");
     setBuscaRecebidos("");
-  }, [mesFilter, anoFilter]);
+  }, [mesFilter, anoFilter, setBuscaAReceber, setBuscaRecebidos]);
 
   useEffect(() => {
     setPageAReceber(1);
@@ -176,10 +208,14 @@ export function useCobrancasViewModel() {
     const sorted = [...list].sort((a, b) => {
       const timeA = a.data_pagamento
         ? new Date(a.data_pagamento).getTime()
-        : (a.data_vencimento ? new Date(a.data_vencimento).getTime() : 0);
+        : a.data_vencimento
+          ? new Date(a.data_vencimento).getTime()
+          : 0;
       const timeB = b.data_pagamento
         ? new Date(b.data_pagamento).getTime()
-        : (b.data_vencimento ? new Date(b.data_vencimento).getTime() : 0);
+        : b.data_vencimento
+          ? new Date(b.data_vencimento).getTime()
+          : 0;
 
       if (timeA !== timeB) return timeB - timeA;
 
@@ -247,20 +283,18 @@ export function useCobrancasViewModel() {
   );
 
   const totalAtrasado = useMemo(
-    () => cobrancasAReceber
-      .filter((c) => checkCobrancaEmAtraso(c.data_vencimento))
-      .reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialAtrasadas,
+    () =>
+      cobrancasAReceber
+        .filter((c) => checkCobrancaEmAtraso(c.data_vencimento))
+        .reduce((acc, curr) => acc + Number(curr.valor), 0) + saldoParcialAtrasadas,
     [cobrancasAReceber, saldoParcialAtrasadas]
   );
 
   const totalPrevisto = totalAReceber + totalRecebido;
 
-  // Handlers
   const handleEditCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
-      openCobrancaEditDialog({
-        cobranca,
-      });
+      openCobrancaEditDialog({ cobranca });
     },
     [openCobrancaEditDialog]
   );
@@ -284,11 +318,11 @@ export function useCobrancasViewModel() {
             await deleteCobranca.mutateAsync(cobranca.id);
           }
         },
-        onEdit: cobranca.isProjection ? undefined : () => {
-          openCobrancaEditDialog({
-            cobranca,
-          });
-        }
+        onEdit: cobranca.isProjection
+          ? undefined
+          : () => {
+              openCobrancaEditDialog({ cobranca });
+            },
       });
     },
     [deleteCobranca, createCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, profile?.id]
@@ -309,18 +343,70 @@ export function useCobrancasViewModel() {
     [openManualPaymentDialog]
   );
 
+  const handleRegistrarPagamento = useCallback(
+    (cobranca: Cobranca) => {
+      if (cobranca.isProjection && isPassageiroIncompleto(cobranca.passageiro)) {
+        openConfirmationDialog({
+          title: "Valor das parcelas não configurado",
+          description:
+            "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
+          confirmText: "Configurar agora",
+          cancelText: "Fazer depois",
+          onConfirm: () => {
+            safeCloseDialog(closeConfirmationDialog);
+            setTimeout(() => {
+              if (cobranca.passageiro) {
+                openPassageiroFinanceiroDialog({ passageiro: cobranca.passageiro });
+              }
+            }, 100);
+          },
+        });
+        return;
+      }
+      openPaymentDialog(cobranca);
+    },
+    [openConfirmationDialog, closeConfirmationDialog, openPassageiroFinanceiroDialog, openPaymentDialog]
+  );
+
+  const handleVerRecibo = useCallback(
+    (url: string, cobranca: Cobranca) => {
+      openReceiptDialog({
+        receiptUrl: url,
+        cobrancaDescricao: buildReciboWhatsAppMessage({
+          nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
+          nomePassageiro: cobranca.passageiro?.nome || "",
+          generoPassageiro: cobranca.passageiro?.genero,
+          mes: cobranca.mes,
+          ano: cobranca.ano,
+        }),
+        cobrancaId: cobranca.id,
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+        passageiroId: cobranca.passageiro_id,
+        nomePassageiro: cobranca.passageiro?.nome,
+        nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
+        generoPassageiro: cobranca.passageiro?.genero,
+      });
+    },
+    [openReceiptDialog]
+  );
 
   const navigateToPassageiro = useCallback(
     (passageiroId: string) => {
       navigate(
-        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
-          ":passageiro_id",
-          passageiroId
-        )}?ano=${anoFilter}`
+        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiroId)}?ano=${anoFilter}`
       );
     },
     [navigate, anoFilter]
   );
+
+  const handleNavigateConfigCobrancas = useCallback(() => {
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.ACCOUNT}?tab=cobrancas`);
+  }, [navigate]);
+
+  const handleNavigateAlunosSemValor = useCallback(() => {
+    navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS_BATCH}?semValor=true`);
+  }, [navigate]);
 
   const pullToRefreshReload = useCallback(async () => {
     await refetchCobrancas();
@@ -360,10 +446,18 @@ export function useCobrancasViewModel() {
     isFutureMonth,
     isPastMonth,
     isCurrentMonth,
+    lembretesDesativados,
+    lembretesAtivos,
+    alunosSemValorCount,
     pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,
     handleDeleteCobrancaClick,
     openPaymentDialog,
+    handleRegistrarPagamento,
+    handleVerRecibo,
+    handleNavigateConfigCobrancas,
+    handleNavigateAlunosSemValor,
+    handleOpenConhecerCobrancaAutomatica: openConhecerCobrancaAutomaticaDialog,
   };
 }

@@ -13,7 +13,7 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { useUpdatePixVeiculo } from "@/hooks/api/useVeiculoMutations";
 import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { PixKeyFields } from "@/components/features/pix/PixKeyFields";
-import { Key, Trash2 } from "lucide-react";
+import { Car, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 interface EditarPixVeiculoDialogProps {
@@ -127,8 +127,8 @@ export default function EditarPixVeiculoDialog({
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
       <BaseDialog.Header
         title={`Chave Pix — ${formatarPlacaExibicao(veiculo.placa)}`}
-        subtitle={`${veiculo.marca} ${veiculo.modelo}`}
-        icon={<Key className="w-5 h-5 text-[#0a0a0a]" />}
+        subtitle={veiculo.modelo ? `${veiculo.marca || ""} ${veiculo.modelo}`.trim() : "Chave exclusiva deste veículo"}
+        icon={<Car className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
       <BaseDialog.Body>
@@ -136,15 +136,15 @@ export default function EditarPixVeiculoDialog({
           {temChavePropria ? (
             <Banner
               variant="info"
-              description="Este veículo possui uma chave Pix própria configurada. As cobranças dos alunos vinculados a ele utilizarão esta chave."
+              description="Esta van está usando uma chave Pix exclusiva. Se quiser que ela volte a usar a Chave Pix Geral da conta, toque em 'Remover'."
             />
           ) : (
             <Banner
               variant="info"
               description={
                 chavePadraoFormatada
-                  ? `Se não configurar uma chave própria para este veículo, as cobranças usarão a chave padrão da conta: ${chavePadraoFormatada}.`
-                  : "Configure uma chave Pix para receber os pagamentos dos alunos vinculados a este veículo."
+                  ? `Esta van já utiliza automaticamente a sua Chave Pix Geral (${chavePadraoFormatada}). Preencha abaixo somente se quiser usar uma conta bancária separada para este veículo.`
+                  : "Preencha abaixo caso deseje definir uma chave Pix exclusiva para os alunos vinculados a este veículo."
               }
             />
           )}
@@ -180,7 +180,7 @@ export default function EditarPixVeiculoDialog({
           />
         )}
         <BaseDialog.Action
-          label={temChavePropria ? "Salvar Alterações" : "Salvar Chave Pix"}
+          label="Salvar"
           type="submit"
           form="editar-pix-veiculo-form"
           isLoading={isSaving}

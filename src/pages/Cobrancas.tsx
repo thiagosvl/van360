@@ -2,26 +2,21 @@ import { DateNavigation } from "@/components/common/DateNavigation";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { CobrancasPagination } from "@/components/features/cobranca/CobrancasPagination";
-import { Search, X } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AppTabNav } from "@/components/ui/AppTabNav";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { useCobrancasViewModel, useLayout, useProfile, usePassageiros, useMotoristaFinanceiroApi } from "@/hooks";
-import { CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
-import { Cobranca } from "@/types/cobranca";
+import { useCobrancasViewModel, useTutorialsConfig } from "@/hooks";
+import { CobrancaTab } from "@/types/enums";
 import { monthNamesInBR as meses } from "@/utils/dateUtils";
 import { Banner } from "@/components/ui/Banner";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
-import { useTutorialsConfig, safeCloseDialog } from "@/hooks";
 import { STORAGE_KEYS } from "@/constants";
-import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
-import { isPassageiroIncompleto } from "@/utils/domain";
-import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+
 export default function Cobrancas() {
   const { can } = usePermissions();
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("parcelas");
@@ -58,35 +53,19 @@ export default function Cobrancas() {
     isFutureMonth,
     isPastMonth,
     isCurrentMonth,
+    lembretesDesativados,
+    lembretesAtivos,
+    alunosSemValorCount,
     pullToRefreshReload,
     navigateToPassageiro,
     handleEditCobrancaClick,
     handleDeleteCobrancaClick,
-    openPaymentDialog,
+    handleRegistrarPagamento,
+    handleVerRecibo,
+    handleNavigateConfigCobrancas,
+    handleNavigateAlunosSemValor,
+    handleOpenConhecerCobrancaAutomatica,
   } = useCobrancasViewModel();
-
-  const {
-    openReceiptDialog,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-    openPassageiroFinanceiroDialog,
-  } = useLayout();
-  const navigate = useNavigate();
-  const { profile } = useProfile();
-  const { financeiro, isLoading: isFinanceiroLoading } = useMotoristaFinanceiroApi();
-
-  const lembretesDesativados =
-    !isFinanceiroLoading && financeiro?.modo_cobranca === ModoCobrancaEnum.DESATIVADO;
-
-  const { data: passageirosData } = usePassageiros(
-    { usuarioId: profile?.id, status: "ativo", limit: 500 },
-    { enabled: Boolean(profile?.id) }
-  );
-
-  const alunosSemValor = useMemo(() => {
-    const list = passageirosData?.list || [];
-    return list.filter((p) => !p.isento && (!p.valor_cobranca || Number(p.valor_cobranca) <= 0));
-  }, [passageirosData?.list]);
 
   if (!can("cobrancas.gerenciar")) {
     return <AccessRestrictedState moduleName="Cobranças e Finanças" />;
@@ -99,57 +78,18 @@ export default function Cobrancas() {
   const actionProps = {
     onVerCarteirinha: navigateToPassageiro,
     onEditarCobranca: handleEditCobrancaClick,
-    onRegistrarPagamento: (cobranca: Cobranca) => {
-      if (cobranca.isProjection && isPassageiroIncompleto(cobranca.passageiro)) {
-        openConfirmationDialog({
-          title: "Valor das parcelas não configurado",
-          description:
-            "Para registrar o pagamento desta previsão, primeiro é necessário definir o valor e o vencimento da parcela. Deseja configurar agora?",
-          confirmText: "Configurar agora",
-          cancelText: "Fazer depois",
-          onConfirm: () => {
-            safeCloseDialog(closeConfirmationDialog);
-            setTimeout(() => {
-              if (cobranca.passageiro) {
-                openPassageiroFinanceiroDialog({ passageiro: cobranca.passageiro });
-              }
-            }, 100);
-          },
-        });
-        return;
-      }
-      openPaymentDialog(cobranca);
-    },
+    onRegistrarPagamento: handleRegistrarPagamento,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onVerRecibo: (url: string, cobranca: Cobranca) =>
-      openReceiptDialog({
-        receiptUrl: url,
-        cobrancaDescricao: buildReciboWhatsAppMessage({
-          nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
-          nomePassageiro: cobranca.passageiro?.nome || "",
-          generoPassageiro: cobranca.passageiro?.genero,
-          mes: cobranca.mes,
-          ano: cobranca.ano,
-        }),
-        cobrancaId: cobranca.id,
-        mes: cobranca.mes,
-        ano: cobranca.ano,
-        passageiroId: cobranca.passageiro_id,
-        nomePassageiro: cobranca.passageiro?.nome,
-        nomeResponsavel: cobranca.passageiro?.responsavel_principal?.nome,
-        generoPassageiro: cobranca.passageiro?.genero,
-      }),
-    onActionSuccess: () => { },
+    onVerRecibo: handleVerRecibo,
+    onActionSuccess: () => {},
   };
 
   const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
-
-  let statusLabel = "";
-  if (busca) {
-    statusLabel = currentCount === 1 ? "ENCONTRADA" : "ENCONTRADAS";
-  } else {
-    statusLabel = "PARCELAS";
-  }
+  const statusLabel = busca
+    ? currentCount === 1
+      ? "ENCONTRADA"
+      : "ENCONTRADAS"
+    : "PARCELAS";
 
   return (
     <>
@@ -167,19 +107,32 @@ export default function Cobrancas() {
                 variant="neutral"
                 title="Lembretes automáticos desativados"
                 description="Toque para ativar os avisos de vencimento no WhatsApp para os responsáveis."
-                onClick={() => navigate("/conta?tab=cobrancas")}
+                onClick={handleNavigateConfigCobrancas}
                 className="cursor-pointer"
               />
             </div>
           )}
 
-          {alunosSemValor.length > 0 && (
+          {lembretesAtivos && (
+            <div className="px-1">
+              <Banner
+                variant="info"
+                icon={<Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary shrink-0" />}
+                title="Cansado de dar baixa e enviar recibos um por um?"
+                description="Deixe o Van360 confirmar o pagamento, dar baixa na hora e enviar o recibo aos pais por você. Toque para conhecer."
+                onClick={handleOpenConhecerCobrancaAutomatica}
+                className="cursor-pointer"
+              />
+            </div>
+          )}
+
+          {alunosSemValorCount > 0 && (
             <div className="px-1">
               <Banner
                 variant="warning"
-                title={`${alunosSemValor.length} ${alunosSemValor.length === 1 ? "aluno sem o valor da parcela" : "alunos sem o valor da parcela"}`}
+                title={`${alunosSemValorCount} ${alunosSemValorCount === 1 ? "aluno sem o valor da parcela" : "alunos sem o valor da parcela"}`}
                 description="Toque para preencher rapidamente."
-                onClick={() => navigate("/alunos/atualizacao-rapida?semValor=true")}
+                onClick={handleNavigateAlunosSemValor}
                 className="cursor-pointer"
               />
             </div>
@@ -305,7 +258,6 @@ export default function Cobrancas() {
                 className="mt-4"
               />
             </TabsContent>
-
           </Tabs>
         </div>
       </PullToRefreshWrapper>
