@@ -6,14 +6,14 @@ import {
   PAGAMENTOS_CONFIG_KEY,
   PagamentosConfigKey,
 } from "@/hooks/ui/usePagamentosTabViewModel";
-import { UsuarioConfiguracoes } from "@/services/api/configuracoes.api";
+import { ConfiguracoesUsuario } from "@/hooks/api/useConfiguracoes";
 import { Loader2, Minus, Plus, ReceiptText, Smartphone } from "lucide-react";
 
 interface LembretesPaisSectionProps {
   modoVisual: ModoCobranca;
   isBusy: boolean;
   updatingKey: string | null;
-  configuracoes: UsuarioConfiguracoes | undefined;
+  configuracoes: ConfiguracoesUsuario | undefined;
   localDias: number;
   enviarRecibo: boolean;
   onOpenPreviewCobranca: () => void;

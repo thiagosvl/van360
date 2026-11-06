@@ -5,7 +5,6 @@ import { Gift, Lock, SlidersHorizontal } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-import { useSubscriptionAccess } from "@/hooks/business/useSubscriptionAccess";
 import { useBottomNavPreferences } from "@/hooks/business/useBottomNavPreferences";
 import { ROUTES } from "@/constants/routes";
 import { UserType } from "@/types/enums";
@@ -22,7 +21,6 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
   const { openReferAndEarnDialog, openPersonalizarMenuDialog } = useLayout();
   const { can, isGestor } = usePermissions();
   const { user } = useSession();
-  const { isTrial, trialDaysLeft } = useSubscriptionAccess(user?.id);
 
   const { activeHrefs: activeBottomHrefs, isEligibleToCustomize } = useBottomNavPreferences(user?.id);
 
@@ -46,8 +44,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
             item.href !== ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION &&
             item.href !== ROUTES.PRIVATE.MOTORISTA.ACCOUNT;
 
-          const isSubscriptionItem = item.href === ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION;
-          const showTrialBadge = isSubscriptionItem && isGestor && isTrial && trialDaysLeft !== null;
+
 
           return (
             <NavLink
@@ -91,11 +88,7 @@ export function AppSidebar({ onLinkClick, excludeBottomNavItems, isSubscriptionB
                   />
                   <span className="truncate">{item.title}</span>
 
-                  {showTrialBadge && (
-                    <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/30 text-white border border-primary/40 leading-none shrink-0">
-                      {trialDaysLeft <= 0 ? "Fim" : `${trialDaysLeft}d`}
-                    </span>
-                  )}
+
 
                   {isItemBlocked ? (
                     <Lock className="ml-auto h-3.5 w-3.5 text-white/40 shrink-0" />

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import BaseDialog from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/constants";
+import { ROUTES } from "@/constants/routes";
 import { VIDEO_APRESENTACAO_COBRANCA_AUTOMATICA } from "@/constants/tutorials";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
@@ -26,7 +26,7 @@ export default function ConhecerCobrancaAutomaticaDialog({
   const handleGoToConfig = () => {
     safeCloseDialog(() => {
       onClose();
-      navigate(`${ROUTES.CONTA}?tab=cobrancas`);
+      navigate(`${ROUTES.PRIVATE.MOTORISTA.ACCOUNT}?tab=cobrancas`);
     });
   };
 
