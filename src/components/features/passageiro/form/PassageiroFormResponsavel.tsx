@@ -11,17 +11,20 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { parentescos } from "@/utils/formatters";
 import { cpfMask } from "@/utils/masks";
-import { Contact, Hash, Loader2, Mail, MapPin, User } from "lucide-react";
+import { Contact, Hash, Mail, MapPin, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { CamposFormularioExternoConfig } from "@/constants/formularioExterno";
 
 interface PassageiroFormResponsavelProps {
   isSearching?: boolean;
   isExternal?: boolean;
+  formConfig?: CamposFormularioExternoConfig;
 }
 
 export function PassageiroFormResponsavel({
   isSearching,
   isExternal = false,
+  formConfig,
 }: PassageiroFormResponsavelProps) {
   const form = useFormContext();
 
@@ -33,6 +36,9 @@ export function PassageiroFormResponsavel({
     email: isExternal ? "email_responsavel" : "responsavel_principal.email",
     enderecoPrefix: isExternal ? "" : "responsavel_principal.",
   };
+
+  const isParentescoReq = isExternal ? (formConfig?.parentesco_responsavel ?? true) : false;
+  const isEmailReq = isExternal ? (formConfig?.email_responsavel ?? true) : false;
 
   return (
     <div className="space-y-8">
@@ -154,7 +160,7 @@ export function PassageiroFormResponsavel({
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Parentesco {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  Parentesco {isParentescoReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -182,7 +188,7 @@ export function PassageiroFormResponsavel({
             render={({ field, fieldState }) => (
               <FormItem className={cn(isExternal ? "" : "sm:col-span-2", "space-y-1.5")}>
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  E-mail {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  E-mail {isEmailReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">

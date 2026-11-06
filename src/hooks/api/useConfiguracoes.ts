@@ -2,6 +2,7 @@ import { apiClient } from "@/services/api/client";
 import { Usuario } from "@/types/usuario";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { CamposFormularioExternoConfig } from "@/constants/formularioExterno";
 
 export interface ConfiguracoesUsuario {
   cobranca_aviso_previo_ativo: boolean;
@@ -23,6 +24,7 @@ export interface ConfiguracoesUsuario {
   formato_nome_aluno?: "curto" | "completo";
   exibir_telefone_lista_alunos?: boolean;
   contrato_exibir_dados_veiculo?: boolean;
+  campos_formulario_externo?: CamposFormularioExternoConfig;
   chave_pix: string | null;
   tipo_chave_pix: string | null;
 }
@@ -47,6 +49,7 @@ export type UpdateConfiguracoesInput = Partial<
     | "formato_nome_aluno"
     | "exibir_telefone_lista_alunos"
     | "contrato_exibir_dados_veiculo"
+    | "campos_formulario_externo"
   >
 >;
 

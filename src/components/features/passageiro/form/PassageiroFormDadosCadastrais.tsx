@@ -32,6 +32,7 @@ import { parseLocalDate } from "@/utils/dateUtils";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { Switch } from "@/components/ui/switch";
+import { CamposFormularioExternoConfig } from "@/constants/formularioExterno";
 
 interface PassageiroFormDadosCadastraisProps {
   profile: Usuario | null | undefined;
@@ -40,6 +41,7 @@ interface PassageiroFormDadosCadastraisProps {
   hideVeiculo?: boolean;
   hideAtivo?: boolean;
   isExternal?: boolean;
+  formConfig?: CamposFormularioExternoConfig;
 }
 
 export function PassageiroFormDadosCadastrais({
@@ -48,6 +50,7 @@ export function PassageiroFormDadosCadastrais({
   hideVeiculo = false,
   hideAtivo = false,
   isExternal = false,
+  formConfig,
 }: PassageiroFormDadosCadastraisProps) {
   const {
     veiculosDisplay,
@@ -60,6 +63,12 @@ export function PassageiroFormDadosCadastrais({
   const [openCalendarInicio, setOpenCalendarInicio] = useState(false);
   const [openCalendarFim, setOpenCalendarFim] = useState(false);
   const anoLetivoOptions = getAnoLetivoOptions();
+
+  const isNascimentoReq = isExternal ? (formConfig?.data_nascimento ?? true) : false;
+  const isGeneroReq = isExternal ? (formConfig?.genero ?? true) : false;
+  const isModalidadeReq = isExternal ? (formConfig?.modalidade ?? true) : false;
+  const isPeriodoReq = isExternal ? (formConfig?.periodo ?? true) : false;
+  const isTurmaReq = isExternal ? (formConfig?.turma ?? false) : false;
 
   return (
     <div className="space-y-8">
@@ -133,7 +142,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Data de Nascimento {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  Data de Nascimento {isNascimentoReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -163,7 +172,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Gênero {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  Gênero {isGeneroReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -197,12 +206,14 @@ export function PassageiroFormDadosCadastrais({
                     <FormLabel className="text-[#0a0a0a] font-medium text-xs sm:text-sm cursor-pointer flex items-center gap-2">
                       Aluno Ativo
                     </FormLabel>
+                    <p className="text-xs text-[#737373]">
+                      Define se o passageiro está ativo nas rotas operacionais.
+                    </p>
                   </div>
                   <FormControl>
                     <Switch
-                      checked={!!field.value}
+                      checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="data-[state=checked]:bg-primary"
                     />
                   </FormControl>
                 </FormItem>
@@ -212,12 +223,13 @@ export function PassageiroFormDadosCadastrais({
         )}
       </section>
 
-      <section id="section-escola-transporte" className="space-y-4">
+      {/* Seção 2: Dados Escolares e Transporte */}
+      <section id="section-escolar" className="space-y-4">
         <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
           <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
-            <Car className="w-4 h-4" />
+            <School className="w-4 h-4" />
           </div>
-          Escola e Transporte
+          Escola e Rota
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
@@ -226,28 +238,29 @@ export function PassageiroFormDadosCadastrais({
               control={form.control}
               name="veiculo_id"
               render={({ field, fieldState }) => (
-                <FormItem className="col-span-1">
+                <FormItem className="col-span-1 space-y-1.5">
                   <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                    Veículo <span className="text-[#e7000b]">*</span>
+                    Veículo <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <NativeSelect
+                      {...field}
                       icon={<Car className="h-4 w-4" />}
                       value={field.value || ""}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === "add-new-vehicle") {
+                        const val = e.target.value;
+                        if (val === "add-new-vehicle") {
                           handleAddNewVehicle();
-                          return;
+                        } else {
+                          field.onChange(val);
                         }
-                        field.onChange(value);
                       }}
                       error={!!fieldState.error}
                     >
                       <option value="" disabled hidden>Selecionar</option>
-                      {veiculosDisplay.map((veiculo) => (
-                        <option key={veiculo.id} value={veiculo.id}>
-                          {formatarPlacaExibicao(veiculo.placa)}
+                      {veiculosDisplay.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.modelo} - {formatarPlacaExibicao(v.placa)}
                         </option>
                       ))}
                       <option value="add-new-vehicle">+ Cadastrar Veículo</option>
@@ -263,21 +276,22 @@ export function PassageiroFormDadosCadastrais({
             control={form.control}
             name="escola_id"
             render={({ field, fieldState }) => (
-              <FormItem className={cn("col-span-1", hideVeiculo && !isExternal && "sm:col-span-2", "space-y-1.5")}>
+              <FormItem className={cn("col-span-1", hideVeiculo && "sm:col-span-2", "space-y-1.5")}>
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Escola {isExternal ? <span className="text-[#737373] font-normal text-xs">(opcional)</span> : <span className="text-[#e7000b]">*</span>}
+                  Escola <span className="text-[#737373] font-normal text-xs">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
+                    {...field}
                     icon={<School className="h-4 w-4" />}
                     value={field.value || ""}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "add-new-school") {
+                      const val = e.target.value;
+                      if (val === "add-new-school") {
                         handleAddNewSchool();
-                        return;
+                      } else {
+                        field.onChange(val);
                       }
-                      field.onChange(value);
                     }}
                     error={!!fieldState.error}
                   >
@@ -312,7 +326,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Modalidade {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  Modalidade {isModalidadeReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -340,7 +354,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Período {isExternal ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
+                  Período {isPeriodoReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <NativeSelect
@@ -368,7 +382,7 @@ export function PassageiroFormDadosCadastrais({
             render={({ field, fieldState }) => (
               <FormItem className="col-span-1 space-y-1.5">
                 <FormLabel className="text-[#0a0a0a] font-medium text-xs">
-                  Turma <span className="text-[#737373] font-normal text-xs">(opcional)</span>
+                  Turma {isTurmaReq ? <span className="text-[#e7000b]">*</span> : <span className="text-[#737373] font-normal text-xs">(opcional)</span>}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">

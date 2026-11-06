@@ -254,7 +254,7 @@ export const PerfilTab = React.memo(function PerfilTab() {
             </div>
             <div>
               <h2 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
-                Logotipo
+                Logotipo (contrato e recibo)
               </h2>
               <p className="text-xs text-[#737373] mt-0.5">
                 Personalize os contratos e recibos gerados com a marca do seu transporte escolar.

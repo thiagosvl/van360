@@ -1,10 +1,10 @@
 import { memo, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PreferenciasTabSkeleton } from "@/components/skeletons";
 import { useAppPreferences, useConfiguracoes } from "@/hooks";
 import { Check, Loader2, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FormularioExternoPreferenciasCard } from "./FormularioExternoPreferenciasCard";
 
 export const PreferenciasTab = memo(function PreferenciasTab() {
   const { configuracoes, isLoading, updateConfiguracoes, isUpdating } = useConfiguracoes();
@@ -101,285 +101,291 @@ export const PreferenciasTab = memo(function PreferenciasTab() {
             <h3 className="text-sm font-semibold text-[#0a0a0a]">
               Exibição do Nome do Aluno
             </h3>
-          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
-            Escolha como o nome do aluno deve ser apresentado nas listagens e telas do aplicativo.
-          </p>
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+              Escolha como o nome do aluno deve ser apresentado nas listagens e telas do aplicativo.
+            </p>
+          </div>
+
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => handleSelectFormatoAluno("curto")}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAlunoAtual === "curto" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAlunoAtual === "curto"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "aluno_curto" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAlunoAtual === "curto" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Primeiro e Segundo Nome
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectFormatoAluno("completo")}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAlunoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAlunoAtual === "completo"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "aluno_completo" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAlunoAtual === "completo" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Nome Completo
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-          <button
-            type="button"
-            onClick={() => handleSelectFormatoAluno("curto")}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              formatoAlunoAtual === "curto" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                formatoAlunoAtual === "curto"
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "aluno_curto" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : formatoAlunoAtual === "curto" ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Primeiro e Segundo Nome
-            </span>
-          </button>
+        <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
+              Exibição do Nome do Responsável
+            </h3>
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+              Escolha como o responsável deve aparecer abaixo do nome do aluno nas telas do aplicativo.
+            </p>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => handleSelectFormatoAluno("completo")}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              formatoAlunoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => handleSelectFormato("primeiro_nome")}
+              disabled={isBusy}
               className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                formatoAlunoAtual === "completo"
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAtual === "primeiro_nome" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
               )}
             >
-              {updatingKey === "aluno_completo" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : formatoAlunoAtual === "completo" ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Nome Completo
-            </span>
-          </button>
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAtual === "primeiro_nome"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "primeiro_nome" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAtual === "primeiro_nome" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Apenas Primeiro Nome
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectFormato("completo")}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                formatoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  formatoAtual === "completo"
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "completo" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : formatoAtual === "completo" ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Nome Completo
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
+              Telefone do Responsável na Lista de Alunos
+            </h3>
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+              Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
+            </p>
+          </div>
+
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => handleToggleTelefone(false)}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                !exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  !exibirTelefoneAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "telefone_false" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : !exibirTelefoneAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Não Exibir Telefone
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleToggleTelefone(true)}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  exibirTelefoneAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "telefone_true" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : exibirTelefoneAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Exibir Telefone
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0a0a0a]">
+              Dados do Veículo no Contrato
+            </h3>
+            <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+              Escolha se as informações de marca, modelo e placa do veículo devem ser exibidas nos contratos e no modelo de contrato.
+            </p>
+          </div>
+
+          <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => handleToggleVeiculoContrato(true)}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  exibirVeiculoContratoAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "veiculo_contrato_true" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : exibirVeiculoContratoAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Exibir Veículo no Contrato (Padrão)
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleToggleVeiculoContrato(false)}
+              disabled={isBusy}
+              className={cn(
+                "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
+                !exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
+                isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
+                  !exibirVeiculoContratoAtual
+                    ? "border-primary bg-primary"
+                    : "border-[#e5e5e5] bg-transparent"
+                )}
+              >
+                {updatingKey === "veiculo_contrato_false" ? (
+                  <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
+                ) : !exibirVeiculoContratoAtual ? (
+                  <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
+                ) : null}
+              </div>
+              <span className="text-sm font-medium text-[#0a0a0a]">
+                Não Exibir Veículo no Contrato
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
-        <div>
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">
-            Exibição do Nome do Responsável
-          </h3>
-          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
-            Escolha como o responsável deve aparecer abaixo do nome do aluno nas telas do aplicativo.
-          </p>
-        </div>
-
-        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-          <button
-            type="button"
-            onClick={() => handleSelectFormato("primeiro_nome")}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              formatoAtual === "primeiro_nome" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                formatoAtual === "primeiro_nome"
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "primeiro_nome" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : formatoAtual === "primeiro_nome" ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Apenas Primeiro Nome
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSelectFormato("completo")}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              formatoAtual === "completo" ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                formatoAtual === "completo"
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "completo" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : formatoAtual === "completo" ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Nome Completo
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
-        <div>
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">
-            Telefone do Responsável na Lista de Alunos
-          </h3>
-          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
-            Válido exclusivamente para a tela de Alunos. Escolha se o telefone de contato deve ser exibido na listagem.
-          </p>
-        </div>
-
-        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-          <button
-            type="button"
-            onClick={() => handleToggleTelefone(false)}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              !exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                !exibirTelefoneAtual
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "telefone_false" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : !exibirTelefoneAtual ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Não Exibir Telefone
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleToggleTelefone(true)}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              exibirTelefoneAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                exibirTelefoneAtual
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "telefone_true" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : exibirTelefoneAtual ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Exibir Telefone
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3 pt-5 border-t border-[#e5e5e5]">
-        <div>
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">
-            Dados do Veículo no Contrato
-          </h3>
-          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
-            Escolha se as informações de marca, modelo e placa do veículo devem ser exibidas nos contratos e no modelo de contrato.
-          </p>
-        </div>
-
-        <div className="rounded-[18px] border border-[#e5e5e5] bg-white divide-y divide-[#e5e5e5] overflow-hidden shadow-xs">
-          <button
-            type="button"
-            onClick={() => handleToggleVeiculoContrato(true)}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                exibirVeiculoContratoAtual
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "veiculo_contrato_true" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : exibirVeiculoContratoAtual ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Exibir Veículo no Contrato (Padrão)
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleToggleVeiculoContrato(false)}
-            disabled={isBusy}
-            className={cn(
-              "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors",
-              !exibirVeiculoContratoAtual ? "bg-[#fafafa]" : "hover:bg-[#fafafa]/60 bg-white",
-              isBusy ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"
-            )}
-          >
-            <div
-              className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0",
-                !exibirVeiculoContratoAtual
-                  ? "border-primary bg-primary"
-                  : "border-[#e5e5e5] bg-transparent"
-              )}
-            >
-              {updatingKey === "veiculo_contrato_false" ? (
-                <Loader2 className="w-2.5 h-2.5 text-primary-foreground animate-spin" />
-              ) : !exibirVeiculoContratoAtual ? (
-                <Check className="w-2.5 h-2.5 text-primary-foreground stroke-[3]" />
-              ) : null}
-            </div>
-            <span className="text-sm font-medium text-[#0a0a0a]">
-              Não Exibir Veículo no Contrato
-            </span>
-          </button>
-        </div>
-      </div>
+      <FormularioExternoPreferenciasCard
+        configuracoes={configuracoes}
+        updateConfiguracoes={updateConfiguracoes}
+        isUpdating={isUpdating}
+      />
     </div>
-  </div>
   );
 });

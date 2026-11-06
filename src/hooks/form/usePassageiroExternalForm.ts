@@ -1,27 +1,31 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { get, useForm } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FieldErrors, Resolver, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { z } from "zod";
 
 import { ROUTES } from "@/constants/routes";
 import { useEscolasWithFilters } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
-import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
   convertDateBrToISO,
   formatShortName,
-  parseCurrencyToNumber
 } from "@/utils/formatters";
-import { parseLocalDate } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { getMessage } from "@/constants/messages";
 
-import { prePassageiroSchema, PrePassageiroFormData } from "@/schemas/prePassageiroSchema";
+import {
+  buildPrePassageiroSchema,
+  prePassageiroSchema,
+  PrePassageiroFormData,
+} from "@/schemas/prePassageiroSchema";
+import {
+  CamposFormularioExternoConfig,
+  DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
+} from "@/constants/formularioExterno";
 import { useAttribution } from "@/hooks/business/useAttribution";
 import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
 import { getDefaultAnoLetivo } from "@/utils/domain";
@@ -34,6 +38,7 @@ interface PublicMotoristaData {
   apelido: string | null;
   logo_url: string | null;
   display_name?: string | null;
+  campos_formulario_externo?: CamposFormularioExternoConfig;
 }
 
 export function usePassageiroExternalForm() {
@@ -50,6 +55,9 @@ export function usePassageiroExternalForm() {
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
   const [motoristaDisplayName, setMotoristaDisplayName] = useState<string>("");
   const [motoristaLogoUrl, setMotoristaLogoUrl] = useState<string | null>(null);
+  const [formConfig, setFormConfig] = useState<CamposFormularioExternoConfig>(
+    DEFAULT_CAMPOS_FORMULARIO_EXTERNO
+  );
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -69,13 +77,22 @@ export function usePassageiroExternalForm() {
     }
   ) as { data: import("@/types/escola").Escola[] };
 
+  const formConfigRef = useRef(formConfig);
+  formConfigRef.current = formConfig;
+
+  const dynamicResolver: Resolver<PrePassageiroFormData> = useMemo(() => {
+    return (values, context, options) => {
+      const currentSchema = buildPrePassageiroSchema(formConfigRef.current);
+      return zodResolver(currentSchema)(values, context, options);
+    };
+  }, []);
+
   const form = useForm<PrePassageiroFormData>({
-    resolver: zodResolver(prePassageiroSchema),
+    resolver: dynamicResolver,
     defaultValues: {
       nome: "",
       nome_responsavel: "",
       parentesco_responsavel: "",
-
       cpf_responsavel: "",
       telefone_responsavel: "",
       email_responsavel: "",
@@ -114,7 +131,8 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      const { data } = await apiClient.get<PublicMotoristaData>(`/public/motoristas/${motoristaId}/validate`)
+      const { data } = await apiClient
+        .get<PublicMotoristaData>(`/public/motoristas/${motoristaId}/validate`)
         .catch(() => ({ data: null }));
 
       if (!data) {
@@ -125,10 +143,18 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      const displayName = data.display_name || data.apelido || formatShortName(data.nome, true);
+      const displayName =
+        data.display_name || data.apelido || formatShortName(data.nome, true);
       setMotoristaApelido(displayName);
       setMotoristaDisplayName(displayName);
       setMotoristaLogoUrl(data.logo_url || null);
+
+      if (data.campos_formulario_externo) {
+        setFormConfig({
+          ...DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
+          ...data.campos_formulario_externo,
+        });
+      }
 
       setLoading(false);
     };
@@ -136,20 +162,7 @@ export function usePassageiroExternalForm() {
     validateMotorista();
   }, [motoristaId, navigate]);
 
-  const onFormError = (errors: any) => {
-    console.group("❌ [PassageiroExternalForm] ERROS DE VALIDAÇÃO");
-    console.error("Erros brutos:", errors);
-    console.table(
-      Object.entries(errors).map(([field, err]: [string, any]) => ({
-        campo: field,
-        tipo: err?.type,
-        mensagem: err?.message,
-        erroFilho: err?.root?.message || JSON.stringify(err),
-      }))
-    );
-    console.log("Valores atuais de form.getValues():", form.getValues());
-    console.groupEnd();
-
+  const onFormError = (errors: FieldErrors<PrePassageiroFormData>) => {
     toast.error("Por favor, verifique os campos destacados em vermelho.");
     setOpenAccordionItems([
       "passageiro",
@@ -161,10 +174,6 @@ export function usePassageiroExternalForm() {
   };
 
   const handleSubmit = async (data: PrePassageiroFormData) => {
-    console.group("🚀 [PassageiroExternalForm] SUBMIT INICIADO");
-    console.log("Dados válidos recebidos pelo Zod/RHF:", data);
-    console.groupEnd();
-
     try {
       setSubmitting(true);
 
@@ -184,7 +193,7 @@ export function usePassageiroExternalForm() {
           ? moneyToNumber(String(data.valor_cobranca))
           : null,
         dia_vencimento: data.dia_vencimento
-          ? parseInt(String(data.dia_vencimento))
+          ? parseInt(String(data.dia_vencimento), 10)
           : null,
         ano_letivo: parseInt(String(data.ano_letivo), 10),
       };
@@ -201,8 +210,6 @@ export function usePassageiroExternalForm() {
       payload.horario_entrada = payload.horario_entrada?.trim() || null;
       payload.horario_saida = payload.horario_saida?.trim() || null;
 
-      console.log("📤 [PassageiroExternalForm] Payload enviado para API:", payload);
-
       const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
 
       await prePassageiroApi.createPrePassageiro({
@@ -213,21 +220,31 @@ export function usePassageiroExternalForm() {
         metadados_cadastro,
       });
 
-      console.log("✅ [PassageiroExternalForm] Cadastro realizado com sucesso!");
       setSuccess(true);
-    } catch (error: any) {
-      console.group("❌ [PassageiroExternalForm] ERRO NA API");
-      console.error("Objeto do erro:", error);
-      console.error("Resposta da API:", error.response?.data);
-      console.groupEnd();
+    } catch (error: unknown) {
+      const err = error as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+            error?: string;
+            details?: Array<{ path: (string | number)[]; message: string }>;
+          };
+        };
+        message?: string;
+      };
 
-      const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "Tente novamente mais tarde.";
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Tente novamente mais tarde.";
 
-      if (error.response?.data?.details) {
-        const issues = error.response.data.details;
-        issues.forEach((issue: any) => {
-          const field = issue.path.join('.');
-          form.setError(field as any, { type: 'manual', message: issue.message });
+      if (err.response?.data?.details) {
+        const issues = err.response.data.details;
+        issues.forEach((issue) => {
+          const field = issue.path.join(".") as keyof PrePassageiroFormData;
+          form.setError(field, { type: "manual", message: issue.message });
         });
         setOpenAccordionItems([
           "passageiro",
@@ -241,7 +258,7 @@ export function usePassageiroExternalForm() {
 
       if (
         errorMsg.toLowerCase().includes("telefone") ||
-        error.response?.status === 409
+        err.response?.status === 409
       ) {
         form.setError("telefone_responsavel", {
           type: "manual",
@@ -379,6 +396,7 @@ export function usePassageiroExternalForm() {
     motoristaApelido,
     motoristaDisplayName,
     motoristaLogoUrl,
+    formConfig,
     submitting,
     success,
     openAccordionItems,

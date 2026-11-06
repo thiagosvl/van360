@@ -10,7 +10,6 @@ import { PassageiroFormResponsavel } from "@/components/features/passageiro/form
 import { PassageiroExternalSuccess } from "@/components/features/passageiro/PassageiroExternalSuccess";
 import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
-import { cn } from "@/lib/utils";
 import { Banner } from "@/components/ui/Banner";
 
 export default function PassageiroExternalForm() {
@@ -19,6 +18,7 @@ export default function PassageiroExternalForm() {
     loading,
     motoristaDisplayName,
     motoristaLogoUrl,
+    formConfig,
     submitting,
     success,
     escolasList,
@@ -120,18 +120,14 @@ export default function PassageiroExternalForm() {
                     hideVeiculo={true}
                     hideAtivo={true}
                     isExternal={true}
+                    formConfig={formConfig}
                   />
                 </section>
 
                 {/* DADOS DO RESPONSÁVEL */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-75">
-                  <PassageiroFormResponsavel isExternal={true} />
+                  <PassageiroFormResponsavel isExternal={true} formConfig={formConfig} />
                 </section>
-
-                {/* PARCELAS (Ocultado temporariamente no form externo a pedido dos motoristas) */}
-                {/* <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
-                  <PassageiroFormFinanceiro isExternal editingPassageiro={null} />
-                </section> */}
 
                 {/* ENDEREÇO E OBSERVAÇÕES */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-150">
