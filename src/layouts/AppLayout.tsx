@@ -151,8 +151,8 @@ function AppLayoutContent({ role }: { role: UserType.MOTORISTA | "motorista" }) 
               src={profile?.logo_url || "/assets/logo-van360.webp"}
               alt={profile?.logo_url ? displayName : "Van360"}
               className={cn(
-                "h-full w-full rounded-full",
-                profile?.logo_url ? "object-cover" : "object-contain brightness-0 invert"
+                "h-full w-full",
+                profile?.logo_url ? "rounded-full object-cover" : "object-contain brightness-0 invert"
               )}
             />
           </div>

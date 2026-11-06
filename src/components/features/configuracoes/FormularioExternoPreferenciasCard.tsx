@@ -25,7 +25,7 @@ const ITENS_FORMULARIO: ItemConfig[] = [
   {
     key: "turma",
     title: "Turma do Aluno",
-    description: "Exige que o responsável informe a turma escolar (ex: 5º Ano A) para concluir o envio.",
+    description: "Exige que o responsável informe a turma escolar (ex: 5º Ano) para concluir o envio.",
   },
   {
     key: "data_nascimento",

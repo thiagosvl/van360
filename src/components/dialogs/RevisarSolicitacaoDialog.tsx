@@ -732,7 +732,7 @@ export function RevisarSolicitacaoDialog({
                             <div className="relative">
                               <School className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#737373] pointer-events-none" />
                               <Input
-                                placeholder="Ex: 5º Ano A"
+                                placeholder="Ex: 5º Ano"
                                 {...field}
                                 value={field.value || ""}
                                 className="pl-10 h-10 sm:h-11 rounded-[18px] bg-white border border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] focus:ring-1 focus:ring-[#0a0a0a] text-sm text-[#0a0a0a]"

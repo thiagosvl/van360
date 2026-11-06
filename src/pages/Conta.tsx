@@ -57,7 +57,7 @@ export const Conta = memo(function Conta() {
 
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
+  const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
   const { can, isSubConta, isGestor } = usePermissions();
   const { isBlocked: isSubscriptionBlocked, isTrial, isExpired, trialDaysLeft } = useSubscriptionAccess(user?.id);
 
@@ -238,13 +238,10 @@ export const Conta = memo(function Conta() {
       <div className="space-y-5">
         <div className="bg-white rounded-[24px] border border-[#e5e5e5] p-5 sm:p-6 shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] flex items-center gap-4">
           <ProfileAvatarUpload
-            userId={profile?.id}
             logoUrl={profile?.logo_url}
             displayName={displayName}
             userInitials={userInitials}
             isLoading={isLoadingProfile}
-            canEdit={!isSubConta && !!profile?.id}
-            onLogoUpdated={refreshProfile}
           />
 
           <div className="min-w-0 space-y-0.5">
