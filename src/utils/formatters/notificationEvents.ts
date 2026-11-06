@@ -91,6 +91,7 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
 
   [NotificationEventEnum.MOTORISTA_RESUMO_SEMANAL_PARCELAS]: { title: "Resumo Semanal das Parcelas", category: NotificationCategoryEnum.MOTORISTA, icon: BarChart2, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
   [NotificationEventEnum.MOTORISTA_COBRANCAS_HOJE]: { title: "Parcelas Vencendo Hoje", category: NotificationCategoryEnum.MOTORISTA, icon: BarChart2, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
+  [NotificationEventEnum.MOTORISTA_CONFERENCIA_NOTURNA]: { title: "Conferência Noturna de Pagamentos", category: NotificationCategoryEnum.MOTORISTA, icon: Receipt, iconBg: "bg-blue-500/10 border-blue-500/20", iconColor: "text-blue-400" },
   [NotificationEventEnum.MOTORISTA_ANIVERSARIANTES_SEMANA]: { title: "Aniversariantes da Semana", category: NotificationCategoryEnum.MOTORISTA, icon: Gift, iconBg: "bg-pink-500/10 border-pink-500/20", iconColor: "text-pink-400" },
   [NotificationEventEnum.MOTORISTA_TESTE_BOAS_VINDAS]: { title: "Boas-vindas ao App", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_TESTE_ENCERRADO]: { title: "Período de Teste Encerrado", category: NotificationCategoryEnum.MOTORISTA, icon: Clock, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
@@ -98,6 +99,11 @@ const EVENT_METADATA: Record<NotificationEventEnum, EventMeta> = {
   [NotificationEventEnum.MOTORISTA_TRIAL_BONUS_INATIVO]: { title: "Bônus Trial Inativo", category: NotificationCategoryEnum.MOTORISTA, icon: Gift, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_TRIAL_RECUPERACAO_1]: { title: "Oferta de Recuperação Trial", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-indigo-500/10 border-indigo-500/20", iconColor: "text-indigo-400" },
   [NotificationEventEnum.MOTORISTA_TRIAL_RECUPERACAO_2]: { title: "Oferta Final Trial", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-indigo-500/10 border-indigo-500/20", iconColor: "text-indigo-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_ATIVACAO_D1]: { title: "Ativação Trial (D+1)", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_ATIVACAO_D3]: { title: "Ativação Trial (D+3)", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_ATIVACAO_D5]: { title: "Ativação Trial (D+5)", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_ATIVACAO_D8]: { title: "Ativação Trial (D+8)", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
+  [NotificationEventEnum.MOTORISTA_TRIAL_ATIVACAO_D11]: { title: "Ativação Trial (D+11)", category: NotificationCategoryEnum.MOTORISTA, icon: Sparkles, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
 
   [NotificationEventEnum.MOTORISTA_ASSINATURA_PAGO]: { title: "Assinatura SaaS Paga", category: NotificationCategoryEnum.MOTORISTA, icon: CheckCircle2, iconBg: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-400" },
   [NotificationEventEnum.MOTORISTA_ASSINATURA_VENCENDO]: { title: "Assinatura SaaS a Vencer", category: NotificationCategoryEnum.MOTORISTA, icon: Calendar, iconBg: "bg-amber-500/10 border-amber-500/20", iconColor: "text-amber-400" },
