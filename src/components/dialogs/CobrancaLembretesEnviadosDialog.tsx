@@ -1,4 +1,4 @@
-﻿import { UnifiedEmptyState } from "@/components/empty";
+import { UnifiedEmptyState } from "@/components/empty";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Banner } from "@/components/ui/Banner";
 import { BaseDialog } from "@/components/ui/BaseDialog";
@@ -125,7 +125,7 @@ export function CobrancaLembretesEnviadosDialog({
       <BaseDialog.Header
         title={tituloDialog}
         subtitle={`${alunoNome} • Parcela de ${mesAnoTexto}`}
-        icon={<WhatsAppIcon className="w-5 h-5 text-[#0a0a0a]" />}
+        icon={<WhatsAppIcon className="w-5 h-5 text-[#25D366]" />}
         onClose={() => safeCloseDialog(() => onOpenChange(false))}
       />
 
@@ -198,15 +198,8 @@ export function CobrancaLembretesEnviadosDialog({
           )}
         </div>
       </BaseDialog.Body>
-
-      <BaseDialog.Footer>
-        <BaseDialog.Action
-          label="Fechar"
-          variant="secondary"
-          onClick={() => safeCloseDialog(() => onOpenChange(false))}
-        />
-      </BaseDialog.Footer>
     </BaseDialog>
   );
 }
+
 export default CobrancaLembretesEnviadosDialog;
