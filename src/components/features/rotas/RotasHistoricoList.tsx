@@ -5,7 +5,7 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 import { ROUTES } from "@/constants/routes";
 import { RouteExecutionStatus } from "@/types/route";
-import { formatDateTime, formatarDuracao } from "@/utils/formatters";
+import { formatarDataHoraExecucaoRota, formatarDuracao } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
 interface RotasHistoricoListProps {
@@ -86,7 +86,7 @@ export function RotasHistoricoList({
               <div className="text-xs text-[#737373] font-normal leading-tight flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-[#737373]" />
-                  {formatDateTime(exec.iniciada_em)}
+                  {formatarDataHoraExecucaoRota(exec.iniciada_em)}
                 </span>
                 {exec.finalizada_em && (
                   <>

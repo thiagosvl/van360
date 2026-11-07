@@ -225,7 +225,7 @@ export const formatarHoraMinuto = (date?: string | Date | null): string => {
   const parts = new Intl.DateTimeFormat("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "America/Sao_Paulo"
+
   }).formatToParts(d);
   const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
   const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
@@ -240,7 +240,20 @@ export const formatarDataCurtaBR = (date?: string | Date | null): string => {
     day: "2-digit",
     month: "2-digit",
     year: "2-digit",
-    timeZone: "America/Sao_Paulo"
+
   }).format(d);
 };
 
+
+export const formatarDataHoraExecucaoRota = (date?: string | Date | null): string => {
+  if (!date) return "-";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "-";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+};
