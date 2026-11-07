@@ -28,7 +28,7 @@ export const IAP_TIER_PRICES = {
   },
   [IapCapacityTier.TIER_250]: {
     monthly: 99.9,
-    annual: 990.0,
+    annual: 999.0,
   },
 } as const;
 
