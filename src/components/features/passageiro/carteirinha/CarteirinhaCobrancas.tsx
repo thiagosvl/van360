@@ -1,4 +1,4 @@
-﻿import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPaymentMethodLabel } from "@/constants/paymentMethods";
@@ -497,7 +497,7 @@ export const CarteirinhaCobrancas = ({
             {displayCobrancas.map((cobranca, idx) => (
               <CobrancaItemPassageiro
                 key={cobranca.id}
-                cobranca={cobranca}
+                cobranca={{ ...cobranca, passageiro: cobranca.passageiro || passageiro }}
                 passageiro={passageiro}
                 selectedYear={selectedYear}
                 index={idx}
@@ -790,7 +790,7 @@ const CobrancaItemPassageiro = forwardRef<
 
             <div className="hidden sm:flex items-center ml-1" onClick={(e) => e.stopPropagation()}>
               <CobrancaActionsMenu
-                cobranca={cobranca}
+                cobranca={{ ...cobranca, passageiro: cobranca.passageiro || passageiro }}
                 onVerCarteirinha={undefined}
                 onEditarCobranca={isCancelada
                   ? undefined

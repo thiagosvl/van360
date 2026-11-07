@@ -6,6 +6,13 @@ export enum UserType {
   RESPONSAVEL = "responsavel",
 }
 
+export enum CobrancaLembreteTipoEnum {
+  ANTECIPADO = "ANTECIPADO",
+  VENCIMENTO_HOJE = "VENCIMENTO_HOJE",
+  ATRASO = "ATRASO",
+  ISENCAO_ENCARGOS = "ISENCAO_ENCARGOS",
+}
+
 export enum TipoResponsavel {
   PRINCIPAL = "principal",
   ADICIONAL = "adicional",

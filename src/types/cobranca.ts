@@ -1,5 +1,14 @@
-﻿import { CobrancaStatus, CobrancaTipoPagamento } from "./enums";
+import { CobrancaLembreteTipoEnum, CobrancaStatus, CobrancaTipoPagamento } from "./enums";
 import { Passageiro } from "./passageiro";
+
+export interface CobrancaLembreteEnviado {
+  id: string;
+  evento: string;
+  tipo: CobrancaLembreteTipoEnum;
+  dias_referencia: number | null;
+  destinatario: string | null;
+  enviado_em: string;
+}
 
 export interface Cobranca {
   id: string;

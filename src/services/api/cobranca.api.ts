@@ -1,3 +1,4 @@
+import { CobrancaLembreteEnviado } from "@/types/cobranca";
 import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, ComplementarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
@@ -13,7 +14,7 @@ export const cobrancaApi = {
         return apiClient.post(`${endpointBase}`, payload).then(res => res.data);
     },
 
-    updateCobranca: (id: string, data: UpdateCobrancaDTO, cobrancaOriginal?: any) => {
+    updateCobranca: (id: string, data: UpdateCobrancaDTO, cobrancaOriginal?: Record<string, unknown>) => {
         const cleanedData = {
             ...data,
             valor: data.valor !== undefined ? (typeof data.valor === 'string' ? moneyToNumber(data.valor) : data.valor) : undefined,
@@ -37,7 +38,6 @@ export const cobrancaApi = {
 
     countByPassageiro: (passageiroId: string) =>
         apiClient.get(`${endpointBase}/passageiro/${passageiroId}/count`).then(res => res.data.count),
-
 
     desfazerPagamento: (cobrancaId: string) =>
         apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
@@ -65,8 +65,6 @@ export const cobrancaApi = {
             .then(res => res.data);
     },
 
-
-
     toggleNotificacoes: (passageiroId: string, novoStatus: boolean) =>
         apiClient
             .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })
@@ -79,4 +77,7 @@ export const cobrancaApi = {
 
     isentarEncargos: (cobrancaId: string) =>
         apiClient.post(`${endpointBase}/${cobrancaId}/isentar-encargos`).then(res => res.data),
+
+    listarLembretesEnviados: (cobrancaId: string): Promise<CobrancaLembreteEnviado[]> =>
+        apiClient.get(`${endpointBase}/${cobrancaId}/lembretes-enviados`).then(res => res.data),
 };

@@ -42,6 +42,7 @@ export { usePassageiroForm } from "./form/usePassageiroForm";
 
 export { useBuscarResponsavel } from "./api/useBuscarResponsavel";
 export { useCobranca } from "./api/useCobranca";
+export { useCobrancaLembretesEnviados } from "./api/useCobrancaLembretesEnviados";
 export { useCobrancas } from "./api/useCobrancas";
 export { useCobrancasByPassageiro } from "./api/useCobrancasByPassageiro";
 export { useReciboAnual } from "./api/useReciboAnual";

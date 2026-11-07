@@ -3,6 +3,7 @@ import { ExcluirContaDialog } from "@/components/dialogs/ExcluirContaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
+import { CobrancaLembretesEnviadosDialog } from "@/components/dialogs/CobrancaLembretesEnviadosDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchNotificationDialog";
@@ -142,6 +143,7 @@ import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
   OpenIsentarEncargosCobrancaDialogProps,
+  OpenCobrancaLembretesEnviadosDialogProps,
   OpenCobrancaEditDialogProps,
   OpenCobrancaFormProps,
   OpenConfirmationDialogProps,
@@ -358,6 +360,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [cobrancaDeleteDialogState, setCobrancaDeleteDialogState] = useState<{
     open: boolean;
     props?: OpenCobrancaDeleteDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [cobrancaLembretesEnviadosDialogState, setCobrancaLembretesEnviadosDialogState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaLembretesEnviadosDialogProps;
   }>({
     open: false,
   });
@@ -805,6 +814,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const openCobrancaLembretesEnviadosDialog = (props: OpenCobrancaLembretesEnviadosDialogProps) => {
+    setCobrancaLembretesEnviadosDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeCobrancaLembretesEnviadosDialog = () => {
+    safeCloseDialog(() =>
+      setCobrancaLembretesEnviadosDialogState((prev) => ({ ...prev, open: false }))
+    );
+  };
+
   const openIsentarEncargosCobrancaDialog = (props: OpenIsentarEncargosCobrancaDialogProps) => {
     setIsentarEncargosCobrancaDialogState({
       open: true,
@@ -1100,6 +1122,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeCobrancaDeleteDialog,
         openIsentarEncargosCobrancaDialog,
         closeIsentarEncargosCobrancaDialog,
+        openCobrancaLembretesEnviadosDialog,
+        closeCobrancaLembretesEnviadosDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
         openComplementarPagamentoDialog,
@@ -1463,6 +1487,21 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             );
             responsavelFormDialogState.props?.onSuccess?.();
           }}
+        />
+      )}
+
+      {cobrancaLembretesEnviadosDialogState.open && cobrancaLembretesEnviadosDialogState.props && (
+        <CobrancaLembretesEnviadosDialog
+          open={cobrancaLembretesEnviadosDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeCobrancaLembretesEnviadosDialog();
+            } else {
+              setCobrancaLembretesEnviadosDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
+          cobranca={cobrancaLembretesEnviadosDialogState.props.cobranca}
+          modoEfetivo={cobrancaLembretesEnviadosDialogState.props.modoEfetivo}
         />
       )}
 

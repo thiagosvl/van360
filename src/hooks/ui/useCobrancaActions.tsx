@@ -1,4 +1,4 @@
-﻿import { useLayout } from "@/contexts/LayoutContext";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
   useDeleteCobranca,
   useDesfazerPagamento,
@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   FilePen,
   FileText,
+  History,
   QrCode,
   Receipt,
   RotateCcw,
@@ -213,7 +214,11 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
-  const { openComplementarPagamentoDialog, openIsentarEncargosCobrancaDialog } = useLayout();
+  const {
+    openComplementarPagamentoDialog,
+    openIsentarEncargosCobrancaDialog,
+    openCobrancaLembretesEnviadosDialog,
+  } = useLayout();
   const { trackActivity } = useActivityTracker();
   const {
     cobranca,
@@ -229,6 +234,10 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
   const { financeiro } = useMotoristaFinanceiroApi();
   const modoVan = financeiro?.modo_cobranca || ModoCobrancaEnum.DESATIVADO;
   const modoEfetivo = cobranca.passageiro?.modo_cobranca || modoVan;
+  const verLembretesLabel =
+    modoEfetivo === ModoCobrancaEnum.AUTOMATICA
+      ? "Ver Cobranças Enviadas"
+      : "Ver Lembretes Enviados";
   const temLembretesHabilitados =
     !cobranca.passageiro?.isento &&
     modoEfetivo !== ModoCobrancaEnum.DESATIVADO;
@@ -287,6 +296,20 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       }
 
       if (temLembretesHabilitados) {
+        projActions.push({
+          label: verLembretesLabel,
+          icon: <History className="h-4 w-4" />,
+          onClick: () => {
+            document.body.click();
+            openCobrancaLembretesEnviadosDialog({
+              cobranca,
+              modoEfetivo,
+            });
+          },
+          disabled: isActionLoading,
+          swipeColor: "bg-[#0a0a0a]",
+          hasSeparatorAfter: true,
+        });
         const desativar = cobranca.desativar_lembretes ?? false;
         projActions.push({
           label: desativar ? "Ativar Lembretes" : "Desativar Lembretes",
@@ -503,6 +526,23 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
+    if (temLembretesHabilitados) {
+      actions.push({
+        label: verLembretesLabel,
+        icon: <History className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click();
+          openCobrancaLembretesEnviadosDialog({
+            cobranca,
+            modoEfetivo,
+          });
+        },
+        disabled: isActionLoading,
+        swipeColor: "bg-[#0a0a0a]",
+        hasSeparatorAfter: true,
+      });
+    }
+
     if (!isPago && temLembretesHabilitados) {
       const desativar = cobranca.desativar_lembretes ?? false;
       actions.push({
@@ -561,5 +601,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     props.onActionSuccess,
     openComplementarPagamentoDialog,
     openIsentarEncargosCobrancaDialog,
+    openCobrancaLembretesEnviadosDialog,
+    modoEfetivo,
+    verLembretesLabel,
   ]);
 }

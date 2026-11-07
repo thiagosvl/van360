@@ -1,5 +1,5 @@
-import { Cobranca } from "@/types/cobranca";
-import { PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
+﻿import { Cobranca } from "@/types/cobranca";
+import { ModoCobrancaEnum, PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
@@ -161,6 +161,11 @@ export interface OpenCobrancaDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
   onEdit?: () => void;
   isLoading?: boolean;
+}
+
+export interface OpenCobrancaLembretesEnviadosDialogProps {
+  cobranca: Cobranca;
+  modoEfetivo?: ModoCobrancaEnum | string;
 }
 
 export interface OpenIsentarEncargosCobrancaDialogProps {
@@ -535,6 +540,8 @@ export interface LayoutContextType {
   closeCobrancaDeleteDialog: () => void;
   openIsentarEncargosCobrancaDialog: (props: OpenIsentarEncargosCobrancaDialogProps) => void;
   closeIsentarEncargosCobrancaDialog: () => void;
+  openCobrancaLembretesEnviadosDialog: (props: OpenCobrancaLembretesEnviadosDialogProps) => void;
+  closeCobrancaLembretesEnviadosDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
   openComplementarPagamentoDialog: (props: OpenComplementarPagamentoDialogProps) => void;
