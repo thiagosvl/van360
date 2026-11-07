@@ -11,7 +11,6 @@ import {
   formatarHoraMinuto,
   getMesNome,
 } from "@/utils/formatters";
-import { formatRecipientContact } from "@/utils/formatters/notificationEvents";
 import {
   AlertCircle,
   BadgePercent,
@@ -28,18 +27,12 @@ export interface CobrancaLembretesEnviadosDialogProps {
   modoEfetivo?: ModoCobrancaEnum | string;
 }
 
-function getLembreteItemPresentation(
-  item: CobrancaLembreteEnviado,
-  isAutomatica: boolean
-) {
-  const prefixo = isAutomatica ? "Cobrança" : "Lembrete";
-  const sufixoGenero = isAutomatica ? "a" : "o";
+function getLembreteItemPresentation(item: CobrancaLembreteEnviado) {
   const dias = item.dias_referencia ?? 0;
 
   switch (item.tipo) {
     case CobrancaLembreteTipoEnum.ANTECIPADO:
       return {
-        titulo: `${prefixo} antecipad${sufixoGenero}`,
         subtitulo:
           dias === 1
             ? "1 dia antes do vencimento"
@@ -49,14 +42,12 @@ function getLembreteItemPresentation(
 
     case CobrancaLembreteTipoEnum.VENCIMENTO_HOJE:
       return {
-        titulo: `${prefixo} no dia do vencimento`,
-        subtitulo: "Enviado na data de vencimento",
+        subtitulo: "No dia do vencimento",
         icon: <Clock className="h-4 w-4 text-[#0a0a0a]" />,
       };
 
     case CobrancaLembreteTipoEnum.ATRASO:
       return {
-        titulo: `${prefixo} em atraso`,
         subtitulo:
           dias === 1
             ? "1 dia após o vencimento"
@@ -66,14 +57,12 @@ function getLembreteItemPresentation(
 
     case CobrancaLembreteTipoEnum.ISENCAO_ENCARGOS:
       return {
-        titulo: "Reenvio com isenção de encargos",
-        subtitulo: "Novo Pix sem multa e juros",
+        subtitulo: "Reenvio sem multa e juros",
         icon: <BadgePercent className="h-4 w-4 text-[#0a0a0a]" />,
       };
 
     default:
       return {
-        titulo: `${prefixo} enviad${sufixoGenero}`,
         subtitulo: "Enviado via WhatsApp",
         icon: <Bell className="h-4 w-4 text-[#0a0a0a]" />,
       };
@@ -152,44 +141,30 @@ export function CobrancaLembretesEnviadosDialog({
           ) : (
             <div className="space-y-2.5">
               {lembretes.map((item) => {
-                const info = getLembreteItemPresentation(item, isAutomatica);
+                const info = getLembreteItemPresentation(item);
                 const dataCurta = formatarDataCurtaBR(item.enviado_em);
                 const horaMinuto = formatarHoraMinuto(item.enviado_em);
-                const telefoneFormatado = item.destinatario
-                  ? formatRecipientContact(item.destinatario, "WABA")
-                  : null;
+                const dataHoraTexto = horaMinuto
+                  ? `${dataCurta} às ${horaMinuto}`
+                  : dataCurta;
 
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 sm:p-4 rounded-[18px] bg-white border border-[#e5e5e5] flex items-center justify-between gap-3"
+                    className="p-3.5 sm:p-4 rounded-[18px] bg-white border border-[#e5e5e5] flex items-center gap-3"
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center shrink-0">
-                        {info.icon}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-[#0a0a0a] leading-tight truncate">
-                          {info.titulo}
-                        </p>
-                        <p className="text-xs text-[#737373] font-normal mt-0.5 truncate">
-                          {info.subtitulo}
-                          {telefoneFormatado ? ` • ${telefoneFormatado}` : ""}
-                        </p>
-                      </div>
+                    <div className="w-9 h-9 rounded-[12px] bg-[#f5f5f5] border border-[#e5e5e5] flex items-center justify-center shrink-0">
+                      {info.icon}
                     </div>
 
-                    <div className="flex flex-col items-end shrink-0 text-right">
-                      <div className="inline-flex items-center gap-1 text-xs font-semibold text-[#0a0a0a] tabular-nums">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>{dataCurta}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0a0a0a] leading-tight tabular-nums">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{dataHoraTexto}</span>
                       </div>
-                      {horaMinuto && (
-                        <span className="text-[11px] text-[#737373] font-normal tabular-nums mt-0.5">
-                          às {horaMinuto}
-                        </span>
-                      )}
+                      <p className="text-xs text-[#737373] font-normal mt-0.5 leading-snug">
+                        {info.subtitulo}
+                      </p>
                     </div>
                   </div>
                 );
