@@ -12,13 +12,14 @@ import type { ProximaRenovacaoItem } from "@/services/api/admin/admin-financial.
 
 interface AdminUpcomingRenewalsTableProps {
   renewals: ProximaRenovacaoItem[];
+  diasRetencaoCartao?: number;
 }
 
 function formatCurrency(val: number) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTableProps) {
+export function AdminUpcomingRenewalsTable({ renewals, diasRetencaoCartao = 30 }: AdminUpcomingRenewalsTableProps) {
   const [windowFilter, setWindowFilter] = useState<number>(30);
 
   const filterOptions = [
@@ -163,7 +164,9 @@ export function AdminUpcomingRenewalsTable({ renewals }: AdminUpcomingRenewalsTa
                             <>
                               <CreditCard className="h-3.5 w-3.5 text-blue-400 shrink-0" />
                               <span className="text-slate-200">{item.dataLiquidacaoPrevista ? formatDateToBR(item.dataLiquidacaoPrevista) : "-"}</span>
-                              <span className="text-[10px] text-blue-300 bg-blue-500/20 px-1 py-0.2 rounded border border-blue-500/30 font-bold">Cartão (D+21)</span>
+                              <span className="text-[10px] text-blue-300 bg-blue-500/20 px-1 py-0.2 rounded border border-blue-500/30 font-bold">
+                                Cartão (D+{diasRetencaoCartao})
+                              </span>
                             </>
                           ) : (
                             <>

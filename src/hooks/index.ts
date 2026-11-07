@@ -1,4 +1,4 @@
-// Business hooks
+﻿// Business hooks
 export { useGastosCalculations } from "./business/useGastosCalculations";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
@@ -98,3 +98,5 @@ export {
 
 export { useAppPreferences } from "./business/useAppPreferences";
 export { usePixVeiculoResolver } from "./ui/usePixVeiculoResolver";
+
+export { useAdminInvoicesViewModel } from "./ui/admin/useAdminInvoicesViewModel";

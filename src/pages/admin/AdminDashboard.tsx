@@ -1103,7 +1103,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <AdminUpcomingRenewalsTable renewals={financialData.proximasRenovacoes} />
+              <AdminUpcomingRenewalsTable
+                renewals={financialData.proximasRenovacoes}
+                diasRetencaoCartao={financialData.diasRetencaoCartao}
+              />
             </>
           ) : (
             <AdminEmptyState

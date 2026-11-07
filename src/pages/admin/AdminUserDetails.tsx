@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/utils/notifications/toast";
@@ -125,7 +125,7 @@ import {
 import { PhoneInput } from "@/components/forms";
 import { cpfCnpjSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { dateMask as maskDate } from "@/utils/masks";
-import { toPersistenceString, getNowBR, getEndOfDayBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime } from "@/utils/dateUtils";
+import { toPersistenceString, getNowBR, getEndOfDayBR, toISODateTimeBR, formatSafeBrazilianDate, formatDateTime, calcularDataLiquidacaoCartao } from "@/utils/dateUtils";
 import { AdminUserContractsTab } from "@/components/features/admin/user-details/AdminUserContractsTab";
 import { formatCurrency } from "@/utils/formatters";
 import { CanalAquisicaoLabels, resolveOrigemAtribuicao } from "@/utils/acquisition-channel.utils";
@@ -2921,7 +2921,14 @@ export default function AdminUserDetails() {
                                 {formatDate(f.data_vencimento)}
                               </td>
                               <td className="py-3 text-xs text-muted-foreground">
-                                {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
+                                <div>
+                                  <span>{f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}</span>
+                                  {f.metodo_pagamento === CheckoutPaymentMethod.CREDIT_CARD && (f.status === SubscriptionInvoiceStatus.PAID || f.status === SubscriptionInvoiceStatus.PENDING) && (f.data_pagamento || f.data_vencimento) && (
+                                    <span className="block text-[10px] font-medium text-sky-400 font-mono mt-0.5">
+                                      Recebimento: {formatDate(calcularDataLiquidacaoCartao(f.data_pagamento || f.data_vencimento).toISOString())}
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-3 text-center">
                                 <InvoiceStatusBadge status={f.status} />
@@ -3017,9 +3024,14 @@ export default function AdminUserDetails() {
                             </div>
                             <div className="text-right">
                               <span className="font-medium text-muted-foreground block">Pagamento</span>
-                              <span className="font-semibold text-foreground">
+                              <span className="font-semibold text-foreground block">
                                 {f.data_pagamento ? formatDateTime(f.data_pagamento) : "—"}
                               </span>
+                              {f.metodo_pagamento === CheckoutPaymentMethod.CREDIT_CARD && (f.status === SubscriptionInvoiceStatus.PAID || f.status === SubscriptionInvoiceStatus.PENDING) && (f.data_pagamento || f.data_vencimento) && (
+                                <span className="block text-[10px] font-medium text-sky-400 font-mono mt-0.5">
+                                  Recebimento: {formatDate(calcularDataLiquidacaoCartao(f.data_pagamento || f.data_vencimento).toISOString())}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

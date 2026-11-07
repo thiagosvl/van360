@@ -252,3 +252,31 @@ export const isAniversarianteDoMes = (dataNascimento?: string | Date | null, mes
   return (d.getMonth() + 1) === mes;
 };
 
+
+export const calcularDataLiquidacaoCartao = (
+  dateInput: Date | string,
+  diasRetencao = 30
+): Date => {
+  const ymd = toPersistenceString(dateInput);
+  const [year, month, day] = ymd.split("-").map(Number);
+  const cursor = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+
+  const startDayOfWeek = cursor.getUTCDay();
+  if (startDayOfWeek === 6 || startDayOfWeek === 0) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  cursor.setUTCDate(cursor.getUTCDate() + diasRetencao);
+
+  const endDayOfWeek = cursor.getUTCDay();
+  if (endDayOfWeek === 6) {
+    cursor.setUTCDate(cursor.getUTCDate() + 2);
+  } else if (endDayOfWeek === 0) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  const y = cursor.getUTCFullYear();
+  const m = String(cursor.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(cursor.getUTCDate()).padStart(2, "0");
+  return new Date(`${y}-${m}-${d}T12:00:00-03:00`);
+};
