@@ -633,14 +633,14 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
         },
         {
           label: "Juros por Atraso",
-          desc: "Cobrado sobre a parcela pelo tempo de atraso (geralmente 1% ao mês).",
+          desc: "Cobrado sobre a parcela por dia de atraso.",
           state: jurosAtraso,
           setState: setJurosAtraso,
           icon: Timer,
           iconColor: "text-primary",
           allowParcelas: false,
           simBaseLabel: "Exemplo",
-          simResultLabel: jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? "Juros p/ mês" : "Juros p/ dia",
+          simResultLabel: "Juros p/ dia",
           simBaseValue: 200,
           simValue:
             jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
@@ -972,7 +972,7 @@ export default function ContractSetupDialog({ isOpen, onClose, onSuccess, ano }:
           <p className="text-sm font-black text-foreground tracking-tight">
             {jurosAtraso.valor <= 0
               ? "Não informado"
-              : (jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}%` : moneyMask(jurosAtraso.valor))}
+              : (jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL ? `${jurosAtraso.valor}% ao dia` : `${moneyMask(jurosAtraso.valor)} ao dia`)}
           </p>
         </div>
         <div className="p-3.5 bg-[#f5f5f5] rounded-[20px] border border-[#e5e5e5] flex flex-col items-center text-center col-span-2">

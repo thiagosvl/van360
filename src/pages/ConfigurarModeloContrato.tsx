@@ -884,7 +884,7 @@ export default function ConfigurarModeloContrato() {
               },
               {
                 title: "Juros por Atraso",
-                desc: "Juros cobrados pelo período em aberto.",
+                desc: "Juros cobrados por dia de atraso.",
                 state: jurosAtraso,
                 setState: setJurosAtraso,
                 icon: Percent,
@@ -892,8 +892,8 @@ export default function ConfigurarModeloContrato() {
                 simBaseLabel: "Exemplo R$ 200,00",
                 simResult:
                   jurosAtraso.tipo === ContractMultaTipo.PERCENTUAL
-                    ? (200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                    : jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                    ? `${(200 * (jurosAtraso.valor / 100)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} / dia`
+                    : `${jurosAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} / dia`,
               },
               {
                 title: "Multa Rescisória",

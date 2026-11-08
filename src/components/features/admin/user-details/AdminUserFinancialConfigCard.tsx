@@ -327,7 +327,7 @@ export function AdminUserFinancialConfigCard({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="percentual" className="text-xs">% ao mês</SelectItem>
+                              <SelectItem value="percentual" className="text-xs">% ao dia</SelectItem>
                               <SelectItem value="fixo" className="text-xs">R$ ao dia</SelectItem>
                             </SelectContent>
                           </Select>
