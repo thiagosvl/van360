@@ -15,7 +15,7 @@ import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { Banner } from "@/components/ui/Banner";
 import { Users2, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
-import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
@@ -64,6 +64,7 @@ export default function Passageiros() {
     clearFilters,
     setFilters,
     isPassageirosLoading,
+    isPassageirosFetching,
     passageiros,
     handleOpenNewDialog,
     handleHistorico,
@@ -73,12 +74,9 @@ export default function Passageiros() {
     handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
-    page,
-    setPage,
-    limit,
-    setLimit,
-    totalPages,
     totalItems,
+    hasMorePassageiros,
+    handleLoadMorePassageiros,
   } = usePassageirosViewModel();
 
   if (!can("passageiros.visualizar")) {
@@ -234,14 +232,10 @@ export default function Passageiros() {
                           onEnviarWhatsApp={handleEnviarWhatsApp}
                           usarContratos={!!profile?.config_contrato?.usar_contratos}
                         />
-                        <PassageirosPagination
-                          currentPage={page}
-                          totalPages={totalPages}
-                          totalItems={totalItems}
-                          limit={limit}
-                          onPageChange={setPage}
-                          onLimitChange={setLimit}
-                          className="mt-4"
+                        <LoadMoreButton
+                          hasMore={hasMorePassageiros}
+                          isLoading={isPassageirosFetching}
+                          onLoadMore={handleLoadMorePassageiros}
                         />
                       </>
                     )}
@@ -321,14 +315,10 @@ export default function Passageiros() {
                     onEnviarWhatsApp={handleEnviarWhatsApp}
                     usarContratos={false}
                   />
-                  <PassageirosPagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    limit={limit}
-                    onPageChange={setPage}
-                    onLimitChange={setLimit}
-                    className="mt-4"
+                  <LoadMoreButton
+                    hasMore={hasMorePassageiros}
+                    isLoading={isPassageirosFetching}
+                    onLoadMore={handleLoadMorePassageiros}
                   />
                 </>
               )}

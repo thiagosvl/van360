@@ -15,7 +15,7 @@ import { RenovacaoPassengerCard } from "@/components/features/renovacao/Renovaca
 import { RenovacaoSemTelefoneCard } from "@/components/features/renovacao/RenovacaoSemTelefoneCard";
 import { RenovacaoSemTelefoneBanner } from "@/components/features/renovacao/RenovacaoSemTelefoneBanner";
 import { RenovacaoStickyBar } from "@/components/features/renovacao/RenovacaoStickyBar";
-import { PassageirosPagination } from "@/components/features/passageiro/PassageirosPagination";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
 import { RenovacaoStatus } from "@/types/enums";
@@ -88,6 +88,9 @@ export default function Renovacoes() {
     isAllSelected,
     kpis,
     passageiros,
+    paginatedPassageiros,
+    hasMorePassageiros,
+    handleLoadMorePassageiros,
     semTelefoneCount,
     pendentesAptosCount,
     periodoConfig,
@@ -399,14 +402,6 @@ export default function Renovacoes() {
     });
   };
 
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-
-  useEffect(() => {
-    setPage(1);
-    clearSelection();
-  }, [statusFilter, escolaFilter, periodoFilter, searchTerm, anoDestino, clearSelection]);
-
   const hasAutoOpenedPeriodoRef = useRef<number | null>(null);
   const hasAutoOpenedTutorialRef = useRef<boolean>(false);
 
@@ -470,13 +465,6 @@ export default function Renovacoes() {
     const totalFim = periodoConfig.ano_fim_cobranca * 12 + periodoConfig.mes_fim_cobranca;
     return totalFim >= totalInicio ? totalFim - totalInicio + 1 : null;
   }, [periodoConfig]);
-
-  const totalPages = Math.ceil((passageiros.length || 0) / limit);
-
-  const paginatedPassageiros = useMemo(() => {
-    const from = (page - 1) * limit;
-    return passageiros.slice(from, from + limit);
-  }, [passageiros, page, limit]);
 
   const currentYear = new Date().getFullYear();
   const anosDisponiveisRenovacao = useMemo(
@@ -637,7 +625,6 @@ export default function Renovacoes() {
                 isLoading={isFetching}
                 onSelectStatus={(status) => {
                   setStatusFilter(status);
-                  setPage(1);
                 }}
               />
 
@@ -645,30 +632,24 @@ export default function Renovacoes() {
                 searchTerm={searchTerm}
                 onSearchChange={(term) => {
                   setSearchTerm(term);
-                  setPage(1);
                 }}
                 statusFilter={statusFilter}
                 onStatusChange={(s) => {
                   setStatusFilter(s);
-                  setPage(1);
                 }}
                 escolaFilter={escolaFilter}
                 onEscolaChange={(e) => {
                   setEscolaFilter(e);
-                  setPage(1);
                 }}
                 periodoFilter={periodoFilter}
                 onPeriodoChange={(p) => {
                   setPeriodoFilter(p);
-                  setPage(1);
                 }}
                 onApplyFilters={(filters) => {
                   applyFilters(filters);
-                  setPage(1);
                 }}
                 onClearFilters={() => {
                   clearFilters();
-                  setPage(1);
                 }}
                 escolas={escolasList}
                 onOpenReajusteLote={() => openReajusteLoteDialog({ anoDestino })}
@@ -686,7 +667,6 @@ export default function Renovacoes() {
                     type="button"
                     onClick={() => {
                       setStatusFilter(ALL_STATUS_FILTER);
-                      setPage(1);
                     }}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors cursor-pointer group mb-1"
                   >
@@ -707,7 +687,6 @@ export default function Renovacoes() {
                   count={semTelefoneCount}
                   onVerAlunos={() => {
                     setStatusFilter(SEM_TELEFONE_FILTER);
-                    setPage(1);
                   }}
                 />
               )}
@@ -792,15 +771,9 @@ export default function Renovacoes() {
                       ))}
                   </div>
 
-                  <PassageirosPagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    totalItems={passageiros.length}
-                    limit={limit}
-                    onPageChange={setPage}
-                    onLimitChange={setLimit}
-                    options={[20, 50, 100, 250, 500, 1000, 5000]}
-                    className="mt-4"
+                  <LoadMoreButton
+                    hasMore={hasMorePassageiros}
+                    onLoadMore={handleLoadMorePassageiros}
                   />
                 </>
               )}

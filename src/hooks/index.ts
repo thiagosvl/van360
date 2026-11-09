@@ -1,4 +1,4 @@
-﻿// Business hooks
+// Business hooks
 export { useGastosCalculations } from "./business/useGastosCalculations";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
@@ -34,6 +34,7 @@ export { useToast } from "./ui/useToast";
 export { useDebounce } from "./ui/useDebounce";
 export { useTutorialsConfig } from "./ui/useTutorialsConfig";
 export { usePagamentosTabViewModel } from "./ui/usePagamentosTabViewModel";
+export { useRenovacoesViewModel } from "./ui/useRenovacoesViewModel";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";

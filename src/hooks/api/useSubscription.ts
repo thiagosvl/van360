@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { subscriptionApi } from "@/services/api/subscription.api";
 import {
   Subscription,
@@ -197,6 +197,7 @@ export const useSubscriptionInvoicesPaginated = (params: {
     queryKey: ["subscription-invoices-paginated", params.userId, params.page, params.limit],
     queryFn: () => subscriptionApi.getInvoices({ page: params.page, limit: params.limit }),
     enabled: !!params.userId && (params.enabled ?? true),
+    placeholderData: keepPreviousData,
     staleTime: 60000,
     refetchOnMount: true,
     refetchOnWindowFocus: false,

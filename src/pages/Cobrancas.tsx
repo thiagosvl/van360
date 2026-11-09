@@ -1,7 +1,7 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
-import { CobrancasPagination } from "@/components/features/cobranca/CobrancasPagination";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -37,18 +37,12 @@ export default function Cobrancas() {
     setBuscaAReceber,
     buscaRecebidos,
     setBuscaRecebidos,
-    cobrancasAReceber,
-    cobrancasRecebidas,
     paginatedCobrancasAReceber,
     paginatedCobrancasRecebidas,
-    pageAReceber,
-    setPageAReceber,
-    pageRecebidas,
-    setPageRecebidas,
-    limit,
-    setLimit,
-    totalPagesAReceber,
-    totalPagesRecebidas,
+    hasMoreAReceber,
+    hasMoreRecebidas,
+    handleLoadMoreAReceber,
+    handleLoadMoreRecebidas,
     isInitialLoading,
     isFutureMonth,
     isPastMonth,
@@ -222,14 +216,9 @@ export default function Cobrancas() {
                 onClearSearch={() => setBusca("")}
                 {...actionProps}
               />
-              <CobrancasPagination
-                currentPage={pageAReceber}
-                totalPages={totalPagesAReceber}
-                totalItems={cobrancasAReceber.length}
-                limit={limit}
-                onPageChange={setPageAReceber}
-                onLimitChange={setLimit}
-                className="mt-4"
+              <LoadMoreButton
+                hasMore={hasMoreAReceber}
+                onLoadMore={handleLoadMoreAReceber}
               />
             </TabsContent>
 
@@ -248,14 +237,9 @@ export default function Cobrancas() {
                 onClearSearch={() => setBusca("")}
                 {...actionProps}
               />
-              <CobrancasPagination
-                currentPage={pageRecebidas}
-                totalPages={totalPagesRecebidas}
-                totalItems={cobrancasRecebidas.length}
-                limit={limit}
-                onPageChange={setPageRecebidas}
-                onLimitChange={setLimit}
-                className="mt-4"
+              <LoadMoreButton
+                hasMore={hasMoreRecebidas}
+                onLoadMore={handleLoadMoreRecebidas}
               />
             </TabsContent>
           </Tabs>

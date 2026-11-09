@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { History, Check, X, Calendar, Clock, Route, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { History, Check, X, Calendar, Clock, Route } from "lucide-react";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 import { ROUTES } from "@/constants/routes";
@@ -123,19 +123,12 @@ export function RotasHistoricoList({
         );
       })}
 
-      {hasMore && onLoadMore && (
-        <div className="pt-3 pb-2 flex justify-center">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isFetching}
-            onClick={onLoadMore}
-            className="h-10 px-5 rounded-[18px] text-xs font-medium text-[#0a0a0a] border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] shadow-xs flex items-center gap-2 active:scale-95 transition-all cursor-pointer"
-          >
-            {isFetching && <Loader2 className="w-4 h-4 animate-spin text-[#0a0a0a]" />}
-            <span>{isFetching ? "Buscando..." : "Ver mais"}</span>
-          </Button>
-        </div>
+      {onLoadMore && (
+        <LoadMoreButton
+          hasMore={hasMore}
+          isLoading={isFetching}
+          onLoadMore={onLoadMore}
+        />
       )}
     </div>
   );

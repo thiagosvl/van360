@@ -243,6 +243,33 @@ export function useRenovacoesViewModel() {
     return passageirosAptos;
   }, [statusFilter, passageirosSemTelefone, passageirosAptos]);
 
+  const RENOVACOES_PAGE_SIZE = 20;
+  const [visibleCount, setVisibleCount] = useState(RENOVACOES_PAGE_SIZE);
+
+  const [prevFilterKey, setPrevFilterKey] = useState("");
+  const currentFilterKey = `${statusFilter}|${escolaFilter}|${periodoFilter}|${searchTerm}|${anoDestino}`;
+  const isFilterChanging = currentFilterKey !== prevFilterKey;
+
+  if (isFilterChanging) {
+    setPrevFilterKey(currentFilterKey);
+    setVisibleCount(RENOVACOES_PAGE_SIZE);
+    if (selectedIds.size > 0) {
+      setSelectedIds(new Set());
+    }
+  }
+
+  const effectiveVisibleCount = isFilterChanging ? RENOVACOES_PAGE_SIZE : visibleCount;
+
+  const handleLoadMorePassageiros = useCallback(() => {
+    setVisibleCount((prev) => prev + RENOVACOES_PAGE_SIZE);
+  }, []);
+
+  const paginatedPassageiros = useMemo(() => {
+    return passageiros.slice(0, effectiveVisibleCount);
+  }, [passageiros, effectiveVisibleCount]);
+
+  const hasMorePassageiros = !isLoading && passageiros.length > effectiveVisibleCount;
+
   const pendentesAptosCount = useMemo(() => {
     return passageirosAptos.filter(
       (p) => p.status === RenovacaoStatus.PENDENTE || !p.status
@@ -419,6 +446,9 @@ export function useRenovacoesViewModel() {
     isAllSelected,
     kpis,
     passageiros,
+    paginatedPassageiros,
+    hasMorePassageiros,
+    handleLoadMorePassageiros,
     todosPassageiros,
     passageirosAptos,
     passageirosSemTelefone,

@@ -110,20 +110,27 @@ export function useContratosViewModel() {
     });
   }, [setSearchParams]);
 
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const CONTRATOS_PAGE_SIZE = 20;
+  const [limit, setLimit] = useState(CONTRATOS_PAGE_SIZE);
 
   const [prevFilterKey, setPrevFilterKey] = useState("");
   const currentFilterKey = `${activeTab}|${debouncedSearch}|${anoLetivo}`;
+  const isFilterChanging = currentFilterKey !== prevFilterKey;
 
-  if (currentFilterKey !== prevFilterKey) {
+  if (isFilterChanging) {
     setPrevFilterKey(currentFilterKey);
-    setPage(1);
+    setLimit(CONTRATOS_PAGE_SIZE);
   }
 
+  const handleLoadMoreContratos = useCallback(() => {
+    setLimit((prev) => prev + CONTRATOS_PAGE_SIZE);
+  }, []);
+
+  const effectiveLimit = isFilterChanging ? CONTRATOS_PAGE_SIZE : limit;
+
   const contratosFilters = useMemo(
-    () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo, page, limit }),
-    [activeTab, debouncedSearch, anoLetivo, page, limit]
+    () => ({ tab: activeTab, search: debouncedSearch, ano: anoLetivo, page: 1, limit: effectiveLimit }),
+    [activeTab, debouncedSearch, anoLetivo, effectiveLimit]
   );
 
   const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs(
@@ -133,7 +140,12 @@ export function useContratosViewModel() {
     }
   );
 
-  const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
+  const {
+    data: contratosRes,
+    isLoading: isLoadingContratos,
+    isFetching: isFetchingContratos,
+    refetch: refetchContratos,
+  } = useContratos(
     contratosFilters,
     { enabled: !!profile?.id && (can("contratos.gerenciar") || can("financeiro.visualizar")) }
   );
@@ -144,18 +156,8 @@ export function useContratosViewModel() {
       newParams.set("tab", val);
       return newParams;
     });
-    setPage(1);
+    setLimit(CONTRATOS_PAGE_SIZE);
   }, [setSearchParams]);
-
-  const handlePageChange = useCallback((newPage: number) => {
-    setPage(newPage);
-    if (typeof window !== "undefined") {
-      const anchor = document.getElementById("contratos-tabs-anchor");
-      if (anchor) {
-        anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  }, []);
 
   const deleteMutation = useDeleteContrato();
   const substituirMutation = useSubstituirContrato();
@@ -440,6 +442,10 @@ export function useContratosViewModel() {
     previewMutation.isPending ||
     downloadMutation.isPending;
 
+  const contratosList = contratosRes?.list || [];
+  const totalRecords = contratosRes?.total ?? 0;
+  const isInitialContratosLoading = isLoadingContratos || (isFetchingContratos && contratosList.length === 0);
+
   return {
     profile,
     isProfileLoading,
@@ -449,18 +455,17 @@ export function useContratosViewModel() {
     debouncedSearch,
     handleTabChange,
     kpis,
-    contratos: contratosRes?.list || [],
-    page,
-    setPage,
-    limit,
+    contratos: contratosList,
+    limit: effectiveLimit,
     setLimit,
-    totalRecords: contratosRes?.total ?? 0,
-    totalPages: contratosRes?.pagination?.totalPages ?? Math.max(1, Math.ceil((contratosRes?.total ?? 0) / limit)),
-    handlePageChange,
+    totalRecords,
+    hasMoreContratos: !isInitialContratosLoading && contratosList.length < totalRecords,
+    handleLoadMoreContratos,
     pagination: contratosRes?.pagination,
-    isLoading: isLoadingContratos || isLoadingKPIs,
+    isLoading: isInitialContratosLoading,
     isLoadingKPIs,
-    isLoadingContratos,
+    isLoadingContratos: isInitialContratosLoading,
+    isFetchingContratos,
     isActionLoading,
     isDownloading,
     isContratoAtivo,

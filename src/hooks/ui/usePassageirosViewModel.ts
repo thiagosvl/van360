@@ -151,16 +151,23 @@ export function usePassageirosViewModel() {
     [setSearchParams]
   );
 
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
+  const PASSAGEIROS_PAGE_SIZE = 50;
+  const [limit, setLimit] = useState(PASSAGEIROS_PAGE_SIZE);
 
   const [prevFilterKey, setPrevFilterKey] = useState("");
   const currentFilterKey = `${debouncedSearchTerm}|${selectedEscola}|${selectedVeiculo}|${selectedStatus}|${selectedPeriodo}|${selectedAnoLetivo}`;
+  const isFilterChanging = currentFilterKey !== prevFilterKey;
 
-  if (currentFilterKey !== prevFilterKey) {
+  if (isFilterChanging) {
     setPrevFilterKey(currentFilterKey);
-    setPage(1);
+    setLimit(PASSAGEIROS_PAGE_SIZE);
   }
+
+  const handleLoadMorePassageiros = useCallback(() => {
+    setLimit((prev) => prev + PASSAGEIROS_PAGE_SIZE);
+  }, []);
+
+  const effectiveLimit = isFilterChanging ? PASSAGEIROS_PAGE_SIZE : limit;
 
   const passageiroFilters = useMemo(
     () => ({
@@ -171,8 +178,8 @@ export function usePassageirosViewModel() {
       status: selectedStatus === FilterDefaults.TODOS ? undefined : selectedStatus,
       periodo: selectedPeriodo === FilterDefaults.TODOS ? undefined : selectedPeriodo,
       ano_letivo: selectedAnoLetivo,
-      page,
-      limit,
+      page: 1,
+      limit: effectiveLimit,
     }),
     [
       profile?.id,
@@ -182,14 +189,14 @@ export function usePassageirosViewModel() {
       selectedStatus,
       selectedPeriodo,
       selectedAnoLetivo,
-      page,
-      limit,
+      effectiveLimit,
     ]
   );
 
   const {
     data: passageirosData,
     isLoading: isPassageirosLoading,
+    isFetching: isPassageirosFetching,
     refetch: refetchPassageiros,
   } = usePassageiros(passageiroFilters, {
     enabled:
@@ -623,6 +630,7 @@ export function usePassageirosViewModel() {
     clearFilters,
     setFilters,
     isPassageirosLoading,
+    isPassageirosFetching,
     passageiros,
     isActionLoading,
     handleCadastrarRapido,
@@ -637,11 +645,10 @@ export function usePassageirosViewModel() {
     handleEnviarWhatsApp,
     pullToRefreshReload,
     hasActiveFilters,
-    page,
-    setPage,
-    limit,
+    limit: effectiveLimit,
     setLimit,
-    totalPages: passageirosData?.totalPages ?? 1,
     totalItems: passageirosData?.total ?? 0,
+    hasMorePassageiros: !isPassageirosLoading && passageiros.length < (passageirosData?.total ?? 0),
+    handleLoadMorePassageiros,
   };
 }

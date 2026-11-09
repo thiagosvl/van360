@@ -2,7 +2,7 @@ import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContratosList } from "@/components/features/contrato/ContratosList";
-import { ContratosPagination } from "@/components/features/contrato/ContratosPagination";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
 import { Banner } from "@/components/ui/Banner";
 import { useContratosViewModel, safeCloseDialog } from "@/hooks";
@@ -30,15 +30,13 @@ const Contratos = () => {
     handleTabChange,
     kpis,
     contratos,
-    page,
-    limit,
-    setLimit,
     totalRecords,
-    totalPages,
-    handlePageChange,
+    hasMoreContratos,
+    handleLoadMoreContratos,
     isLoading,
     isLoadingKPIs,
     isLoadingContratos,
+    isFetchingContratos,
     isDownloading,
     isContratoAtivo,
     isContratoConfigurado,
@@ -306,13 +304,10 @@ const Contratos = () => {
                 />
               </TabsContent>
 
-              <ContratosPagination
-                currentPage={page}
-                totalPages={totalPages}
-                totalItems={totalRecords}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={setLimit}
+              <LoadMoreButton
+                hasMore={hasMoreContratos}
+                isLoading={isFetchingContratos}
+                onLoadMore={handleLoadMoreContratos}
               />
             </Tabs>
         </div>

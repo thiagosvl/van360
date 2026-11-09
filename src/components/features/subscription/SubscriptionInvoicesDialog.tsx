@@ -3,9 +3,8 @@ import { BaseDialog } from "@/components/ui/BaseDialog";
 import { useSubscriptionInvoicesPaginated } from "@/hooks/api/useSubscription";
 import { SubscriptionInvoice } from "@/types/subscription";
 import { SubscriptionInvoiceCard } from "./SubscriptionInvoiceCard";
-import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Receipt, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
+import { Receipt, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
@@ -19,7 +18,7 @@ interface SubscriptionInvoicesDialogProps {
   isExpired?: boolean;
 }
 
-const PAGE_SIZE_OPTIONS = [15, 30, 50, 100, 500];
+const INVOICES_PAGE_SIZE = 15;
 
 export function SubscriptionInvoicesDialog({
   open,
@@ -30,32 +29,29 @@ export function SubscriptionInvoicesDialog({
   onRetryPayment,
   isExpired,
 }: SubscriptionInvoicesDialogProps) {
-  const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(15);
+  const [limit, setLimit] = useState<number>(INVOICES_PAGE_SIZE);
 
   const { data, isLoading, isFetching, refetch } = useSubscriptionInvoicesPaginated({
     userId,
-    page,
+    page: 1,
     limit,
     enabled: open,
   });
 
   useEffect(() => {
     if (open) {
-      setPage(1);
+      setLimit(INVOICES_PAGE_SIZE);
       refetch();
     }
   }, [open, refetch]);
 
   const invoices = data?.list || [];
   const totalItems = data?.total || 0;
-  const totalPages = data?.totalPages || Math.max(1, Math.ceil(totalItems / limit));
+  const hasMore = invoices.length < totalItems;
 
-  const from = Math.min((page - 1) * limit + 1, totalItems);
-  const to = Math.min(page * limit, totalItems);
-
-  const canGoPrevious = page > 1;
-  const canGoNext = page < totalPages;
+  const handleLoadMore = useCallback(() => {
+    setLimit((prev) => prev + INVOICES_PAGE_SIZE);
+  }, []);
 
   const handleRetry = useCallback(
     (invoice: SubscriptionInvoice) => {
@@ -115,68 +111,15 @@ export function SubscriptionInvoicesDialog({
                 isExpired={isExpired}
               />
             ))}
+
+            <LoadMoreButton
+              hasMore={hasMore}
+              isLoading={isFetching}
+              onLoadMore={handleLoadMore}
+            />
           </div>
         )}
       </BaseDialog.Body>
-
-      {totalItems > 0 && (
-        <BaseDialog.Footer className="flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:px-6 bg-[#f5f5f5]/80 border-t border-[#e5e5e5]">
-          <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-3">
-            <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-              Exibindo <strong className="text-[#0a0a0a] font-semibold">{from}–{to}</strong> de{" "}
-              <strong className="text-[#0a0a0a] font-semibold">{totalItems}</strong>
-            </span>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">Por página:</span>
-              <NativeSelect
-                value={String(limit)}
-                onChange={(e) => {
-                  setLimit(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="h-8 w-[72px] text-xs font-medium text-[#0a0a0a] border-[#e5e5e5] bg-white rounded-[14px] pr-7 shadow-xs"
-              >
-                {PAGE_SIZE_OPTIONS.map((opt) => (
-                  <option key={opt} value={String(opt)}>
-                    {opt}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!canGoPrevious || isFetching}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="h-8 px-3 rounded-[14px] border-[#e5e5e5] bg-white text-xs font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-95 transition-all disabled:opacity-40 shadow-xs"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1 shrink-0" />
-              Anterior
-            </Button>
-
-            <span className="text-[11px] font-medium text-[#0a0a0a] px-2.5 py-1 rounded-[10px] bg-white border border-[#e5e5e5] shadow-xs">
-              {page} / {totalPages}
-            </span>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!canGoNext || isFetching}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="h-8 px-3 rounded-[14px] border-[#e5e5e5] bg-white text-xs font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] active:scale-95 transition-all disabled:opacity-40 shadow-xs"
-            >
-              Próxima
-              <ChevronRight className="h-4 w-4 ml-1 shrink-0" />
-            </Button>
-          </div>
-        </BaseDialog.Footer>
-      )}
     </BaseDialog>
   );
 }
