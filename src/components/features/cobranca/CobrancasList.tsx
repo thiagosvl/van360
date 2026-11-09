@@ -1,4 +1,4 @@
-﻿import { ActionSheet } from "@/components/common/ActionSheet";
+import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
+import { formatDateToBR } from "@/utils/formatters/date";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet, CalendarClock, History, MessageSquare } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
@@ -403,6 +404,14 @@ export function CobrancasList({
           </span>
         </TableCell>
 
+        {!isPendingTab && (
+          <TableCell className="px-6 py-4 text-left">
+            <span className="font-normal text-sm text-[#737373] tabular-nums">
+              {cobranca.data_pagamento ? formatDateToBR(cobranca.data_pagamento) : "--"}
+            </span>
+          </TableCell>
+        )}
+
         <TableCell className="px-6 py-4 text-center">
           {cobranca.repasse_em_processamento ? (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
@@ -476,6 +485,11 @@ export function CobrancasList({
                 <TableHead className="px-6 py-3.5 text-left text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Valor
                 </TableHead>
+                {!isPendingTab && (
+                  <TableHead className="px-6 py-3.5 text-left text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
+                    Data do Pagamento
+                  </TableHead>
+                )}
                 <TableHead className="px-6 py-3.5 text-center text-[11px] sm:text-xs font-medium text-[#737373] uppercase tracking-[0.05em]">
                   Status
                 </TableHead>

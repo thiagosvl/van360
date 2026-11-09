@@ -17,7 +17,7 @@ import { CobrancaStatus, CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
-import { getNowBR } from "@/utils/dateUtils";
+import { getNowBR, getStartOfDayBR } from "@/utils/dateUtils";
 import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
 import { normalizeSearchText } from "@/utils/string";
 import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
@@ -207,14 +207,14 @@ export function useCobrancasViewModel() {
 
     const sorted = [...list].sort((a, b) => {
       const timeA = a.data_pagamento
-        ? new Date(a.data_pagamento).getTime()
+        ? getStartOfDayBR(a.data_pagamento).getTime()
         : a.data_vencimento
-          ? new Date(a.data_vencimento).getTime()
+          ? getStartOfDayBR(a.data_vencimento).getTime()
           : 0;
       const timeB = b.data_pagamento
-        ? new Date(b.data_pagamento).getTime()
+        ? getStartOfDayBR(b.data_pagamento).getTime()
         : b.data_vencimento
-          ? new Date(b.data_vencimento).getTime()
+          ? getStartOfDayBR(b.data_vencimento).getTime()
           : 0;
 
       if (timeA !== timeB) return timeB - timeA;
