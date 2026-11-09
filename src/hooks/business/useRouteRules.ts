@@ -8,7 +8,10 @@ import {
   calcularTempoEstimadoPercurso,
   calcularSentidoInicial,
   getAlunosEscolaPorPosicao,
+  isParadaAlunoAusente,
+  filtrarAlunosAtivosEscola,
   ItineraryNode,
+  ParadaAlunoStatusTarget,
   TempoEstimadoOptions,
   TempoEstimadoResultado,
 } from "@/utils/domain/route/routeRules";
@@ -23,6 +26,15 @@ export {
   calcularTempoEstimadoPercurso,
   calcularSentidoInicial,
   getAlunosEscolaPorPosicao,
+  isParadaAlunoAusente,
+  filtrarAlunosAtivosEscola,
+};
+
+export type {
+  ItineraryNode,
+  ParadaAlunoStatusTarget,
+  TempoEstimadoOptions,
+  TempoEstimadoResultado,
 };
 
 /**
@@ -40,6 +52,8 @@ export function useRouteRules() {
     calcularTempoEstimadoPercurso,
     calcularSentidoInicial,
     getAlunosEscolaPorPosicao,
+    isParadaAlunoAusente,
+    filtrarAlunosAtivosEscola,
   };
 }
 

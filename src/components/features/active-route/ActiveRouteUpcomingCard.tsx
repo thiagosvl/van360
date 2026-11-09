@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, School, UserMinus, ArrowUp, ArrowDown, Loader2, Home, ListOrdered } from "lucide-react";
 import { RouteNodeType, RouteStopStatus, RouteSentido } from "@/types/route";
 import { formatarEnderecoParcialRota } from "@/utils/formatters";
-import { podeReordenarParada } from "@/utils/domain/route/routeRules";
+import { podeReordenarParada, filtrarAlunosAtivosEscola } from "@/utils/domain/route/routeRules";
 import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { AddressDialogData } from "./AddressDetailsDialog";
@@ -153,17 +153,8 @@ export function ActiveRouteUpcomingCard({
             const paradaIndexInTodas = todasParadas.findIndex((p) => p.id === parada.id);
             const { desces, subes } = getAlunosEscolaPorPosicao(todasParadas, paradaIndexInTodas >= 0 ? paradaIndexInTodas : index);
 
-            const descesAtivos = desces.filter((d) => d.status !== RouteStopStatus.AUSENTE);
-            const subesAtivos = subes.filter((s) => {
-              if (s.status === RouteStopStatus.AUSENTE || s.is_ausente || s.ausencia_id) return false;
-              if (isPreview && chamadaRapidaSavedMap) {
-                const pid = s.passageiro_id || s.passageiro?.id;
-                if (pid && chamadaRapidaSavedMap[pid] === RouteStopStatus.AUSENTE) {
-                  return false;
-                }
-              }
-              return true;
-            });
+            const descesAtivos = filtrarAlunosAtivosEscola(desces);
+            const subesAtivos = filtrarAlunosAtivosEscola(subes, isPreview ? chamadaRapidaSavedMap : null);
 
             return (
               <div className="mt-1 space-y-1 w-full text-left">

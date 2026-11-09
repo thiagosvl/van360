@@ -298,3 +298,34 @@ export function getAlunosEscolaPorPosicao(todasParadasList: any[], escolaNodeInd
 
   return { desces, subes };
 }
+
+export interface ParadaAlunoStatusTarget {
+  status?: RouteStopStatus;
+  is_ausente?: boolean;
+  ausencia_id?: string | null;
+  passageiro_id?: string | null;
+  passageiro?: { id?: string } | null;
+}
+
+export function isParadaAlunoAusente(
+  parada: ParadaAlunoStatusTarget,
+  chamadaRapidaSavedMap?: Record<string, RouteStopStatus> | null
+): boolean {
+  if (parada.status === RouteStopStatus.AUSENTE || parada.is_ausente || parada.ausencia_id) {
+    return true;
+  }
+  if (chamadaRapidaSavedMap) {
+    const pid = parada.passageiro_id || parada.passageiro?.id;
+    if (pid && chamadaRapidaSavedMap[pid] === RouteStopStatus.AUSENTE) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function filtrarAlunosAtivosEscola<T extends ParadaAlunoStatusTarget>(
+  alunos: T[],
+  chamadaRapidaSavedMap?: Record<string, RouteStopStatus> | null
+): T[] {
+  return alunos.filter((aluno) => !isParadaAlunoAusente(aluno, chamadaRapidaSavedMap));
+}
