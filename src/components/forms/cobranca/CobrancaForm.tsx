@@ -198,11 +198,18 @@ export function CobrancaFormContent({
                                         className="opacity-80"
                                     >
                                         <option value="" disabled hidden>Ano</option>
-                                        {anos.filter(a => a.value === String(getNowBR().getFullYear())).map((a) => (
-                                            <option key={a.value} value={a.value}>
-                                                {a.label}
-                                            </option>
-                                        ))}
+                                        {(() => {
+                                            const currentVal = field.value != null ? String(field.value) : "";
+                                            const hasCurrentInAnos = anos.some((a) => a.value === currentVal);
+                                            const options = currentVal && !hasCurrentInAnos
+                                                ? [...anos, { value: currentVal, label: currentVal }]
+                                                : anos;
+                                            return options.map((a) => (
+                                                <option key={a.value} value={a.value}>
+                                                    {a.label}
+                                                </option>
+                                            ));
+                                        })()}
                                     </NativeSelect>
                                 </FormControl>
                                 <FormMessage />

@@ -138,72 +138,43 @@ export const CarteirinhaCobrancas = ({
 
     if (!passageiro) return list;
 
-    if (selectedYear < currentYear) {
+    const inicio = parseMonthYearFromDateString(passageiro.data_inicio_cobranca);
+    const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
+    const minYear = inicio ? Math.min(inicio.year, selectedYear) : selectedYear;
+    const maxYear = fim ? Math.max(fim.year, selectedYear) : selectedYear;
+
+    if (maxYear < currentYear) {
       return list;
     }
 
-    const startMonth = selectedYear === currentYear ? currentMonth : 1;
-    const endMonth = 12;
-    const dbMonths = new Set(list.filter((c) => c.ano === selectedYear).map((c) => c.mes));
+    for (let y = Math.max(currentYear, minYear); y <= maxYear; y++) {
+      const startMonth = y === currentYear ? currentMonth : 1;
+      const endMonth = fim && y === fim.year ? fim.month : 12;
+      const dbMonths = new Set(list.filter((c) => Number(c.ano) === y).map((c) => Number(c.mes)));
 
-    for (let m = startMonth; m <= endMonth; m++) {
-      if (!dbMonths.has(m)) {
-        const canGenerate = shouldGeneratePassengerProjection({
-          passageiro,
-          driverCreatedAt: profile?.created_at,
-          targetMonth: m,
-          targetYear: selectedYear,
-        });
-
-        if (canGenerate) {
-          const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, selectedYear);
-          list.push({
-            id: `proj_pass_${passageiro.id}_${m}_${selectedYear}`,
-            passageiro_id: passageiro.id!,
-            mes: m,
-            ano: selectedYear,
-            valor: Number(passageiro.valor_cobranca),
-            status: CobrancaStatus.PENDENTE,
-            data_vencimento: dataVenc,
-            isProjection: true,
+      for (let m = startMonth; m <= endMonth; m++) {
+        if (!dbMonths.has(m)) {
+          const canGenerate = shouldGeneratePassengerProjection({
             passageiro,
-            ano_letivo: passageiro.ano_letivo || selectedYear,
+            driverCreatedAt: profile?.created_at,
+            targetMonth: m,
+            targetYear: y,
           });
-        }
-      }
-    }
 
-    if (passageiro.data_fim_cobranca) {
-      const fim = parseMonthYearFromDateString(passageiro.data_fim_cobranca);
-      if (fim && fim.year > selectedYear) {
-        for (let y = selectedYear + 1; y <= fim.year; y++) {
-          const maxM = y === fim.year ? fim.month : 12;
-          const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
-          for (let m = 1; m <= maxM; m++) {
-            if (!dbMonthsFuture.has(m)) {
-              const canGenerate = shouldGeneratePassengerProjection({
-                passageiro,
-                driverCreatedAt: profile?.created_at,
-                targetMonth: m,
-                targetYear: y,
-              });
-
-              if (canGenerate) {
-                const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, y);
-                list.push({
-                  id: `proj_pass_${passageiro.id}_${m}_${y}`,
-                  passageiro_id: passageiro.id!,
-                  mes: m,
-                  ano: y,
-                  valor: Number(passageiro.valor_cobranca),
-                  status: CobrancaStatus.PENDENTE,
-                  data_vencimento: dataVenc,
-                  isProjection: true,
-                  passageiro,
-                  ano_letivo: passageiro.ano_letivo || selectedYear,
-                });
-              }
-            }
+          if (canGenerate) {
+            const dataVenc = getSafeDueDateString(passageiro.dia_vencimento, m, y);
+            list.push({
+              id: `proj_pass_${passageiro.id}_${m}_${y}`,
+              passageiro_id: passageiro.id!,
+              mes: m,
+              ano: y,
+              valor: Number(passageiro.valor_cobranca),
+              status: CobrancaStatus.PENDENTE,
+              data_vencimento: dataVenc,
+              isProjection: true,
+              passageiro,
+              ano_letivo: passageiro.ano_letivo || selectedYear,
+            });
           }
         }
       }
@@ -288,7 +259,7 @@ export const CarteirinhaCobrancas = ({
       passageiro.data_inicio_cobranca || passageiro.created_at || profile?.created_at
     );
 
-    const isEncerrado = fim && (fim.year < selectedYear || (fim.year === selectedYear && fim.month < currentMonth));
+    const isEncerrado = fim && (fim.year < currentYear || (fim.year === currentYear && fim.month < currentMonth));
 
     if (isEncerrado) {
       const mesFimNome = getMesNome(fim.month);
@@ -311,7 +282,7 @@ export const CarteirinhaCobrancas = ({
       };
     }
 
-    const isFuturo = inicio && (inicio.year > selectedYear || (inicio.year === selectedYear && inicio.month > currentMonth));
+    const isFuturo = inicio && (inicio.year > currentYear || (inicio.year === currentYear && inicio.month > currentMonth));
 
     if (isFuturo) {
       const mesInicioNome = getMesNome(inicio.month);

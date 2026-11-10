@@ -43,7 +43,7 @@ interface CobrancasListProps {
   isCurrentMonth?: boolean;
   meses: string[];
 
-  onVerCarteirinha: (passageiroId: string) => void;
+  onVerCarteirinha: (passageiroId: string, anoLetivo?: number) => void;
   onEditarCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
@@ -122,7 +122,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const actions = useCobrancaActions({
     cobranca,
     onVerCobranca: () => { },
-    onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
+    onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id, cobranca.ano_letivo ? Number(cobranca.ano_letivo) : undefined),
     onEditarCobranca: () => onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca?.isProjection
       ? () => onOpenCreateForProjection?.(cobranca)
@@ -285,6 +285,7 @@ export function CobrancasList({
       diaVencimento: Number(cobranca.passageiro?.dia_vencimento || 10),
       mes: cobranca.mes,
       ano: cobranca.ano,
+      anoLetivo: cobranca.ano_letivo ? Number(cobranca.ano_letivo) : (cobranca.passageiro?.ano_letivo ? Number(cobranca.passageiro.ano_letivo) : undefined),
       lockFoiPago: true,
       lockMesAno: true,
       onSuccess: props.onActionSuccess,
@@ -432,7 +433,7 @@ export function CobrancasList({
         <TableCell className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
           <CobrancaActionsMenu
             cobranca={cobranca}
-            onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
+            onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id, cobranca.ano_letivo ? Number(cobranca.ano_letivo) : undefined)}
             onEditarCobranca={() => props.onEditarCobranca(cobranca)}
             onRegistrarPagamento={cobranca.isProjection
               ? () => handleOpenCreateForProjection(cobranca)
@@ -565,7 +566,7 @@ function ActionSheetWrapper({
   const actions = useCobrancaActions({
     cobranca,
     onVerCobranca: () => { },
-    onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
+    onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id, cobranca.ano_letivo ? Number(cobranca.ano_letivo) : undefined),
     onEditarCobranca: () => props.onEditarCobranca(cobranca),
     onRegistrarPagamento: cobranca.isProjection
       ? () => onOpenCreateForProjection(cobranca)

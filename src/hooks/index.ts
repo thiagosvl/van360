@@ -38,6 +38,7 @@ export { useRenovacoesViewModel } from "./ui/useRenovacoesViewModel";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";
+export { useEditarPixForm } from "./form/useEditarPixForm";
 
 // API hooks (queries)
 

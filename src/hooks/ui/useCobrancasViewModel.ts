@@ -55,16 +55,6 @@ export function useCobrancasViewModel() {
   const lembretesAtivos =
     !isFinanceiroLoading && financeiro?.modo_cobranca === ModoCobrancaEnum.LEMBRETES;
 
-  const { data: passageirosData } = usePassageiros(
-    { usuarioId: profile?.id, status: PASSAGEIRO_STATUS_ATIVO, limit: 500 },
-    { enabled: Boolean(profile?.id) }
-  );
-
-  const alunosSemValorCount = useMemo(() => {
-    const list = passageirosData?.list || [];
-    return list.filter((p) => !p.isento && (!p.valor_cobranca || Number(p.valor_cobranca) <= 0)).length;
-  }, [passageirosData?.list]);
-
   const handleTabChange = useCallback(
     (value: string) => {
       const newParams = new URLSearchParams(searchParams);
@@ -93,6 +83,16 @@ export function useCobrancasViewModel() {
     anoParam: "ano",
     searchParam: "search",
   });
+
+  const { data: passageirosData } = usePassageiros(
+    { usuarioId: profile?.id, status: PASSAGEIRO_STATUS_ATIVO, ano_letivo: anoFilter, limit: 500 },
+    { enabled: Boolean(profile?.id) }
+  );
+
+  const alunosSemValorCount = useMemo(() => {
+    const list = passageirosData?.list || [];
+    return list.filter((p) => !p.isento && (!p.valor_cobranca || Number(p.valor_cobranca) <= 0)).length;
+  }, [passageirosData?.list]);
 
   const buscaAReceber = commonSearch;
   const setBuscaAReceber = setCommonSearch;
@@ -407,9 +407,10 @@ export function useCobrancasViewModel() {
   );
 
   const navigateToPassageiro = useCallback(
-    (passageiroId: string) => {
+    (passageiroId: string, anoLetivo?: number) => {
+      const targetAno = anoLetivo || anoFilter;
       navigate(
-        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiroId)}?ano=${anoFilter}`
+        `${ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiroId)}?ano=${targetAno}`
       );
     },
     [navigate, anoFilter]

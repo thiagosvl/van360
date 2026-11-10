@@ -39,63 +39,37 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
 
     if (!passageiroConvertido || carteirinha.isento) return list;
 
-    if (targetYear >= currentYear) {
-      const startMonth = targetYear > currentYear ? 1 : currentMonth;
-      const endMonth = 12;
-      const dbMonths = new Set(list.filter((c) => c.ano === targetYear).map((c) => c.mes));
+    const inicio = parseMonthYearFromDateString(passageiroConvertido.data_inicio_cobranca);
+    const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
+    const minYear = inicio ? Math.min(inicio.year, targetYear) : targetYear;
+    const maxYear = fim ? Math.max(fim.year, targetYear) : targetYear;
 
-      for (let m = startMonth; m <= endMonth; m++) {
-        if (!dbMonths.has(m)) {
-          const canGenerate = shouldGeneratePassengerProjection({
-            passageiro: passageiroConvertido,
-            targetMonth: m,
-            targetYear,
-          });
+    if (maxYear >= currentYear) {
+      for (let y = Math.max(currentYear, minYear); y <= maxYear; y++) {
+        const startMonth = y === currentYear ? currentMonth : 1;
+        const endMonth = fim && y === fim.year ? fim.month : 12;
+        const dbMonths = new Set(list.filter((c) => Number(c.ano) === y).map((c) => Number(c.mes)));
 
-          if (canGenerate) {
-            const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, targetYear);
-            list.push({
-              id: `proj_resp_${carteirinha.id}_${m}_${targetYear}`,
-              mes: m,
-              ano: targetYear,
-              ano_letivo: targetYear,
-              valor: Number(carteirinha.valor_cobranca || 0),
-              status: CobrancaStatus.PENDENTE,
-              data_vencimento: dataVenc,
-              isProjection: true,
+        for (let m = startMonth; m <= endMonth; m++) {
+          if (!dbMonths.has(m)) {
+            const canGenerate = shouldGeneratePassengerProjection({
+              passageiro: passageiroConvertido,
+              targetMonth: m,
+              targetYear: y,
             });
-          }
-        }
-      }
 
-      if (passageiroConvertido.data_fim_cobranca) {
-        const fim = parseMonthYearFromDateString(passageiroConvertido.data_fim_cobranca);
-        if (fim && fim.year > targetYear) {
-          for (let y = targetYear + 1; y <= fim.year; y++) {
-            const maxM = y === fim.year ? fim.month : 12;
-            const dbMonthsFuture = new Set(list.filter((c) => c.ano === y).map((c) => c.mes));
-            for (let m = 1; m <= maxM; m++) {
-              if (!dbMonthsFuture.has(m)) {
-                const canGenerate = shouldGeneratePassengerProjection({
-                  passageiro: passageiroConvertido,
-                  targetMonth: m,
-                  targetYear: y,
-                });
-
-                if (canGenerate) {
-                  const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
-                  list.push({
-                    id: `proj_resp_${carteirinha.id}_${m}_${y}`,
-                    mes: m,
-                    ano: y,
-                    ano_letivo: targetYear,
-                    valor: Number(carteirinha.valor_cobranca || 0),
-                    status: CobrancaStatus.PENDENTE,
-                    data_vencimento: dataVenc,
-                    isProjection: true,
-                  });
-                }
-              }
+            if (canGenerate) {
+              const dataVenc = getSafeDueDateString(carteirinha.dia_vencimento, m, y);
+              list.push({
+                id: `proj_resp_${carteirinha.id}_${m}_${y}`,
+                mes: m,
+                ano: y,
+                ano_letivo: targetYear,
+                valor: Number(carteirinha.valor_cobranca || 0),
+                status: CobrancaStatus.PENDENTE,
+                data_vencimento: dataVenc,
+                isProjection: true,
+              });
             }
           }
         }
@@ -277,7 +251,7 @@ export const ResponsavelCarteirinhaCobrancas: React.FC<ResponsavelCarteirinhaCob
                   <div className="flex-grow min-w-0 pr-20 sm:pr-4">
                     <p className="font-bold text-[#0a0a0a] text-sm truncate leading-tight">
                       {nomeMes}
-                      {item.ano && item.ano !== currentYear ? `/${item.ano}` : ""}
+                      {item.ano && item.ano !== targetYear ? `/${item.ano}` : ""}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">

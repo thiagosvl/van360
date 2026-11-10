@@ -157,7 +157,8 @@ export function PassageiroFinanceiroDialog({
     return "Contato do responsável para comunicação rápida.";
   }, [cobrancaAtiva, modoCobranca]);
 
-  const { data: cobrancasData } = useCobrancasByPassageiro(passageiro?.id, currentYear.toString(), {
+  const targetAnoLetivoCobrancas = (passageiro?.ano_letivo || currentYear).toString();
+  const { data: cobrancasData } = useCobrancasByPassageiro(passageiro?.id, targetAnoLetivoCobrancas, {
     enabled: isOpen && Boolean(passageiro?.id),
   });
 

@@ -215,10 +215,13 @@ export default function PassageiroCarteirinha() {
   });
 
   useEffect(() => {
-    if (passageiroData && !hasSetInitialYear.current) {
+    if (!passageiroData) return;
+    const anos = passageiroData.anos_matriculados || [];
+    const currNum = Number(currentYear);
+    const selectedNum = Number(yearFilter);
+
+    if (!hasSetInitialYear.current) {
       hasSetInitialYear.current = true;
-      const anos = passageiroData.anos_matriculados || [];
-      const currNum = Number(currentYear);
       if (anos.includes(currNum)) {
         setYearFilterState(String(currNum));
       } else if (anos.length > 0) {
@@ -226,8 +229,14 @@ export default function PassageiroCarteirinha() {
       } else if (passageiroData.ano_letivo) {
         setYearFilterState(String(passageiroData.ano_letivo));
       }
+      return;
     }
-  }, [passageiroData]);
+
+    if (anos.length > 0 && !anos.includes(selectedNum)) {
+      const fallbackAno = anos.includes(currNum) ? currNum : anos[anos.length - 1];
+      setYearFilter(String(fallbackAno));
+    }
+  }, [passageiroData, yearFilter, setYearFilter]);
 
   const selectedYearNum = Number(yearFilter) || Number(currentYear);
 
@@ -687,8 +696,8 @@ export default function PassageiroCarteirinha() {
   }, [passageiro?.anos_matriculados, passageiro?.ano_letivo, selectedYearNum]);
 
   const anosDisponiveisCarteirinha = useMemo(() => {
-    return Array.from(new Set([...anosMatriculados, selectedYearNum])).sort((a, b) => a - b);
-  }, [anosMatriculados, selectedYearNum]);
+    return Array.from(new Set(anosMatriculados)).sort((a, b) => a - b);
+  }, [anosMatriculados]);
 
   if (!can("passageiros.visualizar")) {
     return <AccessRestrictedState moduleName="Alunos" />;

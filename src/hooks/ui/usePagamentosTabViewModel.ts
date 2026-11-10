@@ -124,7 +124,7 @@ export function usePagamentosTabViewModel() {
     return { tipo: tipoLabel, chave: chaveFormatada };
   }, [financeiro?.tipo_chave_pix, financeiro?.chave_pix_repasse]);
 
-  const taxaEfetiva = financeiro?.taxa_efetiva ?? 2.9;
+  const taxaEfetiva = financeiro?.taxa_efetiva ?? 2.5;
   const taxaFormatada = formatCurrency(taxaEfetiva);
   const enviarRecibo = financeiro?.enviar_recibo_automatico ?? true;
 
@@ -226,36 +226,6 @@ export function usePagamentosTabViewModel() {
         return;
       }
 
-      const jaTemChaveGeral = Boolean(
-        financeiro?.chave_pix_repasse && financeiro?.tipo_chave_pix
-      );
-
-      if (jaTemChaveGeral) {
-        setChangingTargetModo(MODO_COBRANCA.AUTOMATICA);
-        setIsChangingModo(true);
-        try {
-          await updateFinanceiro({
-            modo_cobranca: ModoCobrancaEnum.AUTOMATICA,
-            aplicar_a_todos: aplicarATodos,
-          });
-          setModoVisual(MODO_COBRANCA.AUTOMATICA);
-          scrollToConfigSection();
-
-          toast.success(
-            aplicarATodos
-              ? "Cobrança & Baixa Automática ativada para todos os alunos!"
-              : "Cobrança & Baixa Automática ativada!"
-          );
-        } catch {
-          setModoVisual(modoServidor);
-          toast.error("Não foi possível ativar a Cobrança & Baixa Automática.");
-        } finally {
-          setIsChangingModo(false);
-          setChangingTargetModo(null);
-        }
-        return;
-      }
-
       openEditarPixDialog({
         isActivatingAutomatica: true,
         aplicarATodos,
@@ -268,8 +238,6 @@ export function usePagamentosTabViewModel() {
     [
       updateFinanceiro,
       modoServidor,
-      financeiro?.chave_pix_repasse,
-      financeiro?.tipo_chave_pix,
       openEditarPixDialog,
       scrollToConfigSection,
     ]

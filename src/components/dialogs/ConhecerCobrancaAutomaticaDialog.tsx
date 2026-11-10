@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import BaseDialog from "@/components/ui/BaseDialog";
+import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
 import { VIDEO_APRESENTACAO_COBRANCA_AUTOMATICA } from "@/constants/tutorials";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useMotoristaFinanceiroApi } from "@/hooks/api/useMotoristaFinanceiroApi";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 
 export interface ConhecerCobrancaAutomaticaDialogProps {
@@ -18,6 +21,10 @@ export default function ConhecerCobrancaAutomaticaDialog({
 }: ConhecerCobrancaAutomaticaDialogProps) {
   const navigate = useNavigate();
   const { openVideoStoriesDialog } = useLayout();
+  const { financeiro } = useMotoristaFinanceiroApi();
+
+  const taxaEfetiva = financeiro?.taxa_efetiva ?? 2.5;
+  const taxaFormatada = formatCurrency(taxaEfetiva);
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -51,9 +58,15 @@ export default function ConhecerCobrancaAutomaticaDialog({
       />
 
       <BaseDialog.Body className="space-y-4">
-        <p className="text-xs sm:text-sm text-[#525252] leading-relaxed">
+        <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
           Assim que o pai paga o Pix, o Van360 dá baixa na hora, envia o recibo no WhatsApp e transfere o valor para a sua conta.
         </p>
+
+        <Banner
+          variant="neutral"
+          title={`Taxa de ${taxaFormatada} por parcela paga`}
+          description="Descontada apenas quando o pai paga via Pix. Sem mensalidade extra ou custo por emissão."
+        />
 
         <button
           type="button"
@@ -68,13 +81,13 @@ export default function ConhecerCobrancaAutomaticaDialog({
               <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">
                 Veja como funciona na prática
               </p>
-              <p className="text-xs text-[#525252] mt-0.5">
+              <p className="text-xs text-[#737373] mt-0.5">
                 Assista ao vídeo rápido de demonstração
               </p>
             </div>
           </div>
 
-          <span className="shrink-0 inline-flex items-center justify-center h-8 px-3 rounded-[14px] bg-white border border-primary/20 text-xs font-semibold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+          <span className="shrink-0 inline-flex items-center justify-center h-8 px-3 rounded-[18px] bg-white border border-primary/20 text-xs font-semibold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
             Assistir
           </span>
         </button>
