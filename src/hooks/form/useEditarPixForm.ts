@@ -82,12 +82,17 @@ export function useEditarPixForm({
   const { financeiro, updateFinanceiro, isUpdating } = useMotoristaFinanceiroApi();
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [temChaveInicial, setTemChaveInicial] = useState(() =>
+    Boolean(financeiro?.chave_pix_repasse && financeiro?.tipo_chave_pix)
+  );
+  const wasOpenRef = useRef(false);
   const originalTipoRef = useRef<TipoChavePix | null>(null);
   const originalChaveRef = useRef<string>("");
   const cienteTaxaRef = useRef<HTMLDivElement | null>(null);
 
-  const temChave = Boolean(financeiro?.chave_pix_repasse && financeiro?.tipo_chave_pix);
+  const temChave = temChaveInicial;
   const modoAtual =
     (financeiro?.modo_cobranca as ModoCobrancaEnum) || ModoCobrancaEnum.DESATIVADO;
   const exigeChaveObrigatoria =
@@ -120,7 +125,15 @@ export function useEditarPixForm({
   });
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenRef.current) {
+      wasOpenRef.current = true;
+      setIsSubmitting(false);
+
+      const possuiChaveGeral = Boolean(
+        financeiro?.chave_pix_repasse && financeiro?.tipo_chave_pix
+      );
+      setTemChaveInicial(possuiChaveGeral);
+
       const tipo = (financeiro?.tipo_chave_pix as TipoChavePix) || undefined;
       let chave = financeiro?.chave_pix_repasse || "";
 
@@ -134,6 +147,9 @@ export function useEditarPixForm({
         chave_pix: chave,
         ciente_taxa: false,
       });
+    } else if (!isOpen && wasOpenRef.current) {
+      wasOpenRef.current = false;
+      setIsSubmitting(false);
     }
   }, [isOpen, financeiro?.tipo_chave_pix, financeiro?.chave_pix_repasse, form]);
 
@@ -196,19 +212,21 @@ export function useEditarPixForm({
   const handleSubmit = async (data: EditarPixFormData) => {
     if (isActivatingAutomatica && !deveExibirCamposPix) {
       try {
+        setIsSubmitting(true);
         await updateFinanceiro({
           modo_cobranca: ModoCobrancaEnum.AUTOMATICA,
           aplicar_a_todos: aplicarATodos,
         });
 
+        await refreshProfile();
         toast.success(
           aplicarATodos
             ? "Cobrança & Baixa Automática ativada para todos os alunos!"
             : "Cobrança & Baixa Automática ativada!"
         );
-        await refreshProfile();
         await handleSuccess();
       } catch (err: unknown) {
+        setIsSubmitting(false);
         const errorMessage =
           err instanceof Error
             ? err.message
@@ -227,6 +245,7 @@ export function useEditarPixForm({
     }
 
     try {
+      setIsSubmitting(true);
       await updateFinanceiro({
         chave_pix_repasse: chaveLimpa,
         tipo_chave_pix: tipoLimpo,
@@ -238,6 +257,7 @@ export function useEditarPixForm({
           : {}),
       });
 
+      await refreshProfile();
       toast.success(
         isActivatingAutomatica
           ? aplicarATodos
@@ -245,16 +265,16 @@ export function useEditarPixForm({
             : "Chave Pix salva e Cobrança Automática ativada!"
           : "Chave Pix geral salva com sucesso."
       );
-      await refreshProfile();
       await handleSuccess();
     } catch (err: unknown) {
+      setIsSubmitting(false);
       const errorMessage =
         err instanceof Error ? err.message : "Ocorreu um erro ao salvar a chave Pix.";
       toast.error(errorMessage);
     }
   };
 
-  const isSaving = isUpdating || isRemoving;
+  const isSaving = isSubmitting || isUpdating || isRemoving;
 
   return {
     form,

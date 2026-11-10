@@ -67,9 +67,11 @@ export function useMotoristaFinanceiroApi() {
       }
       toast.error("Não foi possível salvar as configurações de recebimento.");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_EXCECOES_QUERY_KEY });
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: MOTORISTA_FINANCEIRO_EXCECOES_QUERY_KEY }),
+      ]);
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
     },

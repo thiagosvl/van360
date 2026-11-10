@@ -83,7 +83,12 @@ export default function EditarPixDialog({
     : "Salvar";
 
   return (
-    <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="md">
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isSaving && handleClose()}
+      lockClose={isSaving}
+      maxWidth="md"
+    >
       <BaseDialog.Header
         title={dialogTitle}
         subtitle={dialogSubtitle}
@@ -94,6 +99,7 @@ export default function EditarPixDialog({
             <Key className="w-5 h-5 text-[#0a0a0a]" />
           )
         }
+        hideCloseButton={isSaving}
         onClose={handleClose}
       />
       <BaseDialog.Body>
