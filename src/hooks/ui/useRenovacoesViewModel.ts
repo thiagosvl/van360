@@ -314,12 +314,21 @@ export function useRenovacoesViewModel() {
   }, [passageiros.length, selectedIds.size]);
 
   const handleConfirmarManual = useCallback(
-    async (passageiroId: string) => {
+    async (
+      passageiroId: string,
+      extraData?: { valorMensal?: number; diaVencimento?: number }
+    ) => {
       await updateRenovacaoMutation.mutateAsync({
         passageiroId,
         data: {
           ano_destino: anoDestino,
           status: RenovacaoStatus.CONFIRMADO,
+          ...(extraData?.valorMensal !== undefined
+            ? { novo_valor_cobranca: extraData.valorMensal }
+            : {}),
+          ...(extraData?.diaVencimento !== undefined
+            ? { novo_dia_vencimento: extraData.diaVencimento }
+            : {}),
         },
       });
     },

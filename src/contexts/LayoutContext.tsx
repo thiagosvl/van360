@@ -1,4 +1,4 @@
-﻿import { Cobranca } from "@/types/cobranca";
+import { Cobranca } from "@/types/cobranca";
 import { ModoCobrancaEnum, PassageiroFormModes, PassageiroGenero, SubscriptionIdentifer } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -289,7 +289,9 @@ export interface OpenEditarDadosPublicosRenovacaoDialogProps {
   passageiro: import("@/types/renovacao").PublicRenovacaoResponse["passageiro"];
   condicoes: import("@/types/renovacao").PublicRenovacaoResponse["condicoes"];
   escolasDisponiveis?: Array<{ id: string; nome: string }>;
-  onSuccess?: () => void;
+  onlyCpfForContract?: boolean;
+  requireCpf?: boolean;
+  onSuccess?: (updatedData?: import("@/types/renovacao").PublicRenovacaoResponse) => void | Promise<void>;
 }
 
 export interface OpenTutorialRenovacaoDialogProps {

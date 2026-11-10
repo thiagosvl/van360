@@ -5,6 +5,7 @@ import { RenovacaoStatus, ContratoStatus } from "@/types/enums";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "sonner";
 import { useLayout } from "@/contexts/LayoutContext";
+import { isValidCPF } from "@/utils/validators";
 
 export function usePublicRenovacaoViewModel() {
   const { token } = useParams<{ token: string }>();
@@ -33,8 +34,13 @@ export function usePublicRenovacaoViewModel() {
 
   const temContratoDigital = Boolean(data?.contrato?.usar_contratos || activeContractToken || isContratoAssinado);
   const isPendente = !isCicloConcluido && !isConfirmed && !isRecused;
-  const isConfirmadoComContratoPendente = !isCicloConcluido && isConfirmed && Boolean(activeContractToken);
+  const isConfirmadoComContratoPendente =
+    !isCicloConcluido &&
+    isConfirmed &&
+    Boolean(activeContractToken || (data?.contrato?.usar_contratos && !isContratoAssinado));
   const hasPendingAction = isPendente || isConfirmadoComContratoPendente;
+  const hasValidCpf = Boolean(data?.responsavel?.cpf && isValidCPF(data.responsavel.cpf));
+  const needsCpfForContract = temContratoDigital && !isContratoAssinado && !hasValidCpf;
 
   const temCondicoesAlteradas = useMemo(() => {
     const cond = data?.condicoes;
@@ -94,9 +100,51 @@ export function usePublicRenovacaoViewModel() {
     }
   }, [responder]);
 
-  const handleNavigateToContract = useCallback((contractToken: string) => {
-    navigate(ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", contractToken));
-  }, [navigate]);
+  const handleSolicitarCpfEConfirmar = useCallback(() => {
+    if (!data) return;
+    openEditarDadosPublicosRenovacaoDialog({
+      token: token || "",
+      responsavel: data.responsavel,
+      passageiro: data.passageiro,
+      condicoes: data.condicoes,
+      escolasDisponiveis: data.escolas_disponiveis || [],
+      onlyCpfForContract: true,
+      requireCpf: true,
+      onSuccess: async () => {
+        await handleConfirmar();
+      },
+    });
+  }, [data, token, openEditarDadosPublicosRenovacaoDialog, handleConfirmar]);
+
+  const handleNavigateToContract = useCallback(
+    (contractToken?: string | null) => {
+      if (contractToken && !needsCpfForContract) {
+        navigate(ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", contractToken));
+        return;
+      }
+
+      if (!data) return;
+      openEditarDadosPublicosRenovacaoDialog({
+        token: token || "",
+        responsavel: data.responsavel,
+        passageiro: data.passageiro,
+        condicoes: data.condicoes,
+        escolasDisponiveis: data.escolas_disponiveis || [],
+        onlyCpfForContract: true,
+        requireCpf: true,
+        onSuccess: (updated) => {
+          const nextToken = updated?.contrato?.token_acesso || contractToken || activeContractToken;
+          if (nextToken) {
+            toast.success("Dados salvos! Abrindo contrato para assinatura...");
+            navigate(ROUTES.PUBLIC.SIGN_CONTRACT.replace(":token", nextToken));
+          } else {
+            toast.error("Não foi possível gerar o contrato automaticamente. Entre em contato com o motorista.");
+          }
+        },
+      });
+    },
+    [navigate, needsCpfForContract, data, token, openEditarDadosPublicosRenovacaoDialog, activeContractToken]
+  );
 
   const handleOpenEditarDados = useCallback(() => {
     if (!data) return;
@@ -127,9 +175,11 @@ export function usePublicRenovacaoViewModel() {
     isPendente,
     isConfirmadoComContratoPendente,
     hasPendingAction,
+    needsCpfForContract,
     temCondicoesAlteradas,
     enderecoFormatado,
     handleConfirmar,
+    handleSolicitarCpfEConfirmar,
     handleRecusar,
     handleNavigateToContract,
     handleOpenEditarDados,

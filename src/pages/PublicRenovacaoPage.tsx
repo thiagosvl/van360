@@ -34,9 +34,11 @@ export default function PublicRenovacaoPage() {
     isPendente,
     isConfirmadoComContratoPendente,
     hasPendingAction,
+    needsCpfForContract,
     temCondicoesAlteradas,
     enderecoFormatado,
     handleConfirmar,
+    handleSolicitarCpfEConfirmar,
     handleRecusar,
     handleNavigateToContract,
     handleOpenEditarDados,
@@ -89,6 +91,13 @@ export default function PublicRenovacaoPage() {
       cancelText: "Voltar",
       variant: "success",
       onConfirm: async () => {
+        if (needsCpfForContract) {
+          safeCloseDialog(closeConfirmationDialog);
+          setTimeout(() => {
+            handleSolicitarCpfEConfirmar();
+          }, 150);
+          return;
+        }
         try {
           await handleConfirmar();
         } finally {

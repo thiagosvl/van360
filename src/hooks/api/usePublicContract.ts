@@ -79,6 +79,7 @@ export function useSignContract() {
         };
       });
       queryClient.invalidateQueries({ queryKey: ['public-contract', variables.token] });
+      queryClient.invalidateQueries({ queryKey: ['renovacoes'] });
     },
     onError: () => {
       toast.error('contrato.erro.assinar');

@@ -2106,6 +2106,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiro={editarDadosPublicosRenovacaoDialogState.props.passageiro}
           condicoes={editarDadosPublicosRenovacaoDialogState.props.condicoes}
           escolasDisponiveis={editarDadosPublicosRenovacaoDialogState.props.escolasDisponiveis}
+          onlyCpfForContract={editarDadosPublicosRenovacaoDialogState.props.onlyCpfForContract}
+          requireCpf={editarDadosPublicosRenovacaoDialogState.props.requireCpf}
           onSuccess={editarDadosPublicosRenovacaoDialogState.props.onSuccess}
         />
       )}

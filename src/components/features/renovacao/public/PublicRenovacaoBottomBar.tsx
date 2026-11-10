@@ -10,7 +10,7 @@ interface PublicRenovacaoBottomBarProps {
   activeContractToken: string | null;
   onConfirmar: () => void;
   onRecusar: () => void;
-  onAssinarContrato: (token: string) => void;
+  onAssinarContrato: (token?: string | null) => void;
 }
 
 export function PublicRenovacaoBottomBar({
@@ -55,7 +55,7 @@ export function PublicRenovacaoBottomBar({
               Não vou renovar para {anoDestino}
             </button>
           </div>
-        ) : isConfirmadoComContratoPendente && activeContractToken ? (
+        ) : isConfirmadoComContratoPendente ? (
           <Button
             onClick={() => onAssinarContrato(activeContractToken)}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-12 rounded-[18px] text-sm sm:text-base shadow-xs gap-2 cursor-pointer transition-all active:scale-[0.99]"

@@ -175,11 +175,12 @@ export function useAtualizarDadosPublicosRenovacao(token?: string) {
   return useMutation({
     mutationFn: async (payload: AtualizarDadosPublicosPayload) => {
       if (!token) throw new Error("Token obrigatório");
-      const response = await apiClient.patch(`/public/renovacao/${token}/dados`, payload);
+      const response = await apiClient.patch<PublicRenovacaoResponse>(`/public/renovacao/${token}/dados`, payload);
       return response.data;
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       if (token) {
+        queryClient.setQueryData(renovacaoKeys.public(token), data);
         await queryClient.invalidateQueries({ queryKey: renovacaoKeys.public(token) });
       }
     },

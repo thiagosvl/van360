@@ -18,12 +18,14 @@ import { RenovacaoStickyBar } from "@/components/features/renovacao/RenovacaoSti
 import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { AnoLetivoSelect } from "@/components/common/AnoLetivoSelect";
 import { RenovacaoPassageiroItem } from "@/types/renovacao";
-import { RenovacaoStatus } from "@/types/enums";
+import { ParentescoResponsavel, PassageiroPeriodo, RenovacaoStatus } from "@/types/enums";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Users, ArrowLeft, HelpCircle, Clock, Settings2, ChevronDown } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
-import { PassageiroResponsavel } from "@/types/passageiro";
+import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
+import { useRenovacaoContratoConfig } from "@/hooks/api/useRenovacoes";
+import { hasPendenciasParaGerarContrato } from "@/utils/domain";
 import { Escola } from "@/types/escola";
 import { useSEO } from "@/hooks/useSEO";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
@@ -63,6 +65,7 @@ export default function Renovacoes() {
     openTutorialRenovacaoDialog,
     openConfigurarPeriodoAnoDialog,
     openResponsavelFormDialog,
+    openGerarContratoValidadorDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
   } = useLayout();
@@ -108,6 +111,28 @@ export default function Renovacoes() {
   } = useRenovacoesViewModel();
 
   const isViewSemTelefone = statusFilter === SEM_TELEFONE_FILTER;
+  const { data: configContrato } = useRenovacaoContratoConfig(anoDestino);
+  const usarContratos = Boolean(configContrato?.usar_contratos);
+
+  const mapRenovacaoItemToPassageiro = (item: RenovacaoPassageiroItem): Passageiro => ({
+    id: item.passageiro_id,
+    nome: item.nome,
+    periodo: (item.novo_periodo || item.periodo_atual || "") as PassageiroPeriodo,
+    veiculo_id: item.novo_veiculo_id || item.veiculo_id_atual || "",
+    isento: Boolean(item.isento_atual),
+    valor_cobranca: Number(item.novo_valor_cobranca ?? item.valor_cobranca_atual ?? 0),
+    dia_vencimento: Number(item.novo_dia_vencimento ?? item.dia_vencimento_atual ?? 10),
+    responsavel_principal: item.responsavel_principal
+      ? {
+          id: item.responsavel_principal.id,
+          nome: item.responsavel_principal.nome || "",
+          telefone: item.responsavel_principal.telefone || "",
+          cpf: item.responsavel_principal.cpf || null,
+          email: item.responsavel_principal.email || null,
+          parentesco: (item.responsavel_principal.parentesco as ParentescoResponsavel) || undefined,
+        }
+      : undefined,
+  });
 
   const [isConfigOculto, setIsConfigOculto] = useState<boolean>(() => {
     return localStorage.getItem(STORAGE_KEYS.RENOVACOES_CONFIG_OCULTO) === "true";
@@ -132,6 +157,7 @@ export default function Renovacoes() {
           telefone: item.responsavel_principal.telefone || "",
           cpf: item.responsavel_principal.cpf || null,
           email: item.responsavel_principal.email || null,
+          parentesco: (item.responsavel_principal.parentesco as ParentescoResponsavel) || undefined,
         } as PassageiroResponsavel)
         : null,
       onSuccess: () => {
@@ -145,9 +171,43 @@ export default function Renovacoes() {
     const count = selectedIds.size;
     if (count === 0) return;
 
+    if (count === 1 && usarContratos) {
+      const unicoId = Array.from(selectedIds)[0];
+      const unicoItem = passageiros.find((p) => p.passageiro_id === unicoId);
+      if (unicoItem && hasPendenciasParaGerarContrato(mapRenovacaoItemToPassageiro(unicoItem))) {
+        void handleConfirmarManualComConfirmacao(unicoId).then(() => {
+          clearSelection();
+        });
+        return;
+      }
+    }
+
+    const selecionadosSemDadosContrato = usarContratos
+      ? passageiros.filter(
+          (p) =>
+            selectedIds.has(p.passageiro_id) &&
+            hasPendenciasParaGerarContrato(mapRenovacaoItemToPassageiro(p))
+        )
+      : [];
+    const countSemDadosContrato = selecionadosSemDadosContrato.length;
+
     openConfirmationDialog({
       title: `Confirmar vaga de ${count} ${count === 1 ? "aluno" : "alunos"}?`,
-      description: `As vagas selecionadas serão confirmadas e matriculadas imediatamente no ano letivo de ${anoDestino}.`,
+      description: (
+        <div className="space-y-3">
+          <p>
+            As vagas selecionadas serão confirmadas e matriculadas imediatamente no ano letivo de <strong>{anoDestino}</strong>.
+          </p>
+          {countSemDadosContrato > 0 && (
+            <Banner
+              variant="warning"
+              title="Contratos Pendentes de CPF"
+              description={`${countSemDadosContrato} ${countSemDadosContrato === 1 ? "aluno selecionado ainda não possui" : "alunos selecionados ainda não possuem"} CPF ou dados completos do responsável. A vaga será garantida agora e o contrato será gerado quando o responsável informar o CPF pelo link de renovação.`}
+              className="rounded-[18px]"
+            />
+          )}
+        </div>
+      ),
       confirmText: "Confirmar",
       cancelText: "Cancelar",
       variant: "success",
@@ -251,6 +311,10 @@ export default function Renovacoes() {
   const handleConfirmarManualComConfirmacao = (passageiroId: string) => {
     const p = passageiros.find((item) => item.passageiro_id === passageiroId);
     const nomeAluno = p?.nome || "o aluno";
+    const mappedPassageiro = p ? mapRenovacaoItemToPassageiro(p) : undefined;
+    const hasPendencias = Boolean(
+      usarContratos && mappedPassageiro && hasPendenciasParaGerarContrato(mappedPassageiro)
+    );
 
     return new Promise<void>((resolve, reject) => {
       openConfirmationDialog({
@@ -266,6 +330,25 @@ export default function Renovacoes() {
         cancelText: "Voltar",
         variant: "success",
         onConfirm: async () => {
+          if (hasPendencias && mappedPassageiro) {
+            safeCloseDialog(closeConfirmationDialog);
+            resolve();
+            setTimeout(() => {
+              openGerarContratoValidadorDialog({
+                passageiroId,
+                initialPassageiro: mappedPassageiro,
+                onSuccess: async (_id, _bypassed, updatedValues) => {
+                  try {
+                    await handleConfirmarManual(passageiroId, updatedValues);
+                    refetch();
+                  } catch {
+                  }
+                },
+              });
+            }, 150);
+            return;
+          }
+
           try {
             await handleConfirmarManual(passageiroId);
             safeCloseDialog(closeConfirmationDialog);
