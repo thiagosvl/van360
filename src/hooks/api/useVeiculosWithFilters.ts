@@ -20,9 +20,9 @@ export function useVeiculosWithFilters(
   const query = useQuery({
     queryKey: ["veiculos-form", usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
-    // Sempre refazer a requisição quando os filtros mudarem ou quando o componente montar
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       if (!usuarioId) return [];
       const queryFilters = { slim: "true", ...filtros };

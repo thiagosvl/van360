@@ -17,6 +17,7 @@ export interface SystemSummary {
       ativos: number;
       inativos: number;
       solicitacoes_pendentes: number;
+      sem_valor_cobranca?: number;
     };
     veiculos: {
       total: number;

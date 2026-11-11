@@ -219,14 +219,17 @@ export function usePassageirosViewModel() {
       search: activeTab === PassageiroTab.SOLICITACOES ? debouncedSearchTerm : undefined,
     },
     {
-      enabled: !!profile?.id && (can("passageiros.visualizar") || can("passageiros.gerenciar")),
+      enabled:
+        !!profile?.id &&
+        activeTab === PassageiroTab.SOLICITACOES &&
+        (can("passageiros.visualizar") || can("passageiros.gerenciar")),
       onError: () => toast.error("erro.carregar"),
     }
   );
 
   const prePassageiros = (prePassageirosData as PrePassageiro[] | undefined) ?? [];
   const countPrePassageiros =
-    prePassageirosData && !debouncedSearchTerm
+    activeTab === PassageiroTab.SOLICITACOES && prePassageirosData && !debouncedSearchTerm
       ? prePassageirosData.length
       : (resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0);
   const totalPassageirosResumo = resumo?.contadores.passageiros.total;

@@ -52,7 +52,7 @@ export function useProfile(userId?: string) {
   const { data: summary } = useUsuarioResumo(
     profile?.id, 
     summaryParams, 
-    { staleTime: 5000, enabled: !!shouldFetchSummary }
+    { staleTime: 60000, enabled: !!shouldFetchSummary }
   );
 
   return {

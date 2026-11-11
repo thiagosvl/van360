@@ -43,7 +43,7 @@ export function useCobrancasViewModel() {
   const navigate = useNavigate();
 
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { profile, summary, isLoading: isProfileLoading } = useProfile(user?.id);
   const { financeiro, isLoading: isFinanceiroLoading } = useMotoristaFinanceiroApi();
 
   const createCobranca = useCreateCobranca();
@@ -84,15 +84,23 @@ export function useCobrancasViewModel() {
     searchParam: "search",
   });
 
+  const currentYearForCheck = getNowBR().getFullYear();
+  const hasSummarySemValor =
+    anoFilter === currentYearForCheck &&
+    summary?.contadores?.passageiros?.sem_valor_cobranca !== undefined;
+
   const { data: passageirosData } = usePassageiros(
     { usuarioId: profile?.id, status: PASSAGEIRO_STATUS_ATIVO, ano_letivo: anoFilter, limit: 500 },
-    { enabled: Boolean(profile?.id) }
+    { enabled: Boolean(profile?.id) && !hasSummarySemValor }
   );
 
   const alunosSemValorCount = useMemo(() => {
+    if (hasSummarySemValor) {
+      return summary?.contadores?.passageiros?.sem_valor_cobranca ?? 0;
+    }
     const list = passageirosData?.list || [];
     return list.filter((p) => !p.isento && (!p.valor_cobranca || Number(p.valor_cobranca) <= 0)).length;
-  }, [passageirosData?.list]);
+  }, [hasSummarySemValor, summary?.contadores?.passageiros?.sem_valor_cobranca, passageirosData?.list]);
 
   const buscaAReceber = commonSearch;
   const setBuscaAReceber = setCommonSearch;

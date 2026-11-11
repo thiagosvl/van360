@@ -50,7 +50,11 @@ export function useReajusteLote() {
       return response.data;
     },
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] }),
+      ]);
       toast.success("Reajuste em lote aplicado com sucesso!", {
         description: `${data.updated_count} passageiros foram atualizados.`,
       });
@@ -297,6 +301,8 @@ export function useSalvarRenovacaoContratoConfig() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: renovacaoKeys.contratoConfig(variables.ano) }),
         queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: ["profile"] }),
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] }),
       ]);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {
@@ -335,6 +341,7 @@ export function useSalvarPeriodoRenovacaoConfig() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: renovacaoKeys.periodoConfig(variables.ano) }),
         queryClient.invalidateQueries({ queryKey: renovacaoKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: ["profile"] }),
       ]);
     },
     onError: (error: AxiosError<{ error?: string; message?: string }>) => {

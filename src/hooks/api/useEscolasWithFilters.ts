@@ -20,9 +20,9 @@ export function useEscolasWithFilters(
   return useQuery({
     queryKey: ["escolas-form", usuarioId, filterKey, options?.isPublic],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
-    // Sempre refazer a requisição quando os filtros mudarem ou quando o componente montar
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       if (!usuarioId) return [];
       try {

@@ -71,6 +71,7 @@ export function useCreateGasto() {
     onSuccess: (_, variables) => {
       markLocalGastoMutation();
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       if (variables.data?.fretamento_id) {
         queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       }
@@ -104,6 +105,7 @@ export function useUpdateGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.atualizado");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       if (variables.data?.fretamento_id) {
         queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       }
@@ -130,6 +132,7 @@ export function useDeleteGasto() {
       markLocalGastoMutation();
       toast.success("gasto.sucesso.excluido");
       queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: FRETAMENTOS_QUERY_KEYS.all });
       broadcastGastoEvent(donoContaId);
     },

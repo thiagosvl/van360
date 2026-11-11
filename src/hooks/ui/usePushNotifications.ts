@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/constants/routes';
 import { STORAGE_KEYS } from '@/constants';
 import { CobrancaTab, PushNotificationAction } from '@/types/enums';
@@ -76,6 +77,7 @@ export function resolveNotificationRoute(
 
 export const usePushNotifications = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { session } = useSession();
   const { token: responsavelToken, isAuthenticated: isResponsavelAuth } = useResponsavelAuth();
   const { mutateAsync: registerPushToken } = usePushToken();
@@ -88,9 +90,17 @@ export const usePushNotifications = () => {
 
     const addActionListener = async () => {
       try {
+        const invalidateRealtimePushCaches = () => {
+          queryClient.invalidateQueries({ queryKey: ['usuario-resumo'] });
+          queryClient.invalidateQueries({ queryKey: ['cobrancas'] });
+          queryClient.invalidateQueries({ queryKey: ['pre-passageiros'] });
+          queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        };
+
         const actionHandle = await PushNotifications.addListener(
           'pushNotificationActionPerformed',
           (notification) => {
+            invalidateRealtimePushCaches();
             const data = notification.notification.data as Record<string, unknown> | undefined;
             const targetRoute = resolveNotificationRoute(data, isResponsavelAuth);
             savePendingDeepLink(targetRoute);
@@ -102,6 +112,7 @@ export const usePushNotifications = () => {
         const receivedHandle = await PushNotifications.addListener(
           'pushNotificationReceived',
           (notification) => {
+            invalidateRealtimePushCaches();
             console.log('[Push] Notificação recebida em primeiro plano:', notification);
           }
         );
@@ -116,7 +127,7 @@ export const usePushNotifications = () => {
     return () => {
       handles.forEach((h) => h.remove());
     };
-  }, [navigate, isResponsavelAuth]);
+  }, [navigate, isResponsavelAuth, queryClient]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;

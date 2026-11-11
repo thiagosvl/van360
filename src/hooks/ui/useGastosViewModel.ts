@@ -147,6 +147,7 @@ export function useGastosViewModel() {
       // Se for para o mesmo mês/ano que o usuário está visualizando na tela:
       debounceRealtimeGastoSync("gastos-page-sync", () => {
         queryClient.invalidateQueries({ queryKey: ["gastos"], refetchType: "active" });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       });
     };
 
