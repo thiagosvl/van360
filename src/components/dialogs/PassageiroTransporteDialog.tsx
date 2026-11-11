@@ -269,8 +269,10 @@ export function PassageiroTransporteDialog({
         if (data.cidade) respPayload.cidade = data.cidade.trim();
         if (data.estado) respPayload.estado = data.estado;
         if (data.cep) respPayload.cep = data.cep.replace(/\D/g, "");
-        if (data.complemento) respPayload.complemento = data.complemento.trim();
-        if (data.referencia) respPayload.referencia = data.referencia.trim();
+        if (hasAddressInput) {
+          respPayload.complemento = data.complemento ? data.complemento.trim() : null;
+          respPayload.referencia = data.referencia ? data.referencia.trim() : null;
+        }
 
         if (!hasExistingResponsible && data.telefone_responsavel) {
           respPayload.nome = data.nome_responsavel?.trim() || "Responsável";

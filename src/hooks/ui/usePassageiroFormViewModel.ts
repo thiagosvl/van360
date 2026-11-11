@@ -319,6 +319,7 @@ export function usePassageiroFormViewModel({
         cep: typeof data.responsavel_principal.cep === "string" ? data.responsavel_principal.cep.replace(/\D/g, "") || null : null,
         referencia: data.responsavel_principal.referencia || null,
         complemento: data.responsavel_principal.complemento || null,
+        notificacoes_rota_habilitadas: data.responsavel_principal.notificacoes_rota_habilitadas,
       };
     }
 
