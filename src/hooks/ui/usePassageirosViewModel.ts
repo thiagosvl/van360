@@ -389,19 +389,12 @@ export function usePassageirosViewModel() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
-    let createdCountInSession = 0;
     const isFirstPassageiro = (countPassageiros || 0) === 0;
 
     openQuickStartPassageiroDialog({
       isOnboarding: isFirstPassageiro,
       onSuccess: (passageiro, keepOpen) => {
-        if (!passageiro) {
-          return;
-        }
-
-        createdCountInSession += 1;
-
-        if (keepOpen) {
+        if (!passageiro || keepOpen) {
           return;
         }
 
@@ -417,10 +410,10 @@ export function usePassageirosViewModel() {
         if (hasFinancialInfo && (hasPayment || hasContractConfig)) {
           openFirstChargeDialog({
             passageiro,
-            isFirstPassageiro: isFirstPassageiro && createdCountInSession === 1,
+            isFirstPassageiro,
             onSuccess: (p) => {
               const finalPassageiro = p || passageiro;
-              if (isFirstPassageiro && createdCountInSession === 1) {
+              if (isFirstPassageiro) {
                 openOnboardingSuccessDialog({
                   passageiroNome: finalPassageiro.nome,
                   onNavigateToPassageiro: () => {
@@ -433,7 +426,7 @@ export function usePassageirosViewModel() {
             },
           });
         } else {
-          if (isFirstPassageiro && createdCountInSession === 1) {
+          if (isFirstPassageiro) {
             openOnboardingSuccessDialog({
               passageiroNome: passageiro.nome,
               onNavigateToPassageiro: () => {

@@ -7,6 +7,7 @@ import {
   useAtualizarStatusLoteRenovacao,
 } from "../api/useRenovacoes";
 import { useDebounce } from "@/hooks";
+import { useLayout } from "@/contexts/LayoutContext";
 import { RenovacaoStatus, FilterDefaults } from "@/types/enums";
 import { toast } from "sonner";
 import { getDefaultAnoDestino } from "@/utils/domain/renovacao/renovacaoDisponibilidade";
@@ -14,7 +15,12 @@ import { getDefaultAnoDestino } from "@/utils/domain/renovacao/renovacaoDisponib
 export const FILTER_ALL = "all";
 
 export function useRenovacoesViewModel() {
+  const { setPageTitle } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    setPageTitle("Renovação");
+  }, [setPageTitle]);
 
   const [anoDestino, setAnoDestinoState] = useState<number>(() => {
     const paramAno = Number(searchParams.get("ano"));

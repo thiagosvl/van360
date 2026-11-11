@@ -16,8 +16,12 @@ import { useAtualizacaoRapidaBusiness } from "../business/useAtualizacaoRapidaBu
 export function useAtualizacaoRapidaViewModel() {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { setIsGlobalLoading } = useLayout();
+  const { setIsGlobalLoading, setPageTitle } = useLayout();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
+
+  useEffect(() => {
+    setPageTitle("Atualização Rápida");
+  }, [setPageTitle]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 

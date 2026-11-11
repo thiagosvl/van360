@@ -1397,7 +1397,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={() => safeCloseDialog(() => setQuickStartPassageiroState({ open: false }))}
           onSuccess={quickStartPassageiroState.props?.onSuccess}
           isOnboarding={quickStartPassageiroState.props?.isOnboarding}
-          usuarioId={profile?.id}
+          usuarioId={profile?.id || user?.id}
         />
       )}
 

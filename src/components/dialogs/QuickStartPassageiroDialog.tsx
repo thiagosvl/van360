@@ -52,14 +52,17 @@ export function QuickStartPassageiroDialog({
 }: QuickStartPassageiroDialogProps) {
   const [activeTab, setActiveTab] = useState<"rapido" | "completo">("rapido");
   const [keepOpen, setKeepOpen] = useState(false);
+  const [createdCount, setCreatedCount] = useState(0);
   const createdCountRef = useRef(0);
   const lastCreatedPassageiroRef = useRef<Passageiro | null>(null);
   const { profile } = useProfile(usuarioId);
+  const effectiveUsuarioId = usuarioId || profile?.id;
 
   useEffect(() => {
     if (isOpen) {
       setActiveTab("rapido");
       setKeepOpen(false);
+      setCreatedCount(0);
       createdCountRef.current = 0;
       lastCreatedPassageiroRef.current = null;
     }
@@ -68,6 +71,7 @@ export function QuickStartPassageiroDialog({
   const { form, isSubmitting, handleSubmit, onFormError, handleFillMock } = usePassageiroQuickStartForm({
     onSuccess: (passageiro, wasKeepOpen) => {
       createdCountRef.current += 1;
+      setCreatedCount(createdCountRef.current);
       if (passageiro) {
         lastCreatedPassageiroRef.current = passageiro;
       }
@@ -78,7 +82,7 @@ export function QuickStartPassageiroDialog({
         setKeepOpen(false);
       }
     },
-    usuarioId,
+    usuarioId: effectiveUsuarioId,
     isOnboarding,
   });
 
@@ -89,10 +93,11 @@ export function QuickStartPassageiroDialog({
     mode: PassageiroFormModes.CREATE,
     onSuccess: (createdPassageiro) => {
       createdCountRef.current += 1;
+      setCreatedCount(createdCountRef.current);
       onSuccess?.(createdPassageiro, false);
       onClose();
     },
-    profile: profile || (usuarioId ? ({ id: usuarioId } as Partial<Usuario> as Usuario) : null),
+    profile: profile || (effectiveUsuarioId ? ({ id: effectiveUsuarioId } as Partial<Usuario> as Usuario) : null),
   });
 
   const handleTabChange = (newTab: "rapido" | "completo") => {
@@ -125,8 +130,8 @@ export function QuickStartPassageiroDialog({
     setActiveTab(newTab);
   };
 
-  const { data: escolasList = [] } = useEscolasWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/escola").Escola[] };
-  const { data: veiculosList = [] } = useVeiculosWithFilters(usuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/veiculo").Veiculo[] };
+  const { data: escolasList = [] } = useEscolasWithFilters(effectiveUsuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/escola").Escola[] };
+  const { data: veiculosList = [] } = useVeiculosWithFilters(effectiveUsuarioId, { ativo: "true" }, { enabled: isOpen }) as { data: import("@/types/veiculo").Veiculo[] };
   const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
 
   const [newVeiculo, setNewVeiculo] = useState<Veiculo | null>(null);
@@ -194,7 +199,7 @@ export function QuickStartPassageiroDialog({
     onClose();
   };
 
-  const showTabs = !isOnboarding || createdCountRef.current > 0;
+  const showTabs = !isOnboarding || createdCount > 0;
   const isCompleto = showTabs && activeTab === "completo";
 
   return (
@@ -460,7 +465,7 @@ export function QuickStartPassageiroDialog({
       <BaseDialog.Footer>
         <BaseDialog.Action
           variant="secondary"
-          label={createdCountRef.current > 0 ? "Concluir" : "Cancelar"}
+          label={createdCount > 0 ? "Concluir" : "Cancelar"}
           onClick={handleCloseDialog}
           disabled={isCompleto ? fullFormViewModel.isSubmitting : isSubmitting}
         />

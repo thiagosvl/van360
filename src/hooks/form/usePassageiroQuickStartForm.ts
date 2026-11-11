@@ -69,6 +69,8 @@ export function usePassageiroQuickStartForm({ onSuccess, usuarioId, isOnboarding
       const response = await apiClient.post<Passageiro>("/passageiros", payload);
 
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });

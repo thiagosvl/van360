@@ -27,7 +27,6 @@ import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
 import { useRenovacaoContratoConfig } from "@/hooks/api/useRenovacoes";
 import { hasPendenciasParaGerarContrato } from "@/utils/domain";
 import { Escola } from "@/types/escola";
-import { useSEO } from "@/hooks/useSEO";
 import { useIsMobile } from "@/hooks/ui/useIsMobile";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { AccessRestrictedState } from "@/components/ui/AccessRestrictedState";
@@ -45,11 +44,6 @@ import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useTutorialsConfig } from "@/hooks/ui/useTutorialsConfig";
 
 export default function Renovacoes() {
-  useSEO({
-    title: "Renovação de Ano Letivo",
-    description: "Gerencie as reservas de vaga, reajustes e matrículas do próximo ano letivo da sua van.",
-  });
-
   const { can } = usePermissions();
   const { formatAlunoNome } = useAppPreferences();
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("renovacoes");
