@@ -13,7 +13,7 @@ import { usePassageiroDadosComplementaresForm } from "@/hooks/form/usePassageiro
 import { safeCloseDialog } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { HeartPulse, X } from "lucide-react";
+import { ClipboardList, X } from "lucide-react";
 
 export interface PassageiroDadosComplementaresDialogProps {
   isOpen: boolean;
@@ -45,9 +45,9 @@ export function PassageiroDadosComplementaresDialog({
   return (
     <BaseDialog open={isOpen} onOpenChange={(open) => !open && handleClose()} maxWidth="lg">
       <BaseDialog.Header
-        title="Saúde e Informações Complementares"
-        subtitle={`Gerencie os dados complementares de ${passageiro?.nome || "aluno"}.`}
-        icon={<HeartPulse className="w-5 h-5 text-[#0a0a0a]" />}
+        title="Informações Complementares"
+        subtitle={`Gerencie as informações complementares de ${passageiro?.nome || "aluno"}.`}
+        icon={<ClipboardList className="w-5 h-5 text-[#0a0a0a]" />}
         onClose={handleClose}
       />
 
@@ -59,7 +59,7 @@ export function PassageiroDadosComplementaresDialog({
         />
 
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-3.5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {fields.map((fieldItem, index) => {
               const currentItem = watchedItens?.[index];
               const isSimNao =
@@ -69,10 +69,10 @@ export function PassageiroDadosComplementaresDialog({
               return (
                 <div
                   key={fieldItem.fieldKey}
-                  className="rounded-[24px] bg-[#fafafa] border border-[#e5e5e5] p-4 space-y-3"
+                  className="space-y-1.5"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">
+                    <p className="text-xs font-medium text-[#0a0a0a] leading-snug">
                       {fieldItem.pergunta}
                     </p>
                     {isSimNao && boolVal !== null && boolVal !== undefined && (
@@ -92,7 +92,7 @@ export function PassageiroDadosComplementaresDialog({
                   </div>
 
                   {isSimNao ? (
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2.5">
                         <button
                           type="button"
@@ -107,10 +107,10 @@ export function PassageiroDadosComplementaresDialog({
                             });
                           }}
                           className={cn(
-                            "h-10 rounded-[18px] text-xs font-semibold border transition-all cursor-pointer",
+                            "h-10 rounded-[18px] text-xs border transition-all cursor-pointer",
                             boolVal === false
-                              ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                              : "bg-white text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#f5f5f5]"
+                              ? "bg-primary/10 text-primary border-primary/25 font-semibold shadow-2xs"
+                              : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
                           )}
                         >
                           Não
@@ -125,10 +125,10 @@ export function PassageiroDadosComplementaresDialog({
                             );
                           }}
                           className={cn(
-                            "h-10 rounded-[18px] text-xs font-semibold border transition-all cursor-pointer",
+                            "h-10 rounded-[18px] text-xs border transition-all cursor-pointer",
                             boolVal === true
-                              ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                              : "bg-white text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#f5f5f5]"
+                              ? "bg-primary/10 text-primary border-primary/25 font-semibold shadow-2xs"
+                              : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
                           )}
                         >
                           Sim
@@ -149,7 +149,7 @@ export function PassageiroDadosComplementaresDialog({
                                   }
                                   {...field}
                                   value={field.value || ""}
-                                  className="h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                                  className="h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -172,7 +172,7 @@ export function PassageiroDadosComplementaresDialog({
                               }
                               {...field}
                               value={field.value || ""}
-                              className="h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                              className="h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
                             />
                           </FormControl>
                           <FormMessage />

@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/Banner";
+import { Button } from "@/components/ui/button";
 import {
   CamposFormularioExternoConfig,
   PerguntaPersonalizadaConfig,
@@ -9,7 +10,7 @@ import {
 } from "@/constants/formularioExterno";
 import { ConfiguracoesUsuario, UpdateConfiguracoesInput } from "@/hooks/api/useConfiguracoes";
 import { useLayout } from "@/contexts/LayoutContext";
-import { HeartPulse, Pencil, Plus, Trash2 } from "lucide-react";
+import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface PerguntasComplementaresPreferenciasSectionProps {
@@ -118,27 +119,29 @@ export const PerguntasComplementaresPreferenciasSection = memo(
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-[10px] bg-[#f5f5f5] text-[#0a0a0a] flex items-center justify-center shrink-0 border border-[#e5e5e5]">
-              <HeartPulse className="w-5 h-5 text-[#0a0a0a]" />
+              <ClipboardList className="w-5 h-5 text-[#0a0a0a]" />
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-semibold text-[#0a0a0a] tracking-tight">
-                Perguntas Complementares e Saúde
+                Perguntas Complementares
               </h3>
               <p className="text-xs text-[#737373] mt-0.5">
-                Ative perguntas de saúde, alergias, medicamentos ou autorizado a receber para o pai responder no link.
+                Ative sugestões prontas ou crie perguntas personalizadas para o responsável responder no link de cadastro.
               </p>
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="tonal"
+            size="sm"
             onClick={handleOpenNovaPergunta}
             disabled={isBusy || updatingId !== null}
-            className="self-start sm:self-auto text-xs font-semibold bg-[#0a0a0a] text-white hover:bg-[#262626] disabled:opacity-50 px-3.5 py-2 rounded-[18px] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+            className="self-start sm:self-auto rounded-[18px] text-xs px-3.5 h-9 gap-1.5 shrink-0 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Pergunta
-          </button>
+          </Button>
         </div>
 
         <Banner

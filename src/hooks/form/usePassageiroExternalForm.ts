@@ -167,16 +167,15 @@ export function usePassageiroExternalForm() {
       setMotoristaDisplayName(displayName);
       setMotoristaLogoUrl(data.logo_url || null);
 
-      if (data.campos_formulario_externo) {
-        const resolvedConfig = resolveCamposFormularioExterno(
-          data.campos_formulario_externo
-        );
-        setFormConfig(resolvedConfig);
-        form.setValue(
-          "dados_complementares",
-          buildInitialDadosComplementares(resolvedConfig)
-        );
-      }
+      const resolvedConfig = resolveCamposFormularioExterno(
+        data.campos_formulario_externo
+      );
+      formConfigRef.current = resolvedConfig;
+      setFormConfig(resolvedConfig);
+      form.setValue(
+        "dados_complementares",
+        buildInitialDadosComplementares(resolvedConfig)
+      );
 
       setLoading(false);
     };
@@ -234,10 +233,26 @@ export function usePassageiroExternalForm() {
 
       const { dispositivo_cadastro, metadados_cadastro } = collectClientRegistrationMetadata();
 
+      const perguntasAtivas = resolvePerguntasPersonalizadas(
+        formConfigRef.current.perguntas_personalizadas
+      ).filter((p) => p.ativo);
+      const rawRespostas = data.dados_complementares || [];
+      const respostasCompletas = perguntasAtivas.map((p, idx) => {
+        const item = rawRespostas.find((r) => r?.id === p.id) || rawRespostas[idx];
+        return {
+          id: p.id,
+          pergunta: p.pergunta,
+          tipo: p.tipo,
+          resposta_booleana:
+            item?.resposta_booleana !== undefined ? item.resposta_booleana : null,
+          resposta_texto: item?.resposta_texto || "",
+        };
+      });
+
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         dados_complementares: normalizeRespostasComplementares(
-          data.dados_complementares
+          respostasCompletas
         ),
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
@@ -423,7 +438,9 @@ export function usePassageiroExternalForm() {
               ? idx % 2 === 0
                 ? ""
                 : "Dipirona (alergia leve)"
-              : "Avó Maria - (11) 98888-7777",
+              : p.id === "saude_tipo_sanguineo"
+                ? "O+"
+                : "Avó Maria - (11) 98888-7777",
         })),
       ativo: true,
     });

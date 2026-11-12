@@ -35,7 +35,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           !hasPx && hasPl && !hasPr && "pr-3",
           !hasPx && !hasPl && hasPr && "pl-3",
           shouldHideIndicator && "[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none cursor-pointer",
-          className
+          className,
+          "aria-[invalid=true]:border-[#e7000b] aria-[invalid=true]:focus:border-[#e7000b] aria-[invalid=true]:focus:ring-[#e7000b]"
         )}
         ref={ref}
         {...props}

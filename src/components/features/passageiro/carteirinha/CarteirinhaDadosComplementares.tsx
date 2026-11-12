@@ -9,7 +9,7 @@ import { useLayoutSafe } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { HeartPulse, Pencil } from "lucide-react";
+import { ClipboardList, Pencil } from "lucide-react";
 
 interface CarteirinhaDadosComplementaresProps {
   passageiro?: Passageiro | Partial<Passageiro> | null;
@@ -55,9 +55,9 @@ export const CarteirinhaDadosComplementares = ({
     <div className="bg-[#ffffff] rounded-[20px] sm:rounded-[24px] border border-[#e5e5e5] shadow-xs overflow-hidden">
       <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <HeartPulse className="w-4 h-4 text-[#0a0a0a] shrink-0" />
+          <ClipboardList className="w-4 h-4 text-[#0a0a0a] shrink-0" />
           <h3 className="text-sm font-semibold text-[#0a0a0a] truncate">
-            Saúde e Informações Complementares
+            Informações Complementares
           </h3>
         </div>
 
@@ -97,7 +97,7 @@ export const CarteirinhaDadosComplementares = ({
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
                     {isSimPositivo && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-medium bg-[#171717] text-[#fafafa]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] text-[11px] font-semibold bg-primary/10 text-primary border border-primary/15">
                         Sim
                       </span>
                     )}
@@ -121,7 +121,7 @@ export const CarteirinhaDadosComplementares = ({
           >
             <p className="text-[11px] text-[#a3a3a3] italic py-2">
               {canManage
-                ? "Toque para registrar informações de saúde, alergias, medicamentos ou autorizado a receber..."
+                ? "Toque para registrar informações complementares do aluno..."
                 : "Nenhuma informação complementar cadastrada."}
             </p>
           </div>

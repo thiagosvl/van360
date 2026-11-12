@@ -1,9 +1,12 @@
 import { isValidCEPFormat, isValidCPF, isValidCNPJ } from "@/utils/validators";
 import { z } from "zod";
 
-export const cpfSchema = z.string().refine((val) => isValidCPF(val), {
-  message: "CPF inválido",
-});
+export const cpfSchema = z
+  .string({ required_error: "Campo obrigatório" })
+  .min(1, "Campo obrigatório")
+  .refine((val) => isValidCPF(val), {
+    message: "CPF inválido",
+  });
 
 export const cpfCnpjSchema = z.string().refine((val) => {
   const cleaned = val.replace(/\D/g, "");

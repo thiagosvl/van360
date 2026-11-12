@@ -33,7 +33,7 @@ import {
   CalendarDays,
   DoorClosed,
   ChevronDown,
-  HeartPulse,
+  ClipboardList,
   Wand2,
   X,
 } from "lucide-react";
@@ -1087,9 +1087,9 @@ export function RevisarSolicitacaoDialog({
                   <div className="space-y-4">
                     <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
                       <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
-                        <HeartPulse className="w-4 h-4" />
+                        <ClipboardList className="w-4 h-4" />
                       </div>
-                      Saúde e Informações Complementares
+                      Informações Complementares
                     </div>
 
                     <div className="grid grid-cols-1 gap-2.5">

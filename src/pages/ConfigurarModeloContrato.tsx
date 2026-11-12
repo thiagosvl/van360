@@ -694,8 +694,8 @@ export default function ConfigurarModeloContrato() {
         <div className="space-y-4">
           <Banner
             variant="info"
-            title="Perguntas de Saúde e Autorizados no Contrato"
-            description="As respostas de saúde, alergias, medicamentos e quem pode receber a criança configuradas no formulário de cadastro saem impressas automaticamente no PDF do contrato."
+            title="Perguntas Complementares no Contrato"
+            description="As respostas das perguntas complementares configuradas no formulário de cadastro saem impressas automaticamente no PDF do contrato."
             action={{
               label: "Configurar Perguntas",
               onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.ACCOUNT}?tab=preferencias`),

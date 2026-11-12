@@ -9,9 +9,9 @@ import {
 } from "@/constants/formularioExterno";
 
 export const respostaComplementarFormItemSchema = z.object({
-  id: z.string(),
-  pergunta: z.string(),
-  tipo: z.nativeEnum(TipoPerguntaPersonalizadaEnum),
+  id: z.string().optional(),
+  pergunta: z.string().optional(),
+  tipo: z.nativeEnum(TipoPerguntaPersonalizadaEnum).optional(),
   resposta_booleana: z.boolean().nullable().optional(),
   resposta_texto: z.string().nullable().optional(),
 });
@@ -24,15 +24,15 @@ export function buildPrePassageiroSchema(
 
   return z
     .object({
-      nome: z.string().min(2, "Campo obrigatório"),
-      nome_responsavel: z.string().min(2, "Campo obrigatório"),
+      nome: z.string({ required_error: "Campo obrigatório" }).trim().min(2, "Campo obrigatório"),
+      nome_responsavel: z.string({ required_error: "Campo obrigatório" }).trim().min(2, "Campo obrigatório"),
       cpf_responsavel: cpfSchema,
       telefone_responsavel: phoneSchema,
       email_responsavel: config.email_responsavel
         ? z
-            .string({ required_error: "E-mail é obrigatório" })
+            .string({ required_error: "Campo obrigatório" })
             .trim()
-            .min(1, "E-mail é obrigatório")
+            .min(1, "Campo obrigatório")
             .email("E-mail inválido")
         : z
             .string()
@@ -46,28 +46,68 @@ export function buildPrePassageiroSchema(
               }
             ),
 
-      logradouro: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-      numero: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-      bairro: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
-      cidade: z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório"),
+      logradouro: z.string({ required_error: "Campo obrigatório" }).trim().min(1, "Campo obrigatório"),
+      numero: z.string({ required_error: "Campo obrigatório" }).trim().min(1, "Campo obrigatório"),
+      bairro: z.string({ required_error: "Campo obrigatório" }).trim().min(1, "Campo obrigatório"),
+      cidade: z.string({ required_error: "Campo obrigatório" }).trim().min(1, "Campo obrigatório"),
       estado: z.string({ required_error: "Campo obrigatório" }).min(2, "Selecione o estado"),
       cep: cepSchema,
       referencia: z.string().optional().nullable().or(z.literal("")),
       complemento: z.string().optional().nullable().or(z.literal("")),
       observacoes: z.string().optional().nullable().or(z.literal("")),
-      dados_complementares: z.array(respostaComplementarFormItemSchema).optional().default([]),
+      dados_complementares: z
+        .array(respostaComplementarFormItemSchema)
+        .optional()
+        .default([])
+        .superRefine((respostas, ctx) => {
+          const lista = respostas || [];
+          perguntasAtivas.forEach((pergunta, pIdx) => {
+            const item =
+              lista.find((r) => r?.id === pergunta.id) || lista[pIdx] || null;
+
+            if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO) {
+              if (!item || typeof item.resposta_booleana !== "boolean") {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Campo obrigatório",
+                  path: [pIdx, "resposta_booleana"],
+                });
+              } else if (
+                item.resposta_booleana === true &&
+                (!item.resposta_texto || item.resposta_texto.trim().length < 2)
+              ) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Informe os detalhes",
+                  path: [pIdx, "resposta_texto"],
+                });
+              }
+            } else if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE) {
+              if (
+                pergunta.obrigatorio &&
+                (!item || !item.resposta_texto || item.resposta_texto.trim().length < 2)
+              ) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Campo obrigatório",
+                  path: [pIdx, "resposta_texto"],
+                });
+              }
+            }
+          });
+        }),
 
       escola_id: z.string().optional().nullable().or(z.literal("")),
       turma: config.turma
-        ? z.string({ required_error: "Turma é obrigatória" }).min(1, "Campo obrigatório")
+        ? z.string({ required_error: "Campo obrigatório" }).trim().min(1, "Campo obrigatório")
         : z.string().optional().nullable().or(z.literal("")),
       sala: z.string().optional().nullable().or(z.literal("")),
       nome_professor: z.string().optional().nullable().or(z.literal("")),
       periodo: config.periodo
-        ? z.string().min(1, "Campo obrigatório")
+        ? z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório")
         : z.string().optional().nullable().or(z.literal("")),
       modalidade: config.modalidade
-        ? z.string().min(1, "Campo obrigatório")
+        ? z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório")
         : z.string().optional().nullable().or(z.literal("")),
       ano_letivo: z
         .string({ required_error: "Selecione o ano letivo" })
@@ -76,10 +116,10 @@ export function buildPrePassageiroSchema(
         ? dateSchema(true)
         : dateSchema(false, false).optional().nullable().or(z.literal("")),
       genero: config.genero
-        ? z.string().min(1, "Campo obrigatório")
+        ? z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório")
         : z.string().optional().nullable().or(z.literal("")),
       parentesco_responsavel: config.parentesco_responsavel
-        ? z.string().min(1, "Campo obrigatório")
+        ? z.string({ required_error: "Campo obrigatório" }).min(1, "Campo obrigatório")
         : z.string().optional().nullable().or(z.literal("")),
       data_inicio_transporte: dateSchema(false, true),
       data_fim_transporte: dateSchema(false, true),
@@ -117,43 +157,6 @@ export function buildPrePassageiroSchema(
           path: ["horario_saida"],
         });
       }
-
-      const respostas = data.dados_complementares || [];
-      perguntasAtivas.forEach((pergunta, pIdx) => {
-        const idx = respostas.findIndex((r) => r?.id === pergunta.id);
-        const item = idx >= 0 ? respostas[idx] : respostas[pIdx] || null;
-        const targetPathIdx = idx >= 0 ? idx : pIdx;
-
-        if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO) {
-          if (!item || typeof item.resposta_booleana !== "boolean") {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Selecione Não ou Sim",
-              path: ["dados_complementares", targetPathIdx, "resposta_booleana"],
-            });
-          } else if (
-            item.resposta_booleana === true &&
-            (!item.resposta_texto || item.resposta_texto.trim().length < 2)
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Informe os detalhes",
-              path: ["dados_complementares", targetPathIdx, "resposta_texto"],
-            });
-          }
-        } else if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE) {
-          if (
-            pergunta.obrigatorio &&
-            (!item || !item.resposta_texto || item.resposta_texto.trim().length < 2)
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Campo obrigatório",
-              path: ["dados_complementares", targetPathIdx, "resposta_texto"],
-            });
-          }
-        }
-      });
     });
 }
 

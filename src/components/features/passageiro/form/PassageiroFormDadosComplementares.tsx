@@ -3,6 +3,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import {
 } from "@/constants/formularioExterno";
 import { PrePassageiroFormData } from "@/schemas/prePassageiroSchema";
 import { cn } from "@/lib/utils";
-import { HeartPulse } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormDadosComplementaresProps {
@@ -74,185 +75,184 @@ export function PassageiroFormDadosComplementares({
     <div id="section-dados-complementares" className="space-y-4">
       <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
         <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
-          <HeartPulse className="w-4 h-4" />
+          <ClipboardList className="w-4 h-4" />
         </div>
-        Saúde e Informações Complementares
+        Informações Complementares
       </div>
 
-      <div className="space-y-3.5">
+      <div className="space-y-4 sm:space-y-5">
         {perguntasAtivas.map((pergunta, index) => {
           const itemAtual = watchedRespostas[index];
           const isSimNao =
             pergunta.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO;
           const boolVal = itemAtual?.resposta_booleana;
 
-          return (
-            <div
-              key={pergunta.id}
-              className="rounded-[24px] bg-[#fafafa] border border-[#e5e5e5] p-4 space-y-3"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">
-                  {pergunta.pergunta}{" "}
-                  {isSimNao || pergunta.obrigatorio ? (
-                    <span className="text-[#e7000b]">*</span>
-                  ) : (
-                    <span className="text-[#737373] font-normal text-xs">
-                      (opcional)
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              {isSimNao ? (
-                <div className="space-y-2.5">
-                  <FormField
-                    control={form.control}
-                    name={`dados_complementares.${index}.resposta_booleana`}
-                    render={({ fieldState }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormControl>
-                          <div className="grid grid-cols-2 gap-2.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                form.setValue(
-                                  `dados_complementares.${index}.id`,
-                                  pergunta.id
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.pergunta`,
-                                  pergunta.pergunta
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.tipo`,
-                                  pergunta.tipo
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.resposta_booleana`,
-                                  false,
-                                  { shouldValidate: true }
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.resposta_texto`,
-                                  "",
-                                  { shouldValidate: true }
-                                );
-                              }}
-                              className={cn(
-                                "h-10 sm:h-11 rounded-[18px] text-xs sm:text-sm font-semibold border transition-all cursor-pointer",
-                                boolVal === false
-                                  ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                                  : fieldState.error
-                                    ? "bg-white text-[#0a0a0a] border-[#e7000b]"
-                                    : "bg-white text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#f5f5f5]"
-                              )}
-                            >
-                              Não
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                form.setValue(
-                                  `dados_complementares.${index}.id`,
-                                  pergunta.id
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.pergunta`,
-                                  pergunta.pergunta
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.tipo`,
-                                  pergunta.tipo
-                                );
-                                form.setValue(
-                                  `dados_complementares.${index}.resposta_booleana`,
-                                  true,
-                                  { shouldValidate: true }
-                                );
-                              }}
-                              className={cn(
-                                "h-10 sm:h-11 rounded-[18px] text-xs sm:text-sm font-semibold border transition-all cursor-pointer",
-                                boolVal === true
-                                  ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                                  : fieldState.error
-                                    ? "bg-white text-[#0a0a0a] border-[#e7000b]"
-                                    : "bg-white text-[#0a0a0a] border-[#e5e5e5] hover:bg-[#f5f5f5]"
-                              )}
-                            >
-                              Sim
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {boolVal === true && (
-                    <FormField
-                      control={form.control}
-                      name={`dados_complementares.${index}.resposta_texto`}
-                      render={({ field, fieldState }) => (
-                        <FormItem className="space-y-1.5 animate-in fade-in duration-200">
-                          <FormControl>
-                            <Input
-                              {...field}
-                              value={field.value || ""}
-                              placeholder={
-                                pergunta.placeholder_detalhe ||
-                                "Especifique os detalhes..."
-                              }
-                              className="h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-              ) : (
+          if (isSimNao) {
+            return (
+              <div key={pergunta.id} className="space-y-2">
                 <FormField
                   control={form.control}
-                  name={`dados_complementares.${index}.resposta_texto`}
-                  render={({ field, fieldState }) => (
+                  name={`dados_complementares.${index}.resposta_booleana`}
+                  render={({ fieldState }) => (
                     <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[#0a0a0a] font-medium text-xs leading-snug block">
+                        {pergunta.pergunta}{" "}
+                        <span className="text-[#e7000b]">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            form.setValue(
-                              `dados_complementares.${index}.id`,
-                              pergunta.id
-                            );
-                            form.setValue(
-                              `dados_complementares.${index}.pergunta`,
-                              pergunta.pergunta
-                            );
-                            form.setValue(
-                              `dados_complementares.${index}.tipo`,
-                              pergunta.tipo
-                            );
-                            field.onChange(e.target.value);
-                          }}
-                          placeholder={
-                            pergunta.placeholder_detalhe ||
-                            "Digite sua resposta..."
-                          }
-                          className="h-10 sm:h-11 rounded-[18px] bg-white border-[#e5e5e5] focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
-                          aria-invalid={!!fieldState.error}
-                        />
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              form.setValue(
+                                `dados_complementares.${index}.id`,
+                                pergunta.id
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.pergunta`,
+                                pergunta.pergunta
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.tipo`,
+                                pergunta.tipo
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.resposta_booleana`,
+                                false,
+                                { shouldValidate: true }
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.resposta_texto`,
+                                "",
+                                { shouldValidate: true }
+                              );
+                            }}
+                            className={cn(
+                              "h-10 sm:h-11 rounded-[18px] text-xs sm:text-sm border transition-all cursor-pointer",
+                              boolVal === false
+                                ? "bg-primary/10 text-primary border-primary/25 font-semibold shadow-2xs"
+                                : fieldState.error
+                                  ? "bg-[#f5f5f5] text-[#737373] border-[#e7000b] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
+                                  : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
+                            )}
+                          >
+                            Não
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              form.setValue(
+                                `dados_complementares.${index}.id`,
+                                pergunta.id
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.pergunta`,
+                                pergunta.pergunta
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.tipo`,
+                                pergunta.tipo
+                              );
+                              form.setValue(
+                                `dados_complementares.${index}.resposta_booleana`,
+                                true,
+                                { shouldValidate: true }
+                              );
+                            }}
+                            className={cn(
+                              "h-10 sm:h-11 rounded-[18px] text-xs sm:text-sm border transition-all cursor-pointer",
+                              boolVal === true
+                                ? "bg-primary/10 text-primary border-primary/25 font-semibold shadow-2xs"
+                                : fieldState.error
+                                  ? "bg-[#f5f5f5] text-[#737373] border-[#e7000b] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
+                                  : "bg-[#f5f5f5] text-[#737373] border-[#e5e5e5] font-medium hover:bg-[#ededed] hover:text-[#0a0a0a]"
+                            )}
+                          >
+                            Sim
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {boolVal === true && (
+                  <FormField
+                    control={form.control}
+                    name={`dados_complementares.${index}.resposta_texto`}
+                    render={({ field, fieldState }) => (
+                      <FormItem className="space-y-1.5 animate-in fade-in duration-200">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            placeholder={
+                              pergunta.placeholder_detalhe ||
+                              "Especifique os detalhes..."
+                            }
+                            className="h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <FormField
+              key={pergunta.id}
+              control={form.control}
+              name={`dados_complementares.${index}.resposta_texto`}
+              render={({ field, fieldState }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[#0a0a0a] font-medium text-xs leading-snug block">
+                    {pergunta.pergunta}{" "}
+                    {pergunta.obrigatorio ? (
+                      <span className="text-[#e7000b]">*</span>
+                    ) : (
+                      <span className="text-[#737373] font-normal text-xs">
+                        (opcional)
+                      </span>
+                    )}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        form.setValue(
+                          `dados_complementares.${index}.id`,
+                          pergunta.id
+                        );
+                        form.setValue(
+                          `dados_complementares.${index}.pergunta`,
+                          pergunta.pergunta
+                        );
+                        form.setValue(
+                          `dados_complementares.${index}.tipo`,
+                          pergunta.tipo
+                        );
+                        field.onChange(e.target.value);
+                      }}
+                      placeholder={
+                        pergunta.placeholder_detalhe ||
+                        "Digite sua resposta..."
+                      }
+                      className="h-10 sm:h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] focus:bg-white focus:border-[#0a0a0a] text-sm text-[#0a0a0a] placeholder:text-[#737373] shadow-none"
+                      aria-invalid={!!fieldState.error}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
           );
         })}
       </div>

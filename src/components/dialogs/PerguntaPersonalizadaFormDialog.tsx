@@ -101,13 +101,27 @@ export function PerguntaPersonalizadaFormDialog({
                         className={cn(
                           "flex flex-col items-start text-left p-3.5 rounded-[18px] border transition-all cursor-pointer",
                           field.value === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO
-                            ? "bg-white border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
+                            ? "bg-primary/[0.08] border-primary/30 ring-1 ring-primary/20"
                             : "bg-[#fafafa] border-[#e5e5e5] hover:bg-[#f5f5f5]"
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <CheckCircle2 className="w-4 h-4 text-[#0a0a0a]" />
-                          <span className="text-xs font-semibold text-[#0a0a0a]">
+                          <CheckCircle2
+                            className={cn(
+                              "w-4 h-4",
+                              field.value === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO
+                                ? "text-primary"
+                                : "text-[#737373]"
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              "text-xs font-semibold",
+                              field.value === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO
+                                ? "text-primary"
+                                : "text-[#0a0a0a]"
+                            )}
+                          >
                             Sim / Não + Detalhe
                           </span>
                         </div>
@@ -122,13 +136,27 @@ export function PerguntaPersonalizadaFormDialog({
                         className={cn(
                           "flex flex-col items-start text-left p-3.5 rounded-[18px] border transition-all cursor-pointer",
                           field.value === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE
-                            ? "bg-white border-[#0a0a0a] ring-1 ring-[#0a0a0a]"
+                            ? "bg-primary/[0.08] border-primary/30 ring-1 ring-primary/20"
                             : "bg-[#fafafa] border-[#e5e5e5] hover:bg-[#f5f5f5]"
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <FileText className="w-4 h-4 text-[#0a0a0a]" />
-                          <span className="text-xs font-semibold text-[#0a0a0a]">
+                          <FileText
+                            className={cn(
+                              "w-4 h-4",
+                              field.value === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE
+                                ? "text-primary"
+                                : "text-[#737373]"
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              "text-xs font-semibold",
+                              field.value === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE
+                                ? "text-primary"
+                                : "text-[#0a0a0a]"
+                            )}
+                          >
                             Texto Aberto
                           </span>
                         </div>
