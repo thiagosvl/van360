@@ -1,6 +1,6 @@
-import { CobrancaTipoPagamento } from "@/types/enums";
+import { CobrancaStatus, CobrancaTipoPagamento } from "@/types/enums";
 import { tiposPagamento } from "./constants";
-import { getStartOfDayBR } from "../dateUtils";
+import { formatSafeBrazilianDate, getStartOfDayBR } from "../dateUtils";
 
 export const formatPaymentType = (tipo: string | undefined) => {
   if (!tipo) return "";
@@ -35,5 +35,19 @@ export function getCobrancaValorExibicao(cobranca?: { valor?: number; valor_pago
     return Number(cobranca.valor_pago);
   }
   return Number(cobranca.valor || 0);
+}
+
+export function isCobrancaRepasseAutomatico(
+  cobranca?: { status?: string; pagamento_manual?: boolean | null } | null
+): boolean {
+  if (!cobranca || cobranca.status !== CobrancaStatus.PAGO) return false;
+  return cobranca.pagamento_manual === false;
+}
+
+export function formatDiaMesPagamento(dataPagamento?: string | null): string {
+  if (!dataPagamento) return "";
+  const formatted = formatSafeBrazilianDate(dataPagamento);
+  if (!formatted || formatted.length < 5) return "";
+  return formatted.slice(0, 5);
 }
 

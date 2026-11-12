@@ -1,3 +1,5 @@
+import { RespostaComplementarItem } from "@/constants/formularioExterno";
+
 export interface PrePassageiro {
     id: string;
     usuario_id: string;
@@ -21,6 +23,7 @@ export interface PrePassageiro {
     referencia: string | null;
     complemento?: string | null;
     observacoes: string | null;
+    dados_complementares?: RespostaComplementarItem[] | null;
 
     escola_id: string | null;
     veiculo_id: string | null;

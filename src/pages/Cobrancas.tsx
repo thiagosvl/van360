@@ -1,5 +1,6 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { FinancialDashboardCard } from "@/components/common/FinancialDashboardCard";
+import { CobrancaRecebidasPills } from "@/components/features/cobranca/CobrancaRecebidasPills";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { Search, Sparkles, X } from "lucide-react";
@@ -31,6 +32,11 @@ export default function Cobrancas() {
     totalPrevisto,
     countAReceber,
     countRecebidos,
+    filteredCountRecebidos,
+    origemRecebidasFilter,
+    handleSelectOrigemRecebidas,
+    hasRepasseNoMes,
+    resumoOrigemRecebidas,
     activeTab,
     handleTabChange,
     buscaAReceber,
@@ -78,7 +84,7 @@ export default function Cobrancas() {
     onActionSuccess: () => {},
   };
 
-  const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
+  const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : filteredCountRecebidos;
   const statusLabel = busca
     ? currentCount === 1
       ? "ENCONTRADA"
@@ -191,6 +197,14 @@ export default function Cobrancas() {
                 )}
               </div>
             </div>
+
+            {activeTab === CobrancaTab.RECEBIDAS && hasRepasseNoMes && (
+              <CobrancaRecebidasPills
+                activeOrigem={origemRecebidasFilter}
+                onSelectOrigem={handleSelectOrigemRecebidas}
+                resumo={resumoOrigemRecebidas}
+              />
+            )}
 
             <div className="flex items-center justify-between px-1">
               <h2 className="text-sm sm:text-base font-semibold text-[#0a0a0a]">

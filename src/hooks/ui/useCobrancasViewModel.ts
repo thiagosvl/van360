@@ -13,12 +13,16 @@ import {
   useMotoristaFinanceiroApi,
   safeCloseDialog,
 } from "@/hooks";
-import { CobrancaStatus, CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
+import { CobrancaOrigemFiltro, CobrancaStatus, CobrancaTab, ModoCobrancaEnum } from "@/types/enums";
 import { Cobranca } from "@/types/cobranca";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/utils/notifications/toast";
 import { getNowBR, getStartOfDayBR } from "@/utils/dateUtils";
-import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import {
+  checkCobrancaEmAtraso,
+  getCobrancaValorExibicao,
+  isCobrancaRepasseAutomatico,
+} from "@/utils/formatters/cobranca";
 import { normalizeSearchText } from "@/utils/string";
 import { buildReciboWhatsAppMessage } from "@/utils/whatsappTemplates";
 import { isPassageiroIncompleto } from "@/utils/domain";
@@ -127,6 +131,14 @@ export function useCobrancasViewModel() {
   const COBRANCAS_PAGE_SIZE = 20;
   const [visibleAReceber, setVisibleAReceber] = useState(COBRANCAS_PAGE_SIZE);
   const [visibleRecebidas, setVisibleRecebidas] = useState(COBRANCAS_PAGE_SIZE);
+  const [origemRecebidasFilter, setOrigemRecebidasFilter] = useState<CobrancaOrigemFiltro>(
+    CobrancaOrigemFiltro.TODAS
+  );
+
+  const handleSelectOrigemRecebidas = useCallback((origem: CobrancaOrigemFiltro) => {
+    setOrigemRecebidasFilter(origem);
+    setVisibleRecebidas(COBRANCAS_PAGE_SIZE);
+  }, []);
 
   const [prevPeriodKey, setPrevPeriodKey] = useState(`${mesFilter}|${anoFilter}`);
   const currentPeriodKey = `${mesFilter}|${anoFilter}`;
@@ -134,6 +146,7 @@ export function useCobrancasViewModel() {
     setPrevPeriodKey(currentPeriodKey);
     setVisibleAReceber(COBRANCAS_PAGE_SIZE);
     setVisibleRecebidas(COBRANCAS_PAGE_SIZE);
+    setOrigemRecebidasFilter(CobrancaOrigemFiltro.TODAS);
   }
 
   const [prevSearchKey, setPrevSearchKey] = useState(debouncedSearchTerm);
@@ -262,17 +275,53 @@ export function useCobrancasViewModel() {
     return sorted;
   }, [cobrancasData, debouncedSearchTerm]);
 
+  const hasRepasseNoMes = useMemo(() => {
+    const rawRecebidos = cobrancasData?.recebidos ?? [];
+    return (
+      rawRecebidos.some((c) => isCobrancaRepasseAutomatico(c)) ||
+      origemRecebidasFilter !== CobrancaOrigemFiltro.TODAS
+    );
+  }, [cobrancasData?.recebidos, origemRecebidasFilter]);
+
+  const resumoOrigemRecebidas = useMemo(() => {
+    return cobrancasRecebidas.reduce(
+      (acc, curr) => {
+        const valor = getCobrancaValorExibicao(curr);
+        acc.totalCount += 1;
+        if (isCobrancaRepasseAutomatico(curr)) {
+          acc.repasseCount += 1;
+          acc.repasseValor += valor;
+        } else {
+          acc.manualCount += 1;
+          acc.manualValor += valor;
+        }
+        return acc;
+      },
+      { totalCount: 0, repasseCount: 0, repasseValor: 0, manualCount: 0, manualValor: 0 }
+    );
+  }, [cobrancasRecebidas]);
+
+  const filteredCobrancasRecebidas = useMemo(() => {
+    if (origemRecebidasFilter === CobrancaOrigemFiltro.REPASSE) {
+      return cobrancasRecebidas.filter((c) => isCobrancaRepasseAutomatico(c));
+    }
+    if (origemRecebidasFilter === CobrancaOrigemFiltro.MANUAL) {
+      return cobrancasRecebidas.filter((c) => !isCobrancaRepasseAutomatico(c));
+    }
+    return cobrancasRecebidas;
+  }, [cobrancasRecebidas, origemRecebidasFilter]);
+
   const isInitialLoading = isCobrancasLoading || isProfileLoading || !cobrancasData;
   const hasMoreAReceber = !isInitialLoading && cobrancasAReceber.length > visibleAReceber;
-  const hasMoreRecebidas = !isInitialLoading && cobrancasRecebidas.length > visibleRecebidas;
+  const hasMoreRecebidas = !isInitialLoading && filteredCobrancasRecebidas.length > visibleRecebidas;
 
   const paginatedCobrancasAReceber = useMemo(() => {
     return cobrancasAReceber.slice(0, visibleAReceber);
   }, [cobrancasAReceber, visibleAReceber]);
 
   const paginatedCobrancasRecebidas = useMemo(() => {
-    return cobrancasRecebidas.slice(0, visibleRecebidas);
-  }, [cobrancasRecebidas, visibleRecebidas]);
+    return filteredCobrancasRecebidas.slice(0, visibleRecebidas);
+  }, [filteredCobrancasRecebidas, visibleRecebidas]);
 
   useEffect(() => {
     setPageTitle("Parcelas");
@@ -448,6 +497,11 @@ export function useCobrancasViewModel() {
     totalPrevisto,
     countAReceber: cobrancasAReceber.length,
     countRecebidos: cobrancasRecebidas.length,
+    filteredCountRecebidos: filteredCobrancasRecebidas.length,
+    origemRecebidasFilter,
+    handleSelectOrigemRecebidas,
+    hasRepasseNoMes,
+    resumoOrigemRecebidas,
     activeTab,
     handleTabChange,
     buscaAReceber,

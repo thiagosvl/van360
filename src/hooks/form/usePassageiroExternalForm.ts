@@ -25,6 +25,10 @@ import {
 import {
   CamposFormularioExternoConfig,
   DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
+  normalizeRespostasComplementares,
+  resolveCamposFormularioExterno,
+  resolvePerguntasPersonalizadas,
+  TipoPerguntaPersonalizadaEnum,
 } from "@/constants/formularioExterno";
 import { useAttribution } from "@/hooks/business/useAttribution";
 import { collectClientRegistrationMetadata } from "@/utils/client-metadata.utils";
@@ -120,9 +124,23 @@ export function usePassageiroExternalForm() {
       data_fim_transporte: "",
       horario_entrada: "",
       horario_saida: "",
+      dados_complementares: [],
     },
     mode: "onBlur",
   });
+
+  const buildInitialDadosComplementares = (config: CamposFormularioExternoConfig) => {
+    const ativas = resolvePerguntasPersonalizadas(config.perguntas_personalizadas).filter(
+      (p) => p.ativo
+    );
+    return ativas.map((p) => ({
+      id: p.id,
+      pergunta: p.pergunta,
+      tipo: p.tipo,
+      resposta_booleana: null,
+      resposta_texto: "",
+    }));
+  };
 
   useEffect(() => {
     const validateMotorista = async () => {
@@ -150,10 +168,14 @@ export function usePassageiroExternalForm() {
       setMotoristaLogoUrl(data.logo_url || null);
 
       if (data.campos_formulario_externo) {
-        setFormConfig({
-          ...DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
-          ...data.campos_formulario_externo,
-        });
+        const resolvedConfig = resolveCamposFormularioExterno(
+          data.campos_formulario_externo
+        );
+        setFormConfig(resolvedConfig);
+        form.setValue(
+          "dados_complementares",
+          buildInitialDadosComplementares(resolvedConfig)
+        );
       }
 
       setLoading(false);
@@ -214,6 +236,9 @@ export function usePassageiroExternalForm() {
 
       await prePassageiroApi.createPrePassageiro({
         ...payload,
+        dados_complementares: normalizeRespostasComplementares(
+          data.dados_complementares
+        ),
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
         dispositivo_cadastro,
@@ -318,6 +343,7 @@ export function usePassageiroExternalForm() {
 
       valor_cobranca: "",
       dia_vencimento: "",
+      dados_complementares: buildInitialDadosComplementares(formConfigRef.current),
 
       ativo: true,
     });
@@ -378,6 +404,27 @@ export function usePassageiroExternalForm() {
       data_fim_transporte: "",
       horario_entrada: "07:30",
       horario_saida: "12:00",
+      dados_complementares: resolvePerguntasPersonalizadas(
+        formConfigRef.current.perguntas_personalizadas
+      )
+        .filter((p) => p.ativo)
+        .map((p, idx) => ({
+          id: p.id,
+          pergunta: p.pergunta,
+          tipo: p.tipo,
+          resposta_booleana:
+            p.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO
+              ? idx % 2 === 0
+                ? false
+                : true
+              : null,
+          resposta_texto:
+            p.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO
+              ? idx % 2 === 0
+                ? ""
+                : "Dipirona (alergia leve)"
+              : "Avó Maria - (11) 98888-7777",
+        })),
       ativo: true,
     });
 

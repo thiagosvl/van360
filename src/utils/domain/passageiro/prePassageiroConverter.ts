@@ -61,6 +61,7 @@ export function mapearPrePassageiroParaFormulario(pre: PrePassageiro): Partial<P
     ano_letivo: pre.ano_letivo?.toString() || "",
     ano_inicio_cobranca: pre.data_inicio_cobranca ? getYearFromDate(pre.data_inicio_cobranca) : (pre.ano_letivo?.toString() || ""),
     ano_fim_cobranca: pre.data_fim_cobranca ? getYearFromDate(pre.data_fim_cobranca) : (pre.ano_letivo?.toString() || ""),
+    dados_complementares: pre.dados_complementares || [],
     ativo: true,
   };
 }

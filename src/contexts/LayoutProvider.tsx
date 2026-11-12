@@ -55,6 +55,8 @@ import { QuickStartPassageiroDialog } from "@/components/dialogs/QuickStartPassa
 import { PassageiroFinanceiroDialog } from "@/components/dialogs/PassageiroFinanceiroDialog";
 import { PassageiroEscolaDialog } from "@/components/dialogs/PassageiroEscolaDialog";
 import { PassageiroTransporteDialog } from "@/components/dialogs/PassageiroTransporteDialog";
+import { PassageiroDadosComplementaresDialog } from "@/components/dialogs/PassageiroDadosComplementaresDialog";
+import { PerguntaPersonalizadaFormDialog } from "@/components/dialogs/PerguntaPersonalizadaFormDialog";
 import { RegistrarAusenciaDialog } from "@/components/dialogs/RegistrarAusenciaDialog";
 import { RevisarSolicitacaoDialog } from "@/components/dialogs/RevisarSolicitacaoDialog";
 import { GerarContratoValidadorDialog } from "@/components/dialogs/GerarContratoValidadorDialog";
@@ -85,6 +87,8 @@ import {
   OpenPassageiroFinanceiroProps,
   OpenPassageiroEscolaProps,
   OpenPassageiroTransporteProps,
+  OpenPassageiroDadosComplementaresProps,
+  OpenPerguntaPersonalizadaFormProps,
   OpenRegistrarAusenciaProps,
   OpenConfirmarGerarContratoDialogProps,
   OpenGerarContratoValidadorDialogProps,
@@ -253,6 +257,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [passageiroTransporteDialogState, setPassageiroTransporteDialogState] = useState<{
     open: boolean;
     props?: OpenPassageiroTransporteProps;
+  }>({
+    open: false,
+  });
+
+  const [passageiroDadosComplementaresDialogState, setPassageiroDadosComplementaresDialogState] = useState<{
+    open: boolean;
+    props?: OpenPassageiroDadosComplementaresProps;
+  }>({
+    open: false,
+  });
+
+  const [perguntaPersonalizadaFormDialogState, setPerguntaPersonalizadaFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenPerguntaPersonalizadaFormProps;
   }>({
     open: false,
   });
@@ -721,6 +739,28 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     safeCloseDialog(() => setPassageiroTransporteDialogState({ open: false }));
   };
 
+  const openPassageiroDadosComplementaresDialog = (props: OpenPassageiroDadosComplementaresProps) => {
+    setPassageiroDadosComplementaresDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePassageiroDadosComplementaresDialog = () => {
+    safeCloseDialog(() => setPassageiroDadosComplementaresDialogState({ open: false }));
+  };
+
+  const openPerguntaPersonalizadaFormDialog = (props: OpenPerguntaPersonalizadaFormProps) => {
+    setPerguntaPersonalizadaFormDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closePerguntaPersonalizadaFormDialog = () => {
+    safeCloseDialog(() => setPerguntaPersonalizadaFormDialogState({ open: false }));
+  };
+
   const openRegistrarAusenciaDialog = (props?: OpenRegistrarAusenciaProps) => {
     setRegistrarAusenciaDialogState({
       open: true,
@@ -1100,6 +1140,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closePassageiroEscolaDialog,
         openPassageiroTransporteDialog,
         closePassageiroTransporteDialog,
+        openPassageiroDadosComplementaresDialog,
+        closePassageiroDadosComplementaresDialog,
+        openPerguntaPersonalizadaFormDialog,
+        closePerguntaPersonalizadaFormDialog,
         openRegistrarAusenciaDialog,
         closeRegistrarAusenciaDialog,
         openGastoFormDialog,
@@ -1426,6 +1470,24 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onClose={closePassageiroTransporteDialog}
           passageiro={passageiroTransporteDialogState.props.passageiro}
           onSuccess={passageiroTransporteDialogState.props.onSuccess}
+        />
+      )}
+
+      {passageiroDadosComplementaresDialogState.open && passageiroDadosComplementaresDialogState.props && (
+        <PassageiroDadosComplementaresDialog
+          isOpen={true}
+          onClose={closePassageiroDadosComplementaresDialog}
+          passageiro={passageiroDadosComplementaresDialogState.props.passageiro}
+          onSuccess={passageiroDadosComplementaresDialogState.props.onSuccess}
+        />
+      )}
+
+      {perguntaPersonalizadaFormDialogState.open && perguntaPersonalizadaFormDialogState.props && (
+        <PerguntaPersonalizadaFormDialog
+          isOpen={true}
+          onClose={closePerguntaPersonalizadaFormDialog}
+          editingPergunta={perguntaPersonalizadaFormDialogState.props.editingPergunta}
+          onSave={perguntaPersonalizadaFormDialogState.props.onSave}
         />
       )}
 

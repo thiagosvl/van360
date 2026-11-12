@@ -19,6 +19,7 @@ import { CarteirinhaSkeleton, CarteirinhaHeaderSkeleton } from "@/components/ske
 
 import {
   CarteirinhaCobrancas,
+  CarteirinhaDadosComplementares,
   CarteirinhaDadosPessoais,
   CarteirinhaHeader,
   CarteirinhaObservacoes,
@@ -1018,6 +1019,31 @@ export default function PassageiroCarteirinha() {
               onEditClick={handleEditClick}
             />
           </div>
+        </Suspense>
+
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-[24px]" />}>
+          <CarteirinhaDadosComplementares
+            passageiro={passageiro}
+            onSuccess={(updatedData, hasChanges) => {
+              refetchPassageiro();
+              const isContratoAtivo = canManageContracts && isContratoAtivoNaConta(profile);
+              const isContratoImportado = passageiro?.contrato_provider === ContratoProvider.IMPORTADO;
+              const hasActiveContract =
+                passageiro?.status_contrato === ContratoStatus.ASSINADO ||
+                passageiro?.status_contrato === ContratoStatus.PENDENTE;
+
+              if (hasChanges && isContratoAtivo && !isContratoImportado && hasActiveContract && passageiro) {
+                setTimeout(() => {
+                  iniciarFluxoGerarContrato({
+                    passageiro: { ...passageiro, ...(updatedData || {}) } as Passageiro,
+                    anoLetivo: selectedYearNum,
+                    isSubstituicao: true,
+                    contratoIdParaSubstituir: passageiro.contrato_id || undefined,
+                  });
+                }, 300);
+              }
+            }}
+          />
         </Suspense>
 
         <Suspense fallback={<Skeleton className="h-32 w-full rounded-[24px]" />}>

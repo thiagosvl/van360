@@ -4,16 +4,23 @@ import { convertDateBrToISO, parseCurrencyToNumber } from "@/utils/formatters";
 import { parseLocalDate } from "@/utils/dateUtils";
 import {
   CamposFormularioExternoConfig,
-  DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
+  resolveCamposFormularioExterno,
+  TipoPerguntaPersonalizadaEnum,
 } from "@/constants/formularioExterno";
+
+export const respostaComplementarFormItemSchema = z.object({
+  id: z.string(),
+  pergunta: z.string(),
+  tipo: z.nativeEnum(TipoPerguntaPersonalizadaEnum),
+  resposta_booleana: z.boolean().nullable().optional(),
+  resposta_texto: z.string().nullable().optional(),
+});
 
 export function buildPrePassageiroSchema(
   customConfig?: Partial<CamposFormularioExternoConfig>
 ) {
-  const config = {
-    ...DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
-    ...customConfig,
-  };
+  const config = resolveCamposFormularioExterno(customConfig);
+  const perguntasAtivas = (config.perguntas_personalizadas || []).filter((p) => p.ativo);
 
   return z
     .object({
@@ -48,6 +55,7 @@ export function buildPrePassageiroSchema(
       referencia: z.string().optional().nullable().or(z.literal("")),
       complemento: z.string().optional().nullable().or(z.literal("")),
       observacoes: z.string().optional().nullable().or(z.literal("")),
+      dados_complementares: z.array(respostaComplementarFormItemSchema).optional().default([]),
 
       escola_id: z.string().optional().nullable().or(z.literal("")),
       turma: config.turma
@@ -87,32 +95,66 @@ export function buildPrePassageiroSchema(
       dia_vencimento: z.string().optional(),
       ativo: z.boolean().optional(),
     })
-    .refine(
-      (data) => {
-        if (!data.data_inicio_transporte || !data.data_fim_transporte) return true;
+    .superRefine((data, ctx) => {
+      if (data.data_inicio_transporte && data.data_fim_transporte) {
         try {
           const start = parseLocalDate(convertDateBrToISO(data.data_inicio_transporte)!);
           const end = parseLocalDate(convertDateBrToISO(data.data_fim_transporte)!);
-          return end > start;
-        } catch {
-          return true;
+          if (end <= start) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Término deve ser maior que o Início",
+              path: ["data_fim_transporte"],
+            });
+          }
+        } catch {}
+      }
+
+      if (data.horario_entrada && data.horario_saida && data.horario_saida <= data.horario_entrada) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Horário de saída deve ser maior que o horário de entrada",
+          path: ["horario_saida"],
+        });
+      }
+
+      const respostas = data.dados_complementares || [];
+      perguntasAtivas.forEach((pergunta, pIdx) => {
+        const idx = respostas.findIndex((r) => r?.id === pergunta.id);
+        const item = idx >= 0 ? respostas[idx] : respostas[pIdx] || null;
+        const targetPathIdx = idx >= 0 ? idx : pIdx;
+
+        if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.SIM_NAO_TEXTO) {
+          if (!item || typeof item.resposta_booleana !== "boolean") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Selecione Não ou Sim",
+              path: ["dados_complementares", targetPathIdx, "resposta_booleana"],
+            });
+          } else if (
+            item.resposta_booleana === true &&
+            (!item.resposta_texto || item.resposta_texto.trim().length < 2)
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Informe os detalhes",
+              path: ["dados_complementares", targetPathIdx, "resposta_texto"],
+            });
+          }
+        } else if (pergunta.tipo === TipoPerguntaPersonalizadaEnum.TEXTO_LIVRE) {
+          if (
+            pergunta.obrigatorio &&
+            (!item || !item.resposta_texto || item.resposta_texto.trim().length < 2)
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Campo obrigatório",
+              path: ["dados_complementares", targetPathIdx, "resposta_texto"],
+            });
+          }
         }
-      },
-      {
-        message: "Término deve ser maior que o Início",
-        path: ["data_fim_transporte"],
-      }
-    )
-    .refine(
-      (data) => {
-        if (!data.horario_entrada || !data.horario_saida) return true;
-        return data.horario_saida > data.horario_entrada;
-      },
-      {
-        message: "Horário de saída deve ser maior que o horário de entrada",
-        path: ["horario_saida"],
-      }
-    );
+      });
+    });
 }
 
 export const prePassageiroSchema = buildPrePassageiroSchema();

@@ -4,10 +4,15 @@ import { formatNomeResponsavelExibicao } from "@/utils/formatters/name";
 import { useAppPreferences } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
-import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import {
+  checkCobrancaEmAtraso,
+  getCobrancaValorExibicao,
+  isCobrancaRepasseAutomatico,
+} from "@/utils/formatters/cobranca";
 import {
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Zap,
 } from "lucide-react";
 import { Banner } from "@/components/ui/Banner";
 
@@ -21,6 +26,7 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
   const isProjection = cobranca.isProjection === true;
   const isCancelada = !isProjection && cobranca.status === CobrancaStatus.CANCELADA;
   const isPago = !isProjection && !isCancelada && cobranca.status === CobrancaStatus.PAGO;
+  const isRepasse = isPago && isCobrancaRepasseAutomatico(cobranca);
   const isParcial = isPago && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPago && !isCancelada && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
@@ -80,15 +86,29 @@ export const CobrancaSummary = ({ cobranca, isMotorista = true }: CobrancaSummar
       </div>
 
       <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#e5e5e5]/80 w-full min-w-0 gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           <Calendar className="h-3.5 w-3.5 shrink-0 text-[#737373]" />
           <span className="text-xs font-normal text-[#737373] truncate">
             {isCancelada
               ? `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`
-              : isAtrasado
-                ? formatDiasAtraso(cobranca.data_vencimento)
-                : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
+              : isPago
+                ? (cobranca.data_pagamento ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}` : `Vencimento ${formatDateToBR(cobranca.data_vencimento)}`)
+                : isAtrasado
+                  ? formatDiasAtraso(cobranca.data_vencimento)
+                  : `Vence ${formatDateToBR(cobranca.data_vencimento)}`}
           </span>
+          {isPago && isMotorista && (
+            isRepasse ? (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-[6px] border border-emerald-200/70 shrink-0 leading-none">
+                <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 shrink-0" />
+                <span>Repasse</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center text-[10px] font-medium text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[6px] border border-[#e5e5e5] shrink-0 leading-none">
+                Baixa Manual
+              </span>
+            )
+          )}
         </div>
 
         <div className="flex flex-col items-end shrink-0">

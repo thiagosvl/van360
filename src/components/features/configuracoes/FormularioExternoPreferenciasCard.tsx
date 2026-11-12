@@ -4,8 +4,10 @@ import { Banner } from "@/components/ui/Banner";
 import {
   CamposFormularioExternoConfig,
   DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
+  resolveCamposFormularioExterno,
 } from "@/constants/formularioExterno";
 import { ConfiguracoesUsuario, UpdateConfiguracoesInput } from "@/hooks/api/useConfiguracoes";
+import { PerguntasComplementaresPreferenciasSection } from "./PerguntasComplementaresPreferenciasSection";
 import { FileEdit, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,8 +17,10 @@ interface FormularioExternoPreferenciasCardProps {
   isUpdating: boolean;
 }
 
+type BooleanCampoKey = keyof Omit<CamposFormularioExternoConfig, "perguntas_personalizadas">;
+
 interface ItemConfig {
-  key: keyof CamposFormularioExternoConfig;
+  key: BooleanCampoKey;
   title: string;
   description: string;
 }
@@ -67,15 +71,14 @@ export const FormularioExternoPreferenciasCard = memo(
   }: FormularioExternoPreferenciasCardProps) {
     const [updatingKey, setUpdatingKey] = useState<string | null>(null);
 
-    const camposAtuais: CamposFormularioExternoConfig = {
-      ...DEFAULT_CAMPOS_FORMULARIO_EXTERNO,
-      ...(configuracoes?.campos_formulario_externo || {}),
-    };
+    const camposAtuais = resolveCamposFormularioExterno(
+      configuracoes?.campos_formulario_externo
+    );
 
     const isBusy = isUpdating || updatingKey !== null;
 
     const handleToggleField = async (
-      key: keyof CamposFormularioExternoConfig,
+      key: BooleanCampoKey,
       currentValue: boolean
     ) => {
       if (isBusy) return;
@@ -153,8 +156,9 @@ export const FormularioExternoPreferenciasCard = memo(
             return (
               <div
                 key={item.key}
-                className={`flex items-center justify-between gap-4 pt-4 ${index === 0 ? "pt-1 first:pt-0" : ""
-                  }`}
+                className={`flex items-center justify-between gap-4 pt-4 ${
+                  index === 0 ? "pt-1 first:pt-0" : ""
+                }`}
               >
                 <div className="space-y-0.5 min-w-0 pr-1">
                   <h3 className="text-sm font-medium text-[#0a0a0a] leading-tight">
@@ -180,6 +184,12 @@ export const FormularioExternoPreferenciasCard = memo(
             );
           })}
         </div>
+
+        <PerguntasComplementaresPreferenciasSection
+          camposAtuais={camposAtuais}
+          updateConfiguracoes={updateConfiguracoes}
+          isBusy={isBusy}
+        />
       </div>
     );
   }

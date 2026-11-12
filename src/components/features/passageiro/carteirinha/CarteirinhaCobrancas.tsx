@@ -16,7 +16,12 @@ import {
 import { formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { openBrowserLink } from "@/utils/browser";
-import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
+import {
+  checkCobrancaEmAtraso,
+  formatDiaMesPagamento,
+  getCobrancaValorExibicao,
+  isCobrancaRepasseAutomatico,
+} from "@/utils/formatters/cobranca";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -30,6 +35,7 @@ import {
   SlidersHorizontal,
   Key,
   Pencil,
+  Zap,
 } from "lucide-react";
 import { usePixPassageiroResolver, resolverPixPassageiro } from "@/hooks/ui/usePixPassageiroResolver";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
@@ -562,6 +568,9 @@ const CobrancaItemPassageiro = forwardRef<
   const isIncomplete = isPassageiroIncompleto(passageiro);
   const isCancelada = cobranca.status === CobrancaStatus.CANCELADA;
   const isPaid = !isCancelada && cobranca.status === CobrancaStatus.PAGO;
+  const isRepasse = isCobrancaRepasseAutomatico(cobranca);
+  const diaMesPagamento = formatDiaMesPagamento(cobranca.data_pagamento);
+  const metodoPagamentoLabel = cobranca.tipo_pagamento ? getPaymentMethodLabel(cobranca.tipo_pagamento) : "";
   const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isCancelada && !isPaid && !isIncomplete && checkCobrancaEmAtraso(cobranca.data_vencimento);
   const valorExibicao = getCobrancaValorExibicao(cobranca);
@@ -697,18 +706,37 @@ const CobrancaItemPassageiro = forwardRef<
                 <MessageSquare className="h-3 w-3 text-[#737373] shrink-0" />
               )}
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">
-                {isCancelada
-                  ? `Venc. ${formatDateToBR(cobranca.data_vencimento)}`
-                  : isPaid
-                    ? (cobranca.tipo_pagamento ? getPaymentMethodLabel(cobranca.tipo_pagamento) : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`)
+            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+              {isPaid ? (
+                isRepasse ? (
+                  <>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-[6px] border border-emerald-200/70 shrink-0 leading-none">
+                      <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 shrink-0" />
+                      <span>Repasse{diaMesPagamento ? ` ${diaMesPagamento}` : ""}</span>
+                    </span>
+                    {metodoPagamentoLabel && (
+                      <span className="text-[11px] text-[#737373] font-medium leading-snug">
+                        • {metodoPagamentoLabel}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">
+                    Manual{diaMesPagamento ? ` ${diaMesPagamento}` : ""}
+                    {metodoPagamentoLabel ? ` • ${metodoPagamentoLabel}` : ""}
+                  </p>
+                )
+              ) : (
+                <p className="text-[11px] text-[#737373] font-medium leading-snug break-words line-clamp-2">
+                  {isCancelada
+                    ? `Venc. ${formatDateToBR(cobranca.data_vencimento)}`
                     : isIncomplete
                       ? "Venc. dia --"
                       : isAtrasado
                         ? formatDiasAtraso(cobranca.data_vencimento)
                         : `Venc. ${formatDateToBR(cobranca.data_vencimento)}`}
-              </p>
+                </p>
+              )}
             </div>
           </div>
 

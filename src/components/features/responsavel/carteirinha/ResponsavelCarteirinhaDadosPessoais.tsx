@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ResponsavelCarteirinhaObservacoes } from "./ResponsavelCarteirinhaObservacoes";
+import { CarteirinhaDadosComplementares } from "@/components/features/passageiro/carteirinha";
 
 interface ResponsavelCarteirinhaDadosPessoaisProps {
   carteirinha: ResponsavelCarteirinhaData;
@@ -246,6 +247,12 @@ export const ResponsavelCarteirinhaDadosPessoais: React.FC<ResponsavelCarteirinh
           </div>
         </div>
       </div>
+
+      <CarteirinhaDadosComplementares
+        dadosComplementares={carteirinha.dados_complementares}
+        canManageOverride={false}
+        hideWhenEmpty={true}
+      />
 
       <ResponsavelCarteirinhaObservacoes carteirinha={carteirinha} />
     </div>

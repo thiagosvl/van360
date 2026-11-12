@@ -13,6 +13,7 @@ import { parseLocalDate } from "@/utils/dateUtils";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { mapearPrePassageiroParaFormulario } from "@/utils/domain/passageiro/prePassageiroConverter";
+import { TipoPerguntaPersonalizadaEnum } from "@/constants/formularioExterno";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -90,6 +91,18 @@ export const passageiroSchema = z
     ano_inicio_cobranca: z.string().optional().or(z.literal("")),
     ano_fim_cobranca: z.string().optional().or(z.literal("")),
     modo_cobranca: z.string().optional().nullable(),
+    dados_complementares: z
+      .array(
+        z.object({
+          id: z.string(),
+          pergunta: z.string(),
+          tipo: z.nativeEnum(TipoPerguntaPersonalizadaEnum),
+          resposta_booleana: z.boolean().nullable().optional(),
+          resposta_texto: z.string().nullable().optional(),
+        })
+      )
+      .optional()
+      .nullable(),
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
   })
@@ -316,6 +329,9 @@ export function usePassageiroForm({
           veiculo_id: editingPassageiro.veiculo_id || "",
           ativo: editingPassageiro.ativo,
           modo_cobranca: editingPassageiro.modo_cobranca || "",
+          dados_complementares: Array.isArray(editingPassageiro.dados_complementares)
+            ? editingPassageiro.dados_complementares
+            : undefined,
         });
 
         setOpenAccordionItems([

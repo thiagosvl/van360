@@ -1,5 +1,6 @@
 import { Responsavel } from "./passageiro";
 import { ContratoStatus, CobrancaStatus } from "./enums";
+import { RespostaComplementarItem } from "@/constants/formularioExterno";
 
 export interface ResponsavelPassageiro {
   id: string;
@@ -153,6 +154,7 @@ export interface ResponsavelCarteirinhaData {
   complemento?: string | null;
   referencia?: string | null;
   observacoes?: string | null;
+  dados_complementares?: RespostaComplementarItem[] | null;
   ativo: boolean;
   isento?: boolean;
   token_acesso?: string | null;

@@ -5,9 +5,11 @@ import { Form } from "@/components/ui/form";
 import { InitialLoading } from "@/components/auth/InitialLoading";
 import { Loader2, Wand2 } from "lucide-react";
 import { PassageiroFormDadosCadastrais } from "@/components/features/passageiro/form/PassageiroFormDadosCadastrais";
+import { PassageiroFormDadosComplementares } from "@/components/features/passageiro/form/PassageiroFormDadosComplementares";
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
 import { PassageiroExternalSuccess } from "@/components/features/passageiro/PassageiroExternalSuccess";
+import { resolvePerguntasPersonalizadas } from "@/constants/formularioExterno";
 import { getNowBR } from "@/utils/dateUtils";
 import { isDevEnv } from "@/utils/detectPlatform";
 import { Banner } from "@/components/ui/Banner";
@@ -129,10 +131,17 @@ export default function PassageiroExternalForm() {
                   <PassageiroFormResponsavel isExternal={true} formConfig={formConfig} />
                 </section>
 
-                {/* ENDEREÇO E OBSERVAÇÕES */}
                 <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-150">
                   <PassageiroFormEndereco isExternal={true} />
                 </section>
+
+                {resolvePerguntasPersonalizadas(formConfig?.perguntas_personalizadas).some(
+                  (p) => p.ativo
+                ) && (
+                  <section className="animate-in fade-in slide-in-from-top-4 duration-500 delay-200">
+                    <PassageiroFormDadosComplementares formConfig={formConfig} />
+                  </section>
+                )}
               </form>
             </Form>
           </div>

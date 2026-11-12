@@ -372,6 +372,10 @@ export function usePassageiroFormViewModel({
 
     purePayload.modo_cobranca = data.modo_cobranca ? (data.modo_cobranca as ModoCobrancaEnum) : null;
 
+    if (purePayload.dados_complementares === undefined) {
+      delete purePayload.dados_complementares;
+    }
+
     const commonOptions = {
       onSuccess: (responseData?: Passageiro) => {
         const isEdit = mode === PassageiroFormModes.EDIT;

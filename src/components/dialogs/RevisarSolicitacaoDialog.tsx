@@ -33,9 +33,14 @@ import {
   CalendarDays,
   DoorClosed,
   ChevronDown,
+  HeartPulse,
   Wand2,
   X,
 } from "lucide-react";
+import {
+  formatRespostaComplementarExibicao,
+  normalizeRespostasComplementares,
+} from "@/constants/formularioExterno";
 import {
   generos,
   modalidades,
@@ -1076,6 +1081,36 @@ export function RevisarSolicitacaoDialog({
 
                   <FormEnderecoFields required={false} inputClassName="bg-white" />
                 </div>
+
+                {normalizeRespostasComplementares(prePassageiro?.dados_complementares)
+                  .length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-[#0a0a0a] mb-4">
+                      <div className="w-8 h-8 rounded-[10px] bg-[#f5f5f5] flex items-center justify-center text-[#737373] border border-[#e5e5e5] shrink-0">
+                        <HeartPulse className="w-4 h-4" />
+                      </div>
+                      Saúde e Informações Complementares
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {normalizeRespostasComplementares(
+                        prePassageiro?.dados_complementares
+                      ).map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-[18px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-1"
+                        >
+                          <p className="text-[11px] font-medium text-[#737373]">
+                            {item.pergunta}
+                          </p>
+                          <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a]">
+                            {formatRespostaComplementarExibicao(item)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CollapsibleContent>
             </Collapsible>
           </form>

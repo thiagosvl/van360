@@ -9,6 +9,7 @@ import {
   ModoCobrancaEnum,
   RenovacaoStatus,
 } from "./enums";
+import { RespostaComplementarItem } from "@/constants/formularioExterno";
 
 export interface Responsavel {
   id?: string;
@@ -50,6 +51,7 @@ export interface Passageiro {
   enviar_notificacoes?: boolean;
   ano_letivo?: number;
   observacoes?: string;
+  dados_complementares?: RespostaComplementarItem[] | null;
   escola?: { id?: string; nome?: string };
   escola_nome?: string;
   veiculo?: { id?: string; placa?: string; modelo?: string; chave_pix?: string | null; tipo_chave_pix?: string | null };

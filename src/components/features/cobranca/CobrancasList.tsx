@@ -24,8 +24,13 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import { formatNomeResponsavelExibicao, formatNomeResponsavelCompletoExibicao } from "@/utils/formatters/name";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { checkCobrancaEmAtraso, getCobrancaValorExibicao } from "@/utils/formatters/cobranca";
-import { DollarSign, Wallet, CalendarClock, History, MessageSquare } from "lucide-react";
+import {
+  checkCobrancaEmAtraso,
+  formatDiaMesPagamento,
+  getCobrancaValorExibicao,
+  isCobrancaRepasseAutomatico,
+} from "@/utils/formatters/cobranca";
+import { DollarSign, Wallet, CalendarClock, History, MessageSquare, Zap } from "lucide-react";
 import { buildCobrancaWhatsAppUrl } from "@/utils/whatsappTemplates";
 import { resolverPixPassageiro } from "@/hooks/ui/usePixPassageiroResolver";
 import { openBrowserLink } from "@/utils/browser";
@@ -136,6 +141,8 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
   const vencDia = getVencimentoDia(cobranca);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
+  const isRepasse = isCobrancaRepasseAutomatico(cobranca);
+  const diaMesPagamento = formatDiaMesPagamento(cobranca?.data_pagamento);
   const isParcial = isPaid && cobranca.valor_pago !== null && cobranca.valor_pago !== undefined && Number(cobranca.valor_pago) < Number(cobranca.valor);
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
 
@@ -185,13 +192,30 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
               <MessageSquare className="h-3.5 w-3.5 text-[#737373] shrink-0" />
             )}
           </div>
-          <div className="flex flex-col min-w-0 mt-0.5">
-            <p className={cn(
-              "text-xs text-[#737373] font-normal leading-snug",
-              formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-2"
-            )}>
-              {firstNomeResponsavel}
-            </p>
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0 mt-0.5">
+            {firstNomeResponsavel && (
+              <p className={cn(
+                "text-xs text-[#737373] font-normal leading-snug",
+                formatoNomeResponsavel === "completo" ? "truncate" : "break-words line-clamp-2"
+              )}>
+                {firstNomeResponsavel}
+              </p>
+            )}
+            {isPaid && (
+              <>
+                {firstNomeResponsavel && <span className="text-[10px] text-[#d4d4d4] shrink-0">•</span>}
+                {isRepasse ? (
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-[6px] border border-emerald-200/70 shrink-0 leading-none">
+                    <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 shrink-0" />
+                    <span>Repasse{diaMesPagamento ? ` ${diaMesPagamento}` : ""}</span>
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-[#737373] font-normal shrink-0 leading-snug">
+                    Manual{diaMesPagamento ? ` ${diaMesPagamento}` : ""}
+                  </span>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -407,9 +431,23 @@ export function CobrancasList({
 
         {!isPendingTab && (
           <TableCell className="px-6 py-4 text-left">
-            <span className="font-normal text-sm text-[#737373] tabular-nums">
-              {cobranca.data_pagamento ? formatDateToBR(cobranca.data_pagamento) : "--"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-normal text-sm text-[#737373] tabular-nums">
+                {cobranca.data_pagamento ? formatDateToBR(cobranca.data_pagamento) : "--"}
+              </span>
+              {cobranca?.status === CobrancaStatus.PAGO && (
+                isCobrancaRepasseAutomatico(cobranca) ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-[6px] border border-emerald-200/70 shrink-0 leading-none">
+                    <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 shrink-0" />
+                    <span>Repasse</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center text-[10px] font-medium text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[6px] border border-[#e5e5e5] shrink-0 leading-none">
+                    Manual
+                  </span>
+                )
+              )}
+            </div>
           </TableCell>
         )}
 

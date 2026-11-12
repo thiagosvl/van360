@@ -3,6 +3,7 @@ import { ModoCobrancaEnum, PassageiroFormModes, PassageiroGenero, SubscriptionId
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro, PassageiroResponsavel } from "@/types/passageiro";
+import type { PerguntaPersonalizadaConfig } from "@/constants/formularioExterno";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { SaaSPlan } from "@/types/subscription";
 import { Veiculo } from "@/types/veiculo";
@@ -108,6 +109,16 @@ export interface OpenPassageiroEscolaProps {
 export interface OpenPassageiroTransporteProps {
   passageiro: Passageiro | Partial<Passageiro>;
   onSuccess?: () => void;
+}
+
+export interface OpenPassageiroDadosComplementaresProps {
+  passageiro: Passageiro | Partial<Passageiro>;
+  onSuccess?: (updatedPassageiro?: Passageiro, hasChanges?: boolean) => void;
+}
+
+export interface OpenPerguntaPersonalizadaFormProps {
+  editingPergunta?: PerguntaPersonalizadaConfig | null;
+  onSave: (pergunta: PerguntaPersonalizadaConfig) => Promise<void> | void;
 }
 
 export interface OpenGastoFormProps {
@@ -516,6 +527,10 @@ export interface LayoutContextType {
   closePassageiroEscolaDialog: () => void;
   openPassageiroTransporteDialog: (props: OpenPassageiroTransporteProps) => void;
   closePassageiroTransporteDialog: () => void;
+  openPassageiroDadosComplementaresDialog: (props: OpenPassageiroDadosComplementaresProps) => void;
+  closePassageiroDadosComplementaresDialog: () => void;
+  openPerguntaPersonalizadaFormDialog: (props: OpenPerguntaPersonalizadaFormProps) => void;
+  closePerguntaPersonalizadaFormDialog: () => void;
   openRegistrarAusenciaDialog: (props?: OpenRegistrarAusenciaProps) => void;
   closeRegistrarAusenciaDialog: () => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;

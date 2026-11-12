@@ -309,6 +309,7 @@ export function useRevisarSolicitacaoViewModel({
         data_fim_cobranca: values.isento || !values.mes_fim_cobranca
           ? null
           : `${anoTerm}-${String(values.mes_fim_cobranca).padStart(2, "0")}-01`,
+        dados_complementares: prePassageiro.dados_complementares || [],
         responsavel_principal: {
           nome: values.nome_responsavel.trim(),
           parentesco: values.parentesco_responsavel as ParentescoResponsavel,

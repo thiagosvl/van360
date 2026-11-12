@@ -104,6 +104,12 @@ export enum CobrancaTab {
   RECEBIDAS = "recebidas",
 }
 
+export enum CobrancaOrigemFiltro {
+  TODAS = "todas",
+  REPASSE = "repasse",
+  MANUAL = "manual",
+}
+
 export enum ContratoTab {
   SEM_CONTRATO = "sem_contrato",
   PENDENTES = "pendentes",
@@ -602,5 +608,10 @@ export enum StatusRepasseEnum {
 export enum ProvedorPagamentoEnum {
   WOOVI = "WOOVI",
   EFIPAY = "EFIPAY",
+}
+
+export enum TipoPerguntaPersonalizadaEnum {
+  SIM_NAO_TEXTO = "sim_nao_texto",
+  TEXTO_LIVRE = "texto_livre",
 }
 
