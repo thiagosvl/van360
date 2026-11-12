@@ -4,6 +4,7 @@ import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import { CobrancaLembretesEnviadosDialog } from "@/components/dialogs/CobrancaLembretesEnviadosDialog";
+import { IsentarEncargosCobrancaDialog } from "@/components/dialogs/IsentarEncargosCobrancaDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import AdminCreateUserDialog from "@/components/dialogs/AdminCreateUserDialog";
 import AdminDispatchNotificationDialog from "@/components/dialogs/AdminDispatchNotificationDialog";
@@ -1502,6 +1503,21 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }}
           cobranca={cobrancaLembretesEnviadosDialogState.props.cobranca}
           modoEfetivo={cobrancaLembretesEnviadosDialogState.props.modoEfetivo}
+        />
+      )}
+
+      {isentarEncargosCobrancaDialogState.open && isentarEncargosCobrancaDialogState.props && (
+        <IsentarEncargosCobrancaDialog
+          open={isentarEncargosCobrancaDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeIsentarEncargosCobrancaDialog();
+            } else {
+              setIsentarEncargosCobrancaDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
+          cobranca={isentarEncargosCobrancaDialogState.props.cobranca}
+          onSuccess={isentarEncargosCobrancaDialogState.props.onSuccess}
         />
       )}
 
