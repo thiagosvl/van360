@@ -123,9 +123,16 @@ export function ActiveRouteHeader({
 
           <div className="bg-white border border-[#e5e5e5] p-4 sm:p-5 rounded-[24px] shadow-xs space-y-3.5 sm:space-y-4 text-left">
             <div className="space-y-1.5 text-left">
-              <h2 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-snug break-words">
-                {execucao?.rota?.nome}
-              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-semibold text-[#0a0a0a] tracking-tight leading-snug break-words">
+                  {execucao?.rota?.nome}
+                </h2>
+                {execucao?.rota?.ano_letivo && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[11px] font-medium text-[#171717]">
+                    Ano Letivo {execucao.rota.ano_letivo}
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center gap-2 flex-wrap text-xs text-[#737373]">
                 {totalEscolas > 0 ? (

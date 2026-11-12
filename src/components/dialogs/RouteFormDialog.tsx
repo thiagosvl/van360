@@ -14,25 +14,32 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/utils/notifications/toast";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { getDefaultAnoLetivo, getAnoLetivoOptions } from "@/utils/domain/anoLetivo";
+import { getNowBR } from "@/utils/dateUtils";
 
 export interface RouteFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultAnoLetivo?: number;
   editingRoute?: {
     nome: string;
     veiculoId: string;
     escolaFixaId?: string;
+    anoLetivo?: number;
+    disableAnoLetivo?: boolean;
   } | null;
   onSuccess: (data: {
     nome: string;
     veiculoId: string;
     escolaFixaId?: string;
+    anoLetivo: number;
   }) => void;
 }
 
 export default function RouteFormDialog({
   isOpen,
   onClose,
+  defaultAnoLetivo,
   editingRoute,
   onSuccess,
 }: RouteFormDialogProps) {
@@ -47,11 +54,19 @@ export default function RouteFormDialog({
   );
   const veiculosList = veiculosQueryData?.list || [];
 
-  const userAssignedVeiculoId = profile?.veiculo_id || (profile as any)?.veiculo?.id || "";
+  const userAssignedVeiculoId = profile?.veiculo_id || "";
   const defaultVeiculoId = editingRoute?.veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : "");
+  const anoLetivoOptions = getAnoLetivoOptions(editingRoute?.anoLetivo ?? defaultAnoLetivo);
 
   const [nome, setNome] = useState(() => editingRoute?.nome || "");
   const [veiculoId, setVeiculoId] = useState(() => defaultVeiculoId);
+  const [anoLetivo, setAnoLetivo] = useState(() =>
+    editingRoute?.anoLetivo
+      ? String(editingRoute.anoLetivo)
+      : defaultAnoLetivo
+        ? String(defaultAnoLetivo)
+        : getDefaultAnoLetivo()
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const wasOpenRef = useRef(false);
@@ -61,15 +76,17 @@ export default function RouteFormDialog({
       if (editingRoute) {
         setNome(editingRoute.nome || "");
         setVeiculoId(editingRoute.veiculoId || userAssignedVeiculoId || (veiculosList.length > 0 ? veiculosList[0].id : ""));
+        setAnoLetivo(editingRoute.anoLetivo ? String(editingRoute.anoLetivo) : getNowBR().getFullYear().toString());
       } else {
         setNome("");
         const selectedId = userAssignedVeiculoId || (veiculosList.length === 1 ? veiculosList[0].id : "");
         setVeiculoId(selectedId);
+        setAnoLetivo(defaultAnoLetivo ? String(defaultAnoLetivo) : getDefaultAnoLetivo());
       }
       setErrors({});
     }
     wasOpenRef.current = isOpen;
-  }, [isOpen, editingRoute, userAssignedVeiculoId, veiculosList]);
+  }, [isOpen, editingRoute, defaultAnoLetivo, userAssignedVeiculoId, veiculosList]);
 
   useEffect(() => {
     if (isOpen && !veiculoId && defaultVeiculoId) {
@@ -86,6 +103,9 @@ export default function RouteFormDialog({
     } else if (defaultVeiculoId) {
       setVeiculoId(defaultVeiculoId);
     }
+    if (!anoLetivo) {
+      setAnoLetivo(getNowBR().getFullYear().toString());
+    }
     setErrors({});
   };
 
@@ -94,6 +114,7 @@ export default function RouteFormDialog({
     if (!nome.trim()) errs.nome = "O nome da rota é obrigatório.";
     const targetVeiculoId = veiculoId || defaultVeiculoId;
     if (!targetVeiculoId || targetVeiculoId === "none") errs.veiculoId = "Selecione o veículo da rota.";
+    if (!anoLetivo) errs.anoLetivo = "Selecione o ano letivo da rota.";
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -106,6 +127,7 @@ export default function RouteFormDialog({
       nome: nome.trim(),
       veiculoId: targetVeiculoId,
       escolaFixaId: "",
+      anoLetivo: Number(anoLetivo),
     });
   };
 
@@ -182,6 +204,37 @@ export default function RouteFormDialog({
             {errors.veiculoId && (
               <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
                 {errors.veiculoId}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[13px] font-medium text-[#737373]">
+              Ano Letivo <span className="text-[#e7000b]">*</span>
+            </Label>
+            <NativeSelect
+              disabled={editingRoute?.disableAnoLetivo}
+              value={anoLetivo}
+              onChange={(e) => {
+                setAnoLetivo(e.target.value);
+                setErrors((prev) => ({ ...prev, anoLetivo: "" }));
+              }}
+              className={cn(
+                "h-11 rounded-[18px] bg-[#f5f5f5] border-[#e5e5e5] text-sm text-[#0a0a0a]",
+                editingRoute?.disableAnoLetivo && "opacity-80 cursor-not-allowed",
+                errors.anoLetivo && "border-[#e7000b]"
+              )}
+            >
+              <option value="">Selecione o ano letivo</option>
+              {anoLetivoOptions.map((ano) => (
+                <option key={ano} value={ano}>
+                  {ano}
+                </option>
+              ))}
+            </NativeSelect>
+            {errors.anoLetivo && (
+              <p className="text-xs text-[#e7000b] font-medium ml-1 mt-1.5 animate-in fade-in duration-200">
+                {errors.anoLetivo}
               </p>
             )}
           </div>

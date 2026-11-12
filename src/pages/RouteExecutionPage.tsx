@@ -336,7 +336,13 @@ export default function RouteExecutionPage() {
             totalStops={totalStops}
             progressPercentage={progressPercentage}
             isPreview={isPreview}
-            onBack={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+            onBack={() =>
+              navigate(
+                execucao?.rota?.ano_letivo
+                  ? `${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${execucao.rota.ano_letivo}`
+                  : ROUTES.PRIVATE.MOTORISTA.ROUTES
+              )
+            }
             isVehicleOccupied={isVehicleOccupied}
             occupiedRouteName={occupiedRouteName}
             iniciarMutation={iniciarMutation}

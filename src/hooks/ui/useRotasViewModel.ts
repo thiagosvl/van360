@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/business/useSession";
@@ -10,6 +10,7 @@ import { useDeleteRoute, useCancelarExecucao, isRecentLocalMutation, debounceRea
 import { useLayout } from "@/contexts/LayoutContext";
 import { ROUTES } from "@/constants/routes";
 import { isMotoristaTitular } from "@/utils/userUtils";
+import { getNowBR } from "@/utils/dateUtils";
 import { toast } from "@/utils/notifications/toast";
 
 export const TAB_MINHAS_ROTAS = "minhas-rotas";
@@ -19,7 +20,30 @@ export function useRotasViewModel() {
   const queryClient = useQueryClient();
   const { can } = usePermissions();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(TAB_MINHAS_ROTAS);
+
+  const currentYear = getNowBR().getFullYear();
+  const [selectedAnoLetivo, setSelectedAnoLetivo] = useState<number>(() => {
+    const pAno = searchParams.get("ano");
+    return pAno ? Number(pAno) : currentYear;
+  });
+
+  const HISTORICO_PAGE_SIZE = 2;
+  const [historicoLimit, setHistoricoLimit] = useState(HISTORICO_PAGE_SIZE);
+
+  const handleChangeAnoLetivo = useCallback(
+    (novoAno: number) => {
+      setSelectedAnoLetivo(novoAno);
+      setHistoricoLimit(HISTORICO_PAGE_SIZE);
+      setSearchParams((prev) => {
+        const nextParams = new URLSearchParams(prev);
+        nextParams.set("ano", String(novoAno));
+        return nextParams;
+      });
+    },
+    [setSearchParams]
+  );
 
   const { openConfirmationDialog, closeConfirmationDialog, openRouteFormDialog } = useLayout();
 
@@ -27,15 +51,13 @@ export function useRotasViewModel() {
   const { profile, donoContaId } = useProfile(user?.id);
   const usuarioId = donoContaId || user?.id || "";
 
-  const HISTORICO_PAGE_SIZE = 2;
-  const [historicoLimit, setHistoricoLimit] = useState(HISTORICO_PAGE_SIZE);
-
   const { data: rotas = [], isLoading: isLoadingRotas, isFetching: isFetchingRotas, refetch: refetchRotas } = useRoutes(usuarioId, {
+    anoLetivo: selectedAnoLetivo,
     enabled: !!usuarioId && can("rotas.visualizar"),
   });
   const { data: execucoes = [], isLoading: isLoadingExecs, isFetching: isFetchingExecs, refetch: refetchExecs } = useExecucoesRota(
     usuarioId,
-    { limit: historicoLimit + 3 },
+    { limit: historicoLimit + 3, ano_letivo: selectedAnoLetivo },
     { enabled: !!usuarioId && can("rotas.visualizar") }
   );
 
@@ -49,7 +71,6 @@ export function useRotasViewModel() {
   const userVeiculoId = profile?.veiculo_id;
   const isGestor = isMotoristaTitular(profile);
 
-  // Supabase Realtime Sync para a Lista de Rotas
   useEffect(() => {
     const isEventForThisDevice = (payloadData: any) => {
       if (isGestor) return true;
@@ -89,12 +110,14 @@ export function useRotasViewModel() {
 
   const handleOpenCreateRouteDialog = () => {
     openRouteFormDialog({
+      defaultAnoLetivo: selectedAnoLetivo !== currentYear ? selectedAnoLetivo : undefined,
       onSuccess: (data) => {
         navigate(ROUTES.PRIVATE.MOTORISTA.ROUTE_SETUP, {
           state: {
             nome: data.nome,
             veiculoId: data.veiculoId,
             escolaFixaId: data.escolaFixaId,
+            anoLetivo: data.anoLetivo,
           },
         });
       },
@@ -149,6 +172,8 @@ export function useRotasViewModel() {
     navigate,
     activeTab,
     setActiveTab,
+    selectedAnoLetivo,
+    handleChangeAnoLetivo,
     rotas,
     execucoes,
     isLoading: isLoadingRotas || isLoadingExecs,

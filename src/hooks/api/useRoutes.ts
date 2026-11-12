@@ -2,10 +2,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routeApi } from "@/services/api/route.api";
 import { RouteExecutionStatus } from "@/types/route";
 
-export function useRoutes(usuarioId: string, options?: { enabled?: boolean }) {
+export function useRoutes(
+  usuarioId: string,
+  options?: { anoLetivo?: number; enabled?: boolean }
+) {
+  const anoLetivo = options?.anoLetivo;
   return useQuery({
-    queryKey: ["routes-list", usuarioId],
-    queryFn: () => routeApi.listRoutes(usuarioId),
+    queryKey: ["routes-list", usuarioId, anoLetivo ?? null],
+    queryFn: () =>
+      routeApi.listRoutes(
+        usuarioId,
+        anoLetivo ? { ano_letivo: anoLetivo } : undefined
+      ),
     enabled: options?.enabled !== undefined ? options.enabled : !!usuarioId,
   });
 }
@@ -22,21 +30,25 @@ export function useRouteDetail(id: string) {
 
 export function useExecucoesRota(
   usuarioId: string,
-  paramsOrOptions?: { limit?: number; page?: number; enabled?: boolean },
+  paramsOrOptions?: { limit?: number; page?: number; ano_letivo?: number; enabled?: boolean },
   options?: { enabled?: boolean }
 ) {
   const isOptionsSecondArg =
-    paramsOrOptions && "enabled" in paramsOrOptions && !("limit" in paramsOrOptions) && !("page" in paramsOrOptions);
+    paramsOrOptions &&
+    "enabled" in paramsOrOptions &&
+    !("limit" in paramsOrOptions) &&
+    !("page" in paramsOrOptions) &&
+    !("ano_letivo" in paramsOrOptions);
 
   const queryParams = isOptionsSecondArg
     ? undefined
-    : (paramsOrOptions as { limit?: number; page?: number } | undefined);
+    : (paramsOrOptions as { limit?: number; page?: number; ano_letivo?: number } | undefined);
   const queryOptions = isOptionsSecondArg ? (paramsOrOptions as { enabled?: boolean }) : options;
 
   const isEnabled = queryOptions?.enabled !== undefined ? queryOptions.enabled : !!usuarioId;
 
   return useQuery({
-    queryKey: ["execucoes-list", usuarioId, queryParams?.limit, queryParams?.page],
+    queryKey: ["execucoes-list", usuarioId, queryParams?.limit, queryParams?.page, queryParams?.ano_letivo ?? null],
     queryFn: () => routeApi.listExecucoes(usuarioId, queryParams),
     enabled: isEnabled,
     placeholderData: (previousData) => previousData,

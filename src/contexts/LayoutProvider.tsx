@@ -1320,6 +1320,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             );
             routeFormDialogState.props?.onSuccess?.(data);
           }}
+          defaultAnoLetivo={routeFormDialogState.props?.defaultAnoLetivo}
           editingRoute={routeFormDialogState.props?.editingRoute}
         />
       )}

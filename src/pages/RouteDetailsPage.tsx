@@ -63,7 +63,13 @@ export default function RouteDetailsPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+            onClick={() =>
+              navigate(
+                execucao?.rota?.ano_letivo
+                  ? `${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${execucao.rota.ano_letivo}`
+                  : ROUTES.PRIVATE.MOTORISTA.ROUTES
+              )
+            }
             className="text-[#737373] hover:text-[#0a0a0a] hover:bg-white gap-1.5 -ml-2 font-medium text-xs h-8 sm:h-9 rounded-[18px] border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />

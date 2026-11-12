@@ -30,6 +30,7 @@ export interface ProximasAusenciasDialogProps {
   onOpenChange: (open: boolean) => void;
   lockedRotaId?: string;
   lockedRotaNome?: string;
+  anoLetivo?: number;
 }
 
 type TabMode = "dia" | "rota";
@@ -104,6 +105,7 @@ export function ProximasAusenciasDialog({
   onOpenChange,
   lockedRotaId,
   lockedRotaNome,
+  anoLetivo,
 }: ProximasAusenciasDialogProps) {
   const [activeTab, setActiveTab] = useState<TabMode>("dia");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -160,6 +162,7 @@ export function ProximasAusenciasDialog({
   }, [searchAluno]);
 
   const { data: rotasList = [], isLoading: isLoadingRotas } = useRoutes(usuarioId, {
+    anoLetivo,
     enabled: open && !lockedRotaId && !!usuarioId,
   });
 

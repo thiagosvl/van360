@@ -404,7 +404,11 @@ export function ActiveRouteExecutionView({
           await deleteRouteMutation.mutateAsync(execucao.rota_id);
           safeCloseDialog(closeConfirmationDialog);
           toast.success("Rota excluída com sucesso.");
-          navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+          navigate(
+            execucao?.rota?.ano_letivo
+              ? `${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${execucao.rota.ano_letivo}`
+              : ROUTES.PRIVATE.MOTORISTA.ROUTES
+          );
         } catch (error: any) {
           safeCloseDialog(closeConfirmationDialog);
           toast.error(error.message || "Erro ao excluir rota.");

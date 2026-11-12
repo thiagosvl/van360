@@ -18,17 +18,23 @@ import { formatarVeiculoExibicao } from "@/utils/domain";
 import { VideoCommerce } from "@/components/features/VideoCommerce";
 import { useTutorialsConfig } from "@/hooks/ui/useTutorialsConfig";
 import { STORAGE_KEYS } from "@/constants";
+import { getNowBR } from "@/utils/dateUtils";
+import { FilterDefaults } from "@/types/enums";
 
 export default function Rotas() {
   const vm = useRotasViewModel();
   const { setPageTitle } = useLayout();
   const { config: tutorialConfig, shouldShowTutorial } = useTutorialsConfig("rotas");
   const [isProximasAusenciasOpen, setIsProximasAusenciasOpen] = useState(false);
-  const [selectedVeiculoFilter, setSelectedVeiculoFilter] = useState<string>("TODOS");
+  const [selectedVeiculoFilter, setSelectedVeiculoFilter] = useState<string>(FilterDefaults.TODOS);
 
   useEffect(() => {
     setPageTitle("Rotas");
   }, [setPageTitle]);
+
+  useEffect(() => {
+    setSelectedVeiculoFilter(FilterDefaults.TODOS);
+  }, [vm.selectedAnoLetivo]);
 
   if (!vm.can("rotas.visualizar")) {
     return <AccessRestrictedState moduleName="Rotas e Paradas" />;
@@ -46,7 +52,7 @@ export default function Rotas() {
   const veiculosDisponiveis = (() => {
     if (!vm.isGestor) return [];
     const map = new Map<string, string>();
-    vm.rotas.forEach((r: any) => {
+    vm.rotas.forEach((r) => {
       if (r.veiculo_id && r.veiculo) {
         const label = formatarVeiculoExibicao(r.veiculo) || r.veiculo_id;
         map.set(r.veiculo_id, label);
@@ -56,11 +62,12 @@ export default function Rotas() {
   })();
 
   const rotasExibidas = (() => {
-    if (!vm.isGestor || selectedVeiculoFilter === "TODOS") return vm.rotas;
-    return vm.rotas.filter((r: any) => r.veiculo_id === selectedVeiculoFilter);
+    if (!vm.isGestor || selectedVeiculoFilter === FilterDefaults.TODOS) return vm.rotas;
+    return vm.rotas.filter((r) => r.veiculo_id === selectedVeiculoFilter);
   })();
 
   const hasRotas = rotasExibidas.length > 0;
+  const currentYear = getNowBR().getFullYear();
 
   return (
     <PullToRefreshWrapper onRefresh={vm.handleRefresh}>
@@ -71,17 +78,27 @@ export default function Rotas() {
             activeTab={vm.activeTab}
             countMinhasRotas={vm.rotas.length}
             countHistorico={execucoesHistoricoTotal.length}
+            anoLetivo={vm.selectedAnoLetivo}
+            onChangeAnoLetivo={vm.handleChangeAnoLetivo}
+            isLoadingAno={vm.isFetching}
           />
 
           <TabsContent value={TAB_MINHAS_ROTAS} className="space-y-4 sm:space-y-5 mt-0">
+            {vm.selectedAnoLetivo !== currentYear && (
+              <Banner
+                variant="info"
+                description={`Visualizando rotas configuradas para o Ano Letivo ${vm.selectedAnoLetivo}.`}
+              />
+            )}
+
             {vm.isGestor && veiculosDisponiveis.length > 1 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                 <button
                   type="button"
-                  onClick={() => setSelectedVeiculoFilter("TODOS")}
+                  onClick={() => setSelectedVeiculoFilter(FilterDefaults.TODOS)}
                   className={cn(
                     "px-3 py-1.5 rounded-[18px] text-xs font-medium shrink-0 transition-all cursor-pointer",
-                    selectedVeiculoFilter === "TODOS"
+                    selectedVeiculoFilter === FilterDefaults.TODOS
                       ? "bg-primary/10 text-primary border border-primary/25 font-semibold shadow-2xs"
                       : "bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] hover:text-[#0a0a0a] hover:bg-[#ebebeb]"
                   )}
@@ -139,7 +156,14 @@ export default function Rotas() {
             />
           </TabsContent>
 
-          <TabsContent value={TAB_HISTORICO} className="space-y-4 mt-0">
+          <TabsContent value={TAB_HISTORICO} className="space-y-4 sm:space-y-5 mt-0">
+            {vm.selectedAnoLetivo !== currentYear && (
+              <Banner
+                variant="info"
+                description={`Visualizando histórico de execuções do Ano Letivo ${vm.selectedAnoLetivo}.`}
+              />
+            )}
+
             <RotasHistoricoList
               execucoes={execucoesHistoricoExibidas}
               isLoading={vm.isLoading}
@@ -154,6 +178,7 @@ export default function Rotas() {
       <ProximasAusenciasDialog
         open={isProximasAusenciasOpen}
         onOpenChange={setIsProximasAusenciasOpen}
+        anoLetivo={vm.selectedAnoLetivo}
       />
       {shouldShowTutorial && (
         <VideoCommerce

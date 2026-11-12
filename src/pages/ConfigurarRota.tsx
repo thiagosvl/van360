@@ -13,6 +13,7 @@ import PassageiroEnderecoFormDialog from "@/components/dialogs/PassageiroEnderec
 import { ReordenarParadaSheet } from "@/components/features/active-route/ReordenarParadaSheet";
 import { useConfigurarRotaViewModel } from "@/hooks/ui/useConfigurarRotaViewModel";
 import { useLayout } from "@/contexts/LayoutContext";
+import { RouteNodeType } from "@/types/route";
 import { toast } from "@/utils/notifications/toast";
 
 function PontosDeAtencaoCollapse({ avisos }: { avisos: string[] }) {
@@ -70,11 +71,16 @@ export default function ConfigurarRota() {
   }
 
   const handleOpenEditRouteDialog = () => {
+    const hasPassengerStops = vm.itinerario.some(
+      (item) => item.tipo_no === RouteNodeType.PASSAGEIRO
+    );
     openRouteFormDialog({
       editingRoute: {
         nome: vm.formData.nome,
         veiculoId: vm.formData.veiculoId,
         escolaFixaId: vm.formData.escolaFixaId,
+        anoLetivo: vm.formData.anoLetivo,
+        disableAnoLetivo: hasPassengerStops,
       },
       onSuccess: (data) => {
         vm.setFormData((prev) => ({
@@ -82,6 +88,7 @@ export default function ConfigurarRota() {
           nome: data.nome,
           veiculoId: data.veiculoId,
           escolaFixaId: data.escolaFixaId || "",
+          anoLetivo: data.anoLetivo,
         }));
       },
     });
@@ -96,7 +103,7 @@ export default function ConfigurarRota() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES)}
+              onClick={() => navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${vm.formData.anoLetivo}`)}
               className="text-[#737373] hover:text-[#0a0a0a] hover:bg-white gap-1.5 -ml-2 font-medium text-xs h-8 sm:h-9 rounded-[18px] border border-transparent hover:border-[#e5e5e5] transition-all cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -123,9 +130,16 @@ export default function ConfigurarRota() {
 
           <div className="bg-white border border-[#e5e5e5] p-4 sm:p-5 rounded-[24px] shadow-xs flex items-center justify-between gap-4 transition-all">
             <div className="min-w-0 flex-1 text-left space-y-1">
-              <h2 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight leading-snug break-words">
-                {vm.formData.nome || "Configurar Rota"}
-              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight leading-snug break-words">
+                  {vm.formData.nome || "Configurar Rota"}
+                </h2>
+                {vm.formData.anoLetivo && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] text-[11px] font-medium text-[#171717]">
+                    Ano Letivo {vm.formData.anoLetivo}
+                  </span>
+                )}
+              </div>
               {(() => {
                 const veiculo = vm.veiculosList.find((v) => v.id === vm.formData.veiculoId) || (vm.veiculosList.length === 1 ? vm.veiculosList[0] : null);
                 return veiculo ? (

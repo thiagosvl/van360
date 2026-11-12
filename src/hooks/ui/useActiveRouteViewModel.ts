@@ -56,7 +56,9 @@ export function useActiveRouteViewModel({ execucaoId }: { execucaoId: string }) 
       rota: {
         id: routeQuery.data.id,
         nome: routeQuery.data.nome,
-        veiculo_id: routeQuery.data.veiculo_id ?? undefined
+        ano_letivo: routeQuery.data.ano_letivo,
+        veiculo_id: routeQuery.data.veiculo_id ?? undefined,
+        veiculo: routeQuery.data.veiculo
       }
     };
 

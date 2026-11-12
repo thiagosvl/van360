@@ -12,6 +12,7 @@ import { useCreateRoute, useUpdateRoute, useDeleteRoute } from "@/hooks/api/useR
 import { useLayout } from "@/contexts/LayoutContext";
 import { RouteNodeType, RouteSentido } from "@/types/route";
 import { ROUTES } from "@/constants/routes";
+import { getNowBR } from "@/utils/dateUtils";
 import { toast } from "@/utils/notifications/toast";
 
 export interface ItineraryItem {
@@ -40,16 +41,27 @@ export function useConfigurarRotaViewModel() {
   const { profile, donoContaId } = useProfile(user?.id);
   const usuarioId = donoContaId || user?.id || "";
 
+  const currentYear = getNowBR().getFullYear();
+  const locationState = (location.state || {}) as {
+    nome?: string;
+    veiculoId?: string;
+    escolaFixaId?: string;
+    anoLetivo?: number;
+  };
+
   const [formData, setFormData] = useState({
-    nome: "",
-    veiculoId: "",
-    escolaFixaId: "",
+    nome: locationState.nome || "",
+    veiculoId: locationState.veiculoId || "",
+    escolaFixaId: locationState.escolaFixaId || "",
+    anoLetivo: locationState.anoLetivo || (isEditing ? 0 : currentYear),
   });
 
   const { data: routeData, isLoading: isLoadingRoute } = useRouteDetail(isEditing && id ? id : "");
 
+  const effectiveAnoLetivo = formData.anoLetivo || routeData?.ano_letivo || currentYear;
+
   const { data: passageirosData, isLoading: isLoadingPassageiros, refetch: refetchPassageiros } = usePassageiros(
-    { usuarioId },
+    { usuarioId, ano_letivo: effectiveAnoLetivo },
     {
       enabled: !!usuarioId && (!isEditing || !isLoadingRoute),
     }
@@ -119,27 +131,27 @@ export function useConfigurarRotaViewModel() {
     return true;
   }, [formData.nome, itinerario.length]);
 
-  // Preenchimento de estado via location.state (se originado da pré-configuração)
   useEffect(() => {
     if (!isEditing && location.state) {
-      const state = location.state as { nome?: string; veiculoId?: string; escolaFixaId?: string };
-      if (state.nome || state.veiculoId || state.escolaFixaId) {
+      const state = location.state as { nome?: string; veiculoId?: string; escolaFixaId?: string; anoLetivo?: number };
+      if (state.nome || state.veiculoId || state.escolaFixaId || state.anoLetivo) {
         setFormData({
           nome: state.nome || "",
           veiculoId: state.veiculoId || "",
           escolaFixaId: state.escolaFixaId || "",
+          anoLetivo: state.anoLetivo || currentYear,
         });
       }
     }
-  }, [isEditing, location.state]);
+  }, [isEditing, location.state, currentYear]);
 
-  // Preenchimento de estado ao editar rota existente
   useEffect(() => {
     if (isEditing && routeData) {
       setFormData({
         nome: routeData.nome || "",
         veiculoId: routeData.veiculo_id || "",
         escolaFixaId: routeData.escola_fixa_id || "",
+        anoLetivo: routeData.ano_letivo || currentYear,
       });
 
       const rawNos = routeData.paradas || [];
@@ -316,6 +328,7 @@ export function useConfigurarRotaViewModel() {
       usuario_id: usuarioId,
       nome: formData.nome,
       veiculo_id: formData.veiculoId || undefined,
+      ano_letivo: formData.anoLetivo || currentYear,
       paradas: nodesPayload,
     };
 
@@ -331,7 +344,7 @@ export function useConfigurarRotaViewModel() {
       if (targetRouteId) {
         navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTE_EXECUTE.replace(":id", targetRouteId)}?preview=true`);
       } else {
-        navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+        navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${formData.anoLetivo || currentYear}`);
       }
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar rota.");
@@ -352,7 +365,7 @@ export function useConfigurarRotaViewModel() {
         try {
           await deleteRouteMutation.mutateAsync(id);
           closeConfirmationDialog();
-          navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+          navigate(`${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${formData.anoLetivo || currentYear}`);
         } catch (error: any) {
           closeConfirmationDialog();
           toast.error(error.message || "Erro ao excluir rota.");
@@ -362,6 +375,7 @@ export function useConfigurarRotaViewModel() {
   };
 
   const handleCancel = () => {
+    const returnUrl = `${ROUTES.PRIVATE.MOTORISTA.ROUTES}?ano=${formData.anoLetivo || currentYear}`;
     if (itinerario.length > 0 || formData.nome) {
       openConfirmationDialog({
         title: "Descartar alterações?",
@@ -371,11 +385,11 @@ export function useConfigurarRotaViewModel() {
         variant: "destructive",
         onConfirm: () => {
           closeConfirmationDialog();
-          navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+          navigate(returnUrl);
         },
       });
     } else {
-      navigate(ROUTES.PRIVATE.MOTORISTA.ROUTES);
+      navigate(returnUrl);
     }
   };
 

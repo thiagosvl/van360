@@ -349,15 +349,19 @@ export interface OpenResponsavelFormProps {
 }
 
 export interface OpenRouteFormProps {
+  defaultAnoLetivo?: number;
   editingRoute?: {
     nome: string;
     veiculoId: string;
     escolaFixaId?: string;
+    anoLetivo?: number;
+    disableAnoLetivo?: boolean;
   } | null;
   onSuccess: (data: {
     nome: string;
     veiculoId: string;
     escolaFixaId?: string;
+    anoLetivo: number;
   }) => void;
 }
 

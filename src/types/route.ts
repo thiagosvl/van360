@@ -57,6 +57,7 @@ export interface Route {
   id: string;
   usuario_id: string;
   nome: string;
+  ano_letivo?: number;
   periodo?: import("./enums").PassageiroPeriodo | null;
   veiculo_id?: string | null;
   escola_fixa_id?: string | null;
@@ -71,6 +72,22 @@ export interface Route {
   created_at: string;
   updated_at: string;
 }
+
+export interface CreateRoutePayload {
+  usuario_id: string;
+  nome: string;
+  veiculo_id?: string;
+  ano_letivo?: number;
+  paradas?: Array<{
+    tipo_no: RouteNodeType;
+    passageiro_id?: string | null;
+    escola_id?: string | null;
+    ordem: number;
+    sentido?: RouteSentido | null;
+  }>;
+}
+
+export type UpdateRoutePayload = Partial<CreateRoutePayload>;
 
 export interface RouteExecutionPassenger {
   id: string;
@@ -114,6 +131,7 @@ export interface RouteExecution {
   rota?: {
     id: string;
     nome: string;
+    ano_letivo?: number;
     veiculo_id?: string;
     veiculo?: any;
   };

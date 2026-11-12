@@ -1,12 +1,12 @@
-import { Route, RouteExecution, RouteStopStatus } from "@/types/route";
+import { Route, RouteExecution, RouteStopStatus, CreateRoutePayload, UpdateRoutePayload } from "@/types/route";
 import { apiClient } from "./client";
 
 const endpointBase = "/routes";
 
 export const routeApi = {
-  listRoutes: (usuarioId: string): Promise<Route[]> =>
+  listRoutes: (usuarioId: string, params?: { ano_letivo?: number }): Promise<Route[]> =>
     apiClient
-      .get(`${endpointBase}/usuario/${usuarioId}`)
+      .get(`${endpointBase}/usuario/${usuarioId}`, { params })
       .then(res => res.data),
 
   getRoute: (id: string): Promise<Route> =>
@@ -14,12 +14,12 @@ export const routeApi = {
       .get(`${endpointBase}/${id}`)
       .then(res => res.data),
 
-  createRoute: (data: any): Promise<Route> =>
+  createRoute: (data: CreateRoutePayload | Record<string, unknown>): Promise<Route> =>
     apiClient
       .post(`${endpointBase}`, data)
       .then(res => res.data),
 
-  updateRoute: (id: string, data: any): Promise<Route> =>
+  updateRoute: (id: string, data: UpdateRoutePayload | Record<string, unknown>): Promise<Route> =>
     apiClient
       .put(`${endpointBase}/${id}`, data)
       .then(res => res.data),
@@ -29,7 +29,7 @@ export const routeApi = {
       .delete(`${endpointBase}/${id}`)
       .then(res => res.data),
 
-  listExecucoes: (usuarioId: string, params?: { limit?: number; page?: number }): Promise<RouteExecution[]> =>
+  listExecucoes: (usuarioId: string, params?: { limit?: number; page?: number; ano_letivo?: number }): Promise<RouteExecution[]> =>
     apiClient
       .get(`${endpointBase}/execucoes/usuario/${usuarioId}`, { params })
       .then(res => res.data),
