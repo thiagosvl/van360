@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "pdfjs-dist": path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs"),
     },
   },
 }));

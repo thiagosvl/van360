@@ -8,6 +8,10 @@ declare global {
   interface PromiseConstructor {
     withResolvers<T>(): PromiseWithResolvers<T>;
   }
+  interface URLConstructor {
+    parse(url: string | URL, base?: string | URL): URL | null;
+    canParse(url: string | URL, base?: string | URL): boolean;
+  }
 }
 
 if (typeof Promise.withResolvers === "undefined") {
@@ -19,6 +23,27 @@ if (typeof Promise.withResolvers === "undefined") {
       reject = rej;
     });
     return { promise, resolve, reject };
+  };
+}
+
+if (typeof URL !== "undefined" && typeof URL.parse !== "function") {
+  URL.parse = function (url: string | URL, base?: string | URL): URL | null {
+    try {
+      return new URL(url, base);
+    } catch {
+      return null;
+    }
+  };
+}
+
+if (typeof URL !== "undefined" && typeof URL.canParse !== "function") {
+  URL.canParse = function (url: string | URL, base?: string | URL): boolean {
+    try {
+      new URL(url, base);
+      return true;
+    } catch {
+      return false;
+    }
   };
 }
 
